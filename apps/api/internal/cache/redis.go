@@ -64,6 +64,18 @@ func (c *Client) Set(ctx context.Context, key, value string, ttl time.Duration) 
 	return c.rdb.Set(ctx, key, value, ttl).Err()
 }
 
+// SetNX is atomic "set if absent" — returns true when the key was
+// acquired (did not exist), false when another caller owned it.
+// Used by the idempotency middleware's request-collapsing lock.
+func (c *Client) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
+	return c.rdb.SetNX(ctx, key, value, ttl).Result()
+}
+
+// Del removes key. No-op and nil error when the key is absent.
+func (c *Client) Del(ctx context.Context, key string) error {
+	return c.rdb.Del(ctx, key).Err()
+}
+
 // IncrWithTTL atomically increments the counter at key and, if this is
 // the first increment, sets its TTL. Returns the new counter value.
 func (c *Client) IncrWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error) {

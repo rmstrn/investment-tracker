@@ -18,6 +18,12 @@ import (
 // idempotencyHeader is the canonical name clients send per openapi.yaml.
 const idempotencyHeader = "Idempotency-Key"
 
+// lockTTL bounds the request-collapsing SETNX window. A real handler
+// that takes longer than this shouldn't be idempotency-locked anyway;
+// 30s covers every mutation in the current surface with generous
+// headroom.
+const lockTTL = 30 * time.Second
+
 // IdempotencyConfig carries the Redis client. TTL is fixed at 24h by the
 // API contract; we surface it here only for tests.
 type IdempotencyConfig struct {
@@ -44,12 +50,14 @@ type idempotentEntry struct {
 // Must come AFTER Auth in the chain; without a user we cannot namespace
 // keys.
 //
-// Note: concurrent replays of the same key are a known caveat — the second
-// handler will execute and overwrite the cache entry. For the endpoints
-// that matter (POST /transactions, POST /exports, etc.) this is handled
-// downstream by fingerprint dedup (transactions) or by the business
-// resource being content-addressable (exports). A proper request-
-// collapsing lock is deferred — see the GAP report / future TD entry.
+// Concurrent-replay collapse (closes TD-011): before the handler runs
+// we SETNX a short-lived lock key (30s). A second request with the
+// same (user, method, path, key) while the first is still in flight
+// returns 409 IDEMPOTENCY_IN_PROGRESS instead of racing the handler
+// and corrupting the cached entry. The lock is released as soon as
+// the outer handler returns — the 24h response cache takes over for
+// subsequent retries, so clients only see IDEMPOTENCY_IN_PROGRESS
+// during the genuine execution window.
 func Idempotency(cfg IdempotencyConfig) fiber.Handler {
 	if cfg.Cache == nil {
 		panic("middleware.Idempotency: Cache is required")
@@ -102,6 +110,20 @@ func Idempotency(cfg IdempotencyConfig) fiber.Handler {
 				return c.Send(entry.Body)
 			}
 		}
+
+		lockKey := redisKey + ":lock"
+		acquired, err := cfg.Cache.SetNX(c.Context(), lockKey, "1", lockTTL)
+		if err != nil {
+			// Redis flapped — fail open to the handler. The 24h response
+			// cache still protects against cross-request duplication;
+			// concurrent-replay collapse is a nice-to-have, not a
+			// correctness requirement.
+			acquired = true
+		}
+		if !acquired {
+			return errs.Respond(c, requestID(c), errs.ErrIdempotencyInProgress)
+		}
+		defer func() { _ = cfg.Cache.Del(c.Context(), lockKey) }()
 
 		if err := c.Next(); err != nil {
 			return err

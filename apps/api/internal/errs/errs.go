@@ -50,16 +50,17 @@ func (e *Coded) WithDetails(d map[string]any) *Coded {
 
 // Well-known codes — keep in sync with openapi.yaml `ErrorEnvelope.code`.
 var (
-	ErrUnauthenticated     = New(http.StatusUnauthorized, "UNAUTHENTICATED", "Authentication required")
-	ErrInvalidToken        = New(http.StatusUnauthorized, "INVALID_TOKEN", "Token invalid or expired")
-	ErrForbidden           = New(http.StatusForbidden, "FORBIDDEN", "Access denied")
-	ErrTierLimitExceeded   = New(http.StatusForbidden, "TIER_LIMIT_EXCEEDED", "Feature requires a higher tier")
-	ErrNotFound            = New(http.StatusNotFound, "NOT_FOUND", "Resource not found")
-	ErrValidation          = New(http.StatusBadRequest, "VALIDATION_ERROR", "Invalid input")
-	ErrQuoteNotAvailable   = New(http.StatusNotFound, "QUOTE_NOT_AVAILABLE", "Price data not yet fetched for this symbol")
-	ErrRateLimit           = New(http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED", "Too many requests")
-	ErrIdempotencyConflict = New(http.StatusConflict, "IDEMPOTENCY_KEY_CONFLICT", "Idempotency key reused with different body")
-	ErrInternal            = New(http.StatusInternalServerError, "INTERNAL_ERROR", "An unexpected error occurred")
+	ErrUnauthenticated       = New(http.StatusUnauthorized, "UNAUTHENTICATED", "Authentication required")
+	ErrInvalidToken          = New(http.StatusUnauthorized, "INVALID_TOKEN", "Token invalid or expired")
+	ErrForbidden             = New(http.StatusForbidden, "FORBIDDEN", "Access denied")
+	ErrTierLimitExceeded     = New(http.StatusForbidden, "TIER_LIMIT_EXCEEDED", "Feature requires a higher tier")
+	ErrNotFound              = New(http.StatusNotFound, "NOT_FOUND", "Resource not found")
+	ErrValidation            = New(http.StatusBadRequest, "VALIDATION_ERROR", "Invalid input")
+	ErrQuoteNotAvailable     = New(http.StatusNotFound, "QUOTE_NOT_AVAILABLE", "Price data not yet fetched for this symbol")
+	ErrRateLimit             = New(http.StatusTooManyRequests, "RATE_LIMIT_EXCEEDED", "Too many requests")
+	ErrIdempotencyConflict   = New(http.StatusConflict, "IDEMPOTENCY_KEY_CONFLICT", "Idempotency key reused with different body")
+	ErrIdempotencyInProgress = New(http.StatusConflict, "IDEMPOTENCY_IN_PROGRESS", "A request with this idempotency key is still being processed")
+	ErrInternal              = New(http.StatusInternalServerError, "INTERNAL_ERROR", "An unexpected error occurred")
 )
 
 // Respond writes a Coded error as the canonical JSON envelope. It first
