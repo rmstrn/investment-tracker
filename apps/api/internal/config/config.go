@@ -41,8 +41,12 @@ type Config struct {
 	StripeWebhookSecret string `envconfig:"STRIPE_WEBHOOK_SECRET" required:"true"`
 
 	// ── AI service ──────────────────────────────────────────────────
-	AIServiceURL   string `envconfig:"AI_SERVICE_URL" default:"http://localhost:8000"`
-	AIServiceToken string `envconfig:"AI_SERVICE_TOKEN" required:"true"`
+	// AIServiceToken: Core → AI direction (chat stream, insights, etc.)
+	// CoreAPIInternalToken: AI → Core direction (tool-use reverse channel
+	// that lets the AI Service query /portfolio and friends).
+	AIServiceURL         string `envconfig:"AI_SERVICE_URL" default:"http://localhost:8000"`
+	AIServiceToken       string `envconfig:"AI_SERVICE_TOKEN" required:"true"`
+	CoreAPIInternalToken string `envconfig:"CORE_API_INTERNAL_TOKEN" required:"true"`
 
 	// ── Market data ─────────────────────────────────────────────────
 	PolygonAPIKey   string `envconfig:"POLYGON_API_KEY" required:"true"`

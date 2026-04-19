@@ -116,25 +116,59 @@ func TestCalculate_MissingFXRateFails(t *testing.T) {
 	}
 }
 
-func TestCalculate_MissingPriceMarksUnresolvedAndZeros(t *testing.T) {
-	positions := []portfolio.Position{newPos("UNOBTANIUM", "USD", "10", "100")}
-	prices := map[portfolio.PriceKey]decimal.Decimal{} // no price
+func TestCalculate_MissingPriceSkippedAndFlaggedPartial(t *testing.T) {
+	// Mixed bag: one priceable symbol + one unpriceable. The unpriceable
+	// one is skipped from the totals entirely and surfaces via
+	// UnresolvedSymbols + Partial=true. Design: P&L stays meaningful for
+	// the priced legs; callers render a "partial data" notice.
+	positions := []portfolio.Position{
+		newPos("AAPL", "USD", "10", "100"),       // priceable
+		newPos("UNOBTANIUM", "USD", "10", "100"), // unpriceable
+	}
+	prices := map[portfolio.PriceKey]decimal.Decimal{
+		{Symbol: "AAPL", AssetType: "stock", Currency: "USD"}: d("120"),
+	}
 	fx := map[portfolio.FXKey]decimal.Decimal{}
 
 	snap, err := portfolio.CalculateSnapshot(positions, prices, fx, "USD", "USD")
 	if err != nil {
 		t.Fatalf("calc: %v", err)
 	}
-	if !snap.TotalValueBase.IsZero() {
-		t.Fatalf("unresolved symbol should value as 0; got %s", snap.TotalValueBase)
+	if !snap.Partial {
+		t.Fatalf("Partial = false, want true")
 	}
 	if len(snap.UnresolvedSymbols) != 1 || snap.UnresolvedSymbols[0] != "UNOBTANIUM" {
-		t.Fatalf("expected UnresolvedSymbols=[UNOBTANIUM], got %v", snap.UnresolvedSymbols)
+		t.Fatalf("UnresolvedSymbols = %v, want [UNOBTANIUM]", snap.UnresolvedSymbols)
 	}
-	// P&L is value ($0) - cost ($1000) = -$1000, a real signal that the
-	// caller should surface or fix.
-	if !snap.TotalPnLBase.Equal(d("-1000")) {
-		t.Fatalf("pnl = %s, want -1000 (cost stays real, value missing)", snap.TotalPnLBase)
+	if len(snap.Positions) != 1 || snap.Positions[0].Symbol != "AAPL" {
+		t.Fatalf("Positions should only contain AAPL; got %v", snap.Positions)
+	}
+	// Totals reflect only the priced leg — 10 * 120 = 1200.
+	if !snap.TotalValueBase.Equal(d("1200")) {
+		t.Fatalf("value = %s, want 1200 (unresolved excluded)", snap.TotalValueBase)
+	}
+	if !snap.TotalCostBase.Equal(d("1000")) {
+		t.Fatalf("cost = %s, want 1000 (unresolved excluded)", snap.TotalCostBase)
+	}
+	if !snap.TotalPnLBase.Equal(d("200")) {
+		t.Fatalf("pnl = %s, want 200", snap.TotalPnLBase)
+	}
+}
+
+func TestCalculate_AllPricesMissingReturnsEmptySnapshot(t *testing.T) {
+	positions := []portfolio.Position{newPos("UNOBTANIUM", "USD", "10", "100")}
+	snap, err := portfolio.CalculateSnapshot(positions,
+		map[portfolio.PriceKey]decimal.Decimal{},
+		map[portfolio.FXKey]decimal.Decimal{}, "USD", "USD")
+	if err != nil {
+		t.Fatalf("calc: %v", err)
+	}
+	if !snap.Partial {
+		t.Fatal("expected Partial=true when every symbol is unresolved")
+	}
+	if !snap.TotalValueBase.IsZero() || !snap.TotalCostBase.IsZero() {
+		t.Fatalf("totals must be zero when no positions are priced; got value=%s cost=%s",
+			snap.TotalValueBase, snap.TotalCostBase)
 	}
 }
 

@@ -74,9 +74,14 @@ type Snapshot struct {
 	ComputedAt time.Time
 
 	// UnresolvedSymbols lists positions for which no price was available.
-	// Callers may surface a warning; their value is treated as zero in
-	// the totals, which means P&L will skew negative.
+	// These positions are excluded from the totals (skipped, not valued
+	// at zero) so P&L stays meaningful for the priced legs. Callers
+	// MUST surface this list to the user as a "partial" warning.
 	UnresolvedSymbols []string
+
+	// Partial is true whenever UnresolvedSymbols is non-empty. Kept as a
+	// scalar for ergonomic handler-side checks.
+	Partial bool
 }
 
 // CalculateSnapshot values a set of positions and produces a snapshot.
@@ -128,17 +133,16 @@ func CalculateSnapshot(
 		nativeCur := strings.ToUpper(p.Currency)
 		priceKey := PriceKey{Symbol: p.Symbol, AssetType: p.AssetType, Currency: nativeCur}
 
-		ep := EnrichedPosition{Position: p}
-
-		price, ok := prices[priceKey]
-		if ok {
-			ep.CurrentPrice = price
-			ep.PriceResolved = true
-		} else {
+		price, priceOK := prices[priceKey]
+		if !priceOK {
+			// Skip unpriceable positions from totals to keep P&L meaningful.
+			// Caller reads UnresolvedSymbols / Partial to surface a warning.
 			snap.UnresolvedSymbols = append(snap.UnresolvedSymbols, p.Symbol)
+			continue
 		}
 
-		ep.ValueNative = ep.CurrentPrice.Mul(p.Quantity)
+		ep := EnrichedPosition{Position: p, CurrentPrice: price, PriceResolved: true}
+		ep.ValueNative = price.Mul(p.Quantity)
 
 		fxBase, err := resolveFX(fx, nativeCur, baseCurrency)
 		if err != nil {
@@ -172,6 +176,8 @@ func CalculateSnapshot(
 
 		snap.Positions = append(snap.Positions, ep)
 	}
+
+	snap.Partial = len(snap.UnresolvedSymbols) > 0
 
 	snap.TotalValueBase = totalValueBase
 	snap.TotalCostBase = totalCostBase
