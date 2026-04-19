@@ -123,6 +123,54 @@ func (q *Queries) InsertTransaction(ctx context.Context, arg InsertTransactionPa
 	return i, err
 }
 
+const listAllTransactionsByUser = `-- name: ListAllTransactionsByUser :many
+SELECT id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at FROM transactions
+WHERE user_id = $1
+ORDER BY executed_at ASC, id ASC
+`
+
+// Full unbounded ledger for the tax-report builder. FIFO lot-matching
+// needs every historical transaction to reconstruct cost basis, so
+// no cursor / no LIMIT. Called only by GET /portfolio/tax — the
+// usual list endpoints use the filtered / cursor variants.
+func (q *Queries) ListAllTransactionsByUser(ctx context.Context, userID uuid.UUID) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, listAllTransactionsByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.AccountID,
+			&i.Symbol,
+			&i.AssetType,
+			&i.TransactionType,
+			&i.Quantity,
+			&i.Price,
+			&i.Currency,
+			&i.Fee,
+			&i.ExecutedAt,
+			&i.Source,
+			&i.SourceDetails,
+			&i.Fingerprint,
+			&i.Notes,
+			&i.ManuallyEdited,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listDividendTransactions = `-- name: ListDividendTransactions :many
 SELECT id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at FROM transactions
 WHERE user_id = $1
