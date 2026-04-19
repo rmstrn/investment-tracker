@@ -22,7 +22,7 @@ import (
 //
 // Query:
 //   - ?sort=value_desc|value_asc|pnl_desc|pnl_asc|alpha (default value_desc)
-//   - ?currency=<ISO-4217>                              (overrides user default)
+//   - ?display_currency=<ISO-4217>                      (overrides user default)
 //   - ?group_by=account|symbol|asset_type               (accepted but not applied
 //     until PR B2b adds the grouped response shape — current endpoint
 //     returns the flat list per openapi.yaml Position schema)

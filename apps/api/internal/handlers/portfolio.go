@@ -29,7 +29,7 @@ const BaseCurrency = "USD"
 // GetPortfolio returns the current portfolio snapshot for the
 // authenticated user in base (USD) and display currencies.
 //
-// Query: ?currency=<ISO-4217> (overrides user.display_currency).
+// Query: ?display_currency=<ISO-4217> (overrides user.display_currency).
 // Response: openapi.yaml PortfolioSnapshot.
 //
 // Resolution: positions from Postgres, prices batch-fetched, FX rates
@@ -234,11 +234,12 @@ type positionQuerier interface {
 	dbgen.DBTX
 }
 
-// resolveDisplayCurrency picks the display currency: explicit ?currency
-// query parameter wins; otherwise falls back to the user's stored
-// display_currency; otherwise BaseCurrency.
+// resolveDisplayCurrency picks the display currency: explicit
+// ?display_currency query parameter wins (per openapi.yaml
+// `#/components/parameters/DisplayCurrency`); otherwise falls back to
+// the user's stored display_currency; otherwise BaseCurrency.
 func resolveDisplayCurrency(c fiber.Ctx, user *dbgen.User) string {
-	if q := strings.ToUpper(strings.TrimSpace(c.Query("currency"))); q != "" {
+	if q := strings.ToUpper(strings.TrimSpace(c.Query("display_currency"))); q != "" {
 		return q
 	}
 	if user != nil && user.DisplayCurrency != "" {

@@ -124,7 +124,7 @@ func TestGetPortfolio_CurrencyQueryParamOverridesUser(t *testing.T) {
 		t.Fatalf("seed fx: %v", err)
 	}
 
-	resp, body := doJSON(t, a, fiber.MethodGet, "/portfolio?currency=EUR",
+	resp, body := doJSON(t, a, fiber.MethodGet, "/portfolio?display_currency=EUR",
 		uid.String(), testSharedInternalToken, nil)
 	if resp.StatusCode != fiber.StatusOK {
 		t.Fatalf("status = %d body=%s", resp.StatusCode, body)
