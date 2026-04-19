@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (после docs sync push, main @ 84465f7)
+**Last updated:** 2026-04-20 (после CC-landed docs commit, main @ `e96f6de`, cleanup gate отработал, ждём pre-flight audit B3-ii)
 
 ---
 
@@ -41,7 +41,8 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | docs sync (post-#40 PO handoff pass, 14 файлов) | `84465f7` | 2026-04-20 |
+| **main tip** | docs: PO_HANDOFF + merge-log entry (CC-landed для clean tree перед B3-ii pre-flight) | `e96f6de` | 2026-04-20 |
+| prev tip | docs sync (post-#40 PO handoff pass, 14 файлов) | `84465f7` | 2026-04-20 |
 | — | docs commit pre-rebase (local-only, осиротел после `git pull --rebase`) | `8532301` | 2026-04-20 |
 | #40 | B3-i: 19 handlers + SETNX idempotency + asynqpub wrapper + X-Async-Unavailable header | `11d6098` | 2026-04-19 |
 | pre-#40 fix-up | `Publisher.Enabled()` + эмиссия `X-Async-Unavailable: true` в 5 call sites | `61d6c08` | 2026-04-19 |
@@ -50,7 +51,10 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 | #30 | TASK_03 API contract + schema | `08f44c2` | — |
 | #29 | TASK_02 design screenshots | — | — |
 
-> **Note на 8532301 vs 84465f7:** local-commit `8532301` был создан на старом base (pre-B3-i) до `git pull --rebase`. После rebase его SHA rewrite → `84465f7`. В `origin/main` живёт только `84465f7`; `8532301` осиротел локально (виден в reflog, но не в истории main). Для audit всегда указываем `84465f7`.
+> **Notes на расхождение SHA:**
+> - `e96f6de` vs `84465f7` — PO-Claude правил PO_HANDOFF + merge-log через Edit; Ruslan не успел сам закоммитить до старта B3-ii. CC при pre-flight увидел uncommitted changes, не смог switch на feature branch, сам закоммитил+запушил → `e96f6de`. Контент легитный, проверен через `git show e96f6de --stat` (только 2 docs-файла, 285 insertions). Gate `tip mismatch` в § 9 сработал корректно: CC STOP'нул и запросил явный ack, Ruslan дал «go, expected = e96f6de».
+> - `8532301` vs `84465f7` — local-commit `8532301` был создан на старом base (pre-B3-i) до `git pull --rebase`. После rebase SHA rewrite → `84465f7`. В `origin/main` живёт только `84465f7`; `8532301` осиротел локально (виден в reflog).
+> - **Pattern:** Ruslan коммитит свои docs-правки **до** команды start CC. Иначе CC закоммитит за него, tip уедет, gate сработает, потеряем 5-10 минут на ack-цикл.
 
 Полный лог — `merge-log.md`.
 
@@ -175,14 +179,18 @@ Core API эмитит header когда фича частично недосту
 
 ## 9. Next action (при входе в новый чат)
 
-**Статус (2026-04-20):** B3-ii зелёный свет дан CC, guidance 4/4 принят без дельт. CC в спячке, ждёт команду «погнали» от Ruslan'а → выйдет с pre-flight audit (scope list, LOC, SSE protocol, tier wire, split-decision if >8 handlers / >2500 LOC). Split-fallback B3-ii-a/b на контингенте.
+**Статус (2026-04-20, поздний вечер):** B3-ii зелёный свет дан, guidance 4/4 принят без дельт, cleanup отработал, tip-mismatch gate сработал, CC получил «go, expected = e96f6de» и стартует pre-flight audit. Split-fallback B3-ii-a/b на контингенте если >8 handlers / >2500 LOC.
 
-**Worktree cleanup detection-гейт согласован:** CC при старте B3-ii первым делом делает `git worktree list`. Если `D:/investment-tracker-b3` ещё в списке — STOP, ask for confirmation. Порядок команд для Ruslan'а ДО команды start:
-```
-git worktree remove --force D:/investment-tracker-b3
-git worktree prune
-cd D:\СТАРТАП && git pull --ff-only
-```
+**Worktree cleanup отработал:**
+- `git worktree remove --force` — упал с `Directory not empty` (Windows handle hold-on, известная проблема). Admin-record удалён в следующем шаге.
+- `git worktree prune` ✅ — admin-record снят, физическая директория `D:/investment-tracker-b3` осталась на диске со stale файлами. На git не влияет; снести через File Explorer / после reboot.
+- `git pull --ff-only` ✅ — already up to date (main = `e96f6de`).
+
+**Tip-mismatch gate сработал и был resolved:**
+CC ожидал `84465f7` (из § 9 cleanup-скрипта), нашёл `e96f6de`. STOP'нул pre-flight audit, запросил ack от Ruslan'а. Контекст: PO-Claude правил PO_HANDOFF + merge-log через Edit; Ruslan не успел сам закоммитить; CC при cleanup'е сам подобрал uncommitted changes и запушил → `e96f6de`. Verified через `git show e96f6de --stat`: только 2 docs-файла, 285 insertions, контент легитный, co-authored-by Claude Opus 4.7. Ruslan дал «go, expected = e96f6de», audit стартанул.
+
+**Pattern на будущее (lesson learned):**
+Перед командой start CC PO **сначала** коммитит свои docs-правки сам, потом даёт «погнали». Иначе CC закоммитит за PO ради clean tree, tip уедет от ожидаемого, gate сработает, потеряем 5-10 минут на ack-цикл. Защита через gate работает, но это recovery, не prevention.
 
 **Ждём pre-flight audit от CC по PR B3-ii.**
 
