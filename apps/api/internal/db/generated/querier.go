@@ -25,6 +25,11 @@ type Querier interface {
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
 	GetUserByClerkID(ctx context.Context, clerkUserID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	// Atomic UPSERT: create the day's counter at 1, or +1 if it already
+	// exists. Used by POST /internal/ai/usage (counter_type =
+	// 'ai_messages_daily'). PR B3 paywall-dismissal counters will reuse
+	// this same query.
+	IncrementUsageCounter(ctx context.Context, arg IncrementUsageCounterParams) (UsageCounter, error)
 	// Fingerprint-based dedup: ON CONFLICT DO NOTHING on the (user_id, fingerprint)
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
@@ -39,6 +44,11 @@ type Querier interface {
 	ListTransactionsByUser(ctx context.Context, arg ListTransactionsByUserParams) ([]Transaction, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
+	// Written by POST /internal/ai/usage. The id column uses a DB-side
+	// default (gen_random_uuid()) — callers do not pass it. conversation_id
+	// is nullable for insight_generator / behavioural_coach calls that do
+	// not belong to any chat conversation.
+	RecordAIUsage(ctx context.Context, arg RecordAIUsageParams) (AiUsage, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
