@@ -75,12 +75,28 @@ func TestAIReadEndpoints_InternalAuth_AllOK(t *testing.T) {
 		name string
 		path string
 	}{
+		// B2a — AI-facing reads.
 		{"portfolio", "/portfolio"},
 		{"positions", "/positions"},
 		{"transactions", "/transactions"},
 		{"performance", "/portfolio/performance?period=1m&benchmark=SPX"},
 		{"quote", "/market/quote?symbol=AAPL&asset_type=stock"},
 		{"dividends", "/portfolio/dividends"},
+		// B2b — profile + usage + accounts context the AI Service may
+		// read for proactive quota gate + persona-aware responses.
+		{"me", "/me"},
+		{"me_usage", "/me/usage"},
+		{"accounts", "/accounts"},
+		// B2b — portfolio + market reads for richer tool-use.
+		{"history", "/portfolio/history?period=1m"},
+		{"allocation", "/portfolio/allocation"},
+		{"performance_compare", "/portfolio/performance/compare?period=1m&benchmarks=SPX"},
+		{"market_search", "/market/search?q=AAPL"},
+		{"fx_rates", "/fx_rates"},
+		{"prices", "/prices?symbols=AAPL"},
+		// B2b — AI memory: conversations + insights read-through.
+		{"ai_conversations", "/ai/conversations"},
+		{"ai_insights", "/ai/insights"},
 	}
 
 	for _, ep := range endpoints {
