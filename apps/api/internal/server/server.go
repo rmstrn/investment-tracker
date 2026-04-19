@@ -64,6 +64,20 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	// write to these endpoints.
 	internalGroup := api.Group("/internal", middleware.RequireInternalAuth())
 	internalGroup.Post("/ai/usage", handlers.InternalAIUsage(deps))
+
+	// Public read-only API surface. Rate-limit runs in Passthrough
+	// mode: counters + headers without a 429 gate (reads are cheap;
+	// the real gate is on mutating routes in PR B3).
+	reads := api.Group("",
+		middleware.RateLimit(middleware.RateLimitConfig{
+			Cache:       deps.Cache,
+			Key:         "reads",
+			Limit:       600, // per-minute counter for observability
+			Window:      time.Minute,
+			Passthrough: true,
+		}),
+	)
+	reads.Get("/portfolio", handlers.GetPortfolio(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

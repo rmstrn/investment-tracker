@@ -52,8 +52,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
-	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
-	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/server"
 )
 
 // testSharedInternalToken is the "known" shared secret the harness
@@ -181,11 +180,11 @@ func seedUser(t *testing.T, tier string) uuid.UUID {
 	return id
 }
 
-// newTestApp builds a Fiber app wired to the shared Postgres + Redis
-// with dual-mode auth. The Clerk JWKS stays nil — tests in this
-// package exercise the internal-auth path; a future JWKS-backed harness
-// can sit next to this helper when PR B3 adds Clerk-path integration
-// tests.
+// newTestApp builds the same Fiber app server.New produces, but with
+// JWKS left nil. The auth middleware's nil-JWKS guard turns any
+// Clerk-path attempt into 401, which is fine — these tests exercise
+// the internal-bearer path. A JWKS-backed variant lands next to this
+// helper when PR B3 adds webhooks + Clerk-path integration coverage.
 func newTestApp(t *testing.T) *fiber.App {
 	t.Helper()
 	deps := &app.Deps{
@@ -197,18 +196,12 @@ func newTestApp(t *testing.T) *fiber.App {
 		Pool:     testPool,
 		Cache:    testCache,
 		UserRepo: users.NewRepo(testPool),
+		JWKS:     nil, // deliberately: tests take the internal-auth path
 	}
-
-	a := fiber.New()
-	a.Use(middleware.RequestID())
-	a.Use(middleware.Auth(middleware.AuthConfig{
-		UserRepo:      deps.UserRepo,
-		InternalToken: testSharedInternalToken,
-	}))
-	a.Post("/internal/ai/usage",
-		middleware.RequireInternalAuth(),
-		handlers.InternalAIUsage(deps),
-	)
+	a, err := server.New(deps)
+	if err != nil {
+		t.Fatalf("server.New: %v", err)
+	}
 	return a
 }
 
