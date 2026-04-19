@@ -8,6 +8,75 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-047 — CSVExport tier flag heuristic (P1 pre-GA)
+
+**Added:** 2026-04-19 (PR #40 / B3-i)
+**Priority:** P1 — **must fix before public GA**
+**Source:** экспорт-tier gate в `/exports` handler'е сейчас эвристика: «если у юзера жёсткий AIMessagesDaily cap → значит free → значит нет экспорта». Рабочая корреляция сегодня, хрупкая архитектура.
+**Risk:** если мы захотим дать Free попробовать AI (поднять `AIMessagesDaily` с 3-5 до 10-20 для trial-эксперимента) — экспорт автоматом откроется free-юзерам без явного intent.
+**Fix:** добавить `CSVExport bool` в `internal/domain/tiers/limits.go` TierLimits struct. Заменить эвристику на explicit gate: `RequireTier(func(l TierLimits) bool { return l.CSVExport })`. Прописать в tier matrix: Free=false, Plus=true, Pro=true.
+**Trigger to revisit:** перед public GA, жёсткий blocker.
+**Owner:** backend lead
+**Scope:** ~30 LOC + test — 1 час
+
+---
+
+### TD-046 — Aggregator provider clients (SnapTrade / Plaid / broker APIs)
+
+**Added:** 2026-04-19 (PR #40 / B3-i)
+**Source:** `POST /accounts` сейчас принимает только `connection_type = manual`. Aggregator flows (SnapTrade OAuth, Plaid, per-broker APIs) возвращают 501 NOT_IMPLEMENTED через scope-cut pattern.
+**Current state:** Manual entry работает; aggregator — TASK_06 scope.
+**Trigger to revisit:** TASK_06 старт после закрытия TASK_04 (PR C merged).
+**Owner:** integrations lead (TASK_06)
+**Scope:** full TASK_06 — 4-6 недель
+
+---
+
+### TD-045 — Hard-delete worker must re-check `deletion_scheduled_at`
+
+**Added:** 2026-04-19 (PR #40 / B3-i)
+**Pair:** **requires** TD-041 (hard_delete_user worker implementation). Физически неразделимы — воркер без этой проверки ломает undo-flow.
+**Source:** DELETE /me не удаляет юзера сразу — помечает `deletion_scheduled_at` + enqueue'ит `hard_delete_user` task с delay=7d. Если юзер передумал и вызвал undo — колонка сбрасывается в NULL, но отложенная задача в asynq остаётся.
+**Fix:** worker consumer в TASK_06 должен первым делом re-fetch'ить юзера и делать no-op, если `deletion_scheduled_at IS NULL`. Логировать как `hard_delete_cancelled_undo`.
+**Trigger to revisit:** вместе с TD-041 в TASK_06.
+**Owner:** workers lead (TASK_06)
+**Scope:** ~10 LOC + test сценарий undo
+
+---
+
+### TD-041 — `hard_delete_user` worker consumer
+
+**Added:** 2026-04-19 (PR #40 / B3-i)
+**Pair:** **implements** TD-041 but **requires** TD-045 (no-op on undo). Не катить без TD-045.
+**Source:** DELETE /me publisher уже в Core API (PR #40). Consumer-side — в TASK_06.
+**Current state:** задача enqueue'ится с delay=7d, но воркера ещё нет — задачи копятся в asynq `default` queue.
+**Fix:** worker в TASK_06 с scope:
+  1. fetch user by ID
+  2. **re-check `deletion_scheduled_at IS NOT NULL`** (см. TD-045)
+  3. cascade-delete через Postgres FK constraints (accounts, transactions, positions, snapshots, ai_conversations, insights, usage_counters, audit_log, ai_usage)
+  4. audit-log запись `user_hard_deleted`
+**Trigger to revisit:** TASK_06 старт.
+**Owner:** workers lead (TASK_06)
+**Scope:** ~100 LOC worker + integration test с 7d-fast-forward
+
+---
+
+### TD-039 — CSV export worker consumer
+
+**Added:** 2026-04-19 (PR #40 / B3-i)
+**Source:** POST /exports в Core API создаёт запись в `export_jobs` (status=pending) + enqueue'ит `generate_csv_export` задачу. GET /exports/{id} возвращает status. Consumer-side worker — в TASK_06.
+**Current state:** юзер видит status=pending навсегда, т.к. воркера нет.
+**Fix:** worker в TASK_06:
+  1. materialize CSV из transactions + positions по фильтрам
+  2. upload в R2 object storage с presigned URL (TTL 24h)
+  3. patch `export_jobs.status='ready'`, `result_url=...`, `expires_at=...`
+  4. email-уведомление (опционально)
+**Trigger to revisit:** TASK_06 старт.
+**Owner:** workers lead (TASK_06)
+**Scope:** ~150 LOC + test с test-R2 bucket
+
+---
+
 ### TD-001 — Next.js Turbopack incompatible with `experimental.typedRoutes`
 
 **Added:** 2026-04-19 (wave 1)
@@ -115,6 +184,32 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R021 — `asynq` publisher wrapper + /market/quote cache-miss enqueue
+
+**Resolved:** 2026-04-19 in PR #40 (SHA `11d6098`) commit `b827241`
+**Was:** Core API не имел wrapper'а для публикации фоновых задач в asynq. Market-data handlers на cache-miss возвращали stale data без попытки fetch'нуть свежую цену; workers в TASK_06 оставались без upstream-publisher'а.
+**Fix:**
+- Новый пакет `internal/clients/asynqpub` с 6 task-type константами + 5 payload struct'ами + `Publisher` wrapper.
+- Publisher — nil-safe: `p == nil || p.client == nil` → log warn + no-op (fail-open).
+- `Publisher.Enabled() bool` — сигнал для handler'ов эмитить `X-Async-Unavailable: true` header (scope-cut pattern).
+- Wired в /market/quote (cache miss → enqueue `fetch_quote`), /accounts/{id}/sync|reconnect, /me DELETE (deletion schedule), /exports (CSV materialise).
+- `app.Deps.Asynq` — nil-safe field для dev/test environments без Redis.
+
+---
+
+### TD-R011 — Idempotency race: race-condition window между key-check и processing
+
+**Resolved:** 2026-04-19 in PR #40 (SHA `11d6098`) commit `97a5cf6`
+**Was:** Idempotency middleware проверял наличие ключа в Redis → если нет, пускал запрос в handler, записывал ответ в кэш в конце. Window между check и write позволял двум concurrent-запросам с одним Idempotency-Key пройти оба в handler (double-write сценарий на mutations).
+**Fix:**
+- Переключение на SETNX request-collapsing lock: `SET idem:{key} {pending-marker} NX EX 10` на входе.
+- Если SETNX вернул 0 (ключ уже есть) → 409 IDEMPOTENCY_IN_PROGRESS с Retry-After.
+- На успешном завершении — `SET idem:{key} {cached-response-json} EX 86400` (24h TTL).
+- На 5xx / panic — `DEL idem:{key}` чтобы клиент мог ретраить.
+- Новые методы `cache.Client.SetNX` + `cache.Client.Del` как pass-through wrappers.
+
+---
 
 ### TD-R001 — `@investment-tracker/design-tokens` subpath exports missing types
 

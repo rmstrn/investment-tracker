@@ -5,6 +5,20 @@
 **Блокирует:** TASK_05 (AI Service нужны портфельные данные), TASK_06 (интеграции), TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель (параллельно с другими)
 
+**Статус (2026-04-19):** 🚧 6 of ~8 PRs merged.
+
+| PR | Scope | Status |
+|---|---|---|
+| A | skeleton, config, middleware basics | ✅ merged (14f95468) |
+| B1 | first read handlers | ✅ merged (462d2993) |
+| B2a | read handlers batch 2 | ✅ merged (272e5fe6) |
+| B2b | read handlers batch 3 | ✅ merged (fdcf39f4) |
+| B2c | final read handlers (30 GET authenticated) | ✅ merged (fb16525) |
+| **B3-i** | **write-path mutations + asynq + idempotency lock** | **✅ merged 2026-04-19 (11d6098, PR #40)** |
+| B3-ii | AI mutations + SSE reverse-proxy + tier rate-limit | 🚧 next (anchor ~2000-2500 LOC) |
+| B3-iii | Clerk/Stripe webhooks + webhook_events idempotency | ⏳ queued |
+| C | Dockerfile + fly.toml + k6 smoke + deploy runbook | ⏳ queued (см. PR_C_preflight.md) |
+
 ## Цель
 
 Реализовать основной REST API на Go. Это "мозги" приложения:
@@ -13,16 +27,18 @@
 
 ## Стек
 
-- **Go 1.23+**
+- **Go 1.25+** (требуется `go tool` для pinned dev deps)
 - **Fiber v3** — web framework
-- **huma v2** — auto-OpenAPI + валидация
-- **sqlc** — типобезопасные запросы из SQL
+- **oapi-codegen** — spec-first codegen (не huma v2 — см. DECISIONS.md 2026-04-19); генерит `types.gen.go` + `server.gen.go` (ServerInterface) из `tools/openapi/openapi.yaml`. TD-007: preprocessor конвертит OpenAPI 3.1 `type: [X, "null"]` → 3.0 `nullable: true`
+- **sqlc** — типобезопасные запросы из SQL (pinned via `go tool`)
 - **pgx v5** — Postgres driver
 - **goose** — миграции (запускается отдельно)
-- **asynq** — публикация задач в очередь (для workers)
-- **go-playground/validator v10** — валидация структур
+- **asynq** — публикация задач в очередь (для workers); wrapper в `internal/clients/asynqpub` с nil-safe `Enabled()`
+- **shopspring/decimal** — decimal arithmetic для денег (никогда float64)
+- **svix** — Clerk webhook signature verification
+- **stripe-go** — Stripe SDK + webhook verification
 - **zerolog** — structured logging
-- **go-redis/v9** — Redis client
+- **go-redis v9** — Redis client
 - **jwt-go v5** — JWT валидация (для Clerk)
 
 ## Структура проекта
@@ -167,35 +183,80 @@ func Fingerprint(accountID uuid.UUID, symbol string, qty, price decimal.Decimal,
 
 ### 5. Envelope encryption для credentials
 
-Токены брокеров, API-ключи бирж — чувствительные данные. Шифруем:
+Токены брокеров, API-ключи бирж — чувствительные данные. Шифруем AES-256-GCM envelope:
+
+- **KEK (Key Encryption Key):** 32-байтный мастер-ключ в env (`KEK_MASTER_V1`), с индикатором текущей версии `KEK_PRIMARY_ID`. Ротация — через добавление `KEK_MASTER_V2` и bump `KEK_PRIMARY_ID` без вайпа старых записей (они расшифровываются по своему `kek_id`).
+- **DEK (Data Encryption Key):** 32 байта, генерится на каждую запись.
+- **Nonce:** 12 байт для каждого AES-GCM (outer и inner — два отдельных nonce).
 
 ```go
 // internal/crypto/envelope.go
 
-// KEK (Key Encryption Key) в ENV/Doppler, один на проект
-// DEK (Data Encryption Key) генерится на каждую запись и шифруется KEK
+// BYTEA blob format в БД (credentials_encrypted column):
+// [kek_id (1 byte) || nonce_outer (12) || encrypted_dek (32+16 tag) || nonce_inner (12) || ciphertext || auth_tag (16)]
 
-func Encrypt(plaintext []byte, kek []byte) ([]byte, error) {
-    dek := generateDEK(32)
-    ciphertext := aesGCMEncrypt(plaintext, dek)
-    encryptedDEK := aesGCMEncrypt(dek, kek)
-    return combine(encryptedDEK, ciphertext), nil
+func Encrypt(plaintext []byte, kekPrimaryID byte, keks map[byte][]byte) ([]byte, error) {
+    dek := randomBytes(32)
+    nonceOuter := randomBytes(12)
+    nonceInner := randomBytes(12)
+
+    // outer: encrypt DEK with KEK
+    encryptedDEK := aesGCMSeal(keks[kekPrimaryID], nonceOuter, dek, nil)
+
+    // inner: encrypt plaintext with DEK
+    ciphertext := aesGCMSeal(dek, nonceInner, plaintext, nil)
+
+    return bytes.Join([][]byte{
+        {kekPrimaryID},
+        nonceOuter,
+        encryptedDEK,
+        nonceInner,
+        ciphertext,
+    }, nil), nil
 }
 ```
 
-В проде KEK храним в AWS KMS. В MVP — в Doppler.
+**TD на миграцию в KMS/HSM** (записан): когда будет compliance-давление (SOC 2 type 2), переедем на AWS KMS для KEK. Сейчас env-KEK приемлем до public GA.
 
 ### 6. Tier-based authorization
 
-Middleware проверяет тариф перед определёнными endpoints:
+Единый источник правды — shared Go module `internal/domain/tiers/limits.go`. Ни один handler не должен хардкодить строковое сравнение `user.Tier == "pro"` — это anti-pattern, ломается при rebranding тарифов и trial-экспериментах.
 
 ```go
-func RequireTier(tier string) fiber.Handler {
+// internal/domain/tiers/limits.go
+
+type TierLimits struct {
+    MaxAccounts             int
+    MaxTransactionsPerMonth int
+    AIMessagesPerDay        int
+    AIMonthlyBudgetCents    int
+    InsightsEnabled         bool
+    InsightsPerWeek         int
+    ExportsEnabled          bool     // см. TD-047 — P1 pre-GA
+    CSVExport               bool     // TD-047 target: дискретный флаг
+    AdvancedAnalytics       bool
+    TaxReports              bool
+}
+
+func For(tier string) TierLimits {
+    switch tier {
+    case "pro":
+        return TierLimits{MaxAccounts: -1, AIMessagesPerDay: 100, InsightsEnabled: true, ExportsEnabled: true, AdvancedAnalytics: true, TaxReports: true, ...}
+    case "plus":
+        return TierLimits{MaxAccounts: 10, AIMessagesPerDay: 20, InsightsEnabled: true, ExportsEnabled: true, ...}
+    default: // free
+        return TierLimits{MaxAccounts: 2, AIMessagesPerDay: 3, InsightsEnabled: false, ExportsEnabled: false, ...}
+    }
+}
+
+// Middleware factory принимает функцию-предикат, не строку
+func RequireTier(flag func(TierLimits) bool) fiber.Handler {
     return func(c *fiber.Ctx) error {
         user := c.Locals("user").(*User)
-        if !user.HasTier(tier) {
-            return httpError(c, 403, "TIER_LIMIT_EXCEEDED", 
-                "This feature requires "+tier+" tier", 
+        limits := tiers.For(user.SubscriptionTier)
+        if !flag(limits) {
+            return httpError(c, 403, "TIER_LIMIT_EXCEEDED",
+                "This feature requires an upgraded plan",
                 map[string]string{"upgrade_url": "/pricing"})
         }
         return c.Next()
@@ -203,7 +264,20 @@ func RequireTier(tier string) fiber.Handler {
 }
 
 // Использование:
-app.Get("/portfolio/tax-report", AuthMiddleware, RequireTier("pro"), taxReportHandler)
+app.Get("/portfolio/tax-report", AuthMiddleware,
+    RequireTier(func(l TierLimits) bool { return l.TaxReports }),
+    taxReportHandler)
+```
+
+**Anti-pattern (НЕ делаем):**
+
+```go
+// ❌ никогда
+if user.Tier == "pro" { ... }
+if user.HasTier("pro") { ... }
+
+// ✅ всегда через tiers.For + предикат
+if tiers.For(user.Tier).TaxReports { ... }
 ```
 
 ### 7. Rate limiting

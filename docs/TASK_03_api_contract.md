@@ -226,8 +226,7 @@ go generate ./...
 
 **Инструменты:**
 - TS: `openapi-typescript` + `openapi-fetch` (легковесно, типобезопасно)
-- Go: huma v2 автогенерит спеку ИЗ кода (можно пойти этим путём вместо
-  spec-first, обсудить на старте)
+- Go: **oapi-codegen** генерит `types.gen.go` + `server.gen.go` (ServerInterface) из `tools/openapi/openapi.yaml`. См. DECISIONS.md 2026-04-19 «Core API: spec-first via oapi-codegen, not code-first via huma». TD-007: preprocessor конвертит 3.1 nullable pattern в 3.0 `nullable: true`.
 - Swift: `swift-openapi-generator` (официальный Apple)
 
 ### 6. Postman / Bruno коллекция
@@ -252,10 +251,7 @@ go generate ./...
 
 ## Важные решения
 
-- **Spec-first или code-first?** Обсудить на старте. Моя рекомендация:
-  code-first через huma v2 (Go). Спека автогенерится, всегда актуальна.
-  Минус: для фронта нужен дополнительный шаг генерации.
-  Альтернатива: spec-first, спека — source of truth.
+- **Spec-first — выбрано.** Изначально рассматривали code-first через huma v2, но после оценки (фронт/iOS тоже качают клиенты из этой же спеки, риск рассинхрона) переключились на spec-first: `tools/openapi/openapi.yaml` — source of truth, из неё генерятся Go (oapi-codegen), TS (openapi-typescript), Swift (swift-openapi-generator). См. полный ADR в DECISIONS.md от 2026-04-19.
 
 - **REST, не GraphQL.** Проще, достаточно для MVP.
 
