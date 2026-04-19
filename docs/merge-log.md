@@ -15,6 +15,61 @@ Newest entries at the top.
 
 ---
 
+## PR #43 — TASK_05 cleanup: remove Core API `record_ai_usage` dual-write
+
+**Squash SHA:** `b6108a4`
+**Merged:** 2026-04-20
+**Base:** `8c52a4d` (PR #42 squash)
+**Scope:** Python AI Service cleanup — удалены все call sites `record_ai_usage` + метод в `core_api.py` client + обновлены тесты которые mock'али вызов. Коммент-заглушка на месте удалённой записи: `# ai_usage tracking owned by Core API (TASK_04 B3-ii-b). See docs/DECISIONS.md 2026-04-20 entry.`
+**Context:** блокер для B3-ii-b merge — Core API стал single-writer для `ai_usage` ledger (см. DECISIONS.md 2026-04-20). Dual-write = дубликаты в ledger = биллинг x2.
+**LOC:** ~90 touched (handlers chat + insights + client + tests).
+**CI:** 8/8 green.
+**Admin-bypass:** нет.
+**Migrations:** нет.
+**Closed TDs:** — (cleanup, не создаёт долг)
+**Opened TDs:** TD-054 (CC agent memory lives outside repo — flag from this CC session).
+**Next:** B3-ii-b (Core API SSE proxy + chat handlers + tee-to-DB) можно стартовать.
+
+---
+
+## PR #42 — B3-ii-a: AI Service HTTP client + rate-limit middleware + 5 simple handlers
+
+**Squash SHA:** `8c52a4d`
+**Merged:** 2026-04-20
+**Base:** `47276bb` (docs-only direct commit 2026-04-20 — DECISIONS.md ai_usage entry)
+**Scope:** foundation для AI mutations группы. HTTP client → AI Service (`apps/api/internal/aiclient/`), middleware `airatelimit` (Lua atomic INCR+EXPIRE, tier-aware cap: Free=5, Plus=50, Pro=∞), 5 handlers: POST /ai/conversations, DELETE /ai/conversations/{id}, POST /ai/insights/generate (Path B sync inline, 202 + status=done), POST /ai/insights/{id}/dismiss, POST /ai/insights/{id}/viewed. `tiers.Limit.AIChatEnabled bool` forward-compat flag (true для всех тарифов в MVP).
+**LOC:** ~1780 (прогноз был 1500, overrun из-за Lua script tests + client fakes).
+**CI:** 8/8 green (Go lint+build+test, Node typecheck+test, Python lint+test, trivy fs+image, govulncheck, gitleaks).
+**Admin-bypass:** нет.
+**Migrations:** нет.
+**Pre-merge fix-up:** коммит `ec53eb8` — TD-048..TD-053 добавлены в TECH_DEBT.md Active (6 штук), чтобы post-merge docs pass не забыл.
+**Closed TDs:** —
+**Opened TDs:**
+- TD-048 — SSE error event payload: add `request_id` field (cross-service).
+- TD-049 — SSE Last-Event-ID resume protocol.
+- TD-050 — `/ai/insights/generate` Path B handler hangs 5-30s (Fly.io idle 60s).
+- TD-051 — SSE parser в Core API дублирует AI Service знание о frame format.
+- TD-052 — AIRateLimit pre-increment overcount (P2).
+- TD-053 — `/ai/insights/generate` per-week/per-day tier gate.
+
+**Next:** B3-ii-b — POST /ai/chat (sync) + POST /ai/chat/stream (SSE reverse-proxy + tee-parser + persist) + SSE parser pkg + ai_usage INSERT в DB transaction после message_stop. Anchor ~1500 LOC. Зависит от этого PR + PR #43 (TASK_05 cleanup).
+
+---
+
+## Docs-only direct-to-main — DECISIONS.md ai_usage single-writer entry
+
+**Tip SHA on origin/main:** `47276bb`
+**Pushed:** 2026-04-20 by Ruslan
+**Previous tip:** `e96f6de`
+**Scope:** 1 файл, 36 insertions — `docs/DECISIONS.md` новый ADR "2026-04-20 — `ai_usage` ledger: Core API is single-writer". Фиксирует решение для будущих сессий + служит reference в PR #43 description.
+**Context:** CC-task05 корректно запросил ссылку на DECISIONS.md перед cleanup work (grep показал 0 matches — я уже Edit'нул файл, но Ruslan ещё не закоммитил). Ruslan закоммитил + push, pre-push hooks green (markdownlint, vale).
+**Policy note:** docs-only direct-to-main разрешён, squash-only относится к merge PRs.
+**CI:** не применимо.
+**Admin-bypass:** нет.
+**Migrations:** нет.
+
+---
+
 ## Docs-only direct-to-main — PO_HANDOFF + merge-log entry (CC-landed)
 
 **Tip SHA on origin/main:** `e96f6de` (at 2026-04-20 ~00:23 UTC+3)
