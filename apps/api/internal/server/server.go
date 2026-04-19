@@ -11,6 +11,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware/airatelimit"
 )
 
 // New builds the Fiber app with the full middleware chain and every
@@ -156,6 +157,14 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	// in airatelimit; create/delete are admin-style ops).
 	mutations.Post("/ai/conversations", handlers.CreateAIConversation(deps))
 	mutations.Delete("/ai/conversations/:id", handlers.DeleteAIConversation(deps))
+
+	// AI cost-incurring endpoints — every call hits the daily
+	// AIMessagesDaily counter via airatelimit before reaching the
+	// handler (which then forwards to AI Service via deps.AI).
+	aiMutations := mutations.Group("",
+		airatelimit.New(deps),
+	)
+	aiMutations.Post("/ai/insights/generate", handlers.GenerateInsightsHandler(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

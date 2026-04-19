@@ -9,6 +9,29 @@ SELECT COUNT(*)::int AS total
 FROM insights
 WHERE user_id = $1 AND generated_at >= $2;
 
+-- name: InsertInsight :one
+-- Persists one AI-generated insight. id is uuid v7 from app side;
+-- generated_at defaults to now() so the worker / handler does not
+-- need to thread a timestamp.
+INSERT INTO insights (id, user_id, insight_type, title, body, severity, data)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING *;
+
+-- name: MarkInsightDismissed :execrows
+-- POST /ai/insights/{id}/dismiss. Idempotent — a second dismiss
+-- keeps the first dismissed_at via COALESCE so audit trail stays
+-- truthful.
+UPDATE insights
+SET dismissed_at = COALESCE(dismissed_at, now())
+WHERE id = $1 AND user_id = $2;
+
+-- name: MarkInsightViewed :execrows
+-- POST /ai/insights/{id}/viewed. Same COALESCE-idempotent rule
+-- as dismiss.
+UPDATE insights
+SET viewed_at = COALESCE(viewed_at, now())
+WHERE id = $1 AND user_id = $2;
+
 -- name: ListInsightsByUser :many
 -- Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
 -- the ordering matches the rest of the API.
