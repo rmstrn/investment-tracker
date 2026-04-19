@@ -61,6 +61,8 @@ tags:
     description: AI chat, conversation history and proactive insights
   - name: Billing
     description: Subscription and Stripe integration
+  - name: Notifications
+    description: In-app notification center and delivery preferences
   - name: Webhooks
     description: Inbound webhooks from Clerk and Stripe
 
@@ -159,6 +161,233 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UsageSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/paywalls:
+    get:
+      tags: [Users]
+      operationId: listMyPaywallDismissals
+      summary: List soft-paywall dismissals active for the current 24h window
+      description: |
+        Returns the paywall triggers the caller has dismissed today. The
+        client uses this to avoid re-showing the same soft-paywall modal
+        more than once per day (see design brief §13.4). Dismissals are
+        bucketed by local day and expire at UTC midnight.
+      responses:
+        '200':
+          description: Active dismissals
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaywallDismissalList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/paywalls/{trigger}/dismiss:
+    parameters:
+      - $ref: '#/components/parameters/PaywallTrigger'
+    post:
+      tags: [Users]
+      operationId: dismissPaywall
+      summary: Record a soft-paywall dismissal for the current day
+      description: |
+        Idempotent per (user, trigger, day) — repeated calls within the
+        same UTC day are no-ops and return 200. Stored on the shared
+        `usage_counters` table with `counter_type='paywall_dismissed_{trigger}'`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Dismissal recorded (or already recorded earlier today)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaywallDismissal' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/undo-deletion:
+    post:
+      tags: [Users]
+      operationId: undoDeletion
+      summary: Cancel a pending account deletion (within grace period)
+      description: |
+        Clears `deletion_scheduled_at`. Only succeeds while the user is
+        within the 7-day grace window (see §17.4). After the window expires
+        the hard-delete job runs and this endpoint returns `410 GONE`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Deletion cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Account was not pending deletion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '410':
+          description: Grace period expired — deletion already processed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  # ───────────────────────── Security (Clerk-proxied) ────────────
+  # All 2FA + session endpoints proxy to Clerk Management API. Clerk is the
+  # source of truth — we store no local MFA secret or session row. The
+  # endpoints exist so the web/iOS app has a stable surface independent of
+  # Clerk SDK changes.
+  /me/2fa:
+    get:
+      tags: [Users]
+      operationId: get2FAStatus
+      summary: Get 2FA enrolment status (proxied to Clerk)
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/enroll:
+    post:
+      tags: [Users]
+      operationId: enroll2FA
+      summary: Start TOTP enrolment (proxied to Clerk)
+      description: |
+        Returns the TOTP shared secret, an `otpauth://` URL (for QR code
+        rendering) and a preview of backup codes. Enrolment completes only
+        after `POST /me/2fa/verify` with a valid 6-digit code.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Enrolment payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorEnrollment' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: 2FA already enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /me/2fa/verify:
+    post:
+      tags: [Users]
+      operationId: verify2FA
+      summary: Verify the TOTP code and finalise enrolment
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TwoFactorVerifyRequest' }
+      responses:
+        '200':
+          description: 2FA enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/disable:
+    post:
+      tags: [Users]
+      operationId: disable2FA
+      summary: Disable 2FA (requires current code)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TwoFactorVerifyRequest' }
+      responses:
+        '200':
+          description: 2FA disabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/backup-codes/regenerate:
+    post:
+      tags: [Users]
+      operationId: regenerate2FABackupCodes
+      summary: Regenerate backup codes (invalidates previous set)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: New backup codes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorBackupCodes' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: 2FA is not enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /me/sessions:
+    get:
+      tags: [Users]
+      operationId: listMySessions
+      summary: List active Clerk sessions
+      responses:
+        '200':
+          description: Sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/UserSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, description: 'Clerk session id.' }
+    delete:
+      tags: [Users]
+      operationId: revokeMySession
+      summary: Revoke a single session
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Revoked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /me/sessions/others:
+    delete:
+      tags: [Users]
+      operationId: revokeOtherSessions
+      summary: Revoke every session except the current one
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Bulk revoke result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [revoked_count]
+                properties:
+                  revoked_count: { type: integer, minimum: 0 }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─────────────────────────── Accounts ──────────────────────────
@@ -297,6 +526,86 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AccountSyncStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/reconnect:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: reconnectAccount
+      summary: Re-authenticate an aggregator-backed account
+      description: |
+        Produces a fresh aggregator connect URL (OAuth flow) or re-opens the
+        API-key input for the account. Used when `sync_status=error` due to
+        expired auth / rotated API key (design brief §18.4).
+
+        For `connection_type=manual` accounts this returns `connect_url=null`
+        and the endpoint is a no-op (`200`).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                redirect_url:
+                  type: string
+                  format: uri
+                  description: Where to return the user after OAuth.
+      responses:
+        '200':
+          description: Reconnection flow started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountReconnectResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/pause:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: pauseAccount
+      summary: Pause automatic sync for this account
+      description: |
+        Transitions `sync_status` → `paused`. The scheduled sync worker
+        skips paused accounts until `POST /accounts/{id}/resume` is called.
+        Manual `POST /accounts/{id}/sync` is still permitted while paused.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Paused
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/resume:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: resumeAccount
+      summary: Resume automatic sync for this account
+      description: |
+        Transitions `sync_status` from `paused` → `pending`. Next scheduled
+        run will pick the account up.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Resumed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
@@ -454,7 +763,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [1m, 3m, 6m, 1y, all]
+            enum: [1d, 1w, 1m, 3m, 6m, 1y, all]
         - $ref: '#/components/parameters/DisplayCurrency'
       responses:
         '200':
@@ -509,11 +818,53 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
+  /portfolio/performance/compare:
+    get:
+      tags: [Portfolio]
+      operationId: comparePortfolioPerformance
+      summary: Compare portfolio against up to three benchmarks
+      description: |
+        Multi-benchmark variant backing the `/performance` screen (design
+        brief §15.2). Returns per-benchmark returns + alpha + series, plus a
+        single `stats` block summarising the portfolio itself (best/worst
+        month, average return, volatility). Tier-gated: Plus+.
+      parameters:
+        - name: benchmarks
+          in: query
+          required: true
+          description: Comma-separated list, 1–3 items.
+          schema:
+            type: string
+            examples: ['SPX', 'SPX,QQQ', 'SPX,QQQ,ACWI']
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1m, 3m, 6m, 1y, all]
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Multi-benchmark comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioPerformanceCompare' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Multi-benchmark comparison requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
   /portfolio/dividends:
     get:
       tags: [Portfolio]
       operationId: getPortfolioDividends
       summary: Upcoming and historical dividends
+      description: |
+        Tier-gated: Plus+ only. Free callers receive `403 FEATURE_LOCKED`.
+        See design brief §15.1.
       parameters:
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
@@ -538,6 +889,11 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/DividendEvent' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Dividend calendar requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
   # ─────────────────────────── Positions ─────────────────────────
   /positions:
@@ -969,6 +1325,46 @@ paths:
                         items: { $ref: '#/components/schemas/Insight' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /ai/insights/generate:
+    post:
+      tags: [AI]
+      operationId: generateInsight
+      summary: Request an immediate insight generation run
+      description: |
+        Backs the `[Generate new ↻]` CTA on `/insights` (design brief §5.5).
+        Returns `202` with the in-progress job — clients poll
+        `/ai/insights?include_dismissed=false` or listen for the
+        `insight_generated` notification to pick it up once created.
+
+        Tier-gated: Free users may call once per week (cap enforced server-side,
+        returns `429 TIER_LIMIT_EXCEEDED`). Plus: daily. Pro: unlimited.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                insight_type:
+                  $ref: '#/components/schemas/InsightType'
+                  description: Optional — hint to focus the run on a category.
+      responses:
+        '202':
+          description: Generation queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InsightGenerationJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tier feature-locked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
   /ai/insights/{id}/dismiss:
     parameters:
       - $ref: '#/components/parameters/InsightId'
@@ -1047,6 +1443,358 @@ paths:
               schema: { $ref: '#/components/schemas/PortalResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /billing/invoices:
+    get:
+      tags: [Billing]
+      operationId: listInvoices
+      summary: List Stripe invoices for the current user
+      description: |
+        Proxies Stripe's `invoices.list` for the authenticated user's
+        `stripe_customer_id`. Used by settings > billing to render invoice
+        history (see design brief §13.7 — last 12 invoices with download).
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Paginated invoices
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Invoice' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/cancellation-feedback:
+    post:
+      tags: [Billing]
+      operationId: submitCancellationFeedback
+      summary: Record retention-modal feedback for a subscription cancellation
+      description: |
+        Called from the retention modal (design brief §13.8) before the
+        actual Stripe cancellation. The row is analytics-only — it does NOT
+        cancel the subscription. Cancellation itself happens through the
+        Stripe Billing Portal.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancellationFeedbackRequest' }
+      responses:
+        '201':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CancellationFeedback' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ──────────────────────── Notifications ────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      operationId: listNotifications
+      summary: List notifications (in-app notification center)
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - name: unread_only
+          in: query
+          schema: { type: boolean, default: false }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/NotificationType' }
+      responses:
+        '200':
+          description: Paginated notifications
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Notification' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /notifications/unread_count:
+    get:
+      tags: [Notifications]
+      operationId: getNotificationUnreadCount
+      summary: Get the unread count shown on the bell badge
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationUnreadCount' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /notifications/{id}/read:
+    parameters:
+      - $ref: '#/components/parameters/NotificationId'
+    post:
+      tags: [Notifications]
+      operationId: markNotificationRead
+      summary: Mark a single notification as read
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Marked read }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /notifications/read_all:
+    post:
+      tags: [Notifications]
+      operationId: markAllNotificationsRead
+      summary: Mark every unread notification as read
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Mark-all result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [marked_count]
+                properties:
+                  marked_count: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/notification-preferences:
+    get:
+      tags: [Notifications]
+      operationId: getNotificationPreferences
+      summary: Get per-type channel preferences and digest settings
+      responses:
+        '200':
+          description: Preferences
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationPreferences' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Notifications]
+      operationId: updateNotificationPreferences
+      summary: Update channel preferences / digest settings
+      description: |
+        Partial update. Omitted `preferences[*]` entries are left unchanged;
+        supply only the rows the user actually toggled. Digest settings are
+        replaced wholesale when `digest` is present.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificationPreferencesUpdate' }
+      responses:
+        '200':
+          description: Updated preferences
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationPreferences' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ──────────────────────────── Exports ──────────────────────────
+  /exports:
+    post:
+      tags: [Users]
+      operationId: createExport
+      summary: Queue a CSV export job
+      description: |
+        Async-only (see design brief §15.5). Returns `202` with a job id;
+        clients poll `GET /exports/{id}` until `status=done` and then
+        download `result_url`. Tier-gated: Plus+.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExportCreateRequest' }
+      responses:
+        '202':
+          description: Export queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: CSV export requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /exports/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Users]
+      operationId: getExport
+      summary: Poll an export job
+      responses:
+        '200':
+          description: Job state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─────────────────────── Analytics & Tax (Pro) ─────────────────
+  /portfolio/analytics:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioAnalytics
+      summary: Advanced analytics (Sharpe, Sortino, drawdown, factors, …)
+      description: |
+        Pro-only. Returns the full quant block backing `/analytics`
+        (design brief §15.3). Free/Plus receive `403 FEATURE_LOCKED`.
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [3m, 6m, 1y, 3y, all]
+            default: 1y
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Analytics block
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioAnalytics' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Analytics require Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /portfolio/tax:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioTax
+      summary: Tax report for a jurisdiction and year
+      description: Pro-only. Free/Plus receive `403 FEATURE_LOCKED`.
+      parameters:
+        - $ref: '#/components/parameters/TaxJurisdiction'
+        - $ref: '#/components/parameters/TaxYear'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Tax report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaxReport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tax reports require Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /portfolio/tax/export:
+    get:
+      tags: [Portfolio]
+      operationId: exportPortfolioTax
+      summary: Download a tax report as PDF or CSV
+      parameters:
+        - $ref: '#/components/parameters/TaxJurisdiction'
+        - $ref: '#/components/parameters/TaxYear'
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [pdf, csv]
+      responses:
+        '200':
+          description: |
+            Returns the rendered file directly for PDF/CSV; clients should
+            trigger a download rather than parse the body.
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+            text/csv:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tax export requires Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  # ─────────────────────────── Glossary ──────────────────────────
+  /glossary:
+    get:
+      tags: [AI]
+      operationId: listGlossaryTerms
+      summary: List financial glossary terms (Explainer module — §14.3)
+      security: []
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, default: en }
+      responses:
+        '200':
+          description: Glossary terms
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/GlossaryTerm' }
+
+  /glossary/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+    get:
+      tags: [AI]
+      operationId: getGlossaryTerm
+      summary: Get a single glossary term
+      security: []
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, default: en }
+      responses:
+        '200':
+          description: Glossary term
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlossaryTerm' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   # ─────────────────────────── Webhooks ──────────────────────────
   /auth/webhook:
     post:
@@ -1124,6 +1872,33 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    NotificationId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PaywallTrigger:
+      name: trigger
+      in: path
+      required: true
+      description: Paywall context the client is dismissing (see design brief §13.4).
+      schema: { $ref: '#/components/schemas/PaywallTriggerKind' }
+    TaxJurisdiction:
+      name: jurisdiction
+      in: query
+      required: true
+      description: ISO-3166 alpha-2 country code for the tax regime.
+      schema:
+        type: string
+        enum: [US, DE, FR, UK, ES, NL]
+    TaxYear:
+      name: year
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 2000
+        maximum: 2100
     Cursor:
       name: cursor
       in: query
@@ -1245,13 +2020,32 @@ components:
       enum: [broker, crypto, manual]
     SyncState:
       type: string
-      enum: [pending, syncing, ok, error]
+      enum: [pending, syncing, ok, error, paused]
+      description: |
+        - `pending` — created, not yet synced.
+        - `syncing` — a sync is in-flight.
+        - `ok` — last sync succeeded.
+        - `error` — last sync failed; user action needed (§18.2).
+        - `paused` — user-initiated pause; cron skips this account until
+          `POST /accounts/{id}/resume`.
     SubscriptionTier:
       type: string
       enum: [free, plus, pro]
     InsightSeverity:
       type: string
       enum: [info, warning, critical]
+    InsightType:
+      type: string
+      description: |
+        Fixed taxonomy for rendering (icon, colour). `behavioral` covers the
+        Behavioral Coach module (design brief §14.1).
+      enum:
+        - diversification
+        - risk
+        - performance
+        - rebalance
+        - cost
+        - behavioral
 
     # ── Envelopes ─────────────────────────────────────────────
     ErrorEnvelope:
@@ -1264,13 +2058,21 @@ components:
           properties:
             code:
               type: string
-              description: Stable machine-readable error code.
+              description: |
+                Stable machine-readable error code.
+
+                - `TIER_LIMIT_EXCEEDED` — quota exhausted on the current tier
+                  (e.g. 5/5 AI messages today). UI shows usage-reset messaging.
+                - `FEATURE_LOCKED` — tier does not include this feature at all
+                  (e.g. Free/Plus calling `/portfolio/analytics`). UI shows
+                  the upgrade/blur-preview treatment from design brief §13.5.
               enum:
                 - VALIDATION_ERROR
                 - INVALID_REQUEST
                 - UNAUTHENTICATED
                 - FORBIDDEN
                 - TIER_LIMIT_EXCEEDED
+                - FEATURE_LOCKED
                 - NOT_FOUND
                 - CONFLICT
                 - DUPLICATE_TRANSACTION
@@ -1340,6 +2142,14 @@ components:
         subscription_tier: { $ref: '#/components/schemas/SubscriptionTier' }
         stripe_customer_id:
           type: [string, "null"]
+        deletion_scheduled_at:
+          type: [string, "null"]
+          format: date-time
+          description: |
+            Set when the user initiated account deletion (see §17.4).
+            The hard-delete worker runs after a 7-day grace period; the user
+            can call `POST /me/undo-deletion` within that window to cancel.
+            `null` means the account is active / not pending deletion.
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
 
@@ -1357,11 +2167,13 @@ components:
         tier: { $ref: '#/components/schemas/SubscriptionTier' }
         counters:
           type: object
-          required: [ai_messages_daily, connected_accounts]
+          required: [ai_messages_daily, connected_accounts, insights_weekly]
           properties:
             ai_messages_daily:
               $ref: '#/components/schemas/UsageCounter'
             connected_accounts:
+              $ref: '#/components/schemas/UsageCounter'
+            insights_weekly:
               $ref: '#/components/schemas/UsageCounter'
 
     UsageCounter:
@@ -1401,6 +2213,7 @@ components:
         - connection_type
         - base_currency
         - sync_status
+        - is_included_in_portfolio
         - created_at
         - updated_at
       properties:
@@ -1428,6 +2241,12 @@ components:
         sync_status: { $ref: '#/components/schemas/SyncState' }
         sync_error:
           type: [string, "null"]
+        is_included_in_portfolio:
+          type: boolean
+          description: |
+            When false, the account is hidden from portfolio aggregations
+            (`/portfolio`, `/positions`, snapshots) but still listed in
+            `/settings/accounts` (§18.1). Toggled via `PATCH /accounts/{id}`.
         deleted_at:
           type: [string, "null"]
           format: date-time
@@ -1471,6 +2290,9 @@ components:
       additionalProperties: false
       properties:
         display_name: { type: string, maxLength: 120 }
+        is_included_in_portfolio:
+          type: boolean
+          description: Toggle inclusion in portfolio aggregations (§18.1).
 
     AccountSyncStatus:
       type: object
@@ -1486,6 +2308,18 @@ components:
         next_sync_at:
           type: [string, "null"]
           format: date-time
+
+    AccountReconnectResponse:
+      type: object
+      required: [account]
+      properties:
+        account: { $ref: '#/components/schemas/Account' }
+        connect_url:
+          type: [string, "null"]
+          format: uri
+          description: |
+            Fresh aggregator OAuth URL. Open in browser/webview. `null` for
+            `manual` accounts or when the account has no prior external auth.
 
     # ── Transaction ───────────────────────────────────────────
     Transaction:
@@ -1645,7 +2479,7 @@ components:
       properties:
         period:
           type: string
-          enum: [1m, 3m, 6m, 1y, all]
+          enum: [1d, 1w, 1m, 3m, 6m, 1y, all]
         base_currency: { $ref: '#/components/schemas/Currency' }
         display_currency: { $ref: '#/components/schemas/Currency' }
         points:
@@ -1672,6 +2506,7 @@ components:
           type: number
           format: float
           description: portfolio_return - benchmark_return.
+        stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
         series:
           type: array
           items:
@@ -1681,6 +2516,71 @@ components:
               date: { type: string, format: date }
               portfolio_return_percent: { type: number, format: float }
               benchmark_return_percent: { type: number, format: float }
+
+    PortfolioPerformanceStats:
+      type: object
+      description: |
+        Rolled-up stats over the selected period, independent of any
+        benchmark. Rendered in the period breakdown table (§15.2).
+      required: [avg_return_percent, volatility]
+      properties:
+        best_month:
+          type: [object, "null"]
+          required: [month, return_percent]
+          properties:
+            month: { type: string, description: 'YYYY-MM' }
+            return_percent: { type: number, format: float }
+        worst_month:
+          type: [object, "null"]
+          required: [month, return_percent]
+          properties:
+            month: { type: string, description: 'YYYY-MM' }
+            return_percent: { type: number, format: float }
+        avg_return_percent:
+          type: number
+          format: float
+          description: Arithmetic mean of monthly returns over the period.
+        volatility:
+          type: number
+          format: float
+          description: Annualised stdev of monthly returns (unitless decimal, 0.12 == 12%).
+
+    PortfolioPerformanceBenchmark:
+      type: object
+      required: [benchmark, benchmark_return_percent, alpha_percent]
+      properties:
+        benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
+        benchmark_return_percent: { type: number, format: float }
+        alpha_percent: { type: number, format: float }
+        series:
+          type: array
+          items:
+            type: object
+            required: [date, benchmark_return_percent]
+            properties:
+              date: { type: string, format: date }
+              benchmark_return_percent: { type: number, format: float }
+
+    PortfolioPerformanceCompare:
+      type: object
+      required: [period, portfolio_return_percent, benchmarks, stats]
+      properties:
+        period: { type: string, enum: [1m, 3m, 6m, 1y, all] }
+        portfolio_return_percent: { type: number, format: float }
+        portfolio_series:
+          type: array
+          items:
+            type: object
+            required: [date, portfolio_return_percent]
+            properties:
+              date: { type: string, format: date }
+              portfolio_return_percent: { type: number, format: float }
+        benchmarks:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: { $ref: '#/components/schemas/PortfolioPerformanceBenchmark' }
+        stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
 
     DividendEvent:
       type: object
@@ -1835,12 +2735,32 @@ components:
         - $ref: '#/components/schemas/AIMessageContentText'
         - $ref: '#/components/schemas/AIMessageContentToolUse'
         - $ref: '#/components/schemas/AIMessageContentToolResult'
+        - $ref: '#/components/schemas/AIMessageContentImpactCard'
+        - $ref: '#/components/schemas/AIMessageContentCallout'
       discriminator:
         propertyName: type
         mapping:
           text: '#/components/schemas/AIMessageContentText'
           tool_use: '#/components/schemas/AIMessageContentToolUse'
           tool_result: '#/components/schemas/AIMessageContentToolResult'
+          impact_card: '#/components/schemas/AIMessageContentImpactCard'
+          callout: '#/components/schemas/AIMessageContentCallout'
+
+    AIMessageRenderableContent:
+      description: |
+        Subset of `AIMessageContent` that can appear inside a `tool_result`
+        block (and anywhere else the protocol allows the model to return
+        inline rich content without re-entering the tool-use protocol).
+      oneOf:
+        - $ref: '#/components/schemas/AIMessageContentText'
+        - $ref: '#/components/schemas/AIMessageContentImpactCard'
+        - $ref: '#/components/schemas/AIMessageContentCallout'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/AIMessageContentText'
+          impact_card: '#/components/schemas/AIMessageContentImpactCard'
+          callout: '#/components/schemas/AIMessageContentCallout'
 
     AIMessageContentText:
       type: object
@@ -1873,7 +2793,64 @@ components:
         is_error: { type: boolean }
         content:
           type: array
-          items: { $ref: '#/components/schemas/AIMessageContentText' }
+          items: { $ref: '#/components/schemas/AIMessageRenderableContent' }
+
+    AIMessageContentImpactCard:
+      type: object
+      required: [type, scenario, before, after]
+      description: |
+        Structured rendering payload for the Scenario Simulator
+        (design brief §14.2). The assistant emits this block inside a
+        `tool_result` (or directly as a top-level content block when
+        deterministic) so clients render the impact-card UI natively
+        instead of parsing narrative text.
+      properties:
+        type: { type: string, const: impact_card }
+        scenario:
+          type: string
+          maxLength: 200
+          description: User-readable label, e.g. "USD drops 10%".
+        before: { $ref: '#/components/schemas/PortfolioSnapshot' }
+        after: { $ref: '#/components/schemas/PortfolioSnapshot' }
+        top_affected_positions:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/AffectedPosition' }
+        narrative:
+          type: string
+          description: 1–2 sentence summary of the delta.
+
+    AIMessageContentCallout:
+      type: object
+      required: [type, kind, title, body]
+      description: |
+        Inline callout block. Drives Behavioral Coach nudges (§14.1) and
+        Explainer definitions (§14.3). UI styling is driven by `kind`.
+      properties:
+        type: { type: string, const: callout }
+        kind:
+          type: string
+          enum: [behavioral, explainer, info, warning]
+        title: { type: string, maxLength: 120 }
+        body: { type: string }
+        term_slug:
+          type: [string, "null"]
+          description: |
+            For `kind=explainer` — `GlossaryTerm.slug` the callout defines.
+            Clients MAY deep-link to `/glossary/{slug}` for more detail.
+
+    AffectedPosition:
+      type: object
+      required: [symbol, asset_type, value_before, value_after, delta_percent]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        value_before: { $ref: '#/components/schemas/Money' }
+        value_after: { $ref: '#/components/schemas/Money' }
+        delta_percent:
+          type: number
+          format: float
+          description: Signed fraction; 0.123 == +12.3%.
 
     AIChatRequest:
       type: object
@@ -1894,6 +2871,28 @@ components:
           description: |
             Optional override; defaults to the server-side Claude model for
             the user's tier.
+        context:
+          $ref: '#/components/schemas/ChatContext'
+
+    ChatContext:
+      type: object
+      required: [type]
+      additionalProperties: false
+      description: |
+        Caller-supplied hint describing where the conversation was opened from.
+        The AI service uses this to seed the system prompt (e.g. slide-over
+        chat opened on a position detail → "About AAPL"). Clients MAY omit it
+        for plain `/chat` page conversations.
+      properties:
+        type:
+          type: string
+          enum: [dashboard, position, insight, transaction]
+        ref_id:
+          type: [string, "null"]
+          description: |
+            Resource identifier matching the `type`. For `type=position` this
+            is a symbol (e.g. `AAPL`) or a positions UUID; for `insight` /
+            `transaction` it is the corresponding UUID. Ignored when `type=dashboard`.
 
     AIChatResponse:
       type: object
@@ -1939,7 +2938,7 @@ components:
       properties:
         type: { type: string, const: content_block_start }
         index: { type: integer }
-        block_type: { type: string, enum: [text, tool_use] }
+        block_type: { type: string, enum: [text, tool_use, impact_card, callout] }
 
     AIStreamEventContentDelta:
       type: object
@@ -2003,12 +3002,7 @@ components:
       required: [id, insight_type, title, body, severity, generated_at]
       properties:
         id: { type: string, format: uuid }
-        insight_type:
-          type: string
-          description: |
-            Machine-readable insight category, e.g.
-            `concentration_risk`, `behavioral_pattern`, `diversification`,
-            `performance_review`, `rebalance_suggestion`, `cost_audit`.
+        insight_type: { $ref: '#/components/schemas/InsightType' }
         title: { type: string, maxLength: 200 }
         body: { type: string }
         severity: { $ref: '#/components/schemas/InsightSeverity' }
@@ -2031,8 +3025,22 @@ components:
         introduced once TASK_05 finalises the insight catalogue (see
         `tools/openapi/README.md` → "Open questions").
       # TODO(TASK_05): replace with a discriminated oneOf on insight_type
-      #   covering: diversification, concentration_risk, performance_review,
-      #   rebalance_suggestion, cost_audit. Track in Decisions log.
+      #   covering: diversification, risk, performance, rebalance, cost,
+      #   behavioral. Track in Decisions log.
+
+    InsightGenerationJob:
+      type: object
+      required: [job_id, status, queued_at]
+      properties:
+        job_id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [queued, running, done, failed]
+        queued_at: { type: string, format: date-time }
+        insight_id:
+          type: [string, "null"]
+          format: uuid
+          description: Populated once status transitions to `done`.
 
     # ── Billing ───────────────────────────────────────────────
     Subscription:
@@ -2076,6 +3084,194 @@ components:
       properties:
         url: { type: string, format: uri }
 
+    Invoice:
+      type: object
+      required: [id, amount_due, amount_paid, currency, status, created_at]
+      description: Read-only mirror of the subset of fields rendered in settings > billing.
+      properties:
+        id: { type: string, description: Stripe invoice id (in_...). }
+        number:
+          type: [string, "null"]
+          description: Human-readable invoice number (Stripe-assigned).
+        amount_due: { $ref: '#/components/schemas/Money' }
+        amount_paid: { $ref: '#/components/schemas/Money' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        status:
+          type: string
+          enum: [draft, open, paid, uncollectible, void]
+        hosted_invoice_url:
+          type: [string, "null"]
+          format: uri
+        invoice_pdf_url:
+          type: [string, "null"]
+          format: uri
+        period_start:
+          type: [string, "null"]
+          format: date-time
+        period_end:
+          type: [string, "null"]
+          format: date-time
+        created_at: { type: string, format: date-time }
+
+    CancellationReason:
+      type: string
+      enum: [not_using_enough, too_expensive, missing_feature, other]
+
+    CancellationFeedbackRequest:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason: { $ref: '#/components/schemas/CancellationReason' }
+        free_text:
+          type: string
+          maxLength: 2000
+        counter_offer_accepted:
+          type: boolean
+          default: false
+          description: |
+            True if the user accepted one of the retention counter-offers
+            (see design brief §13.8). False for "cancel anyway".
+
+    CancellationFeedback:
+      allOf:
+        - $ref: '#/components/schemas/CancellationFeedbackRequest'
+        - type: object
+          required: [id, created_at]
+          properties:
+            id: { type: string, format: uuid }
+            stripe_subscription_id:
+              type: [string, "null"]
+            created_at: { type: string, format: date-time }
+
+    # ── Paywall dismissals ────────────────────────────────────
+    PaywallTriggerKind:
+      type: string
+      description: |
+        Context key for a soft-paywall modal. Keep in sync with frontend
+        constants in packages/ui (see design brief §13.3/§13.4).
+      enum:
+        - ai_messages_daily
+        - insights_weekly
+        - connected_accounts
+        - pro_feature
+
+    PaywallDismissal:
+      type: object
+      required: [trigger, dismissed_on, reset_at]
+      properties:
+        trigger: { $ref: '#/components/schemas/PaywallTriggerKind' }
+        dismissed_on:
+          type: string
+          format: date
+          description: UTC day bucket when the dismissal was recorded.
+        reset_at:
+          type: string
+          format: date-time
+          description: Next UTC midnight — client MAY re-show the paywall after this instant.
+
+    PaywallDismissalList:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/PaywallDismissal' }
+
+    # ── Notifications ─────────────────────────────────────────
+    NotificationType:
+      type: string
+      enum:
+        - insight_generated
+        - sync_completed
+        - sync_failed
+        - dividend_paid
+        - price_alert
+        - billing_event
+
+    Notification:
+      type: object
+      required: [id, type, title, body, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/NotificationType' }
+        title: { type: string, maxLength: 200 }
+        body: { type: string }
+        data:
+          type: object
+          additionalProperties: true
+          description: |
+            Loose type-specific payload (e.g. `{ "insight_id": "...", "symbol": "AAPL" }`).
+            Clients SHOULD prefer `deep_link` for navigation and use `data`
+            only for rendering enrichments.
+        deep_link:
+          type: [string, "null"]
+          description: |
+            In-app path (e.g. `/insights/<id>`, `/settings/accounts`). Never a
+            fully-qualified URL — relative to the web/iOS app root.
+        read_at:
+          type: [string, "null"]
+          format: date-time
+        created_at: { type: string, format: date-time }
+
+    NotificationUnreadCount:
+      type: object
+      required: [unread]
+      properties:
+        unread:
+          type: integer
+          minimum: 0
+          description: Capped at 99+ server-side — the UI shows "99+" past that.
+
+    NotificationChannelPreference:
+      type: object
+      required: [email, push, in_app]
+      properties:
+        email: { type: boolean }
+        push: { type: boolean }
+        in_app: { type: boolean }
+
+    NotificationDigestPreferences:
+      type: object
+      required: [enabled, weekday]
+      properties:
+        enabled: { type: boolean }
+        weekday:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: ISO weekday, 0 = Monday.
+        quiet_start:
+          type: [string, "null"]
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+          description: Local time HH:mm. iOS-only; mirrored server-side for symmetry.
+        quiet_end:
+          type: [string, "null"]
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+
+    NotificationPreferences:
+      type: object
+      required: [preferences, digest]
+      properties:
+        preferences:
+          type: object
+          description: |
+            Map keyed by `NotificationType`. Missing keys default to all
+            channels enabled.
+          additionalProperties:
+            $ref: '#/components/schemas/NotificationChannelPreference'
+        digest: { $ref: '#/components/schemas/NotificationDigestPreferences' }
+
+    NotificationPreferencesUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        preferences:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NotificationChannelPreference'
+        digest: { $ref: '#/components/schemas/NotificationDigestPreferences' }
+
     # ── FX & prices ───────────────────────────────────────────
     FxRate:
       type: object
@@ -2116,3 +3312,260 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/PriceEntry' }
+
+    # ── Security (Clerk-proxied) ──────────────────────────────
+    TwoFactorStatus:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+        enrolled_at:
+          type: [string, "null"]
+          format: date-time
+        backup_codes_remaining:
+          type: [integer, "null"]
+          minimum: 0
+
+    TwoFactorEnrollment:
+      type: object
+      required: [secret, otpauth_url, backup_codes]
+      properties:
+        secret:
+          type: string
+          description: Base32 TOTP shared secret (manual-entry fallback).
+        otpauth_url:
+          type: string
+          description: '`otpauth://` URL suitable for QR-code rendering.'
+        backup_codes:
+          type: array
+          description: One-time backup codes shown once at enrolment.
+          items: { type: string }
+
+    TwoFactorVerifyRequest:
+      type: object
+      required: [code]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    TwoFactorBackupCodes:
+      type: object
+      required: [backup_codes]
+      properties:
+        backup_codes:
+          type: array
+          items: { type: string }
+
+    UserSession:
+      type: object
+      required: [id, last_active_at, is_current]
+      properties:
+        id:
+          type: string
+          description: Clerk session id.
+        device_label:
+          type: [string, "null"]
+          description: Best-effort device/browser label (e.g. "Chrome on macOS").
+        browser:
+          type: [string, "null"]
+        os:
+          type: [string, "null"]
+        ip_address:
+          type: [string, "null"]
+          description: IPv4/IPv6 address as recorded by Clerk.
+        city:
+          type: [string, "null"]
+          description: Best-effort geolocation from IP.
+        last_active_at:
+          type: string
+          format: date-time
+        is_current:
+          type: boolean
+
+    # ── Exports ───────────────────────────────────────────────
+    ExportResource:
+      type: string
+      enum: [transactions, positions, snapshots, dividends]
+
+    ExportCreateRequest:
+      type: object
+      required: [resource, format]
+      additionalProperties: false
+      properties:
+        resource: { $ref: '#/components/schemas/ExportResource' }
+        format:
+          type: string
+          enum: [csv]
+        from:
+          type: [string, "null"]
+          format: date
+        to:
+          type: [string, "null"]
+          format: date
+        columns:
+          type: array
+          description: Optional column allow-list; if omitted, default set is exported.
+          items: { type: string }
+
+    ExportJob:
+      type: object
+      required: [id, resource, format, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        resource: { $ref: '#/components/schemas/ExportResource' }
+        format: { type: string, enum: [csv] }
+        status:
+          type: string
+          enum: [queued, running, done, failed]
+        filters:
+          type: object
+          additionalProperties: true
+        row_count:
+          type: [integer, "null"]
+          minimum: 0
+        result_url:
+          type: [string, "null"]
+          format: uri
+          description: Pre-signed URL; expires 24h after `completed_at`.
+        error:
+          type: [string, "null"]
+        created_at: { type: string, format: date-time }
+        completed_at:
+          type: [string, "null"]
+          format: date-time
+
+    # ── Analytics (Pro) ───────────────────────────────────────
+    PortfolioAnalytics:
+      type: object
+      required:
+        - period
+        - sharpe
+        - sortino
+        - max_drawdown
+        - volatility
+        - underwater_series
+        - factor_exposure
+        - style_box
+        - correlation_matrix
+      properties:
+        period: { type: string, enum: [3m, 6m, 1y, 3y, all] }
+        sharpe: { type: number, format: float }
+        sortino: { type: number, format: float }
+        max_drawdown:
+          type: number
+          format: float
+          description: Negative signed fraction; -0.23 == -23%.
+        volatility:
+          type: number
+          format: float
+          description: Annualised stdev, unitless decimal.
+        underwater_series:
+          type: array
+          items:
+            type: object
+            required: [date, drawdown_percent]
+            properties:
+              date: { type: string, format: date }
+              drawdown_percent: { type: number, format: float }
+        factor_exposure:
+          type: object
+          required: [value, growth, momentum, quality, size]
+          properties:
+            value: { type: number, format: float }
+            growth: { type: number, format: float }
+            momentum: { type: number, format: float }
+            quality: { type: number, format: float }
+            size: { type: number, format: float }
+        style_box:
+          type: array
+          minItems: 3
+          maxItems: 3
+          description: |
+            3×3 grid (growth/core/value × small/mid/large). Row-major:
+            `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
+            Values are fractions summing to ~1.0.
+          items:
+            type: array
+            minItems: 3
+            maxItems: 3
+            items: { type: number, format: float }
+        correlation_matrix:
+          type: object
+          required: [symbols, values]
+          properties:
+            symbols:
+              type: array
+              items: { type: string }
+            values:
+              type: array
+              description: Square matrix, same ordering as `symbols`.
+              items:
+                type: array
+                items: { type: number, format: float }
+
+    # ── Tax (Pro) ─────────────────────────────────────────────
+    TaxReport:
+      type: object
+      required:
+        - jurisdiction
+        - year
+        - realized_gains
+        - realized_losses
+        - dividends_received
+        - withholding_tax
+        - estimated_taxable_income
+        - transactions
+      properties:
+        jurisdiction: { type: string, enum: [US, DE, FR, UK, ES, NL] }
+        year: { type: integer }
+        realized_gains: { $ref: '#/components/schemas/Money' }
+        realized_losses: { $ref: '#/components/schemas/Money' }
+        dividends_received: { $ref: '#/components/schemas/Money' }
+        withholding_tax: { $ref: '#/components/schemas/Money' }
+        estimated_taxable_income: { $ref: '#/components/schemas/Money' }
+        transactions:
+          type: array
+          items: { $ref: '#/components/schemas/TaxTransaction' }
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    TaxTransaction:
+      type: object
+      required: [transaction_id, executed_at, symbol, kind, amount, currency]
+      properties:
+        transaction_id: { type: string, format: uuid }
+        executed_at: { type: string, format: date-time }
+        symbol: { type: string }
+        kind:
+          type: string
+          enum: [realized_gain, realized_loss, dividend, withholding, other]
+          description: Classification relevant to the selected jurisdiction.
+        amount: { $ref: '#/components/schemas/Money' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        holding_period_days:
+          type: [integer, "null"]
+          minimum: 0
+          description: Short-term vs long-term gain classification input.
+
+    # ── Glossary ──────────────────────────────────────────────
+    GlossaryTerm:
+      type: object
+      required: [slug, locale, title, short_def]
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        locale: { type: string, examples: [en, en-US] }
+        title: { type: string }
+        short_def:
+          type: string
+          description: One-sentence definition (tooltip copy).
+        long_def:
+          type: [string, "null"]
+          description: Expanded paragraph; used by the chat Explainer callout.
+        related_slugs:
+          type: array
+          items: { type: string, pattern: '^[a-z0-9-]+$' }
+        updated_at: { type: string, format: date-time }
