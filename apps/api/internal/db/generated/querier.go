@@ -39,6 +39,11 @@ type Querier interface {
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
 	ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]Account, error)
+	// Historical dividend feed for /portfolio/dividends. Filters by user +
+	// transaction_type='dividend' and honours cursor + optional date range.
+	// A dedicated dividends / corporate_actions table does not yet exist
+	// (TD-022); paid dividends live in the transactions ledger today.
+	ListDividendTransactions(ctx context.Context, arg ListDividendTransactionsParams) ([]Transaction, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)

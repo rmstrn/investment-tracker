@@ -47,3 +47,17 @@ WHERE user_id = @user_id
   AND (sqlc.narg('to_ts')::timestamptz     IS NULL OR executed_at      <= sqlc.narg('to_ts')::timestamptz)
 ORDER BY executed_at DESC, id DESC
 LIMIT @row_limit;
+
+-- name: ListDividendTransactions :many
+-- Historical dividend feed for /portfolio/dividends. Filters by user +
+-- transaction_type='dividend' and honours cursor + optional date range.
+-- A dedicated dividends / corporate_actions table does not yet exist
+-- (TD-022); paid dividends live in the transactions ledger today.
+SELECT * FROM transactions
+WHERE user_id = @user_id
+  AND transaction_type = 'dividend'
+  AND (executed_at, id) < (@cursor_ts::timestamptz, @cursor_id::uuid)
+  AND (sqlc.narg('from_ts')::timestamptz IS NULL OR executed_at >= sqlc.narg('from_ts')::timestamptz)
+  AND (sqlc.narg('to_ts')::timestamptz   IS NULL OR executed_at <= sqlc.narg('to_ts')::timestamptz)
+ORDER BY executed_at DESC, id DESC
+LIMIT @row_limit;
