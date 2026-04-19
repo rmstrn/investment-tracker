@@ -51,7 +51,8 @@ func SearchMarket(deps *app.Deps) fiber.Handler {
 				return errs.Respond(c, reqID,
 					errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "limit must be 1-50"))
 			}
-			params.RowLimit = int32(parsed)
+			// Range-checked above (1..50) — safe to narrow to int32.
+			params.RowLimit = int32(parsed) //nolint:gosec // G109: bounded 1..50
 		}
 
 		rows, err := dbgen.New(deps.Pool).SearchPriceSymbols(ctx, params)
