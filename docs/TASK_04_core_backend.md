@@ -1,7 +1,6 @@
 # TASK 04 — Core Backend API (Go)
 
-**Status:** 🚧 IN PROGRESS — PR A ✅ merged (PR #35 → `14f95468`). PR B1 ✅ merged (PR #36 → `462d2993`) — TD-013 closed. PR B2a ✅ merged (PR #37 → `272e5fe6`) — TD-025 closed. PR B2b ✅ merged (PR #38 → `fdcf39f4`). PR B2c ✅ merged (PR #39 → `fb16525`, 2026-04-19) — analytics + tax domain modules, X-Tax-Advisory compliance header, 7 new TDs (31-37) + TD-038. **Read path is now closed end-to-end: 30 GET endpoints (28 authenticated + 2 public glossary) under full cross-handler AI-auth coverage.** PR B3 starting (mutations + webhooks + SSE + async — closes TD-021 and TD-027).
-**Volна:** 2
+**Волна:** 2
 **Зависит от:** TASK_01 (monorepo), TASK_03 (API contract + DB schema)
 **Блокирует:** TASK_05 (AI Service нужны портфельные данные), TASK_06 (интеграции), TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель (параллельно с другими)
@@ -41,8 +40,6 @@
 - **zerolog** — structured logging
 - **go-redis v9** — Redis client
 - **jwt-go v5** — JWT валидация (для Clerk)
-
-**Tooling via `go tool`:** `sqlc` and `oapi-codegen` pinned in `go.mod` / `go.sum`, invoked as `go tool sqlc generate` / `go tool oapi-codegen`. No PATH installs. (DECISIONS 2026-04-19.)
 
 ## Структура проекта
 
@@ -139,43 +136,6 @@ func AuthMiddleware(jwks *keyfunc.JWKS) fiber.Handler {
     }
 }
 ```
-
-### 2b. Internal-caller auth mode (for AI Service)
-
-The same middleware also accepts internal callers (currently just the AI
-Service) for tool-execution requests to the public endpoints. Distinguished by
-the token value:
-
-```go
-// Inside AuthMiddleware, before Clerk JWT parse:
-if token == cfg.CoreAPIInternalToken {
-    userIDStr := c.Get("X-User-Id")
-    if userIDStr == "" {
-        return httpError(c, 401, "MISSING_USER_ID", "X-User-Id header required for internal caller")
-    }
-    userID, err := uuid.Parse(userIDStr)
-    if err != nil {
-        return httpError(c, 401, "INVALID_USER_ID", "X-User-Id must be a valid UUID")
-    }
-    user, err := userRepo.GetByID(userID)
-    if err != nil {
-        return httpError(c, 404, "USER_NOT_FOUND", "")
-    }
-    c.Locals("user", user)
-    c.Locals("caller", "internal")   // for audit logging
-    return c.Next()
-}
-// else fall through to Clerk JWT validation
-```
-
-Result: handlers are agnostic to caller type — tier middleware, rate limits,
-and repository code all use `c.Locals("user")` identically. The `caller`
-local lets us tag audit logs / metrics with "internal" for traceability.
-
-Config: `CORE_API_INTERNAL_TOKEN` is a ≥32-byte random string, stored in
-Doppler, shared only with the AI Service deployment.
-
-(See DECISIONS 2026-04-19 "Core API ↔ AI Service auth: dual-mode middleware".)
 
 ### 3. Portfolio calculation logic
 
@@ -320,8 +280,6 @@ if user.HasTier("pro") { ... }
 if tiers.For(user.Tier).TaxReports { ... }
 ```
 
-**Важно:** не хардкодить строковое сравнение `user.Tier == "pro"` в handler-ах — всё через `tiers.For(tier).<Flag>`. Тесты tier-авторизации тоже читают из этого же модуля.
-
 ### 7. Rate limiting
 
 Два уровня:
@@ -399,62 +357,6 @@ func aiChatStream(c *fiber.Ctx) error {
     return c.SendStream(resp.Body)
 }
 ```
-
-### 9b. AI usage telemetry endpoint (`POST /internal/ai/usage`)
-
-Internal-only endpoint that AI Service calls after each Claude API call.
-Writes usage to `ai_usage` table and updates `usage_counters` (used by the
-AI rate-limit tier middleware).
-
-Route: `POST /internal/ai/usage` — gated by internal-caller mode from §2b
-(no Clerk JWT, requires `CORE_API_INTERNAL_TOKEN` + `X-User-Id`).
-
-Request body:
-
-```json
-{
-  "user_id": "uuid",
-  "conversation_id": "uuid",
-  "input_tokens": 1234,
-  "output_tokens": 567,
-  "cost_usd": "0.0042",
-  "model": "claude-sonnet-4-6"
-}
-```
-
-Handler:
-
-```go
-func recordAIUsage(c *fiber.Ctx) error {
-    // Middleware already validated internal token + set X-User-Id on locals
-    var body AIUsageRequest
-    if err := c.BodyParser(&body); err != nil {
-        return httpError(c, 400, "INVALID_REQUEST", err.Error())
-    }
-    
-    // Write to ai_usage table (append-only)
-    if err := aiUsageRepo.Insert(ctx, body); err != nil {
-        return httpError(c, 500, "INTERNAL_ERROR", "")
-    }
-    
-    // Bump rolling counter (key: usage:ai:{user_id}:{YYYY-MM-DD})
-    if err := usageCounter.IncrAI(ctx, body.UserID, body.InputTokens+body.OutputTokens); err != nil {
-        // Non-fatal — log and continue
-        log.Warn().Err(err).Msg("failed to bump ai usage counter")
-    }
-    
-    return c.SendStatus(202)   // accepted
-}
-```
-
-Note: `202 Accepted` (not `200`) — signals fire-and-forget semantics, AI
-Service shouldn't block on the write.
-
-Schema: `ai_usage` table should already exist from TASK_03 migrations;
-verify in PR B and add if missing. `usage_counters` updates use the same
-Redis counter key pattern as AI rate limiting (§7).
-
-(See DECISIONS 2026-04-19 "AI usage telemetry via dedicated internal endpoint".)
 
 ### 10. Background jobs через asynq
 
