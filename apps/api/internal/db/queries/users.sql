@@ -34,14 +34,14 @@ RETURNING *;
 -- name: MarkUserDeletionRequested :one
 -- Soft-deletion start: flags the user. A worker hard-deletes later.
 UPDATE users
-SET deletion_requested_at = COALESCE(deletion_requested_at, now()),
+SET deletion_scheduled_at = COALESCE(deletion_scheduled_at, now()),
     updated_at            = now()
 WHERE id = $1
 RETURNING *;
 
 -- name: UndoUserDeletion :one
 UPDATE users
-SET deletion_requested_at = NULL,
+SET deletion_scheduled_at = NULL,
     updated_at            = now()
 WHERE id = $1
 RETURNING *;

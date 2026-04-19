@@ -102,7 +102,7 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 
 const markUserDeletionRequested = `-- name: MarkUserDeletionRequested :one
 UPDATE users
-SET deletion_requested_at = COALESCE(deletion_requested_at, now()),
+SET deletion_scheduled_at = COALESCE(deletion_scheduled_at, now()),
     updated_at            = now()
 WHERE id = $1
 RETURNING id, clerk_user_id, email, display_currency, locale, subscription_tier, stripe_customer_id, created_at, updated_at, deletion_scheduled_at
@@ -129,7 +129,7 @@ func (q *Queries) MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (
 
 const undoUserDeletion = `-- name: UndoUserDeletion :one
 UPDATE users
-SET deletion_requested_at = NULL,
+SET deletion_scheduled_at = NULL,
     updated_at            = now()
 WHERE id = $1
 RETURNING id, clerk_user_id, email, display_currency, locale, subscription_tier, stripe_customer_id, created_at, updated_at, deletion_scheduled_at
