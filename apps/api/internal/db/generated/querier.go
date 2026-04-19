@@ -104,6 +104,12 @@ type Querier interface {
 	// is nullable for insight_generator / behavioural_coach calls that do
 	// not belong to any chat conversation.
 	RecordAIUsage(ctx context.Context, arg RecordAIUsageParams) (AiUsage, error)
+	// Symbol autocomplete from the prices table — best-effort substring
+	// match scoped to one asset_type when supplied. Used by GET
+	// /market/search until a real symbol-master / external-provider
+	// integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
+	// multiple-currency rows do not duplicate.
+	SearchPriceSymbols(ctx context.Context, arg SearchPriceSymbolsParams) ([]SearchPriceSymbolsRow, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
 	// Aggregate a counter for (user, counter_type) across [from, to]
 	// inclusive. Used by GET /me/usage — daily counters pass from=to=today,

@@ -14,6 +14,19 @@ ORDER BY
     as_of DESC
 LIMIT 1;
 
+-- name: SearchPriceSymbols :many
+-- Symbol autocomplete from the prices table — best-effort substring
+-- match scoped to one asset_type when supplied. Used by GET
+-- /market/search until a real symbol-master / external-provider
+-- integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
+-- multiple-currency rows do not duplicate.
+SELECT DISTINCT ON (symbol, asset_type) symbol, asset_type, currency
+FROM prices
+WHERE symbol ILIKE @query
+  AND (sqlc.narg('asset_type')::text IS NULL OR asset_type = sqlc.narg('asset_type')::text)
+ORDER BY symbol, asset_type
+LIMIT @row_limit;
+
 -- name: GetPricesBatch :many
 -- Portfolio calculation fan-out: one round-trip for every unique
 -- (symbol, asset_type, currency) in the user's positions.
