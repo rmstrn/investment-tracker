@@ -1,5 +1,9 @@
 # TASK 02 — Design System
 
+**Status:** ✅ COMPLETED (2026-04-19)
+**Merged:** PR #29 (b6aa0c4), PR #31 (8ab31a0 contrast fix), PR #32 (9dc4a7a CI hygiene + design-tokens subpath exports)
+**Source of truth going forward:** `04_DESIGN_BRIEF.md` v1.1
+
 **Волна:** 1 (параллельно с TASK_01, TASK_03)
 **Зависит от:** ничего
 **Блокирует:** TASK_07 (Web), TASK_08 (iOS)

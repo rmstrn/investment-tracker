@@ -5,21 +5,25 @@
 ## Структура
 
 ```
-investment-tracker/
+docs/
 ├── README.md                    ← вы тут
 ├── 00_PROJECT_BRIEF.md          ← концепция, аудитория, USP
 ├── 01_TECH_STACK.md             ← весь стек технологий
 ├── 02_ARCHITECTURE.md           ← архитектура + модель данных
-├── 03_ROADMAP.md                ← план MVP по месяцам
-└── tasks/
-    ├── TASK_01_monorepo_setup.md        ← инфраструктура (стартовая)
-    ├── TASK_02_design_system.md         ← Figma + UI kit (параллельно)
-    ├── TASK_03_api_contract.md          ← OpenAPI спека + миграции (параллельно)
-    ├── TASK_04_core_backend.md          ← Go API
-    ├── TASK_05_ai_service.md            ← Python AI-сервис
-    ├── TASK_06_broker_integrations.md   ← интеграции с брокерами
-    ├── TASK_07_web_frontend.md          ← Next.js приложение
-    └── TASK_08_ios_app.md               ← Swift/SwiftUI приложение
+├── 03_ROADMAP.md                ← план MVP по месяцам + статус волн
+├── 04_DESIGN_BRIEF.md           ← дизайн-система v1.1 (source of truth)
+├── DECISIONS.md                 ← engineering decisions log
+├── TECH_DEBT.md                 ← накопленный и принятый tech debt
+├── merge-log.md                 ← журнал merge-событий с политикой admin-bypass
+├── CLAUDE_CODE_PROMPTS.md       ← шаблоны для параллельных CC сессий
+├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
+├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
+├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
+├── TASK_04_core_backend.md      ← wave 2, Go API
+├── TASK_05_ai_service.md        ← wave 2, Python AI-сервис
+├── TASK_06_broker_integrations.md  ← wave 3
+├── TASK_07_web_frontend.md      ← wave 3
+└── TASK_08_ios_app.md           ← wave 4 (deferred — нужен Mac)
 ```
 
 ## Как пользоваться — параллельная работа в нескольких чатах

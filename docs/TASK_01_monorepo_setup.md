@@ -1,5 +1,8 @@
 # TASK 01 — Monorepo Setup & DevOps
 
+**Status:** ✅ COMPLETED (wave 1 foundation)
+**Follow-ups tracked:** `TECH_DEBT.md` → TD-001 (Turbopack + typedRoutes), TD-002 (`make` on Windows), TD-R002 (port :8080 conflict resolved)
+
 **Волна:** 1 (стартовая)
 **Зависит от:** ничего
 **Блокирует:** все остальные таски кода (04, 05, 06, 07, 08)
