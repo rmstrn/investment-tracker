@@ -97,6 +97,9 @@ func DeleteMe(deps *app.Deps) fiber.Handler {
 				errs.Wrap(err, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to schedule deletion"))
 		}
 
+		if !deps.Asynq.Enabled() {
+			c.Set("X-Async-Unavailable", "true")
+		}
 		if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskHardDeleteUser,
 			asynqpub.HardDeleteUserPayload{UserID: user.ID.String()},
 			asynq.ProcessIn(asynqpub.HardDeleteGracePeriod)); qerr != nil {

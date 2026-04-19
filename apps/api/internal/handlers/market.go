@@ -76,6 +76,9 @@ func GetMarketQuote(deps *app.Deps) fiber.Handler {
 				// cache or a fresh prices row. Enqueue errors and nil
 				// publisher are logged but do not block the 404 —
 				// client already has actionable retry info.
+				if !deps.Asynq.Enabled() {
+					c.Set("X-Async-Unavailable", "true")
+				}
 				if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskFetchQuote,
 					asynqpub.FetchQuotePayload{Symbol: symbol, AssetType: assetType}); qerr != nil {
 					deps.Log.Warn().Err(qerr).

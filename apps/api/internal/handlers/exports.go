@@ -93,6 +93,9 @@ func CreateExport(deps *app.Deps) fiber.Handler {
 				errs.Wrap(err, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to create export job"))
 		}
 
+		if !deps.Asynq.Enabled() {
+			c.Set("X-Async-Unavailable", "true")
+		}
 		if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskGenerateExport,
 			asynqpub.GenerateExportPayload{
 				ExportID: row.ID.String(),

@@ -249,6 +249,9 @@ func ReconnectAccount(deps *app.Deps) fiber.Handler {
 				errs.Wrap(err, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load account"))
 		}
 
+		if !deps.Asynq.Enabled() {
+			c.Set("X-Async-Unavailable", "true")
+		}
 		if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskSyncAccount,
 			asynqpub.SyncAccountPayload{
 				AccountID: row.ID.String(),
@@ -311,6 +314,9 @@ func enqueueAccountAction(deps *app.Deps, reason string) fiber.Handler {
 				errs.Wrap(err, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load account"))
 		}
 
+		if !deps.Asynq.Enabled() {
+			c.Set("X-Async-Unavailable", "true")
+		}
 		if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskSyncAccount,
 			asynqpub.SyncAccountPayload{
 				AccountID: row.ID.String(),

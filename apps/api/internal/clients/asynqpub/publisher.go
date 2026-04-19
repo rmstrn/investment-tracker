@@ -66,6 +66,17 @@ func (p *Publisher) Close() error {
 	return p.client.Close()
 }
 
+// Enabled reports whether this publisher will actually enqueue tasks.
+// A nil receiver or nil underlying client — both of which the
+// fail-open Enqueue path tolerates — return false. Handlers call
+// this synchronously before Enqueue so they can set the
+// X-Async-Unavailable: true response header, matching the project's
+// scope-cut signalling pattern (X-Benchmark-Unavailable,
+// X-Tax-Advisory, X-Analytics-Partial, X-Clerk-Unavailable).
+func (p *Publisher) Enabled() bool {
+	return p != nil && p.client != nil
+}
+
 // Enqueue publishes a task. Nil publisher → logged noop + (nil, nil)
 // so the handler caller can proceed with its response. A non-nil
 // publisher with a transport error returns the error so the handler
