@@ -11,9 +11,10 @@
     "./css": "./build/css/tokens.css",
     "./tailwind": "./build/tailwind/tokens.js",
     "./theme.css": "./build/tailwind/theme.css",
+    "./animations.css": "./animations.css",
     "./brand": "./build/js/brand.js"
   },
-  "files": ["build", "tokens"],
+  "files": ["build", "tokens", "animations.css"],
   "scripts": {
     "build": "node build.js",
     "lint": "biome check .",
