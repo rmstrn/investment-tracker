@@ -89,7 +89,7 @@ function ToastCard({ entry, onClose }: { entry: ToastEntry; onClose: () => void 
     <div
       role="status"
       className={cn(
-        'pointer-events-auto rounded-lg border-l-4 bg-background-elevated p-4 shadow-lg',
+        'pointer-events-auto rounded-md border-l-4 bg-background-elevated p-4 shadow-lg',
         'border border-border-subtle',
         toneStyles[tone],
       )}

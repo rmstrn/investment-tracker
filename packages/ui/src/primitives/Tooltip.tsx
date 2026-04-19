@@ -48,7 +48,7 @@ export function Tooltip({ label, children, className }: TooltipProps) {
           id={id}
           className={cn(
             'absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap',
-            'rounded-md bg-background-inverse px-2 py-1 text-xs text-text-inverse shadow-md',
+            'rounded-sm bg-background-inverse px-2 py-1 text-xs text-text-inverse shadow-md',
             className,
           )}
         >

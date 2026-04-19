@@ -45,7 +45,7 @@ export function AccountConnectCard({
   const connected = status === 'connected';
   return (
     <Card variant="interactive" className={cn('flex items-center gap-4', className)} {...props}>
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-background-secondary">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-md bg-background-secondary">
         {Icon ? <Icon size={20} aria-hidden="true" /> : <Plus size={20} aria-hidden="true" />}
       </div>
       <div className="min-w-0 flex-1">

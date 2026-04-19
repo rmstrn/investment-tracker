@@ -35,7 +35,7 @@ export function AssetRow({
   return (
     <div
       className={cn(
-        'flex items-center gap-4 rounded-lg px-3 py-3 transition-colors',
+        'flex items-center gap-4 rounded-md px-3 py-3 transition-colors',
         'hover:bg-background-secondary focus-within:bg-background-secondary',
         className,
       )}

@@ -16,7 +16,7 @@ const variants: Record<Variant, string> = {
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => (
-    <div ref={ref} className={cn('rounded-xl p-5', variants[variant], className)} {...props} />
+    <div ref={ref} className={cn('rounded-lg p-5', variants[variant], className)} {...props} />
   ),
 );
 Card.displayName = 'Card';

@@ -59,7 +59,7 @@ export function ChatMessage({
       <div className={cn('max-w-[75%] flex flex-col gap-1', isUser ? 'items-end' : 'items-start')}>
         <div
           className={cn(
-            'rounded-2xl px-4 py-2.5 text-sm leading-relaxed',
+            'rounded-xl px-4 py-2.5 text-sm leading-relaxed',
             isUser
               ? 'bg-interactive-primary text-text-onBrand rounded-tr-sm'
               : 'bg-background-secondary text-text-primary rounded-tl-sm',

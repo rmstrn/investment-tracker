@@ -6,7 +6,7 @@ export const Skeleton = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement
     <div
       ref={ref}
       aria-hidden="true"
-      className={cn('animate-pulse rounded-md bg-background-tertiary', className)}
+      className={cn('animate-pulse rounded-sm bg-background-tertiary', className)}
       {...props}
     />
   ),

@@ -65,7 +65,7 @@ export function TabsList({ className, ...props }: HTMLAttributes<HTMLDivElement>
     <div
       role="tablist"
       className={cn(
-        'inline-flex h-10 items-center gap-1 rounded-lg bg-background-secondary p-1',
+        'inline-flex h-10 items-center gap-1 rounded-md bg-background-secondary p-1',
         className,
       )}
       {...props}
@@ -90,7 +90,7 @@ export function TabsTrigger({ className, value: v, children, ...props }: TabsTri
       tabIndex={active ? 0 : -1}
       onClick={() => setValue(v)}
       className={cn(
-        'rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-fast',
+        'rounded-sm px-3 py-1.5 text-sm font-medium transition-colors duration-fast',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
         active
           ? 'bg-background-elevated text-text-primary shadow-sm'

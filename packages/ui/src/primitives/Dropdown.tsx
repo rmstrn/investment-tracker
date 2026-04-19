@@ -81,7 +81,7 @@ export function DropdownMenu({ className, children, ...props }: HTMLAttributes<H
         ref={ref}
         role="menu"
         className={cn(
-          'absolute right-0 top-2 z-40 min-w-44 rounded-md border border-border-subtle bg-background-elevated p-1 shadow-lg',
+          'absolute right-0 top-2 z-40 min-w-44 rounded-sm border border-border-subtle bg-background-elevated p-1 shadow-lg',
           className,
         )}
         {...props}

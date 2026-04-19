@@ -196,7 +196,7 @@ function SheetDemo() {
 function DropdownDemo() {
   return (
     <Dropdown>
-      <DropdownTrigger className="inline-flex h-10 items-center gap-2 rounded-lg border border-border-default bg-background-elevated px-4 text-sm text-text-primary hover:bg-interactive-ghostHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+      <DropdownTrigger className="inline-flex h-10 items-center gap-2 rounded-md border border-border-default bg-background-elevated px-4 text-sm text-text-primary hover:bg-interactive-ghostHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
         Options
         <ChevronDown size={14} aria-hidden="true" />
       </DropdownTrigger>
