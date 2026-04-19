@@ -108,6 +108,7 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/ai/conversations", handlers.ListAIConversations(deps))
 	reads.Get("/ai/conversations/:id", handlers.GetAIConversation(deps))
 	reads.Get("/ai/insights", handlers.ListInsights(deps))
+	reads.Get("/portfolio/analytics", handlers.GetPortfolioAnalytics(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {
