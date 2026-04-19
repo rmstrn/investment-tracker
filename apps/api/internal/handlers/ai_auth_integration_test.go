@@ -29,7 +29,11 @@ func seedAIReadFixture(t *testing.T) (userID uuid.UUID) {
 	t.Helper()
 	ctx := context.Background()
 
-	userID = seedUser(t, "plus")
+	// Pro tier so the fixture lights up every Plus-gated AND Pro-gated
+	// endpoint in one table. Plus-tier handlers (performance, dividends,
+	// ai/*) pass transitively because Pro >= Plus; Pro-only ones
+	// (analytics, tax) unblock without a second fixture.
+	userID = seedUser(t, "pro")
 	accID := seedAccountForTx(t, userID, "USD")
 
 	// Two positions. No FX needed — everything USD.
@@ -97,6 +101,9 @@ func TestAIReadEndpoints_InternalAuth_AllOK(t *testing.T) {
 		// B2b — AI memory: conversations + insights read-through.
 		{"ai_conversations", "/ai/conversations"},
 		{"ai_insights", "/ai/insights"},
+		// B2c — Pro-only quant + tax reads.
+		{"analytics", "/portfolio/analytics?period=3m"},
+		{"tax", "/portfolio/tax?jurisdiction=US&year=2026"},
 	}
 
 	for _, ep := range endpoints {
