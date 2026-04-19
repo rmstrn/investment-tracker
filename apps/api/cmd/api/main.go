@@ -1,61 +1,113 @@
-// Placeholder HTTP server for the Core API.
-// TASK_04 will replace this with a Fiber app wired to Postgres/Redis and Clerk auth.
-
+// Core API entry point.
+//
+// Responsibilities wired here: config loading, logger initialisation,
+// Fiber application construction, and graceful shutdown on SIGINT/SIGTERM.
+//
+// Every other concern (DB pool, Redis, Clerk auth, handlers) is introduced
+// in later PR A commits. This file stays small — it only orchestrates.
 package main
 
 import (
 	"context"
 	"errors"
-	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/gofiber/fiber/v3"
+	"github.com/rs/zerolog"
+
+	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/logger"
 )
 
 func main() {
-	addr := envOr("API_LISTEN_ADDR", ":8080")
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = fmt.Fprintln(w, `{"status":"ok","service":"api","note":"placeholder — TASK_04 pending"}`)
-	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = fmt.Fprintln(w, "api server placeholder")
-	})
-
-	srv := &http.Server{
-		Addr:              addr,
-		Handler:           mux,
-		ReadHeaderTimeout: 5 * time.Second,
+	cfg, err := config.Load()
+	if err != nil {
+		// Logger not ready yet — write a structured line to stderr so we are
+		// readable in the same format even in this bootstrap window.
+		boot := zerolog.New(os.Stderr).
+			With().Timestamp().Str("service", "api").Logger()
+		boot.Fatal().Err(err).Msg("config load failed")
 	}
 
+	log := logger.New(logger.Options{
+		Env:     cfg.Env,
+		Level:   cfg.LogLevel,
+		Format:  cfg.LogFormat,
+		Service: "api",
+	})
+
+	app := buildApp(log, cfg)
+
+	startAndWait(app, log, cfg)
+}
+
+// buildApp assembles the Fiber app with system-level routes only. Business
+// routes are registered in subsequent commits.
+func buildApp(log zerolog.Logger, cfg *config.Config) *fiber.App {
+	app := fiber.New(fiber.Config{
+		AppName:      "investment-tracker-api",
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+		IdleTimeout:  120 * time.Second,
+		ErrorHandler: func(c fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+			var fe *fiber.Error
+			if errors.As(err, &fe) {
+				code = fe.Code
+			}
+			log.Error().Err(err).Int("status", code).Str("path", c.Path()).Msg("request failed")
+			return c.Status(code).JSON(fiber.Map{
+				"error": fiber.Map{
+					"code":    http.StatusText(code),
+					"message": err.Error(),
+				},
+			})
+		},
+	})
+
+	app.Get("/health", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status":  "ok",
+			"service": "api",
+			"env":     cfg.Env,
+			"time":    time.Now().UTC().Format(time.RFC3339),
+		})
+	})
+
+	return app
+}
+
+func startAndWait(app *fiber.App, log zerolog.Logger, cfg *config.Config) {
+	serverErrs := make(chan error, 1)
 	go func() {
-		log.Printf("api: listening on %s", addr)
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("api: serve error: %v", err)
+		log.Info().Str("addr", cfg.ListenAddr).Msg("api listening")
+		if err := app.Listen(cfg.ListenAddr); err != nil {
+			serverErrs <- err
 		}
 	}()
 
-	// Graceful shutdown
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("api: shutting down")
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("api: shutdown error: %v", err)
+	select {
+	case sig := <-quit:
+		log.Info().Str("signal", sig.String()).Msg("shutdown initiated")
+	case err := <-serverErrs:
+		log.Fatal().Err(err).Msg("server crashed")
 	}
-}
 
-func envOr(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	err := app.ShutdownWithContext(ctx)
+	cancel()
+
+	if err != nil {
+		log.Error().Err(err).Msg("graceful shutdown failed")
+		os.Exit(1)
 	}
-	return fallback
+
+	log.Info().Msg("api stopped")
 }

@@ -1,0 +1,61 @@
+version: "2"
+
+# sqlc generates type-safe Go from the raw SQL in `internal/db/queries/`,
+# type-checked against the live schema in `db/migrations/`. Run via
+# `go tool sqlc generate` (see Makefile).
+
+sql:
+  - engine: "postgresql"
+    queries: "internal/db/queries"
+    schema: "db/migrations"
+    strict_function_checks: true
+    gen:
+      go:
+        package: "dbgen"
+        out: "internal/db/generated"
+        sql_package: "pgx/v5"
+        emit_json_tags: false
+        emit_interface: true
+        emit_empty_slices: true
+        emit_exact_table_names: false
+        emit_pointers_for_null_types: true
+        emit_prepared_queries: false
+        emit_methods_with_db_argument: false
+        rename:
+          # sqlc turns `ai_messages` into `AiMessage`; keep common shorthand.
+          ai: "AI"
+
+        overrides:
+          # Money: shopspring/decimal everywhere. Nullable (e.g. price on
+          # split transactions) uses decimal.NullDecimal. float64 is BANNED
+          # for monetary values by project policy.
+          - db_type: "pg_catalog.numeric"
+            go_type:
+              import: "github.com/shopspring/decimal"
+              package: "decimal"
+              type: "Decimal"
+          - db_type: "pg_catalog.numeric"
+            nullable: true
+            go_type:
+              import: "github.com/shopspring/decimal"
+              package: "decimal"
+              type: "NullDecimal"
+
+          # UUID v7: google/uuid everywhere. Generated app-side (see migrations
+          # header). Nullable uuid columns use pointer.
+          - db_type: "uuid"
+            go_type:
+              import: "github.com/google/uuid"
+              package: "uuid"
+              type: "UUID"
+          - db_type: "uuid"
+            nullable: true
+            go_type:
+              import: "github.com/google/uuid"
+              package: "uuid"
+              pointer: true
+              type: "UUID"
+
+          # JSONB defaults to []byte under pgx/v5 — domain layer decodes into
+          # concrete types. INET defaults to netip.Prefix — good enough for
+          # audit_log.ip_address; no override needed.

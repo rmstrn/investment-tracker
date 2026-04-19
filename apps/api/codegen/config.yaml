@@ -1,0 +1,19 @@
+# oapi-codegen configuration.
+#
+# Runs relative to apps/api/ (see Makefile `gen-api` target). Generates
+# models + the embedded spec only; HTTP handlers for Fiber v3 are written
+# by hand in internal/handlers/ (oapi-codegen's generated servers target
+# chi/echo/stdhttp/gin/iris/gorilla, not Fiber v3).
+#
+# TD-007 (TECH_DEBT.md): oapi-codegen v2 does not yet handle OpenAPI 3.1
+# `type: [string, "null"]` nullable patterns cleanly. Any required hand
+# patches live in apps/api/codegen/patches/ and are re-applied by the
+# Makefile target after generation.
+
+package: openapigen
+
+output: internal/api/gen/openapi.gen.go
+
+generate:
+  models: true
+  embedded-spec: true

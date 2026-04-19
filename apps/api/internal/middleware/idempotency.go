@@ -1,0 +1,139 @@
+package middleware
+
+import (
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/gofiber/fiber/v3"
+
+	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+)
+
+// idempotencyHeader is the canonical name clients send per openapi.yaml.
+const idempotencyHeader = "Idempotency-Key"
+
+// IdempotencyConfig carries the Redis client. TTL is fixed at 24h by the
+// API contract; we surface it here only for tests.
+type IdempotencyConfig struct {
+	Cache *cache.Client
+	TTL   time.Duration // defaults to 24h when zero
+}
+
+// idempotentEntry is what we serialise to Redis for replay. Keep small and
+// JSON-friendly — Redis is the hot path.
+type idempotentEntry struct {
+	BodyHash string            `json:"body_hash"`
+	Status   int               `json:"status"`
+	Headers  map[string]string `json:"headers"`
+	Body     []byte            `json:"body"`
+}
+
+// Idempotency replays a cached response when the same user sends the same
+// Idempotency-Key within 24 hours. The header is OPTIONAL — requests
+// without it pass through unchanged.
+//
+// Conflict detection: if the key was seen but the request body differs
+// (hash mismatch), we return 409 IDEMPOTENCY_KEY_CONFLICT per the spec.
+//
+// Must come AFTER Auth in the chain; without a user we cannot namespace
+// keys.
+//
+// Note: concurrent replays of the same key are a known caveat — the second
+// handler will execute and overwrite the cache entry. For the endpoints
+// that matter (POST /transactions, POST /exports, etc.) this is handled
+// downstream by fingerprint dedup (transactions) or by the business
+// resource being content-addressable (exports). A proper request-
+// collapsing lock is deferred — see the GAP report / future TD entry.
+func Idempotency(cfg IdempotencyConfig) fiber.Handler {
+	if cfg.Cache == nil {
+		panic("middleware.Idempotency: Cache is required")
+	}
+	ttl := cfg.TTL
+	if ttl <= 0 {
+		ttl = 24 * time.Hour
+	}
+
+	return func(c fiber.Ctx) error {
+		method := strings.ToUpper(c.Method())
+		if method != fiber.MethodPost &&
+			method != fiber.MethodPatch &&
+			method != fiber.MethodDelete {
+			return c.Next()
+		}
+
+		key := c.Get(idempotencyHeader)
+		if key == "" {
+			return c.Next()
+		}
+
+		u, ok := c.Locals(LocalsUser).(*users.User)
+		if !ok || u == nil {
+			return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
+		}
+
+		body := c.Body()
+		bodyHashSum := sha256.Sum256(body)
+		bodyHash := hex.EncodeToString(bodyHashSum[:])
+
+		// Namespace: user_id | method | path | hashed key. Hashing the
+		// caller-provided key keeps its length predictable and avoids
+		// accidental Redis-key character issues.
+		keyHashSum := sha256.Sum256([]byte(key))
+		redisKey := fmt.Sprintf("idem:%s:%s:%s:%s",
+			u.ID, method, c.Path(), hex.EncodeToString(keyHashSum[:]))
+
+		if raw, found, err := cfg.Cache.Get(c.Context(), redisKey); err == nil && found {
+			var entry idempotentEntry
+			if err := json.Unmarshal([]byte(raw), &entry); err == nil {
+				if entry.BodyHash != bodyHash {
+					return errs.Respond(c, requestID(c), errs.ErrIdempotencyConflict)
+				}
+				for hk, hv := range entry.Headers {
+					c.Set(hk, hv)
+				}
+				c.Set("Idempotent-Replayed", "true")
+				c.Status(entry.Status)
+				return c.Send(entry.Body)
+			}
+		}
+
+		if err := c.Next(); err != nil {
+			return err
+		}
+
+		status := c.Response().StatusCode()
+		respBody := append([]byte(nil), c.Response().Body()...)
+
+		// Capture a conservative set of response headers: content-type and
+		// rate-limit headers. Copying everything risks caching sensitive
+		// or per-connection headers (Set-Cookie, Date) that should not be
+		// replayed verbatim.
+		headers := map[string]string{}
+		if ct := string(c.Response().Header.ContentType()); ct != "" {
+			headers[fiber.HeaderContentType] = ct
+		}
+		for _, h := range []string{"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"} {
+			if v := c.Get(h); v != "" {
+				headers[h] = v
+			}
+		}
+
+		payload, err := json.Marshal(idempotentEntry{
+			BodyHash: bodyHash,
+			Status:   status,
+			Headers:  headers,
+			Body:     respBody,
+		})
+		if err != nil {
+			return nil // logged by outer middleware; don't fail the actual request
+		}
+		_ = cfg.Cache.Set(c.Context(), redisKey, string(payload), ttl)
+		return nil
+	}
+}
