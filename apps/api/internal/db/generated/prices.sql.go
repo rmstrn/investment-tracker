@@ -12,6 +12,38 @@ import (
 	decimal "github.com/shopspring/decimal"
 )
 
+const getLatestPrice = `-- name: GetLatestPrice :one
+SELECT symbol, asset_type, currency, price, as_of, source FROM prices
+WHERE symbol = $1 AND asset_type = $2
+ORDER BY
+    CASE currency WHEN 'USD' THEN 0 ELSE 1 END,
+    as_of DESC
+LIMIT 1
+`
+
+type GetLatestPriceParams struct {
+	Symbol    string
+	AssetType string
+}
+
+// Single-quote lookup that is currency-agnostic on input — the
+// MarketQuote API does not require callers to pick a currency.
+// Preference: USD (the market's reporting currency), then most recent
+// by as_of so stale cross-listings are deprioritised.
+func (q *Queries) GetLatestPrice(ctx context.Context, arg GetLatestPriceParams) (Price, error) {
+	row := q.db.QueryRow(ctx, getLatestPrice, arg.Symbol, arg.AssetType)
+	var i Price
+	err := row.Scan(
+		&i.Symbol,
+		&i.AssetType,
+		&i.Currency,
+		&i.Price,
+		&i.AsOf,
+		&i.Source,
+	)
+	return i, err
+}
+
 const getPrice = `-- name: GetPrice :one
 SELECT symbol, asset_type, currency, price, as_of, source FROM prices
 WHERE symbol = $1 AND asset_type = $2 AND currency = $3

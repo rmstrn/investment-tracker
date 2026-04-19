@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -27,6 +28,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/db"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/logger"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/server"
 )
 
@@ -75,15 +77,28 @@ func run() error {
 	}
 	defer func() { _ = rcache.Close() }()
 
+	// Clerk JWKS is fetched once at boot. Both a fetch error and a
+	// nil-without-error result are startup failures: a silent nil here
+	// would let every Clerk-authenticated request 401 against a
+	// running-but-broken server, which is the opposite of fail-fast.
+	jwks, err := middleware.NewJWKS(ctx, cfg.ClerkJWKSURL)
+	if err != nil {
+		return fmt.Errorf("clerk jwks fetch: %w", err)
+	}
+	if jwks == nil {
+		return errors.New("clerk jwks: nil without error — check CLERK_JWKS_URL")
+	}
+
 	deps := &app.Deps{
 		Cfg:      cfg,
 		Log:      log,
 		Pool:     pool,
 		Cache:    rcache,
 		UserRepo: users.NewRepo(pool),
+		JWKS:     jwks,
 	}
 
-	a, err := server.New(ctx, deps)
+	a, err := server.New(deps)
 	if err != nil {
 		return fmt.Errorf("server build: %w", err)
 	}

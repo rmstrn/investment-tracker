@@ -2501,11 +2501,20 @@ components:
         period: { type: string, enum: [1m, 3m, 6m, 1y, all] }
         benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
         portfolio_return_percent: { type: number, format: float }
-        benchmark_return_percent: { type: number, format: float }
-        alpha_percent:
-          type: number
+        benchmark_return_percent:
+          type: [number, "null"]
           format: float
-          description: portfolio_return - benchmark_return.
+          description: >
+            Return of the benchmark over the same period. Null when
+            benchmark data is unavailable — callers that need a hard
+            fail can key on the `X-Benchmark-Unavailable` response
+            header (TD-020 tracks populating this with real data).
+        alpha_percent:
+          type: [number, "null"]
+          format: float
+          description: >
+            portfolio_return - benchmark_return. Null whenever
+            benchmark_return_percent is null.
         stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
         series:
           type: array

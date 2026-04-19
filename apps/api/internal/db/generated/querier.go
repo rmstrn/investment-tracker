@@ -17,6 +17,11 @@ type Querier interface {
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
 	GetLatestFXRate(ctx context.Context, arg GetLatestFXRateParams) (FxRate, error)
+	// Single-quote lookup that is currency-agnostic on input — the
+	// MarketQuote API does not require callers to pick a currency.
+	// Preference: USD (the market's reporting currency), then most recent
+	// by as_of so stale cross-listings are deprioritised.
+	GetLatestPrice(ctx context.Context, arg GetLatestPriceParams) (Price, error)
 	GetLatestSnapshotByUser(ctx context.Context, userID uuid.UUID) (PortfolioSnapshot, error)
 	GetPrice(ctx context.Context, arg GetPriceParams) (Price, error)
 	// Portfolio calculation fan-out: one round-trip for every unique
@@ -34,6 +39,11 @@ type Querier interface {
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
 	ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]Account, error)
+	// Historical dividend feed for /portfolio/dividends. Filters by user +
+	// transaction_type='dividend' and honours cursor + optional date range.
+	// A dedicated dividends / corporate_actions table does not yet exist
+	// (TD-022); paid dividends live in the transactions ledger today.
+	ListDividendTransactions(ctx context.Context, arg ListDividendTransactionsParams) ([]Transaction, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
@@ -42,6 +52,16 @@ type Querier interface {
 	// Cursor pagination by (executed_at, id) — descending. Clients pass the
 	// last seen values as $2/$3; first page passes far-future / NULL.
 	ListTransactionsByUser(ctx context.Context, arg ListTransactionsByUserParams) ([]Transaction, error)
+	// Flexible list-transactions with optional filters. Uses sqlc.narg so
+	// any combination can be NULL → "no filter on this column". Cursor
+	// pagination via (executed_at, id) descending.
+	//
+	// Explicit casts on @cursor_ts / @cursor_id are required — without
+	// them sqlc cannot infer the element types of the row tuple and
+	// generates pgtype.Timestamptz for @cursor_id (UUID column), breaking
+	// bind marshalling. Same pattern should be applied if
+	// ListTransactionsByUser is ever wired to a handler.
+	ListTransactionsFiltered(ctx context.Context, arg ListTransactionsFilteredParams) ([]Transaction, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side
