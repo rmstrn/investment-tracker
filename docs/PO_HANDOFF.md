@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (после CC-landed docs commit, main @ `e96f6de`, cleanup gate отработал, ждём pre-flight audit B3-ii)
+**Last updated:** 2026-04-20 (поздний вечер — GAP REPORT B3-ii получен, 6 decisions приняты, split B3-ii-a/b accept, B3-ii-a в write-phase, TASK_05 cleanup параллельная сессия)
 
 ---
 
@@ -179,35 +179,54 @@ Core API эмитит header когда фича частично недосту
 
 ## 9. Next action (при входе в новый чат)
 
-**Статус (2026-04-20, поздний вечер):** B3-ii зелёный свет дан, guidance 4/4 принят без дельт, cleanup отработал, tip-mismatch gate сработал, CC получил «go, expected = e96f6de» и стартует pre-flight audit. Split-fallback B3-ii-a/b на контингенте если >8 handlers / >2500 LOC.
+**Статус (2026-04-20, поздний вечер):** GAP REPORT от CC получен, 6 decisions приняты, B3-ii split на **B3-ii-a + B3-ii-b** (~1500 LOC каждый, последовательно). B3-ii-a в write-phase. Параллельно открывается **вторая CC сессия TASK_05 cleanup** — удалить дублирующий `record_ai_usage` вызов из Python (блокер для B3-ii-b merge, не для B3-ii-a).
 
-**Worktree cleanup отработал:**
-- `git worktree remove --force` — упал с `Directory not empty` (Windows handle hold-on, известная проблема). Admin-record удалён в следующем шаге.
-- `git worktree prune` ✅ — admin-record снят, физическая директория `D:/investment-tracker-b3` осталась на диске со stale файлами. На git не влияет; снести через File Explorer / после reboot.
-- `git pull --ff-only` ✅ — already up to date (main = `e96f6de`).
+### Решения по B3-ii (зафиксировано для audit trail)
 
-**Tip-mismatch gate сработал и был resolved:**
-CC ожидал `84465f7` (из § 9 cleanup-скрипта), нашёл `e96f6de`. STOP'нул pre-flight audit, запросил ack от Ruslan'а. Контекст: PO-Claude правил PO_HANDOFF + merge-log через Edit; Ruslan не успел сам закоммитить; CC при cleanup'е сам подобрал uncommitted changes и запушил → `e96f6de`. Verified через `git show e96f6de --stat`: только 2 docs-файла, 285 insertions, контент легитный, co-authored-by Claude Opus 4.7. Ruslan дал «go, expected = e96f6de», audit стартанул.
+1. **`POST /ai/insights/generate` = Path B (sync inline).** AI Service `/internal/insights/generate` синхронный 5-30s. HTTP 202 + body `{status: "done", insight_id: "..."}`. Не async через asynq (publisher disabled в prod → job потерялся бы).
+2. **AI message caps = `tiers.Limit` на сегодня (Free=5, Plus=50, Pro=unlimited/nil).** Три источника расходятся (Brief: 5/unlim, TASK_04 doc: 3/20/100, код: 5/50/nil) — доверяем коду. Brief + TASK_04 doc подчистим docs-pass'ом **после** B3-ii merge.
+3. **`tiers.Limit.AIChatEnabled bool` = true для всех тарифов в MVP.** Forward-compat под будущий product change. Middleware возвращает 403 TIER_LIMIT_EXCEEDED + `Upgrade-To-Tier` header если false (dead code сегодня).
+4. **Split B3-ii-a / B3-ii-b — ACCEPT.** LOC прогноз ~2900, anchor 2500 → режем:
+   - **B3-ii-a:** AI Service HTTP client foundation + rate-limit middleware + 5 handlers (POST/DELETE /ai/conversations, POST /ai/insights/generate, /insights/{id}/dismiss, /insights/{id}/viewed). ~1500 LOC. Можно мержить независимо.
+   - **B3-ii-b:** POST /ai/chat (sync) + POST /ai/chat/stream (SSE proxy + tee + persist) + SSE parser pkg. ~1500 LOC. **Зависит от B3-ii-a** (shared client + middleware).
+5. **`ai_usage` owner = Core API single-writer.** AI Service **перестаёт** писать `ai_usage` (удаляем `record_ai_usage` вызов в параллельной TASK_05 cleanup PR). Core API пишет **синхронно** в DB transaction после `message_stop` в `/ai/chat/stream` handler. Причина: dual-write = дубликаты в ledger = биллинг x2. См. `DECISIONS.md`.
+6. **Paranoid-fallback enqueue для /generate — НЕТ.** KISS, single codepath.
 
-**Pattern на будущее (lesson learned):**
-Перед командой start CC PO **сначала** коммитит свои docs-правки сам, потом даёт «погнали». Иначе CC закоммитит за PO ради clean tree, tip уедет от ожидаемого, gate сработает, потеряем 5-10 минут на ack-цикл. Защита через gate работает, но это recovery, не prevention.
+### SSE proxy дополнения (B3-ii-b acceptance criteria)
 
-**Ждём pre-flight audit от CC по PR B3-ii.**
+- **Failure mid-stream:** skip incomplete assistant message целиком + log incident со всеми собранными chunks. Не пиши partial — confusит AI на следующем turn + user видит `...`.
+- **SSE parser на TCP-split frames:** ≥3 unit tests на split-boundary cases (включая split по середине JSON data payload).
+- **Heartbeat:** single-writer goroutine через channel, parser игнорирует SSE comment (`:` префикс). Каждые 15s idle.
+- **401/403 от AI Service → 502 BAD_GATEWAY клиенту** + critical log + Sentry alert. Не пропагируй 401 клиенту — это bug в Core API internal token config, не user error.
+- **Content flatten:** join `content[]` blocks с `\n\n` (Anthropic standard). Single-block = `content[0].text`.
+- **Rate-limit INCR+EXPIRE:** single Lua eval (atomic round-trip), не pipeline.
+- **`X-Request-Id` пропагация** Core → AI через header (для Sentry correlation). SSE error event payload с request_id — **TD-048, не блокер** для B3-ii.
 
-Когда придёт, проверить/уточнить:
-1. **Scope:** AI mutations (~7 handlers) + SSE reverse-proxy + tier gate rate-limit.
-2. **LOC:** anchor 2000-2500. Если объективно не режется — расщеплять на B3-ii-a/B3-ii-b, а не ballooning.
-3. **SSE error framing:** стандарт `event: error\ndata: {"code":"...","request_id":"..."}\n\n`. Обязательно `request_id` для корреляции Sentry Core API ↔ AI Service.
-4. **Tier gate коды:**
-   - `403 TIER_LIMIT_EXCEEDED` — тариф не даёт доступа вообще (ChatEnabled=false например) + header `Upgrade-To-Tier: plus`
-   - `429 RATE_LIMIT_EXCEEDED` — дневной cap исчерпан + headers `X-RateLimit-Limit/Remaining/Reset`
-5. **Rate-limit counter bump** — в Core API на входе `/v1/ai/chat/stream`, **до** проксирования. INCR в Redis атомарно. Core API owns tier enforcement; AI Service не знает о тирах.
-6. **ai_usage ledger-запись** — **СИНХРОННО в DB transaction** в том же Core API handler'е после закрытия SSE. **НЕ через asynq** — `asynqpub.Enabled()==false` в проде, иначе потеряется.
-7. **Keep-alive:** `: heartbeat\n\n` каждые 15s (иначе LB/прокси обрывают idle).
-8. **`X-Request-Id`** пропагировать Core API → AI Service через header; AI Service логирует.
-9. **Client reconnect с `Last-Event-ID`** — MVP без resume-logic, просто новый message. TD на будущее (предложить).
+### Новые TDs (proposed, логируются в TECH_DEBT.md)
 
-**После B3-ii → B3-iii → PR C** (см. `PR_C_preflight.md`) → prod live → AI Service flip (см. `RUNBOOK_ai_flip.md`).
+- **TD-048** — SSE error event payload bump: add `request_id` field (cross-service: AI Service + Core API).
+- **TD-049** — SSE Last-Event-ID resume protocol (MVP без resume — reconnect = new message).
+- **TD-050** — `/ai/insights/generate` Path B handler hangs 5-30s (long timeout vulnerable к LB idle disconnect; future async via TASK_06 worker).
+- **TD-051** — Tee SSE parser в Core API duplicates AI Service's SSE knowledge (drift risk).
+- **TD-052** — Concurrent chat race window (pre-increment OK для MVP, future = reserve+commit).
+
+### Где что происходит прямо сейчас
+
+| Сессия | Что | ETA |
+|---|---|---|
+| CC chat #1 (B3-ii) | B3-ii-a write-phase (5 handlers + client + middleware) | 2-3 дня |
+| CC chat #2 (TASK_05) | Удалить `record_ai_usage` из Python AI Service (небольшой PR, 50-150 LOC) | 1-2 дня |
+| PO (Ruslan) | Координация обеих сессий, финальный docs commit вечером | ongoing |
+
+### Завтрашний старт чек-лист
+
+1. Проверить прогресс B3-ii-a: что CC успел, блокеры, SHAs новых коммитов в feature branch.
+2. Проверить план-дельту TASK_05 CC (если вчера успел её дать) или дождаться.
+3. Передать progress reports PO-Claude'у.
+4. Если TASK_05 CC ещё не стартовал — открыть (промт внизу, см. § 10).
+5. Фоновый мониторинг: оба PR не должны конфликтовать (разные файлы — Go vs Python).
+
+**После B3-ii-a merge → B3-ii-b (ждёт TASK_05 cleanup merged) → B3-iii → PR C** (см. `PR_C_preflight.md`) → prod live → AI Service flip (см. `RUNBOOK_ai_flip.md`).
 
 ---
 
@@ -222,6 +241,76 @@ CC ожидал `84465f7` (из § 9 cleanup-скрипта), нашёл `e96f6d
 > Мой POV на pre-flight items (см. секцию 9 этого документа — детально расписаны все 9 пунктов).
 >
 > Жду GAP REPORT.
+
+---
+
+## 10.5 Промт для параллельной TASK_05 cleanup сессии
+
+Скопировать в новый CC чат. Scope — удалить `record_ai_usage` вызов из Python AI Service. Блокер для B3-ii-b merge.
+
+```
+Привет. Я Ruslan, Product Owner проекта investment-tracker
+(AI-инвест-трекер: Next.js web + Go Core API + Python AI Service).
+Главный док-репозиторий: D:\СТАРТАП.
+
+У нас параллельно идёт TASK_04 B3-ii-a в другом CC чате (Go Core API,
+свой worktree). Я прошу тебя сделать МАЛЕНЬКУЮ правку в TASK_05
+(Python AI Service, apps/ai/...).
+
+Контекст и все решения — в:
+  D:\СТАРТАП\docs\PO_HANDOFF.md (прочти целиком первым делом)
+
+Scope правки (ничего другого не трогать):
+
+В AI Service сейчас есть вызов core_api.record_ai_usage(...)
+после каждого Anthropic response (см. TASK_05 § 7 и код
+в apps/ai/src/ai_service/... — скорее всего в handlers chat/stream
+и insights/generate, и в клиенте core_api.py).
+
+Этот вызов нужно УДАЛИТЬ полностью. Причина: дубликат учёта.
+Core API теперь сам пишет ai_usage в своей DB transaction после
+SSE close (это делается в TASK_04 B3-ii-b). Если оба пишут —
+ledger дублируется, биллинг завышен x2.
+
+Что сделать:
+1. Найти все call sites `record_ai_usage` / `record_ai_usage_async`
+   и любые связанные с записью usage в Core API.
+2. Удалить вызовы. Удалить метод в core_api.py клиенте если он
+   больше нигде не используется.
+3. Удалить тесты которые mock'ают этот вызов (или обновить если
+   они проверяют полный flow — тогда просто убрать expectation
+   на usage call).
+4. Добавить короткий комментарий на месте удалённого вызова
+   (один раз, в главной точке flow):
+   # ai_usage tracking owned by Core API (TASK_04 B3-ii-b).
+   # See docs/PO_HANDOFF.md § 9 (ai_usage dual-write resolution).
+5. Запустить тесты локально, убедиться что всё зелёное.
+6. Открыть PR — название:
+   "TASK_05: remove Core API ai_usage call (dual-write fix)"
+   В описании сослаться на TASK_04 B3-ii-b dependency.
+
+Что НЕ делать:
+- Не трогать бизнес-логику chat/stream или insights/generate.
+- Не трогать SSE error events (TD-048 — отдельная работа позже).
+- Не менять ничего кроме удаления usage-вызовов.
+- Не переписывать core_api.py клиент — только удалить ненужный метод.
+- Не добавлять новые зависимости.
+
+Размер: ожидаю 50-150 LOC touched, очень маленький PR.
+
+Timing: нужно смерджить до того как основной CC дойдёт до
+B3-ii-b (через ~3 дня). Желательно за 1-2 дня.
+
+Мой стиль общения (из PO_HANDOFF):
+- Русский, коротко, без overformatting.
+- Decisions-first: сначала что делаешь, потом почему.
+- Видишь риск — говори сразу.
+- Верифицируй каждый Edit через Read (state loss бывал).
+
+Первым делом: прочти PO_HANDOFF.md, README.md, TASK_05_ai_service.md.
+Потом grep'ни по apps/ai/ все call sites record_ai_usage. Потом дай
+мне короткий план-дельту (что удалить, где, размер) до write-phase.
+```
 
 ---
 

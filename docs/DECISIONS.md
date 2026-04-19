@@ -77,3 +77,40 @@ PR #32 brought main back to green and closed that window.
 
 Owner: project lead. Revisit: if we use `--admin` more than once per
 quarter, the CI hygiene process itself needs attention.
+
+## 2026-04-20 — `ai_usage` ledger: Core API is single-writer
+
+**Decision:** записи в `ai_usage` table делает **только Core API**, синхронно,
+в той же DB transaction что и INSERT последнего assistant message в
+`ai_messages` (после SSE `message_stop` frame). AI Service (Python)
+**не пишет** в `ai_usage` через RPC к Core API.
+
+**Context:**
+- TASK_05 § 7 исходно показывал `await core_api.record_ai_usage(...)` из
+  Python — AI Service делал RPC после Anthropic response.
+- TASK_04 B3-ii-b plan (2026-04-20) закладывает Core API synchronous
+  DB write после `message_stop` в `/ai/chat/stream` handler.
+- Если оба пишут — дубликаты в ledger, биллинг завышен x2, audit broken.
+
+**Почему Core API owner:**
+1. Core API уже владеет остальными usage counters (`usage_counters` table
+   для daily rate-limit cap). Single service owns all billing/usage writes.
+2. Core API имеет атомарный DB transaction вокруг message persist +
+   ai_usage insert — если transaction упадёт, всё откатится.
+3. AI Service был owner только потому что ему «удобнее» — слабый аргумент
+   против consistency риска.
+4. Когда в будущем появится billing reconciliation job, он смотрит в одно
+   место.
+
+**Consequences:**
+- AI Service `record_ai_usage` вызов + HTTP client method **удаляются**
+  в отдельной TASK_05 cleanup PR (~50-150 LOC).
+- TASK_05 cleanup PR **блокирует merge** B3-ii-b (Core API write path
+  для chat). B3-ii-a можно мержить независимо.
+- AI Service всё ещё возвращает usage данные (input_tokens, output_tokens,
+  model) в SSE `message_stop` payload — Core API извлекает их оттуда
+  для INSERT в `ai_usage`.
+
+**Owner:** backend lead (Core API) + AI lead (Python removal).
+**Revisit:** при next billing schema change (e.g. multi-model pricing,
+partial turn billing). Не ранее MVP launch.

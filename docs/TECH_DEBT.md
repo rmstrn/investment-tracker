@@ -6,6 +6,68 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ---
 
+## Proposed (from B3-ii GAP REPORT, 2026-04-20)
+
+These TDs будут логированы в Active section в финальном PR commit B3-ii-a (или b). Пока здесь для trace.
+
+### TD-048 — SSE error event payload: add `request_id` for Sentry correlation
+
+**Source:** B3-ii GAP REPORT — AI Service `ChatAgent` emits `error` SSE event с `error.message` но без `request_id`. Корреляция Sentry Core API ↔ AI Service по одному incident'у ломается.
+**Current state:** X-Request-Id пропагируется на HTTP header level (Core → AI), в request logs видно. Но в SSE error frame, который видит клиент, request_id отсутствует — клиент/support не может репортить incident с ID.
+**Fix:** protocol bump в AI Service SSE schema — добавить `request_id` в `error` event data payload. Cross-service: TASK_05 + Core API frontend client.
+**Trigger to revisit:** после B3-ii-b merge, перед AI Service production flip (`RUNBOOK_ai_flip.md`).
+**Owner:** AI Service maintainer + Core API lead (coordinate)
+**Scope:** ~20 LOC AI Service + ~10 LOC Core API parser + frontend display
+
+---
+
+### TD-049 — SSE Last-Event-ID resume protocol
+
+**Source:** B3-ii GAP REPORT — MVP без resume-logic. Если клиент потерял соединение mid-stream, reconnect = new conversation message, нет восстановления незавершённого assistant response.
+**Current state:** AI Service не принимает Last-Event-ID header. Клиент при reconnect начинает новый turn — частичный ответ теряется.
+**Fix:** event ID schema + serverside buffer (Redis N минут) + AI Service honors Last-Event-ID header для replay from offset. Complex; не на MVP.
+**Trigger to revisit:** post-MVP, когда появятся реальные жалобы на lost responses.
+**Owner:** AI Service maintainer
+**Scope:** ~200 LOC + Redis buffer + AI Service client
+
+---
+
+### TD-050 — `/ai/insights/generate` Path B: handler hangs 5-30s (LB idle risk)
+
+**Source:** B3-ii GAP REPORT — мы выбрали Path B (sync inline) для `/ai/insights/generate`. Handler делает synchronous call к AI Service `/internal/insights/generate`, который работает 5-30s. Fly.io LB idle timeout = 60s, так что запас есть, но узкий. Pro-user flow («Generate ↻» → spinner) приемлем для MVP.
+**Current state:** работает day-one. Риск — если Anthropic latency растёт >40s, можем словить LB disconnect intermittently.
+**Fix:** async version через TASK_06 worker — `insight_generation_jobs` table + asynq publish + worker pull → AI Service call → write insight. Когда worker infra готова, отрефакторить.
+**Trigger to revisit:** TASK_06 worker baseline merged, или если prod мониторинг покажет LB timeout hits.
+**Owner:** AI lead + workers lead (TASK_06)
+**Scope:** ~300 LOC (migration + worker + handler swap to 202+polling)
+
+---
+
+### TD-051 — Tee SSE parser duplicates AI Service's SSE knowledge (drift risk)
+
+**Source:** B3-ii-b design — Core API `/ai/chat/stream` handler не транспарентный reverse-proxy, он **tee-парсит** SSE stream от AI Service чтобы извлечь assembled assistant content для persist в `ai_messages`. Это значит Core API вписывается в SSE schema AI Service (8 event types, content_block_delta format, etc.). Если AI Service меняет schema — Core API ломается silently.
+**Current state:** schema стабильна, но нет single source of truth. Оба сервиса владеют одинаковым знанием.
+**Fix options:**
+  a. Shared Go package + Python package generated from single spec (openapi SSE schema extension).
+  b. Contract tests — Core API + AI Service integration test верифицирует round-trip event format.
+  c. AI Service emits post-completion sidecar endpoint `GET /internal/messages/{id}/assembled` — Core API pulls finished content вместо tee. Убирает tee entirely.
+**Trigger to revisit:** при первом schema change или при drift incident в проде.
+**Owner:** AI + Core API leads
+**Scope:** зависит от option — (c) самый чистый, ~400 LOC + refactor tee-handler
+
+---
+
+### TD-052 — Concurrent chat from same user: pre-increment race window
+
+**Source:** B3-ii-a rate-limit middleware — используем `INCR usage:ai_messages_daily:{uid}:{YYYY-MM-DD}` + check against cap. Если юзер шлёт 2 параллельных chat requests прямо на границе cap, обе могут пройти INCR до того как одна из них увидит cap exceeded.
+**Current state:** window tight (Redis round-trip ~1ms), реальные пользователи редко шлют параллельные chats. Acceptable для MVP.
+**Fix:** reserve+commit pattern — pre-increment в Redis, если AI Service call fails — decrement back. Или distributed lock `SETNX usage:lock:{uid}` для serialization.
+**Trigger to revisit:** если в проде заметим abuse pattern или complaints про «I was charged 2x».
+**Owner:** Core API lead
+**Scope:** ~50 LOC middleware rework + race tests
+
+---
+
 ## Active
 
 ### TD-047 — CSVExport tier flag heuristic (P1 pre-GA)
