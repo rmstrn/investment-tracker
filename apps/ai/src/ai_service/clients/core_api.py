@@ -26,6 +26,7 @@ import httpx
 import structlog
 
 from ai_service.config import Settings
+from ai_service.observability import capture_ai_usage
 
 log = structlog.get_logger(__name__)
 
@@ -185,6 +186,14 @@ class CoreAPIClient:
         """
         log.info(
             "ai_usage_recorded",
+            user_id=str(user_id),
+            conversation_id=str(conversation_id) if conversation_id else None,
+            model=model,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cost_usd=cost_usd,
+        )
+        capture_ai_usage(
             user_id=str(user_id),
             conversation_id=str(conversation_id) if conversation_id else None,
             model=model,
