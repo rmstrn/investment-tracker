@@ -98,3 +98,19 @@ func (c *Client) IncrWithTTL(ctx context.Context, key string, ttl time.Duration)
 	_ = ttlCmd // ExpireNX return is ignored; we just want the side effect
 	return incr.Val(), nil
 }
+
+// EvalIncrWithTTL is the canonical "INCR + EXPIRE on first increment"
+// primitive — single Lua eval, single round-trip, atomic. Preferred
+// over IncrWithTTL on hot paths where the 2-call pipeline's race
+// window matters (e.g. concurrent /ai/chat requests pre-incrementing
+// the daily counter). Returns the post-INCR count.
+func (c *Client) EvalIncrWithTTL(ctx context.Context, key string, ttl time.Duration) (int64, error) {
+	const script = `
+		local n = redis.call('INCR', KEYS[1])
+		if n == 1 then
+			redis.call('EXPIRE', KEYS[1], ARGV[1])
+		end
+		return n
+	`
+	return c.rdb.Eval(ctx, script, []string{key}, int(ttl.Seconds())).Int64()
+}

@@ -25,6 +25,7 @@ type Limit struct {
 	// Feature flags.
 	AdvancedAnalytics bool // unlocks GET /portfolio/analytics
 	TaxReports        bool // unlocks GET /portfolio/tax (+ /tax/export in PR B3)
+	AIChatEnabled     bool // unlocks /ai/chat + /ai/chat/stream + /ai/insights/generate
 }
 
 var (
@@ -32,11 +33,13 @@ var (
 		AIMessagesDaily:   intp(5),
 		ConnectedAccounts: intp(1),
 		InsightsWeekly:    intp(3),
+		AIChatEnabled:     true, // MVP: all tiers can chat, capped by AIMessagesDaily.
 	}
 	plusLimit = Limit{
 		AIMessagesDaily:   intp(50),
 		ConnectedAccounts: intp(5),
 		InsightsWeekly:    intp(20),
+		AIChatEnabled:     true,
 	}
 	proLimit = Limit{
 		AIMessagesDaily:   nil,
@@ -44,6 +47,7 @@ var (
 		InsightsWeekly:    nil,
 		AdvancedAnalytics: true,
 		TaxReports:        true,
+		AIChatEnabled:     true,
 	}
 )
 

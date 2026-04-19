@@ -32,6 +32,10 @@ type Querier interface {
 	// to running → done/failed and patches result_url + row_count.
 	CreateExportJob(ctx context.Context, arg CreateExportJobParams) (ExportJob, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// DELETE /ai/conversations/{id}. CASCADE on ai_messages.conversation_id
+	// removes the message thread automatically. Returns row-count so
+	// the handler can distinguish "deleted" from "not found / cross-user".
+	DeleteAIConversation(ctx context.Context, arg DeleteAIConversationParams) (int64, error)
 	// Manual-only hard delete. Returns affected-row count so the handler
 	// can distinguish missing / non-manual / other-user from success.
 	DeleteManualTransaction(ctx context.Context, arg DeleteManualTransactionParams) (int64, error)
@@ -70,6 +74,14 @@ type Querier interface {
 	// 'ai_messages_daily'). PR B3 paywall-dismissal counters will reuse
 	// this same query.
 	IncrementUsageCounter(ctx context.Context, arg IncrementUsageCounterParams) (UsageCounter, error)
+	// POST /ai/conversations. id is generated app-side (uuid v7);
+	// title is optional — when null the AI Service auto-titles from
+	// the first user message on the next /ai/chat round.
+	InsertAIConversation(ctx context.Context, arg InsertAIConversationParams) (AiConversation, error)
+	// Persists one AI-generated insight. id is uuid v7 from app side;
+	// generated_at defaults to now() so the worker / handler does not
+	// need to thread a timestamp.
+	InsertInsight(ctx context.Context, arg InsertInsightParams) (Insight, error)
 	// Fingerprint-based dedup: ON CONFLICT DO NOTHING on the (user_id, fingerprint)
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
@@ -157,6 +169,13 @@ type Querier interface {
 	// Bulk mark-all-as-read. Only flips unread rows so a second call
 	// within the same second stays idempotent (no timestamp churn).
 	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) (int64, error)
+	// POST /ai/insights/{id}/dismiss. Idempotent — a second dismiss
+	// keeps the first dismissed_at via COALESCE so audit trail stays
+	// truthful.
+	MarkInsightDismissed(ctx context.Context, arg MarkInsightDismissedParams) (int64, error)
+	// POST /ai/insights/{id}/viewed. Same COALESCE-idempotent rule
+	// as dismiss.
+	MarkInsightViewed(ctx context.Context, arg MarkInsightViewedParams) (int64, error)
 	// Single-row mark-as-read. Returns affected-row count so the
 	// handler can emit 404 when the id is unknown or already belongs
 	// to another user.

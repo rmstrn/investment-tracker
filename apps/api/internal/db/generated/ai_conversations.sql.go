@@ -12,6 +12,27 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteAIConversation = `-- name: DeleteAIConversation :execrows
+DELETE FROM ai_conversations
+WHERE id = $1 AND user_id = $2
+`
+
+type DeleteAIConversationParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+// DELETE /ai/conversations/{id}. CASCADE on ai_messages.conversation_id
+// removes the message thread automatically. Returns row-count so
+// the handler can distinguish "deleted" from "not found / cross-user".
+func (q *Queries) DeleteAIConversation(ctx context.Context, arg DeleteAIConversationParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteAIConversation, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getAIConversationByID = `-- name: GetAIConversationByID :one
 SELECT id, user_id, title, created_at, updated_at FROM ai_conversations WHERE id = $1 AND user_id = $2
 `
@@ -24,6 +45,34 @@ type GetAIConversationByIDParams struct {
 // Scoped by user_id so cross-user access → ErrNoRows → 404.
 func (q *Queries) GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error) {
 	row := q.db.QueryRow(ctx, getAIConversationByID, arg.ID, arg.UserID)
+	var i AiConversation
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Title,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const insertAIConversation = `-- name: InsertAIConversation :one
+INSERT INTO ai_conversations (id, user_id, title)
+VALUES ($1, $2, $3)
+RETURNING id, user_id, title, created_at, updated_at
+`
+
+type InsertAIConversationParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+	Title  *string
+}
+
+// POST /ai/conversations. id is generated app-side (uuid v7);
+// title is optional — when null the AI Service auto-titles from
+// the first user message on the next /ai/chat round.
+func (q *Queries) InsertAIConversation(ctx context.Context, arg InsertAIConversationParams) (AiConversation, error) {
+	row := q.db.QueryRow(ctx, insertAIConversation, arg.ID, arg.UserID, arg.Title)
 	var i AiConversation
 	err := row.Scan(
 		&i.ID,

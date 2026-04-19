@@ -11,6 +11,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware/airatelimit"
 )
 
 // New builds the Fiber app with the full middleware chain and every
@@ -151,6 +152,23 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	mutations.Post("/notifications/read_all", handlers.MarkAllNotificationsRead(deps))
 	// Exports.
 	mutations.Post("/exports", handlers.CreateExport(deps))
+
+	// AI conversation lifecycle (no rate-limit gate — chat counts
+	// in airatelimit; create/delete are admin-style ops).
+	mutations.Post("/ai/conversations", handlers.CreateAIConversation(deps))
+	mutations.Delete("/ai/conversations/:id", handlers.DeleteAIConversation(deps))
+	// AI insight bookkeeping (also outside airatelimit — only the
+	// LLM-cost surface goes through the daily counter).
+	mutations.Post("/ai/insights/:id/dismiss", handlers.DismissInsight(deps))
+	mutations.Post("/ai/insights/:id/viewed", handlers.MarkInsightViewed(deps))
+
+	// AI cost-incurring endpoints — every call hits the daily
+	// AIMessagesDaily counter via airatelimit before reaching the
+	// handler (which then forwards to AI Service via deps.AI).
+	aiMutations := mutations.Group("",
+		airatelimit.New(deps),
+	)
+	aiMutations.Post("/ai/insights/generate", handlers.GenerateInsightsHandler(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

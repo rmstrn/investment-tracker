@@ -37,3 +37,18 @@ WHERE conversation_id = @conversation_id
   AND (created_at, id) < (@cursor_ts::timestamptz, @cursor_id::uuid)
 ORDER BY created_at DESC, id DESC
 LIMIT @row_limit;
+
+-- name: InsertAIConversation :one
+-- POST /ai/conversations. id is generated app-side (uuid v7);
+-- title is optional — when null the AI Service auto-titles from
+-- the first user message on the next /ai/chat round.
+INSERT INTO ai_conversations (id, user_id, title)
+VALUES ($1, $2, $3)
+RETURNING *;
+
+-- name: DeleteAIConversation :execrows
+-- DELETE /ai/conversations/{id}. CASCADE on ai_messages.conversation_id
+-- removes the message thread automatically. Returns row-count so
+-- the handler can distinguish "deleted" from "not found / cross-user".
+DELETE FROM ai_conversations
+WHERE id = $1 AND user_id = $2;

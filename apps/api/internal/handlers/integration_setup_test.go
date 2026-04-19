@@ -50,6 +50,7 @@ import (
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/aiservice"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/server"
@@ -187,16 +188,28 @@ func seedUser(t *testing.T, tier string) uuid.UUID {
 // helper when PR B3 adds webhooks + Clerk-path integration coverage.
 func newTestApp(t *testing.T) *fiber.App {
 	t.Helper()
+	return newTestAppWithAI(t, "http://localhost:65535", "test-token")
+}
+
+// newTestAppWithAI is the same as newTestApp but plugs a custom
+// AI Service base URL + token into deps.AI. Tests that need to
+// exercise AI Service-bound handlers (POST /ai/insights/generate,
+// /ai/chat, /ai/chat/stream) point this at an httptest.Server stub.
+func newTestAppWithAI(t *testing.T, aiURL, aiToken string) *fiber.App {
+	t.Helper()
 	deps := &app.Deps{
 		Cfg: &config.Config{
 			Env:                  "test",
 			CoreAPIInternalToken: testSharedInternalToken,
+			AIServiceURL:         aiURL,
+			AIServiceToken:       aiToken,
 		},
 		Log:      zerolog.New(io.Discard),
 		Pool:     testPool,
 		Cache:    testCache,
 		UserRepo: users.NewRepo(testPool),
 		JWKS:     nil, // deliberately: tests take the internal-auth path
+		AI:       aiservice.New(aiURL, aiToken),
 	}
 	a, err := server.New(deps)
 	if err != nil {

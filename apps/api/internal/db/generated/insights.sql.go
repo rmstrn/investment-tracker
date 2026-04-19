@@ -36,6 +36,51 @@ func (q *Queries) CountInsightsByUserSince(ctx context.Context, arg CountInsight
 	return total, err
 }
 
+const insertInsight = `-- name: InsertInsight :one
+INSERT INTO insights (id, user_id, insight_type, title, body, severity, data)
+VALUES ($1, $2, $3, $4, $5, $6, $7)
+RETURNING id, user_id, insight_type, title, body, severity, data, generated_at, viewed_at, dismissed_at
+`
+
+type InsertInsightParams struct {
+	ID          uuid.UUID
+	UserID      uuid.UUID
+	InsightType string
+	Title       string
+	Body        string
+	Severity    string
+	Data        []byte
+}
+
+// Persists one AI-generated insight. id is uuid v7 from app side;
+// generated_at defaults to now() so the worker / handler does not
+// need to thread a timestamp.
+func (q *Queries) InsertInsight(ctx context.Context, arg InsertInsightParams) (Insight, error) {
+	row := q.db.QueryRow(ctx, insertInsight,
+		arg.ID,
+		arg.UserID,
+		arg.InsightType,
+		arg.Title,
+		arg.Body,
+		arg.Severity,
+		arg.Data,
+	)
+	var i Insight
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.InsightType,
+		&i.Title,
+		&i.Body,
+		&i.Severity,
+		&i.Data,
+		&i.GeneratedAt,
+		&i.ViewedAt,
+		&i.DismissedAt,
+	)
+	return i, err
+}
+
 const listInsightsByUser = `-- name: ListInsightsByUser :many
 SELECT id, user_id, insight_type, title, body, severity, data, generated_at, viewed_at, dismissed_at FROM insights
 WHERE user_id = $1
@@ -100,4 +145,47 @@ func (q *Queries) ListInsightsByUser(ctx context.Context, arg ListInsightsByUser
 		return nil, err
 	}
 	return items, nil
+}
+
+const markInsightDismissed = `-- name: MarkInsightDismissed :execrows
+UPDATE insights
+SET dismissed_at = COALESCE(dismissed_at, now())
+WHERE id = $1 AND user_id = $2
+`
+
+type MarkInsightDismissedParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+// POST /ai/insights/{id}/dismiss. Idempotent — a second dismiss
+// keeps the first dismissed_at via COALESCE so audit trail stays
+// truthful.
+func (q *Queries) MarkInsightDismissed(ctx context.Context, arg MarkInsightDismissedParams) (int64, error) {
+	result, err := q.db.Exec(ctx, markInsightDismissed, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markInsightViewed = `-- name: MarkInsightViewed :execrows
+UPDATE insights
+SET viewed_at = COALESCE(viewed_at, now())
+WHERE id = $1 AND user_id = $2
+`
+
+type MarkInsightViewedParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+// POST /ai/insights/{id}/viewed. Same COALESCE-idempotent rule
+// as dismiss.
+func (q *Queries) MarkInsightViewed(ctx context.Context, arg MarkInsightViewedParams) (int64, error) {
+	result, err := q.db.Exec(ctx, markInsightViewed, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }

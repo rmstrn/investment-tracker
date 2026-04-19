@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/aiservice"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
@@ -36,4 +37,9 @@ type Deps struct {
 	// the handler's synchronous 2xx path. Production always has a
 	// non-nil publisher bound to the same Redis as Cache.
 	Asynq *asynqpub.Publisher
+	// AI is the Core API → AI Service HTTP client (B3-ii-a +). Nil
+	// is invalid in production — main asserts non-nil at boot — but
+	// integration tests that do not touch /ai/* may leave it nil
+	// without exercising the assertion.
+	AI *aiservice.Client
 }
