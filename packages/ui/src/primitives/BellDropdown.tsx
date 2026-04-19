@@ -4,6 +4,7 @@ import { Bell } from 'lucide-react';
 import {
   type HTMLAttributes,
   type ReactElement,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -167,24 +168,39 @@ export function BellDropdown({
                     </div>
                   </div>
                 );
+                const activate = () => handleItem(n);
+                const onKey = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    activate();
+                  }
+                };
                 if (n.href && LinkComponent) {
                   return (
-                    <li key={n.id} role="menuitem">
-                      <LinkComponent href={n.href} onClick={() => handleItem(n)}>
-                        {inner}
-                      </LinkComponent>
+                    <li key={n.id}>
+                      <div
+                        role="menuitem"
+                        tabIndex={0}
+                        onClick={activate}
+                        onKeyDown={onKey}
+                        className="cursor-pointer hover:bg-background-secondary focus-visible:bg-background-secondary focus-visible:outline-none"
+                      >
+                        <LinkComponent href={n.href}>{inner}</LinkComponent>
+                      </div>
                     </li>
                   );
                 }
                 return (
-                  <li key={n.id} role="menuitem">
-                    <button
-                      type="button"
-                      onClick={() => handleItem(n)}
-                      className="block w-full text-left hover:bg-background-secondary focus-visible:bg-background-secondary focus-visible:outline-none"
+                  <li key={n.id}>
+                    <div
+                      role="menuitem"
+                      tabIndex={0}
+                      onClick={activate}
+                      onKeyDown={onKey}
+                      className="block w-full cursor-pointer text-left hover:bg-background-secondary focus-visible:bg-background-secondary focus-visible:outline-none"
                     >
                       {inner}
-                    </button>
+                    </div>
                   </li>
                 );
               })}

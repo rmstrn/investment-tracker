@@ -52,8 +52,8 @@ export default function DesignPage() {
             </h1>
             <p className="max-w-2xl text-base text-text-secondary">
               Source-of-truth tokens + primitives + domain components. Values come from{' '}
-              <code className="font-mono text-sm">packages/design-tokens</code>. Toggle theme in
-              the top-right to verify dark-mode parity.
+              <code className="font-mono text-sm">packages/design-tokens</code>. Toggle theme in the
+              top-right to verify dark-mode parity.
             </p>
           </section>
 

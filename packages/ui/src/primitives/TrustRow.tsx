@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react';
-import { type HTMLAttributes, type ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
 export interface TrustRowProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
@@ -24,10 +24,7 @@ export function TrustRow({
   if (variant === 'inline') {
     return (
       <div
-        className={cn(
-          'inline-flex items-center gap-2 text-xs text-text-tertiary',
-          className,
-        )}
+        className={cn('inline-flex items-center gap-2 text-xs text-text-tertiary', className)}
         {...props}
       >
         <Lock size={12} aria-hidden="true" />

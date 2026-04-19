@@ -7,19 +7,29 @@
   "main": "build/js/tokens.js",
   "types": "build/js/tokens.d.ts",
   "exports": {
-    ".": "./build/js/tokens.js",
+    ".": {
+      "types": "./build/js/tokens.d.ts",
+      "default": "./build/js/tokens.js"
+    },
     "./css": "./build/css/tokens.css",
-    "./tailwind": "./build/tailwind/tokens.js",
+    "./tailwind": {
+      "types": "./build/tailwind/tokens.d.ts",
+      "default": "./build/tailwind/tokens.js"
+    },
     "./theme.css": "./build/tailwind/theme.css",
     "./animations.css": "./animations.css",
-    "./brand": "./build/js/brand.js"
+    "./brand": {
+      "types": "./build/js/brand.d.ts",
+      "default": "./build/js/brand.js"
+    }
   },
   "files": ["build", "tokens", "animations.css"],
   "scripts": {
     "build": "node build.js",
+    "prepare": "node build.js",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "typecheck": "echo 'design-tokens: no TS sources' && exit 0",
+    "typecheck": "node build.js",
     "test": "echo 'no tests yet' && exit 0",
     "clean": "node -e \"import('node:fs/promises').then(f => f.rm('build', {recursive: true, force: true}))\""
   },

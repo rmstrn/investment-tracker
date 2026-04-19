@@ -1,7 +1,7 @@
 'use client';
 
 import { AlertTriangle, Info, X } from 'lucide-react';
-import { type HTMLAttributes, type ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
 export interface GlobalBannerProps extends HTMLAttributes<HTMLDivElement> {

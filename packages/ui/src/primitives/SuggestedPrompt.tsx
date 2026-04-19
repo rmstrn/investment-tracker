@@ -29,9 +29,6 @@ export const SuggestedPrompt = forwardRef<HTMLButtonElement, SuggestedPromptProp
 );
 SuggestedPrompt.displayName = 'SuggestedPrompt';
 
-export function SuggestedPromptRow({
-  className,
-  ...props
-}: HTMLAttributes<HTMLDivElement>) {
+export function SuggestedPromptRow({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return <div className={cn('flex flex-wrap gap-2', className)} {...props} />;
 }

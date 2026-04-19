@@ -6,20 +6,12 @@ import {
   FloatingAiFab,
   Logo,
   MobileTabBar,
+  type NavItem,
   PlanBadge,
   Sidebar,
   TopBar,
-  type NavItem,
 } from '@investment-tracker/ui';
-import {
-  Briefcase,
-  Cog,
-  FileText,
-  LayoutGrid,
-  MessageCircle,
-  Sparkles,
-  User,
-} from 'lucide-react';
+import { Briefcase, Cog, FileText, LayoutGrid, MessageCircle, Sparkles, User } from 'lucide-react';
 import { useState } from 'react';
 
 const DESKTOP_NAV: NavItem[] = [
@@ -86,9 +78,7 @@ export function ShellsSection() {
               density="desktop"
               logo={<Logo variant="full" size={24} />}
               startSlot={
-                <span className="ml-4 text-sm text-text-tertiary">
-                  Dashboard · Total portfolio
-                </span>
+                <span className="ml-4 text-sm text-text-tertiary">Dashboard · Total portfolio</span>
               }
               endSlot={
                 <>

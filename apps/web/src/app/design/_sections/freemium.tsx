@@ -6,12 +6,12 @@ import {
   Button,
   GlobalBanner,
   LockedPreview,
+  type Notification,
   PaywallModal,
   PlanBadge,
   SyncStatusBadge,
   TrustRow,
   UsageIndicator,
-  type Notification,
 } from '@investment-tracker/ui';
 import { useState } from 'react';
 
@@ -173,13 +173,12 @@ export function FreemiumSection() {
               action={<Button size="sm">Fix now</Button>}
               onDismiss={() => setBannerDismissed(true)}
             >
-              1 of 3 accounts hasn't synced in 24h —{' '}
-              <span className="font-medium">Robinhood</span>
+              1 of 3 accounts hasn't synced in 24h — <span className="font-medium">Robinhood</span>
             </GlobalBanner>
           )}
           <GlobalBanner tone="info">
-            You're viewing demo data.{' '}
-            <span className="font-medium">Connect a real account</span> to start tracking.
+            You're viewing demo data. <span className="font-medium">Connect a real account</span> to
+            start tracking.
           </GlobalBanner>
           <GlobalBanner tone="danger">
             Your Pro subscription expired. AI features are limited.

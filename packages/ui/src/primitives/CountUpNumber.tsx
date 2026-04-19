@@ -14,7 +14,7 @@ export interface CountUpNumberProps extends Omit<HTMLAttributes<HTMLSpanElement>
   from?: number;
 }
 
-const EXP_OUT = (t: number) => 1 - Math.pow(1 - t, 3);
+const EXP_OUT = (t: number) => 1 - (1 - t) ** 3;
 
 /**
  * CountUpNumber — tabular-nums animated ticker. Brief §3.5, §5.1.
@@ -34,6 +34,7 @@ export function CountUpNumber({
   const startRef = useRef<number | null>(null);
   const fromRef = useRef(from);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: display is read once to seed the animation's from-value; adding it would restart the tween every frame as display updates mid-flight.
   useEffect(() => {
     if (reduced) {
       setDisplay(value);

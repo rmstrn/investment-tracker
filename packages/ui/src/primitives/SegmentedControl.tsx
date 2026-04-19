@@ -18,6 +18,7 @@ export interface SegmentedControlOption<T extends string = string> {
 
 export interface SegmentedControlProps<T extends string = string>
   extends Omit<HTMLAttributes<HTMLDivElement>, 'onChange' | 'defaultValue'> {
+  /** Segment options. **Must contain at least one element** — component assumes non-empty for initial value and index access. */
   options: ReadonlyArray<SegmentedControlOption<T>>;
   value?: T;
   defaultValue?: T;
@@ -53,6 +54,7 @@ export function SegmentedControl<T extends string = string>({
 }: SegmentedControlProps<T>) {
   const groupId = useId();
   const controlled = value !== undefined;
+  // biome-ignore lint/style/noNonNullAssertion: options invariant — length >= 1 enforced by component contract (see JSDoc on props.options).
   const [internal, setInternal] = useState<T>(defaultValue ?? options[0]!.value);
   const current = controlled ? (value as T) : internal;
 
@@ -69,6 +71,7 @@ export function SegmentedControl<T extends string = string>({
       e.preventDefault();
       const dir = e.key === 'ArrowRight' ? 1 : -1;
       const next = (idx + dir + options.length) % options.length;
+      // biome-ignore lint/style/noNonNullAssertion: `next` is derived via `(idx + dir + options.length) % options.length` — always a valid index because options.length >= 1 (component contract).
       setValue(options[next]!.value);
       const root = e.currentTarget.parentElement;
       const buttons = root?.querySelectorAll<HTMLButtonElement>('button[role="radio"]');

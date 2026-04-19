@@ -51,11 +51,12 @@ export const ChatInputPill = forwardRef<HTMLTextAreaElement, ChatInputPillProps>
       [ref],
     );
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: value is a prop tracked via forwardRef; Biome flags it as outer-scope. Listed intentionally so height recalculates on text change.
     useEffect(() => {
       const el = innerRef.current;
       if (!el) return;
       el.style.height = 'auto';
-      const lineHeight = parseFloat(getComputedStyle(el).lineHeight) || 20;
+      const lineHeight = Number.parseFloat(getComputedStyle(el).lineHeight) || 20;
       const maxH = lineHeight * maxLines;
       el.style.height = `${Math.min(el.scrollHeight, maxH)}px`;
       el.style.overflowY = el.scrollHeight > maxH ? 'auto' : 'hidden';

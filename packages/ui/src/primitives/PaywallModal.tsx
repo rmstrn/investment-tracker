@@ -1,7 +1,7 @@
 'use client';
 
 import { Check } from 'lucide-react';
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { Button } from './Button';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from './Dialog';
@@ -41,6 +41,7 @@ export function PaywallModal({
         <DialogDescription>{context}</DialogDescription>
         <ul className="mt-4 space-y-2">
           {bullets.map((b, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: bullets is a static ReadonlyArray<string> provided by caller; order is fixed at mount.
             <li key={i} className="flex items-start gap-2 text-sm text-text-primary">
               <Check
                 size={16}

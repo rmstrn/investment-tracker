@@ -229,9 +229,15 @@ function CountUpDemo() {
         />
       </p>
       <div className="flex gap-2">
-        <Button size="sm" onClick={() => setV((x) => x + 1234)}>+ $1,234</Button>
-        <Button variant="outline" size="sm" onClick={() => setV((x) => x - 567)}>− $567</Button>
-        <Button variant="ghost" size="sm" onClick={() => setV(127450)}>Reset</Button>
+        <Button size="sm" onClick={() => setV((x) => x + 1234)}>
+          + $1,234
+        </Button>
+        <Button variant="outline" size="sm" onClick={() => setV((x) => x - 567)}>
+          − $567
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setV(127450)}>
+          Reset
+        </Button>
       </div>
       <p className="text-[11px] text-text-tertiary">
         800ms exp-out · tabular-nums · respects prefers-reduced-motion.

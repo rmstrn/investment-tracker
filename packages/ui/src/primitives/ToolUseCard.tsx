@@ -29,7 +29,7 @@ export function ToolUseCard({
 }: ToolUseCardProps) {
   const done = status === 'done';
   const [open, setOpen] = useState(!(done && collapseOnDone));
-  const label = done ? completedLabel ?? runningLabel : runningLabel;
+  const label = done ? (completedLabel ?? runningLabel) : runningLabel;
 
   return (
     <div
