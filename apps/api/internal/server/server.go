@@ -44,6 +44,10 @@ func New(deps *app.Deps) (*fiber.App, error) {
 
 	// Public routes — no auth.
 	a.Get("/health", healthHandler(deps))
+	// Glossary (openapi `security: []`) is public so UI tooltips
+	// work pre-login and from unauthenticated marketing pages.
+	a.Get("/glossary", handlers.ListGlossaryTerms(deps))
+	a.Get("/glossary/:slug", handlers.GetGlossaryTerm(deps))
 
 	// Authenticated API surface. Routes are registered per PR:
 	//   PR B1: /internal/ai/usage (internal-only)
@@ -83,6 +87,27 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/portfolio/performance", handlers.GetPortfolioPerformance(deps))
 	reads.Get("/market/quote", handlers.GetMarketQuote(deps))
 	reads.Get("/portfolio/dividends", handlers.ListDividends(deps))
+	reads.Get("/me", handlers.GetMe(deps))
+	reads.Get("/me/usage", handlers.GetMyUsage(deps))
+	reads.Get("/me/paywalls", handlers.ListMyPaywalls(deps))
+	reads.Get("/me/sessions", handlers.ListMySessions(deps))
+	reads.Get("/me/notification-preferences", handlers.GetMyNotificationPreferences(deps))
+	reads.Get("/accounts", handlers.ListAccounts(deps))
+	reads.Get("/accounts/:id", handlers.GetAccount(deps))
+	reads.Get("/accounts/:id/status", handlers.GetAccountStatus(deps))
+	reads.Get("/positions/:id", handlers.GetPosition(deps))
+	reads.Get("/positions/:id/transactions", handlers.ListPositionTransactions(deps))
+	reads.Get("/transactions/:id", handlers.GetTransaction(deps))
+	reads.Get("/portfolio/history", handlers.GetPortfolioHistory(deps))
+	reads.Get("/portfolio/allocation", handlers.GetPortfolioAllocation(deps))
+	reads.Get("/portfolio/performance/compare", handlers.ComparePortfolioPerformance(deps))
+	reads.Get("/market/search", handlers.SearchMarket(deps))
+	reads.Get("/market/history", handlers.GetMarketHistory(deps))
+	reads.Get("/fx_rates", handlers.ListFxRates(deps))
+	reads.Get("/prices", handlers.ListPrices(deps))
+	reads.Get("/ai/conversations", handlers.ListAIConversations(deps))
+	reads.Get("/ai/conversations/:id", handlers.GetAIConversation(deps))
+	reads.Get("/ai/insights", handlers.ListInsights(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

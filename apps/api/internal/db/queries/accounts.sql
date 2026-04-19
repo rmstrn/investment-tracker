@@ -7,6 +7,13 @@ SELECT * FROM accounts
 WHERE user_id = $1 AND deleted_at IS NULL
 ORDER BY created_at ASC;
 
+-- name: CountActiveAccountsByUser :one
+-- Used by GET /me/usage to populate the `connected_accounts` counter.
+-- "Active" = not soft-deleted; tier limit applies to this count.
+SELECT COUNT(*)::int AS total
+FROM accounts
+WHERE user_id = $1 AND deleted_at IS NULL;
+
 -- name: CreateAccount :one
 INSERT INTO accounts (
     id, user_id, broker_name, display_name, account_type,

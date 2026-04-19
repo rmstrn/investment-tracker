@@ -61,6 +61,92 @@ func (q *Queries) GetLatestFXRate(ctx context.Context, arg GetLatestFXRateParams
 	return i, err
 }
 
+const listFXRatesOnDate = `-- name: ListFXRatesOnDate :many
+SELECT base_currency, quote_currency, rate, as_of, source
+FROM fx_rates
+WHERE as_of = $1
+  AND ($2::text  IS NULL OR base_currency  = $2::text)
+  AND ($3::text IS NULL OR quote_currency = $3::text)
+ORDER BY base_currency, quote_currency
+`
+
+type ListFXRatesOnDateParams struct {
+	AsOf  pgtype.Date
+	Base  *string
+	Quote *string
+}
+
+// All cached rates at a specific historical date, filtered by
+// base/quote if given.
+func (q *Queries) ListFXRatesOnDate(ctx context.Context, arg ListFXRatesOnDateParams) ([]FxRate, error) {
+	rows, err := q.db.Query(ctx, listFXRatesOnDate, arg.AsOf, arg.Base, arg.Quote)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FxRate{}
+	for rows.Next() {
+		var i FxRate
+		if err := rows.Scan(
+			&i.BaseCurrency,
+			&i.QuoteCurrency,
+			&i.Rate,
+			&i.AsOf,
+			&i.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listLatestFXRates = `-- name: ListLatestFXRates :many
+SELECT DISTINCT ON (base_currency, quote_currency)
+    base_currency, quote_currency, rate, as_of, source
+FROM fx_rates
+WHERE ($1::text  IS NULL OR base_currency  = $1::text)
+  AND ($2::text IS NULL OR quote_currency = $2::text)
+ORDER BY base_currency, quote_currency, as_of DESC
+`
+
+type ListLatestFXRatesParams struct {
+	Base  *string
+	Quote *string
+}
+
+// Latest cached rate per (base, quote) pair. Optional filters on
+// base / quote narrow the set; as_of is deferred to the handler
+// because a specific-date variant reuses GetFXRateOnDate.
+func (q *Queries) ListLatestFXRates(ctx context.Context, arg ListLatestFXRatesParams) ([]FxRate, error) {
+	rows, err := q.db.Query(ctx, listLatestFXRates, arg.Base, arg.Quote)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []FxRate{}
+	for rows.Next() {
+		var i FxRate
+		if err := rows.Scan(
+			&i.BaseCurrency,
+			&i.QuoteCurrency,
+			&i.Rate,
+			&i.AsOf,
+			&i.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertFXRate = `-- name: UpsertFXRate :one
 INSERT INTO fx_rates (base_currency, quote_currency, rate, as_of, source)
 VALUES ($1, $2, $3, $4, $5)

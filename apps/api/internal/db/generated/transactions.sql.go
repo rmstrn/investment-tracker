@@ -192,6 +192,75 @@ func (q *Queries) ListDividendTransactions(ctx context.Context, arg ListDividend
 	return items, nil
 }
 
+const listTransactionsByPosition = `-- name: ListTransactionsByPosition :many
+SELECT t.id, t.user_id, t.account_id, t.symbol, t.asset_type, t.transaction_type, t.quantity, t.price, t.currency, t.fee, t.executed_at, t.source, t.source_details, t.fingerprint, t.notes, t.manually_edited, t.created_at FROM transactions t
+JOIN positions p ON p.user_id = t.user_id
+                 AND p.account_id = t.account_id
+                 AND p.symbol = t.symbol
+WHERE p.id = $1
+  AND p.user_id = $2
+  AND (t.executed_at, t.id) < ($3::timestamptz, $4::uuid)
+ORDER BY t.executed_at DESC, t.id DESC
+LIMIT $5
+`
+
+type ListTransactionsByPositionParams struct {
+	PositionID uuid.UUID
+	UserID     uuid.UUID
+	CursorTs   pgtype.Timestamptz
+	CursorID   uuid.UUID
+	RowLimit   int32
+}
+
+// Powers GET /positions/{id}/transactions. positions are materialised
+// views keyed by (user_id, account_id, symbol) — there is no FK from
+// transactions to a position id, so we join on those three fields.
+// Cursor pagination matches the rest of the API (executed_at DESC,
+// id DESC).
+func (q *Queries) ListTransactionsByPosition(ctx context.Context, arg ListTransactionsByPositionParams) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, listTransactionsByPosition,
+		arg.PositionID,
+		arg.UserID,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.RowLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.AccountID,
+			&i.Symbol,
+			&i.AssetType,
+			&i.TransactionType,
+			&i.Quantity,
+			&i.Price,
+			&i.Currency,
+			&i.Fee,
+			&i.ExecutedAt,
+			&i.Source,
+			&i.SourceDetails,
+			&i.Fingerprint,
+			&i.Notes,
+			&i.ManuallyEdited,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTransactionsByUser = `-- name: ListTransactionsByUser :many
 SELECT id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at FROM transactions
 WHERE user_id = $1

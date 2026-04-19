@@ -12,6 +12,34 @@ import (
 	decimal "github.com/shopspring/decimal"
 )
 
+const getPositionByID = `-- name: GetPositionByID :one
+SELECT id, user_id, account_id, symbol, asset_type, quantity, avg_cost, currency, last_calculated_at FROM positions WHERE id = $1 AND user_id = $2
+`
+
+type GetPositionByIDParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+// User-scoped single position lookup. Powers GET /positions/{id}.
+// Cross-user access surfaces as ErrNoRows → handler 404.
+func (q *Queries) GetPositionByID(ctx context.Context, arg GetPositionByIDParams) (Position, error) {
+	row := q.db.QueryRow(ctx, getPositionByID, arg.ID, arg.UserID)
+	var i Position
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.AccountID,
+		&i.Symbol,
+		&i.AssetType,
+		&i.Quantity,
+		&i.AvgCost,
+		&i.Currency,
+		&i.LastCalculatedAt,
+	)
+	return i, err
+}
+
 const listPositionsByUser = `-- name: ListPositionsByUser :many
 SELECT id, user_id, account_id, symbol, asset_type, quantity, avg_cost, currency, last_calculated_at FROM positions WHERE user_id = $1 ORDER BY symbol ASC
 `

@@ -113,6 +113,99 @@ func (q *Queries) GetPricesBatch(ctx context.Context, arg GetPricesBatchParams) 
 	return items, nil
 }
 
+const listPricesBySymbols = `-- name: ListPricesBySymbols :many
+SELECT DISTINCT ON (symbol, asset_type)
+    symbol, asset_type, currency, price, as_of, source
+FROM prices
+WHERE symbol = ANY($1::text[])
+  AND ($2::text IS NULL OR asset_type = $2::text)
+  AND ($3::text   IS NULL OR currency   = $3::text)
+ORDER BY symbol, asset_type, CASE currency WHEN 'USD' THEN 0 ELSE 1 END, as_of DESC
+`
+
+type ListPricesBySymbolsParams struct {
+	Symbols   []string
+	AssetType *string
+	Currency  *string
+}
+
+// Latest row per (symbol, asset_type) among the input symbol list.
+// USD-preferred currency resolution on multi-row collisions, same
+// logic as GetLatestPrice but for N symbols. Optional asset_type
+// and currency filters narrow further.
+func (q *Queries) ListPricesBySymbols(ctx context.Context, arg ListPricesBySymbolsParams) ([]Price, error) {
+	rows, err := q.db.Query(ctx, listPricesBySymbols, arg.Symbols, arg.AssetType, arg.Currency)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Price{}
+	for rows.Next() {
+		var i Price
+		if err := rows.Scan(
+			&i.Symbol,
+			&i.AssetType,
+			&i.Currency,
+			&i.Price,
+			&i.AsOf,
+			&i.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchPriceSymbols = `-- name: SearchPriceSymbols :many
+SELECT DISTINCT ON (symbol, asset_type) symbol, asset_type, currency
+FROM prices
+WHERE symbol ILIKE $1
+  AND ($2::text IS NULL OR asset_type = $2::text)
+ORDER BY symbol, asset_type
+LIMIT $3
+`
+
+type SearchPriceSymbolsParams struct {
+	Query     string
+	AssetType *string
+	RowLimit  int32
+}
+
+type SearchPriceSymbolsRow struct {
+	Symbol    string
+	AssetType string
+	Currency  string
+}
+
+// Symbol autocomplete from the prices table — best-effort substring
+// match scoped to one asset_type when supplied. Used by GET
+// /market/search until a real symbol-master / external-provider
+// integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
+// multiple-currency rows do not duplicate.
+func (q *Queries) SearchPriceSymbols(ctx context.Context, arg SearchPriceSymbolsParams) ([]SearchPriceSymbolsRow, error) {
+	rows, err := q.db.Query(ctx, searchPriceSymbols, arg.Query, arg.AssetType, arg.RowLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []SearchPriceSymbolsRow{}
+	for rows.Next() {
+		var i SearchPriceSymbolsRow
+		if err := rows.Scan(&i.Symbol, &i.AssetType, &i.Currency); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertPrice = `-- name: UpsertPrice :one
 INSERT INTO prices (symbol, asset_type, currency, price, as_of, source)
 VALUES ($1, $2, $3, $4, $5, $6)

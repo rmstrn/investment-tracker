@@ -11,11 +11,26 @@ import (
 )
 
 type Querier interface {
+	// Used by GET /me/usage to populate the `connected_accounts` counter.
+	// "Active" = not soft-deleted; tier limit applies to this count.
+	CountActiveAccountsByUser(ctx context.Context, userID uuid.UUID) (int32, error)
+	// Weekly-window count of insights the Core has generated for this user.
+	// Feeds the `insights_weekly` counter on GET /me/usage: the
+	// usage_counters table would need an incrementer wired from the
+	// insight-generation path (PR B3 scope), so until then the gauge is
+	// computed on the fly from the insights table itself — authoritative
+	// as long as insights are never deleted.
+	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Scoped by user_id so cross-user access → ErrNoRows → 404.
+	GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error)
 	// Scoped by user_id to enforce ownership at the query layer.
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
+	// Composite-key lookup for GET /glossary/{slug}?locale=. pgx.ErrNoRows
+	// → handler 404.
+	GetGlossaryTerm(ctx context.Context, arg GetGlossaryTermParams) (GlossaryTerm, error)
 	GetLatestFXRate(ctx context.Context, arg GetLatestFXRateParams) (FxRate, error)
 	// Single-quote lookup that is currency-agnostic on input — the
 	// MarketQuote API does not require callers to pick a currency.
@@ -23,6 +38,9 @@ type Querier interface {
 	// by as_of so stale cross-listings are deprioritised.
 	GetLatestPrice(ctx context.Context, arg GetLatestPriceParams) (Price, error)
 	GetLatestSnapshotByUser(ctx context.Context, userID uuid.UUID) (PortfolioSnapshot, error)
+	// User-scoped single position lookup. Powers GET /positions/{id}.
+	// Cross-user access surfaces as ErrNoRows → handler 404.
+	GetPositionByID(ctx context.Context, arg GetPositionByIDParams) (Position, error)
 	GetPrice(ctx context.Context, arg GetPriceParams) (Price, error)
 	// Portfolio calculation fan-out: one round-trip for every unique
 	// (symbol, asset_type, currency) in the user's positions.
@@ -30,6 +48,9 @@ type Querier interface {
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
 	GetUserByClerkID(ctx context.Context, clerkUserID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	// Single digest row per user. pgx.ErrNoRows → handler uses defaults
+	// (digest enabled, weekday = Monday, no quiet hours).
+	GetUserDigestPreferences(ctx context.Context, userID uuid.UUID) (UserDigestPreference, error)
 	// Atomic UPSERT: create the day's counter at 1, or +1 if it already
 	// exists. Used by POST /internal/ai/usage (counter_type =
 	// 'ai_messages_daily'). PR B3 paywall-dismissal counters will reuse
@@ -38,17 +59,59 @@ type Querier interface {
 	// Fingerprint-based dedup: ON CONFLICT DO NOTHING on the (user_id, fingerprint)
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
+	// Messages for one conversation, cursor-paginated by (created_at, id)
+	// descending so the detail endpoint surfaces freshest first.
+	ListAIConversationMessages(ctx context.Context, arg ListAIConversationMessagesParams) ([]AiMessage, error)
+	// Cursor pagination by (updated_at, id) descending so the most
+	// recently-touched conversation is on top. Each row brings its
+	// message_count and a last_message_preview via subqueries so the
+	// handler does not need a second round-trip per row.
+	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]ListAIConversationsByUserRow, error)
 	ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]Account, error)
 	// Historical dividend feed for /portfolio/dividends. Filters by user +
 	// transaction_type='dividend' and honours cursor + optional date range.
 	// A dedicated dividends / corporate_actions table does not yet exist
 	// (TD-022); paid dividends live in the transactions ledger today.
 	ListDividendTransactions(ctx context.Context, arg ListDividendTransactionsParams) ([]Transaction, error)
+	// All cached rates at a specific historical date, filtered by
+	// base/quote if given.
+	ListFXRatesOnDate(ctx context.Context, arg ListFXRatesOnDateParams) ([]FxRate, error)
+	// Locale-scoped list for GET /glossary. Default locale is handled by
+	// the caller — the query always filters on an explicit locale string.
+	ListGlossaryTermsByLocale(ctx context.Context, locale string) ([]GlossaryTerm, error)
+	// Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
+	// the ordering matches the rest of the API.
+	//
+	// include_dismissed controls the dismissed_at filter: when the narg
+	// IS NULL we default to active-only (dismissed_at IS NULL); when the
+	// caller passes a non-null value we surface dismissed rows too. A
+	// boolean narg for "include or exclude" would be cleaner but sqlc's
+	// narg layer only round-trips nullable scalars, so a sentinel text
+	// ("include"/NULL) does the job without a bool helper.
+	ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error)
+	// Latest cached rate per (base, quote) pair. Optional filters on
+	// base / quote narrow the set; as_of is deferred to the handler
+	// because a specific-date variant reuses GetFXRateOnDate.
+	ListLatestFXRates(ctx context.Context, arg ListLatestFXRatesParams) ([]FxRate, error)
+	// Per-type channel settings. Missing rows default to all channels on
+	// (handler rule, see openapi NotificationPreferences.preferences).
+	ListNotificationPreferencesByUser(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
+	// Latest row per (symbol, asset_type) among the input symbol list.
+	// USD-preferred currency resolution on multi-row collisions, same
+	// logic as GetLatestPrice but for N symbols. Optional asset_type
+	// and currency filters narrow further.
+	ListPricesBySymbols(ctx context.Context, arg ListPricesBySymbolsParams) ([]Price, error)
 	// Drives the /portfolio/history endpoint. $2 is the inclusive start date.
 	ListSnapshotsByUserSince(ctx context.Context, arg ListSnapshotsByUserSinceParams) ([]PortfolioSnapshot, error)
+	// Powers GET /positions/{id}/transactions. positions are materialised
+	// views keyed by (user_id, account_id, symbol) — there is no FK from
+	// transactions to a position id, so we join on those three fields.
+	// Cursor pagination matches the rest of the API (executed_at DESC,
+	// id DESC).
+	ListTransactionsByPosition(ctx context.Context, arg ListTransactionsByPositionParams) ([]Transaction, error)
 	// Cursor pagination by (executed_at, id) — descending. Clients pass the
 	// last seen values as $2/$3; first page passes far-future / NULL.
 	ListTransactionsByUser(ctx context.Context, arg ListTransactionsByUserParams) ([]Transaction, error)
@@ -62,6 +125,11 @@ type Querier interface {
 	// bind marshalling. Same pattern should be applied if
 	// ListTransactionsByUser is ever wired to a handler.
 	ListTransactionsFiltered(ctx context.Context, arg ListTransactionsFilteredParams) ([]Transaction, error)
+	// Detail variant returning every (counter_type, date, count) row. Used
+	// by GET /me/paywalls to enumerate the distinct triggers a user has
+	// dismissed today. Returns rows in (counter_type, counter_date)
+	// ascending order so dedup downstream is trivial.
+	ListUsageCountersInRange(ctx context.Context, arg ListUsageCountersInRangeParams) ([]UsageCounter, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side
@@ -69,7 +137,18 @@ type Querier interface {
 	// is nullable for insight_generator / behavioural_coach calls that do
 	// not belong to any chat conversation.
 	RecordAIUsage(ctx context.Context, arg RecordAIUsageParams) (AiUsage, error)
+	// Symbol autocomplete from the prices table — best-effort substring
+	// match scoped to one asset_type when supplied. Used by GET
+	// /market/search until a real symbol-master / external-provider
+	// integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
+	// multiple-currency rows do not duplicate.
+	SearchPriceSymbols(ctx context.Context, arg SearchPriceSymbolsParams) ([]SearchPriceSymbolsRow, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
+	// Aggregate a counter for (user, counter_type) across [from, to]
+	// inclusive. Used by GET /me/usage — daily counters pass from=to=today,
+	// weekly counters pass from=monday, to=today. Returns 0 when no rows
+	// exist so the handler never has to nil-check.
+	SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error)
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)

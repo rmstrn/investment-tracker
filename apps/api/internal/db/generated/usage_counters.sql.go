@@ -41,3 +41,78 @@ func (q *Queries) IncrementUsageCounter(ctx context.Context, arg IncrementUsageC
 	)
 	return i, err
 }
+
+const listUsageCountersInRange = `-- name: ListUsageCountersInRange :many
+SELECT user_id, counter_type, counter_date, count FROM usage_counters
+WHERE user_id = $1
+  AND counter_date >= $2
+  AND counter_date <= $3
+ORDER BY counter_type, counter_date
+`
+
+type ListUsageCountersInRangeParams struct {
+	UserID        uuid.UUID
+	CounterDate   pgtype.Date
+	CounterDate_2 pgtype.Date
+}
+
+// Detail variant returning every (counter_type, date, count) row. Used
+// by GET /me/paywalls to enumerate the distinct triggers a user has
+// dismissed today. Returns rows in (counter_type, counter_date)
+// ascending order so dedup downstream is trivial.
+func (q *Queries) ListUsageCountersInRange(ctx context.Context, arg ListUsageCountersInRangeParams) ([]UsageCounter, error) {
+	rows, err := q.db.Query(ctx, listUsageCountersInRange, arg.UserID, arg.CounterDate, arg.CounterDate_2)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []UsageCounter{}
+	for rows.Next() {
+		var i UsageCounter
+		if err := rows.Scan(
+			&i.UserID,
+			&i.CounterType,
+			&i.CounterDate,
+			&i.Count,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const sumUsageCounterInRange = `-- name: SumUsageCounterInRange :one
+SELECT COALESCE(SUM(count), 0)::int AS total
+FROM usage_counters
+WHERE user_id = $1
+  AND counter_type = $2
+  AND counter_date >= $3
+  AND counter_date <= $4
+`
+
+type SumUsageCounterInRangeParams struct {
+	UserID        uuid.UUID
+	CounterType   string
+	CounterDate   pgtype.Date
+	CounterDate_2 pgtype.Date
+}
+
+// Aggregate a counter for (user, counter_type) across [from, to]
+// inclusive. Used by GET /me/usage — daily counters pass from=to=today,
+// weekly counters pass from=monday, to=today. Returns 0 when no rows
+// exist so the handler never has to nil-check.
+func (q *Queries) SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error) {
+	row := q.db.QueryRow(ctx, sumUsageCounterInRange,
+		arg.UserID,
+		arg.CounterType,
+		arg.CounterDate,
+		arg.CounterDate_2,
+	)
+	var total int32
+	err := row.Scan(&total)
+	return total, err
+}

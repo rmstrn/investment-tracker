@@ -3,6 +3,11 @@
 -- accounts; grouping into totals happens in Go, not SQL.
 SELECT * FROM positions WHERE user_id = $1 ORDER BY symbol ASC;
 
+-- name: GetPositionByID :one
+-- User-scoped single position lookup. Powers GET /positions/{id}.
+-- Cross-user access surfaces as ErrNoRows → handler 404.
+SELECT * FROM positions WHERE id = $1 AND user_id = $2;
+
 -- name: UpsertPosition :one
 INSERT INTO positions (
     id, user_id, account_id, symbol, asset_type, quantity, avg_cost, currency
