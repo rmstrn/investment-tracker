@@ -44,6 +44,10 @@ func New(deps *app.Deps) (*fiber.App, error) {
 
 	// Public routes — no auth.
 	a.Get("/health", healthHandler(deps))
+	// Glossary (openapi `security: []`) is public so UI tooltips
+	// work pre-login and from unauthenticated marketing pages.
+	a.Get("/glossary", handlers.ListGlossaryTerms(deps))
+	a.Get("/glossary/:slug", handlers.GetGlossaryTerm(deps))
 
 	// Authenticated API surface. Routes are registered per PR:
 	//   PR B1: /internal/ai/usage (internal-only)

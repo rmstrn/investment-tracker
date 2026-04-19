@@ -28,6 +28,9 @@ type Querier interface {
 	// Scoped by user_id to enforce ownership at the query layer.
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
+	// Composite-key lookup for GET /glossary/{slug}?locale=. pgx.ErrNoRows
+	// → handler 404.
+	GetGlossaryTerm(ctx context.Context, arg GetGlossaryTermParams) (GlossaryTerm, error)
 	GetLatestFXRate(ctx context.Context, arg GetLatestFXRateParams) (FxRate, error)
 	// Single-quote lookup that is currency-agnostic on input — the
 	// MarketQuote API does not require callers to pick a currency.
@@ -73,6 +76,9 @@ type Querier interface {
 	// All cached rates at a specific historical date, filtered by
 	// base/quote if given.
 	ListFXRatesOnDate(ctx context.Context, arg ListFXRatesOnDateParams) ([]FxRate, error)
+	// Locale-scoped list for GET /glossary. Default locale is handled by
+	// the caller — the query always filters on an explicit locale string.
+	ListGlossaryTermsByLocale(ctx context.Context, locale string) ([]GlossaryTerm, error)
 	// Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
 	// the ordering matches the rest of the API.
 	//
