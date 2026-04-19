@@ -1,7 +1,7 @@
 # TASK 07 — Web Frontend (Next.js)
 
-**Волна:** 2
-**Зависит от:** TASK_01, TASK_02 (design system), TASK_03 (API contract), TASK_04 (Core API)
+**Волна:** 3 (стартует после закрытия TASK_04 через PR C — deploy/Dockerfile/fly.toml)
+**Зависит от:** TASK_01 (monorepo + packages scaffold), TASK_02 (design system — `@investment-tracker/ui` + design-tokens), TASK_03 (API contract — `@investment-tracker/shared-types` + `@investment-tracker/api-client` из openapi.yaml), TASK_04 (Core API полностью закрыт: A / B1 / B2a / B2b / B2c / B3-i / B3-ii / B3-iii / C)
 **Блокирует:** ничего (конечный продукт)
 **Срок:** 5-7 недель
 
@@ -111,7 +111,7 @@ export default clerkMiddleware(async (auth, req) => {
 ```ts
 // lib/api/client.ts
 import createClient from "openapi-fetch"
-import type { paths } from "@tracker/shared-types"
+import type { paths } from "@investment-tracker/shared-types"
 
 export const api = createClient<paths>({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
@@ -195,7 +195,7 @@ export function usePositions(filters?: PositionsFilters) {
 **Technical:**
 - Используем EventSource (SSE) для стрима
 - Store conversation in state, persist в бекенд после каждого message
-- Показываем rate limit (5/день для Free)
+- Показываем rate limit из response headers `X-RateLimit-*` — лимиты исходят из `tiers.Limit.AIMessagesPerDay` (shared Go module `internal/domain/tiers/limits.go`). Не хардкодим число в UI
 
 ### 8. Insights Page
 

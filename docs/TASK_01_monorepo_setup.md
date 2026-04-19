@@ -135,7 +135,7 @@ investment-tracker/
 |---|---|
 | Node | 22 LTS |
 | pnpm | 9+ |
-| Go | 1.23+ |
+| Go | 1.25+ |
 | Python | 3.13 |
 | Turborepo | latest |
 | Biome | latest |

@@ -6,14 +6,16 @@
 
 | Компонент | Технология | Версия | Обоснование |
 |---|---|---|---|
-| Язык Core API | Go | 1.23+ | производительность, конкурентность, подходит для синхронизации с брокерами |
+| Язык Core API | Go | 1.25+ | производительность, конкурентность, поддержка `go tool` для pinned dev deps (sqlc, oapi-codegen) — закреплено PR A |
 | Web framework | Fiber | v3 | самый быстрый в экосистеме Go, Express-like API |
 | ORM / Queries | sqlc + pgx | latest | генерит типобезопасные Go-структуры из SQL, без runtime-магии |
 | Миграции БД | goose | latest | простые версионируемые SQL-миграции |
 | Очереди | asynq | latest | фоновые задачи с ретраями, работает поверх Redis |
 | Валидация | go-playground/validator | v10 | стандарт |
 | Логирование | zerolog | latest | структурированные JSON-логи |
-| OpenAPI | huma v2 | latest | автогенерит OpenAPI 3.1 спеку |
+| OpenAPI | oapi-codegen | latest | **spec-first**: openapi.yaml = source of truth, генерит `types.gen.go` + `server.gen.go` (ServerInterface) из спеки. Spec пишется в 3.1 (`type:[X,"null"]`), но код генерится через 3.0-preprocessor (TD-007: 3.1 nullable → 3.0 `nullable:true`) |
+| Decimal arithmetic | shopspring/decimal | latest | деньги и quantities — ТОЛЬКО через decimal, никаких float64 |
+| HTTP client (Redis) | go-redis v9 | latest | cursor pagination state, FX cache, idempotency keys, SETNX locks |
 
 ## AI-сервис
 

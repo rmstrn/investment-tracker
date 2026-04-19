@@ -147,7 +147,8 @@ claude
 - Бриф: docs/00_PROJECT_BRIEF.md
 
 ЗАБЛОКИРОВАННЫЕ РЕШЕНИЯ PO:
-- Подход: spec-first. openapi.yaml = source of truth, Go huma v2 потом подгоняется под него
+- Подход: spec-first. openapi.yaml = source of truth, Go сервер генерится через oapi-codegen (ServerInterface), handlers реализуют сгенерированный интерфейс
+- OpenAPI spec пишется в 3.1 (`type: [X, "null"]` для nullable), но фактическая генерация проходит через 3.0-preprocessor (TD-007) — преобразует `type:[X,"null"]` → `nullable: true`, потому что oapi-codegen 3.1 ещё не полностью поддерживает nullable union types
 - Все пути под /v1/ префиксом
 - UUIDv7 генерится в приложении (Go: github.com/google/uuid v1.6+, Python: uuid_utils). В миграциях НЕТ DEFAULT gen_random_uuid() — id UUID PRIMARY KEY NOT NULL без default
 - JSONB formal schemas (в components/schemas):
@@ -175,7 +176,7 @@ claude
 6. Goose миграции в apps/api/db/migrations/ (с учётом всех решений PO выше)
 7. Скрипты автогенерации:
    - tools/openapi/generate-ts.sh → packages/shared-types/ (TS types) + packages/api-client/ (fetch client)
-   - tools/openapi/generate-go.sh → apps/api/internal/api/ (huma types)
+   - tools/openapi/generate-go.sh → apps/api/internal/api/ (oapi-codegen: types.gen.go + server.gen.go с ServerInterface)
    - tools/openapi/generate-swift.sh → generated Swift types (в tools/openapi/generated/swift/)
 8. Bruno или Postman коллекция (выбери Bruno — git-friendly)
 9. Scalar UI для preview спеки
@@ -208,14 +209,19 @@ claude
 - Детали задачи: docs/TASK_04_core_backend.md
 - Архитектура: docs/02_ARCHITECTURE.md
 - API спека: tools/openapi/openapi.yaml (source of truth)
-- Стек: Go 1.23+, Fiber v3, huma v2, sqlc, pgx v5, goose, asynq, zerolog
+- Стек: Go 1.25+ (использует `go tool` для pinned dev deps: sqlc, oapi-codegen), Fiber v3, oapi-codegen (spec-first, не huma), sqlc, pgx v5, goose, asynq, zerolog, shopspring/decimal, go-redis v9
 
 ЗАБЛОКИРОВАННЫЕ РЕШЕНИЯ PO:
 - Go single module: apps/api/go.mod, module github.com/rmstrn/investment-tracker/apps/api
 - Два бинаря: cmd/api/main.go (HTTP), cmd/workers/main.go (asynq)
 - Shared internal/: config, db (sqlc output + pgx pool), models, clients, auth (Clerk JWT), crypto (envelope encryption)
 - Domain: internal/domain/{portfolio,transactions,accounts,insights,ai,billing}
-- huma v2 handlers подгоняются под openapi.yaml — регистрируем операции явно через huma.Register, проверяем соответствие спеке
+- oapi-codegen handlers: реализуем сгенерированный `ServerInterface` из `internal/api/server.gen.go`. Spec-as-truth — спека не описывается «вручную в коде», любое расхождение handlers ↔ openapi.yaml = баг
+- Dual-mode auth middleware: Clerk JWT (production) ИЛИ Bearer CORE_API_INTERNAL_TOKEN + `X-User-Id` header (service-to-service, напр. AI Service → Core API)
+- Idempotency middleware: `Idempotency-Key` header для POST/PUT, Redis SETNX lock + 24h кэш ответа; GET passthrough кэшируется отдельно
+- Cursor pagination: base64({last_id, last_ts}) со стабильным tie-break по id
+- FX resolver: Redis (TTL 5min) → Postgres fx_rates → inverse-pair fallback (EUR/USD ↔ USD/EUR)
+- Tiers.limits shared module: `internal/domain/tiers/limits.go` — единая структура `TierLimits` используется и read-path (gating), и write-path (mutation caps) доменами
 - UUIDv7 через github.com/google/uuid (NewV7)
 - Envelope encryption для broker credentials: KEK из env (пока одна), DEK per credential, AES-256-GCM
 - Fingerprint для dedup транзакций: SHA-256 от (account_id, external_id || (date, amount, symbol, type))
@@ -231,7 +237,7 @@ claude
 2. Если scaffold apps/api уже есть от TASK_01 — продолжай, не перезаписывай
 3. Имплементируй всё по TASK_04 DoD
 4. Используй sqlc для генерации Go кода из миграций (sqlc.yaml в apps/api/)
-5. Все endpoints из openapi.yaml с huma v2
+5. Все endpoints из openapi.yaml через реализацию oapi-codegen `ServerInterface` (types.gen.go + server.gen.go — источник типов, handlers в `internal/api/handlers/*`)
 6. Integration тесты на критичный path (auth, CRUD transactions, positions compute, snapshot)
 7. make api, make workers, make test — должны работать
 8. Dockerfile + docker-compose.yml в корне уже должен быть от TASK_01 — добавь api и workers services

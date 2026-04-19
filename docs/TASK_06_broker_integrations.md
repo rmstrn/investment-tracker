@@ -1,7 +1,7 @@
 # TASK 06 — Broker Integrations & Workers
 
-**Волна:** 2
-**Зависит от:** TASK_01, TASK_04 (Core API, где хранятся данные)
+**Волна:** 3 (стартует после закрытия TASK_04: PR A / B1 / B2a / B2b / B2c / B3-i / B3-ii / B3-iii / C)
+**Зависит от:** TASK_01, TASK_04 (Core API, где хранятся данные; `internal/domain/accounts`, `internal/domain/transactions`, shared `internal/domain/tiers/limits` — существуют после PR B3)
 **Блокирует:** демонстрация реальных данных в TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель
 
@@ -36,7 +36,7 @@
 
 ## Стек
 
-- **Go 1.23+** (те же технологии, что Core API)
+- **Go 1.25+** (те же технологии, что Core API — включая `go tool` для pinned dev deps)
 - **asynq** — задачи и воркеры
 - **resty** или стандартный `net/http` — HTTP клиенты
 - **snaptrade-go** или собственный wrapper над REST API SnapTrade

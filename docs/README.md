@@ -16,12 +16,14 @@ docs/
 ├── TECH_DEBT.md                 ← накопленный и принятый tech debt
 ├── merge-log.md                 ← журнал merge-событий с политикой admin-bypass
 ├── CLAUDE_CODE_PROMPTS.md       ← шаблоны для параллельных CC сессий
+├── RUNBOOK_ai_flip.md           ← runbook: flip AI Service 404-swallow → strict (после B3-iii merge)
+├── PR_C_preflight.md            ← pre-flight GAP-анализ финального PR C (deploy Core API на Fly.io)
 ├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
 ├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
 ├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
-├── TASK_04_core_backend.md      ← wave 2, Go API
-├── TASK_05_ai_service.md        ← wave 2, Python AI-сервис
-├── TASK_06_broker_integrations.md  ← wave 3
+├── TASK_04_core_backend.md      ← 🚧 wave 2, Go API (5 of ~8 PRs merged: A/B1/B2a/B2b/B2c; B3-i in progress, B3-ii/iii/C впереди)
+├── TASK_05_ai_service.md        ← ✅ wave 2, Python AI-сервис (merged as PR #34)
+├── TASK_06_broker_integrations.md  ← wave 3 (стартует после закрытия TASK_04)
 ├── TASK_07_web_frontend.md      ← wave 3
 └── TASK_08_ios_app.md           ← wave 4 (deferred — нужен Mac)
 ```
@@ -66,18 +68,28 @@ docs/
 
 Эти три можно начинать независимо. Первая неделя = эти три.
 
-### Волна 2 — после готовности Волны 1 (ориентировочно неделя 2-3)
+### Волна 2 — после готовности Волны 1
 
-| Таск | Зависит от |
+| Таск | Зависит от | Статус |
+|---|---|---|
+| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 5 of ~8 PRs merged (B3-i in progress) |
+| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34) |
+
+### Волна 3 — после закрытия TASK_04
+
+| Таск | Зависит от | Статус |
+|---|---|---|
+| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting |
+| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | ⏳ waiting |
+
+### Волна 4 — отложено
+
+| Таск | Статус |
 |---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 |
-| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 |
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 |
-| **TASK_08** (iOS) | TASK_02, TASK_03, TASK_04 |
+| **TASK_08** (iOS) | 🧊 deferred — нужен Mac + Xcode, отдельный репо |
 
 **Важно:** TASK_04 (Go API) — бутылочное горлышко для всего фронта и мобилки.
-Приоритизируйте его запуск сразу после готовности TASK_03.
+Wave 3 стартует после мержа PR C в TASK_04 (deploy/Dockerfile/fly.toml).
 
 ## Советы по параллельным чатам
 

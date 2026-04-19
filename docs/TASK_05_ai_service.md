@@ -1,5 +1,10 @@
 # TASK 05 — AI Service (Python)
 
+**Status:** ✅ COMPLETED (2026-04-19)
+**Merged:** PR #34 (1d46ed9)
+**Follow-ups tracked:** `TECH_DEBT.md` → TD-013 (record_ai_usage stub), TD-014 (allocation_drift proxy), TD-015 (in-memory rate limit), TD-016 (SDK mocks), TD-017 (LLM JSON parsing).
+**Integration gap:** end-to-end test against live Core API deferred until TASK_04 PR B merges (adds `/internal/ai/usage` endpoint and internal auth mode).
+
 **Волна:** 2
 **Зависит от:** TASK_01, TASK_03, TASK_04 (нужен Core API для чтения данных)
 **Блокирует:** AI-фичи в TASK_07 (Web) и TASK_08 (iOS)
