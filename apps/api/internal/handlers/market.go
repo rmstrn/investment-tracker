@@ -110,14 +110,15 @@ func cacheQuote(ctx context.Context, c *cache.Client, key string, body fiber.Map
 // respondQuoteMiss emits the canonical 404 for a price-not-yet-fetched
 // symbol. The retry_after_seconds field is a hint to clients; the
 // Retry-After header carries the same value for HTTP-native consumers.
+// Symbol/asset_type are reported through the structured `details`
+// block so that the human-facing message string stays stable for
+// clients keying off errs.ErrQuoteNotAvailable.
 func respondQuoteMiss(c fiber.Ctx, reqID, symbol, assetType string) error {
 	c.Set(fiber.HeaderRetryAfter, fmt.Sprintf("%d", quoteMissRetryAfterSecs))
 	return errs.Respond(c, reqID,
-		errs.New(http.StatusNotFound, "QUOTE_NOT_AVAILABLE",
-			fmt.Sprintf("price data not yet fetched for %s/%s", assetType, symbol)).
-			WithDetails(map[string]any{
-				"retry_after_seconds": quoteMissRetryAfterSecs,
-				"symbol":              symbol,
-				"asset_type":          assetType,
-			}))
+		errs.ErrQuoteNotAvailable.WithDetails(map[string]any{
+			"retry_after_seconds": quoteMissRetryAfterSecs,
+			"symbol":              symbol,
+			"asset_type":          assetType,
+		}))
 }
