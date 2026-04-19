@@ -60,17 +60,29 @@ type Querier interface {
 	// A dedicated dividends / corporate_actions table does not yet exist
 	// (TD-022); paid dividends live in the transactions ledger today.
 	ListDividendTransactions(ctx context.Context, arg ListDividendTransactionsParams) ([]Transaction, error)
+	// All cached rates at a specific historical date, filtered by
+	// base/quote if given.
+	ListFXRatesOnDate(ctx context.Context, arg ListFXRatesOnDateParams) ([]FxRate, error)
 	// Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
 	// the ordering matches the rest of the API. Optional since-filter
 	// (sqlc.narg) keeps the same query handy if a caller ever wants to
 	// poll for fresh rows.
 	ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error)
+	// Latest cached rate per (base, quote) pair. Optional filters on
+	// base / quote narrow the set; as_of is deferred to the handler
+	// because a specific-date variant reuses GetFXRateOnDate.
+	ListLatestFXRates(ctx context.Context, arg ListLatestFXRatesParams) ([]FxRate, error)
 	// Per-type channel settings. Missing rows default to all channels on
 	// (handler rule, see openapi NotificationPreferences.preferences).
 	ListNotificationPreferencesByUser(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
+	// Latest row per (symbol, asset_type) among the input symbol list.
+	// USD-preferred currency resolution on multi-row collisions, same
+	// logic as GetLatestPrice but for N symbols. Optional asset_type
+	// and currency filters narrow further.
+	ListPricesBySymbols(ctx context.Context, arg ListPricesBySymbolsParams) ([]Price, error)
 	// Drives the /portfolio/history endpoint. $2 is the inclusive start date.
 	ListSnapshotsByUserSince(ctx context.Context, arg ListSnapshotsByUserSinceParams) ([]PortfolioSnapshot, error)
 	// Powers GET /positions/{id}/transactions. positions are materialised

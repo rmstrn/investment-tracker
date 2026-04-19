@@ -14,6 +14,19 @@ ORDER BY
     as_of DESC
 LIMIT 1;
 
+-- name: ListPricesBySymbols :many
+-- Latest row per (symbol, asset_type) among the input symbol list.
+-- USD-preferred currency resolution on multi-row collisions, same
+-- logic as GetLatestPrice but for N symbols. Optional asset_type
+-- and currency filters narrow further.
+SELECT DISTINCT ON (symbol, asset_type)
+    symbol, asset_type, currency, price, as_of, source
+FROM prices
+WHERE symbol = ANY(@symbols::text[])
+  AND (sqlc.narg('asset_type')::text IS NULL OR asset_type = sqlc.narg('asset_type')::text)
+  AND (sqlc.narg('currency')::text   IS NULL OR currency   = sqlc.narg('currency')::text)
+ORDER BY symbol, asset_type, CASE currency WHEN 'USD' THEN 0 ELSE 1 END, as_of DESC;
+
 -- name: SearchPriceSymbols :many
 -- Symbol autocomplete from the prices table — best-effort substring
 -- match scoped to one asset_type when supplied. Used by GET

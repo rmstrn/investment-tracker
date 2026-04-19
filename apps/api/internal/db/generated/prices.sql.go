@@ -113,6 +113,53 @@ func (q *Queries) GetPricesBatch(ctx context.Context, arg GetPricesBatchParams) 
 	return items, nil
 }
 
+const listPricesBySymbols = `-- name: ListPricesBySymbols :many
+SELECT DISTINCT ON (symbol, asset_type)
+    symbol, asset_type, currency, price, as_of, source
+FROM prices
+WHERE symbol = ANY($1::text[])
+  AND ($2::text IS NULL OR asset_type = $2::text)
+  AND ($3::text   IS NULL OR currency   = $3::text)
+ORDER BY symbol, asset_type, CASE currency WHEN 'USD' THEN 0 ELSE 1 END, as_of DESC
+`
+
+type ListPricesBySymbolsParams struct {
+	Symbols   []string
+	AssetType *string
+	Currency  *string
+}
+
+// Latest row per (symbol, asset_type) among the input symbol list.
+// USD-preferred currency resolution on multi-row collisions, same
+// logic as GetLatestPrice but for N symbols. Optional asset_type
+// and currency filters narrow further.
+func (q *Queries) ListPricesBySymbols(ctx context.Context, arg ListPricesBySymbolsParams) ([]Price, error) {
+	rows, err := q.db.Query(ctx, listPricesBySymbols, arg.Symbols, arg.AssetType, arg.Currency)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Price{}
+	for rows.Next() {
+		var i Price
+		if err := rows.Scan(
+			&i.Symbol,
+			&i.AssetType,
+			&i.Currency,
+			&i.Price,
+			&i.AsOf,
+			&i.Source,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchPriceSymbols = `-- name: SearchPriceSymbols :many
 SELECT DISTINCT ON (symbol, asset_type) symbol, asset_type, currency
 FROM prices
