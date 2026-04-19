@@ -23,6 +23,8 @@ type Querier interface {
 	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Scoped by user_id so cross-user access → ErrNoRows → 404.
+	GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error)
 	// Scoped by user_id to enforce ownership at the query layer.
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
@@ -54,6 +56,14 @@ type Querier interface {
 	// Fingerprint-based dedup: ON CONFLICT DO NOTHING on the (user_id, fingerprint)
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)
+	// Messages for one conversation, cursor-paginated by (created_at, id)
+	// descending so the detail endpoint surfaces freshest first.
+	ListAIConversationMessages(ctx context.Context, arg ListAIConversationMessagesParams) ([]AiMessage, error)
+	// Cursor pagination by (updated_at, id) descending so the most
+	// recently-touched conversation is on top. Each row brings its
+	// message_count and a last_message_preview via subqueries so the
+	// handler does not need a second round-trip per row.
+	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]ListAIConversationsByUserRow, error)
 	ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]Account, error)
 	// Historical dividend feed for /portfolio/dividends. Filters by user +
 	// transaction_type='dividend' and honours cursor + optional date range.
