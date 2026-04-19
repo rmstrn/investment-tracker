@@ -54,10 +54,17 @@ type ClerkClaims struct {
 	OrgID     string `json:"org_id,omitempty"`
 }
 
+// UserLookup is the narrow surface the auth middleware needs from the
+// user repository. *users.Repo already satisfies it; tests pass a stub.
+type UserLookup interface {
+	GetByID(ctx context.Context, id uuid.UUID) (*users.User, error)
+	GetOrCreateByClerkID(ctx context.Context, clerkID, email string) (*users.User, error)
+}
+
 // AuthConfig carries the dependencies the middleware needs.
 type AuthConfig struct {
 	JWKS     keyfunc.Keyfunc
-	UserRepo *users.Repo
+	UserRepo UserLookup
 	// Issuer is the expected `iss` claim — Clerk sets this to the
 	// frontend API host (e.g. https://clerk.<yourapp>.com). Empty means
 	// skip the check (dev only).
@@ -143,6 +150,14 @@ func authenticateInternal(c fiber.Ctx, cfg AuthConfig) error {
 // authenticateClerk handles the Clerk-JWT path — the existing behaviour
 // from PR A, refactored out so the two modes read separately.
 func authenticateClerk(c fiber.Ctx, cfg AuthConfig, token string) error {
+	if cfg.JWKS == nil {
+		// Defensive: a Clerk attempt cannot succeed without JWKS.
+		// Production always configures it; tests of the internal-only
+		// path leave it nil and rely on this branch to reject cleanly
+		// instead of panicking on a nil interface.
+		return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
+	}
+
 	claims := &ClerkClaims{}
 	parsed, err := jwt.ParseWithClaims(token, claims, cfg.JWKS.Keyfunc,
 		jwt.WithValidMethods([]string{"RS256", "RS384", "RS512"}),

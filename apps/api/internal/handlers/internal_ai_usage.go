@@ -78,7 +78,7 @@ func InternalAIUsage(deps *app.Deps) fiber.Handler {
 				errs.Wrap(err, http.StatusBadRequest, "VALIDATION_ERROR", "Invalid JSON body"))
 		}
 
-		if err := req.validate(c); err != nil {
+		if err := req.validate(c.Get("X-User-Id")); err != nil {
 			return errs.Respond(c, reqID, err)
 		}
 
@@ -96,17 +96,18 @@ func InternalAIUsage(deps *app.Deps) fiber.Handler {
 }
 
 // validate runs the body checks. Returns a *errs.Coded ready to be
-// handed to errs.Respond, or nil on success.
-func (r aiUsageRequest) validate(c fiber.Ctx) *errs.Coded {
+// handed to errs.Respond, or nil on success. Takes the X-User-Id
+// header value rather than the Ctx so tests can exercise the rules in
+// pure Go.
+func (r aiUsageRequest) validate(headerUserID string) *errs.Coded {
 	// user_id must match X-User-Id — header is the authenticated
 	// identity; body is just a self-check.
-	headerUser := c.Get("X-User-Id")
-	if r.UserID.String() != headerUser {
+	if r.UserID.String() != headerUserID {
 		return errs.New(http.StatusBadRequest, "VALIDATION_ERROR",
 			"user_id in body does not match X-User-Id header").
 			WithDetails(map[string]any{
 				"body_user_id":   r.UserID.String(),
-				"header_user_id": headerUser,
+				"header_user_id": headerUserID,
 			})
 	}
 
