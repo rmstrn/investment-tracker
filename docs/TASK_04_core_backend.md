@@ -5,7 +5,7 @@
 **Блокирует:** TASK_05 (AI Service нужны портфельные данные), TASK_06 (интеграции), TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель (параллельно с другими)
 
-**Статус (2026-04-19):** 🚧 6 of ~8 PRs merged.
+**Статус (2026-04-20):** 🚧 7 of ~9 PRs merged.
 
 | PR | Scope | Status |
 |---|---|---|
@@ -15,9 +15,12 @@
 | B2b | read handlers batch 3 | ✅ merged (fdcf39f4) |
 | B2c | final read handlers (30 GET authenticated) | ✅ merged (fb16525) |
 | **B3-i** | **write-path mutations + asynq + idempotency lock** | **✅ merged 2026-04-19 (11d6098, PR #40)** |
-| B3-ii | AI mutations + SSE reverse-proxy + tier rate-limit | 🚧 next (anchor ~2000-2500 LOC) |
-| B3-iii | Clerk/Stripe webhooks + webhook_events idempotency | ⏳ queued |
+| **B3-ii-a** | **AI Service HTTP client + rate-limit middleware + 5 handlers (conv create/del, insights generate/dismiss/viewed)** | **✅ merged 2026-04-20 (8c52a4d, PR #42)** |
+| B3-ii-b | POST /ai/chat (sync) + POST /ai/chat/stream (SSE reverse-proxy + tee-parser + persist + ai_usage INSERT in DB tx) + SSE parser pkg | 🚧 next (anchor ~1500 LOC; zavisimosti snyty — см. PO_HANDOFF.md § 9) |
+| B3-iii | write-path completion + Clerk/Stripe webhooks + webhook_events idempotency | ⏳ queued |
 | C | Dockerfile + fly.toml + k6 smoke + deploy runbook | ⏳ queued (см. PR_C_preflight.md) |
+
+**Note (2026-04-20):** B3-ii split в два slice'а из-за LOC overrun (original anchor 2000-2500, actual forecast ~2900). B3-ii-a — foundation + simple handlers. B3-ii-b — streaming+persist (зависит от B3-ii-a). Решение задокументировано в PO_HANDOFF.md § 9.
 
 ## Цель
 

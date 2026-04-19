@@ -212,6 +212,15 @@ Core API эмитит header когда фича частично недосту
 
 ### Завтра утром — чек-лист
 
+**Docs polish pass (30-40 мин, до CC):**
+1. PO_HANDOFF § 5 Decisions quick-ref → ужать до ссылки + highlights (сейчас дублирует DECISIONS.md).
+2. PO_HANDOFF § 7 File map → расширить до всех 21 файла (сейчас 14).
+3. TECH_DEBT → добавить note сверху Active: «P1 = GA blocker, P2 = post-GA OK, P3 = polish».
+4. RUNBOOK_ai_flip → добавить header-note: «Status 2026-04-20: PR #42 + #43 merged; flip trigger = after B3-iii».
+5. 03_ROADMAP → закрыть dangling Doppler TODO (либо Month 2/4 с owner, либо Post-GA).
+6. Tier caps выровнять: в 00_PROJECT_BRIEF + TASK_04 добавить note «code is source of truth (Free=5, Plus=50, Pro=∞)».
+
+**B3-ii-b CC start:**
 1. Открыть новый CC чат в новом worktree (например `D:/investment-tracker-b3ii-b`).
 2. Дать continuation prompt (§ 12) + scope B3-ii-b (скопировать § 9 acceptance criteria).
 3. CC делает pre-flight audit → GAP REPORT.

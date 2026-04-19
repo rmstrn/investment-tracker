@@ -1,9 +1,9 @@
 # TASK 05 — AI Service (Python)
 
-**Status:** ✅ COMPLETED (2026-04-19)
-**Merged:** PR #34 (1d46ed9)
-**Follow-ups tracked:** `TECH_DEBT.md` → TD-013 (record_ai_usage stub), TD-014 (allocation_drift proxy), TD-015 (in-memory rate limit), TD-016 (SDK mocks), TD-017 (LLM JSON parsing).
-**Integration gap:** end-to-end test against live Core API deferred until TASK_04 PR B merges (adds `/internal/ai/usage` endpoint and internal auth mode).
+**Status:** ✅ COMPLETED (2026-04-19) + ✅ CLEANUP (2026-04-20).
+**Merged:** PR #34 (1d46ed9) initial; PR #43 (`b6108a4`) cleanup — удалён `record_ai_usage` dual-write.
+**Follow-ups tracked:** `TECH_DEBT.md` → TD-048..TD-054 (SSE error event `request_id`, Last-Event-ID resume, Path B timeout, SSE parser drift, rate-limit overcount, insights per-period gate, CC memory portability). См. актуальный Active TD список.
+**Integration gap:** end-to-end test against live Core API deferred until TASK_04 B3-iii merges (webhooks + write-path completion); после B3-iii — AI Service 404-swallow flip по `RUNBOOK_ai_flip.md`.
 
 **Волна:** 2
 **Зависит от:** TASK_01, TASK_03, TASK_04 (нужен Core API для чтения данных)
@@ -300,21 +300,22 @@ async def chat_stream(
 
 ### 7. Token usage tracking
 
+> **⚠️ UPDATED 2026-04-20 (PR #43):** секция ниже — **ИСТОРИЧЕСКАЯ**. `record_ai_usage` вызов удалён из AI Service. `ai_usage` ledger теперь owned by **Core API single-writer** — Core API извлекает `input_tokens` / `output_tokens` / `model` из SSE `message_stop` payload и пишет в `ai_usage` синхронно в той же DB transaction что и INSERT assistant message (после close SSE connection). См. `DECISIONS.md` 2026-04-20 entry «ai_usage ledger: Core API is single-writer» и PR #43 (`b6108a4`).
+>
+> Что AI Service ДЕЛАЕТ сегодня: возвращает usage данные (input_tokens, output_tokens, model) в SSE `message_stop` payload. Core API консьюмит через tee-parser в B3-ii-b. AI Service **НЕ пишет** в `ai_usage`.
+
 Каждый вызов Claude — платный. Трекаем для биллинга и мониторинга:
 
 ```python
+# ИСТОРИЧЕСКИЙ КОД — удалён в PR #43. Оставлен для audit trail.
+# Сегодня эти данные идут в SSE message_stop frame, Core API их персистит.
 async def call_claude(messages, ...):
     response = await anthropic.messages.create(...)
-    
-    # Сохраняем usage
-    await core_api.record_ai_usage(
-        user_id=user_id,
-        conversation_id=conversation_id,
-        input_tokens=response.usage.input_tokens,
-        output_tokens=response.usage.output_tokens,
-        cost_usd=calculate_cost(response.usage, model),
-    )
-    
+
+    # (удалено 2026-04-20) await core_api.record_ai_usage(...)
+    # ai_usage tracking owned by Core API (TASK_04 B3-ii-b).
+    # See docs/DECISIONS.md 2026-04-20 entry.
+
     return response
 ```
 
