@@ -202,6 +202,194 @@ paths:
               schema: { $ref: '#/components/schemas/PaywallDismissal' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /me/undo-deletion:
+    post:
+      tags: [Users]
+      operationId: undoDeletion
+      summary: Cancel a pending account deletion (within grace period)
+      description: |
+        Clears `deletion_scheduled_at`. Only succeeds while the user is
+        within the 7-day grace window (see §17.4). After the window expires
+        the hard-delete job runs and this endpoint returns `410 GONE`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Deletion cancelled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Account was not pending deletion
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '410':
+          description: Grace period expired — deletion already processed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  # ───────────────────────── Security (Clerk-proxied) ────────────
+  # All 2FA + session endpoints proxy to Clerk Management API. Clerk is the
+  # source of truth — we store no local MFA secret or session row. The
+  # endpoints exist so the web/iOS app has a stable surface independent of
+  # Clerk SDK changes.
+  /me/2fa:
+    get:
+      tags: [Users]
+      operationId: get2FAStatus
+      summary: Get 2FA enrolment status (proxied to Clerk)
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/enroll:
+    post:
+      tags: [Users]
+      operationId: enroll2FA
+      summary: Start TOTP enrolment (proxied to Clerk)
+      description: |
+        Returns the TOTP shared secret, an `otpauth://` URL (for QR code
+        rendering) and a preview of backup codes. Enrolment completes only
+        after `POST /me/2fa/verify` with a valid 6-digit code.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Enrolment payload
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorEnrollment' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: 2FA already enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /me/2fa/verify:
+    post:
+      tags: [Users]
+      operationId: verify2FA
+      summary: Verify the TOTP code and finalise enrolment
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TwoFactorVerifyRequest' }
+      responses:
+        '200':
+          description: 2FA enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/disable:
+    post:
+      tags: [Users]
+      operationId: disable2FA
+      summary: Disable 2FA (requires current code)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TwoFactorVerifyRequest' }
+      responses:
+        '200':
+          description: 2FA disabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorStatus' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/2fa/backup-codes/regenerate:
+    post:
+      tags: [Users]
+      operationId: regenerate2FABackupCodes
+      summary: Regenerate backup codes (invalidates previous set)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: New backup codes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TwoFactorBackupCodes' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: 2FA is not enabled
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /me/sessions:
+    get:
+      tags: [Users]
+      operationId: listMySessions
+      summary: List active Clerk sessions
+      responses:
+        '200':
+          description: Sessions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/UserSession' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, description: 'Clerk session id.' }
+    delete:
+      tags: [Users]
+      operationId: revokeMySession
+      summary: Revoke a single session
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Revoked }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /me/sessions/others:
+    delete:
+      tags: [Users]
+      operationId: revokeOtherSessions
+      summary: Revoke every session except the current one
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Bulk revoke result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [revoked_count]
+                properties:
+                  revoked_count: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   # ─────────────────────────── Accounts ──────────────────────────
   /accounts:
     get:
@@ -1422,6 +1610,191 @@ paths:
         '400': { $ref: '#/components/responses/ValidationError' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  # ──────────────────────────── Exports ──────────────────────────
+  /exports:
+    post:
+      tags: [Users]
+      operationId: createExport
+      summary: Queue a CSV export job
+      description: |
+        Async-only (see design brief §15.5). Returns `202` with a job id;
+        clients poll `GET /exports/{id}` until `status=done` and then
+        download `result_url`. Tier-gated: Plus+.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExportCreateRequest' }
+      responses:
+        '202':
+          description: Export queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: CSV export requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /exports/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Users]
+      operationId: getExport
+      summary: Poll an export job
+      responses:
+        '200':
+          description: Job state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExportJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ─────────────────────── Analytics & Tax (Pro) ─────────────────
+  /portfolio/analytics:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioAnalytics
+      summary: Advanced analytics (Sharpe, Sortino, drawdown, factors, …)
+      description: |
+        Pro-only. Returns the full quant block backing `/analytics`
+        (design brief §15.3). Free/Plus receive `403 FEATURE_LOCKED`.
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [3m, 6m, 1y, 3y, all]
+            default: 1y
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Analytics block
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioAnalytics' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Analytics require Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /portfolio/tax:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioTax
+      summary: Tax report for a jurisdiction and year
+      description: Pro-only. Free/Plus receive `403 FEATURE_LOCKED`.
+      parameters:
+        - $ref: '#/components/parameters/TaxJurisdiction'
+        - $ref: '#/components/parameters/TaxYear'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Tax report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaxReport' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tax reports require Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /portfolio/tax/export:
+    get:
+      tags: [Portfolio]
+      operationId: exportPortfolioTax
+      summary: Download a tax report as PDF or CSV
+      parameters:
+        - $ref: '#/components/parameters/TaxJurisdiction'
+        - $ref: '#/components/parameters/TaxYear'
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [pdf, csv]
+      responses:
+        '200':
+          description: |
+            Returns the rendered file directly for PDF/CSV; clients should
+            trigger a download rather than parse the body.
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+            text/csv:
+              schema: { type: string }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tax export requires Pro
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  # ─────────────────────────── Glossary ──────────────────────────
+  /glossary:
+    get:
+      tags: [AI]
+      operationId: listGlossaryTerms
+      summary: List financial glossary terms (Explainer module — §14.3)
+      security: []
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, default: en }
+      responses:
+        '200':
+          description: Glossary terms
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/GlossaryTerm' }
+
+  /glossary/{slug}:
+    parameters:
+      - name: slug
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+    get:
+      tags: [AI]
+      operationId: getGlossaryTerm
+      summary: Get a single glossary term
+      security: []
+      parameters:
+        - name: locale
+          in: query
+          schema: { type: string, default: en }
+      responses:
+        '200':
+          description: Glossary term
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GlossaryTerm' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   # ─────────────────────────── Webhooks ──────────────────────────
   /auth/webhook:
     post:
@@ -1510,6 +1883,22 @@ components:
       required: true
       description: Paywall context the client is dismissing (see design brief §13.4).
       schema: { $ref: '#/components/schemas/PaywallTriggerKind' }
+    TaxJurisdiction:
+      name: jurisdiction
+      in: query
+      required: true
+      description: ISO-3166 alpha-2 country code for the tax regime.
+      schema:
+        type: string
+        enum: [US, DE, FR, UK, ES, NL]
+    TaxYear:
+      name: year
+      in: query
+      required: true
+      schema:
+        type: integer
+        minimum: 2000
+        maximum: 2100
     Cursor:
       name: cursor
       in: query
@@ -1753,6 +2142,14 @@ components:
         subscription_tier: { $ref: '#/components/schemas/SubscriptionTier' }
         stripe_customer_id:
           type: [string, "null"]
+        deletion_scheduled_at:
+          type: [string, "null"]
+          format: date-time
+          description: |
+            Set when the user initiated account deletion (see §17.4).
+            The hard-delete worker runs after a 7-day grace period; the user
+            can call `POST /me/undo-deletion` within that window to cancel.
+            `null` means the account is active / not pending deletion.
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
 
@@ -2338,12 +2735,32 @@ components:
         - $ref: '#/components/schemas/AIMessageContentText'
         - $ref: '#/components/schemas/AIMessageContentToolUse'
         - $ref: '#/components/schemas/AIMessageContentToolResult'
+        - $ref: '#/components/schemas/AIMessageContentImpactCard'
+        - $ref: '#/components/schemas/AIMessageContentCallout'
       discriminator:
         propertyName: type
         mapping:
           text: '#/components/schemas/AIMessageContentText'
           tool_use: '#/components/schemas/AIMessageContentToolUse'
           tool_result: '#/components/schemas/AIMessageContentToolResult'
+          impact_card: '#/components/schemas/AIMessageContentImpactCard'
+          callout: '#/components/schemas/AIMessageContentCallout'
+
+    AIMessageRenderableContent:
+      description: |
+        Subset of `AIMessageContent` that can appear inside a `tool_result`
+        block (and anywhere else the protocol allows the model to return
+        inline rich content without re-entering the tool-use protocol).
+      oneOf:
+        - $ref: '#/components/schemas/AIMessageContentText'
+        - $ref: '#/components/schemas/AIMessageContentImpactCard'
+        - $ref: '#/components/schemas/AIMessageContentCallout'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/AIMessageContentText'
+          impact_card: '#/components/schemas/AIMessageContentImpactCard'
+          callout: '#/components/schemas/AIMessageContentCallout'
 
     AIMessageContentText:
       type: object
@@ -2376,7 +2793,64 @@ components:
         is_error: { type: boolean }
         content:
           type: array
-          items: { $ref: '#/components/schemas/AIMessageContentText' }
+          items: { $ref: '#/components/schemas/AIMessageRenderableContent' }
+
+    AIMessageContentImpactCard:
+      type: object
+      required: [type, scenario, before, after]
+      description: |
+        Structured rendering payload for the Scenario Simulator
+        (design brief §14.2). The assistant emits this block inside a
+        `tool_result` (or directly as a top-level content block when
+        deterministic) so clients render the impact-card UI natively
+        instead of parsing narrative text.
+      properties:
+        type: { type: string, const: impact_card }
+        scenario:
+          type: string
+          maxLength: 200
+          description: User-readable label, e.g. "USD drops 10%".
+        before: { $ref: '#/components/schemas/PortfolioSnapshot' }
+        after: { $ref: '#/components/schemas/PortfolioSnapshot' }
+        top_affected_positions:
+          type: array
+          maxItems: 5
+          items: { $ref: '#/components/schemas/AffectedPosition' }
+        narrative:
+          type: string
+          description: 1–2 sentence summary of the delta.
+
+    AIMessageContentCallout:
+      type: object
+      required: [type, kind, title, body]
+      description: |
+        Inline callout block. Drives Behavioral Coach nudges (§14.1) and
+        Explainer definitions (§14.3). UI styling is driven by `kind`.
+      properties:
+        type: { type: string, const: callout }
+        kind:
+          type: string
+          enum: [behavioral, explainer, info, warning]
+        title: { type: string, maxLength: 120 }
+        body: { type: string }
+        term_slug:
+          type: [string, "null"]
+          description: |
+            For `kind=explainer` — `GlossaryTerm.slug` the callout defines.
+            Clients MAY deep-link to `/glossary/{slug}` for more detail.
+
+    AffectedPosition:
+      type: object
+      required: [symbol, asset_type, value_before, value_after, delta_percent]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        value_before: { $ref: '#/components/schemas/Money' }
+        value_after: { $ref: '#/components/schemas/Money' }
+        delta_percent:
+          type: number
+          format: float
+          description: Signed fraction; 0.123 == +12.3%.
 
     AIChatRequest:
       type: object
@@ -2464,7 +2938,7 @@ components:
       properties:
         type: { type: string, const: content_block_start }
         index: { type: integer }
-        block_type: { type: string, enum: [text, tool_use] }
+        block_type: { type: string, enum: [text, tool_use, impact_card, callout] }
 
     AIStreamEventContentDelta:
       type: object
@@ -2838,3 +3312,260 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/PriceEntry' }
+
+    # ── Security (Clerk-proxied) ──────────────────────────────
+    TwoFactorStatus:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: boolean }
+        enrolled_at:
+          type: [string, "null"]
+          format: date-time
+        backup_codes_remaining:
+          type: [integer, "null"]
+          minimum: 0
+
+    TwoFactorEnrollment:
+      type: object
+      required: [secret, otpauth_url, backup_codes]
+      properties:
+        secret:
+          type: string
+          description: Base32 TOTP shared secret (manual-entry fallback).
+        otpauth_url:
+          type: string
+          description: '`otpauth://` URL suitable for QR-code rendering.'
+        backup_codes:
+          type: array
+          description: One-time backup codes shown once at enrolment.
+          items: { type: string }
+
+    TwoFactorVerifyRequest:
+      type: object
+      required: [code]
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          pattern: '^[0-9]{6}$'
+
+    TwoFactorBackupCodes:
+      type: object
+      required: [backup_codes]
+      properties:
+        backup_codes:
+          type: array
+          items: { type: string }
+
+    UserSession:
+      type: object
+      required: [id, last_active_at, is_current]
+      properties:
+        id:
+          type: string
+          description: Clerk session id.
+        device_label:
+          type: [string, "null"]
+          description: Best-effort device/browser label (e.g. "Chrome on macOS").
+        browser:
+          type: [string, "null"]
+        os:
+          type: [string, "null"]
+        ip_address:
+          type: [string, "null"]
+          description: IPv4/IPv6 address as recorded by Clerk.
+        city:
+          type: [string, "null"]
+          description: Best-effort geolocation from IP.
+        last_active_at:
+          type: string
+          format: date-time
+        is_current:
+          type: boolean
+
+    # ── Exports ───────────────────────────────────────────────
+    ExportResource:
+      type: string
+      enum: [transactions, positions, snapshots, dividends]
+
+    ExportCreateRequest:
+      type: object
+      required: [resource, format]
+      additionalProperties: false
+      properties:
+        resource: { $ref: '#/components/schemas/ExportResource' }
+        format:
+          type: string
+          enum: [csv]
+        from:
+          type: [string, "null"]
+          format: date
+        to:
+          type: [string, "null"]
+          format: date
+        columns:
+          type: array
+          description: Optional column allow-list; if omitted, default set is exported.
+          items: { type: string }
+
+    ExportJob:
+      type: object
+      required: [id, resource, format, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        resource: { $ref: '#/components/schemas/ExportResource' }
+        format: { type: string, enum: [csv] }
+        status:
+          type: string
+          enum: [queued, running, done, failed]
+        filters:
+          type: object
+          additionalProperties: true
+        row_count:
+          type: [integer, "null"]
+          minimum: 0
+        result_url:
+          type: [string, "null"]
+          format: uri
+          description: Pre-signed URL; expires 24h after `completed_at`.
+        error:
+          type: [string, "null"]
+        created_at: { type: string, format: date-time }
+        completed_at:
+          type: [string, "null"]
+          format: date-time
+
+    # ── Analytics (Pro) ───────────────────────────────────────
+    PortfolioAnalytics:
+      type: object
+      required:
+        - period
+        - sharpe
+        - sortino
+        - max_drawdown
+        - volatility
+        - underwater_series
+        - factor_exposure
+        - style_box
+        - correlation_matrix
+      properties:
+        period: { type: string, enum: [3m, 6m, 1y, 3y, all] }
+        sharpe: { type: number, format: float }
+        sortino: { type: number, format: float }
+        max_drawdown:
+          type: number
+          format: float
+          description: Negative signed fraction; -0.23 == -23%.
+        volatility:
+          type: number
+          format: float
+          description: Annualised stdev, unitless decimal.
+        underwater_series:
+          type: array
+          items:
+            type: object
+            required: [date, drawdown_percent]
+            properties:
+              date: { type: string, format: date }
+              drawdown_percent: { type: number, format: float }
+        factor_exposure:
+          type: object
+          required: [value, growth, momentum, quality, size]
+          properties:
+            value: { type: number, format: float }
+            growth: { type: number, format: float }
+            momentum: { type: number, format: float }
+            quality: { type: number, format: float }
+            size: { type: number, format: float }
+        style_box:
+          type: array
+          minItems: 3
+          maxItems: 3
+          description: |
+            3×3 grid (growth/core/value × small/mid/large). Row-major:
+            `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
+            Values are fractions summing to ~1.0.
+          items:
+            type: array
+            minItems: 3
+            maxItems: 3
+            items: { type: number, format: float }
+        correlation_matrix:
+          type: object
+          required: [symbols, values]
+          properties:
+            symbols:
+              type: array
+              items: { type: string }
+            values:
+              type: array
+              description: Square matrix, same ordering as `symbols`.
+              items:
+                type: array
+                items: { type: number, format: float }
+
+    # ── Tax (Pro) ─────────────────────────────────────────────
+    TaxReport:
+      type: object
+      required:
+        - jurisdiction
+        - year
+        - realized_gains
+        - realized_losses
+        - dividends_received
+        - withholding_tax
+        - estimated_taxable_income
+        - transactions
+      properties:
+        jurisdiction: { type: string, enum: [US, DE, FR, UK, ES, NL] }
+        year: { type: integer }
+        realized_gains: { $ref: '#/components/schemas/Money' }
+        realized_losses: { $ref: '#/components/schemas/Money' }
+        dividends_received: { $ref: '#/components/schemas/Money' }
+        withholding_tax: { $ref: '#/components/schemas/Money' }
+        estimated_taxable_income: { $ref: '#/components/schemas/Money' }
+        transactions:
+          type: array
+          items: { $ref: '#/components/schemas/TaxTransaction' }
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+
+    TaxTransaction:
+      type: object
+      required: [transaction_id, executed_at, symbol, kind, amount, currency]
+      properties:
+        transaction_id: { type: string, format: uuid }
+        executed_at: { type: string, format: date-time }
+        symbol: { type: string }
+        kind:
+          type: string
+          enum: [realized_gain, realized_loss, dividend, withholding, other]
+          description: Classification relevant to the selected jurisdiction.
+        amount: { $ref: '#/components/schemas/Money' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        holding_period_days:
+          type: [integer, "null"]
+          minimum: 0
+          description: Short-term vs long-term gain classification input.
+
+    # ── Glossary ──────────────────────────────────────────────
+    GlossaryTerm:
+      type: object
+      required: [slug, locale, title, short_def]
+      properties:
+        slug:
+          type: string
+          pattern: '^[a-z0-9-]+$'
+        locale: { type: string, examples: [en, en-US] }
+        title: { type: string }
+        short_def:
+          type: string
+          description: One-sentence definition (tooltip copy).
+        long_def:
+          type: [string, "null"]
+          description: Expanded paragraph; used by the chat Explainer callout.
+        related_slugs:
+          type: array
+          items: { type: string, pattern: '^[a-z0-9-]+$' }
+        updated_at: { type: string, format: date-time }
