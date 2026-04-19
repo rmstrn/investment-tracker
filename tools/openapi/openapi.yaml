@@ -61,6 +61,8 @@ tags:
     description: AI chat, conversation history and proactive insights
   - name: Billing
     description: Subscription and Stripe integration
+  - name: Notifications
+    description: In-app notification center and delivery preferences
   - name: Webhooks
     description: Inbound webhooks from Clerk and Stripe
 
@@ -159,6 +161,45 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UsageSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/paywalls:
+    get:
+      tags: [Users]
+      operationId: listMyPaywallDismissals
+      summary: List soft-paywall dismissals active for the current 24h window
+      description: |
+        Returns the paywall triggers the caller has dismissed today. The
+        client uses this to avoid re-showing the same soft-paywall modal
+        more than once per day (see design brief §13.4). Dismissals are
+        bucketed by local day and expire at UTC midnight.
+      responses:
+        '200':
+          description: Active dismissals
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaywallDismissalList' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/paywalls/{trigger}/dismiss:
+    parameters:
+      - $ref: '#/components/parameters/PaywallTrigger'
+    post:
+      tags: [Users]
+      operationId: dismissPaywall
+      summary: Record a soft-paywall dismissal for the current day
+      description: |
+        Idempotent per (user, trigger, day) — repeated calls within the
+        same UTC day are no-ops and return 200. Stored on the shared
+        `usage_counters` table with `counter_type='paywall_dismissed_{trigger}'`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Dismissal recorded (or already recorded earlier today)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaywallDismissal' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   # ─────────────────────────── Accounts ──────────────────────────
@@ -454,7 +495,7 @@ paths:
           required: true
           schema:
             type: string
-            enum: [1m, 3m, 6m, 1y, all]
+            enum: [1d, 1w, 1m, 3m, 6m, 1y, all]
         - $ref: '#/components/parameters/DisplayCurrency'
       responses:
         '200':
@@ -1047,6 +1088,173 @@ paths:
               schema: { $ref: '#/components/schemas/PortalResponse' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /billing/invoices:
+    get:
+      tags: [Billing]
+      operationId: listInvoices
+      summary: List Stripe invoices for the current user
+      description: |
+        Proxies Stripe's `invoices.list` for the authenticated user's
+        `stripe_customer_id`. Used by settings > billing to render invoice
+        history (see design brief §13.7 — last 12 invoices with download).
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Paginated invoices
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Invoice' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/cancellation-feedback:
+    post:
+      tags: [Billing]
+      operationId: submitCancellationFeedback
+      summary: Record retention-modal feedback for a subscription cancellation
+      description: |
+        Called from the retention modal (design brief §13.8) before the
+        actual Stripe cancellation. The row is analytics-only — it does NOT
+        cancel the subscription. Cancellation itself happens through the
+        Stripe Billing Portal.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CancellationFeedbackRequest' }
+      responses:
+        '201':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CancellationFeedback' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ──────────────────────── Notifications ────────────────────────
+  /notifications:
+    get:
+      tags: [Notifications]
+      operationId: listNotifications
+      summary: List notifications (in-app notification center)
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - name: unread_only
+          in: query
+          schema: { type: boolean, default: false }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/NotificationType' }
+      responses:
+        '200':
+          description: Paginated notifications
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Notification' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /notifications/unread_count:
+    get:
+      tags: [Notifications]
+      operationId: getNotificationUnreadCount
+      summary: Get the unread count shown on the bell badge
+      responses:
+        '200':
+          description: Unread count
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationUnreadCount' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /notifications/{id}/read:
+    parameters:
+      - $ref: '#/components/parameters/NotificationId'
+    post:
+      tags: [Notifications]
+      operationId: markNotificationRead
+      summary: Mark a single notification as read
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Marked read }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /notifications/read_all:
+    post:
+      tags: [Notifications]
+      operationId: markAllNotificationsRead
+      summary: Mark every unread notification as read
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Mark-all result
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [marked_count]
+                properties:
+                  marked_count: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/notification-preferences:
+    get:
+      tags: [Notifications]
+      operationId: getNotificationPreferences
+      summary: Get per-type channel preferences and digest settings
+      responses:
+        '200':
+          description: Preferences
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationPreferences' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Notifications]
+      operationId: updateNotificationPreferences
+      summary: Update channel preferences / digest settings
+      description: |
+        Partial update. Omitted `preferences[*]` entries are left unchanged;
+        supply only the rows the user actually toggled. Digest settings are
+        replaced wholesale when `digest` is present.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificationPreferencesUpdate' }
+      responses:
+        '200':
+          description: Updated preferences
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationPreferences' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
   # ─────────────────────────── Webhooks ──────────────────────────
   /auth/webhook:
     post:
@@ -1124,6 +1332,17 @@ components:
       in: path
       required: true
       schema: { type: string, format: uuid }
+    NotificationId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PaywallTrigger:
+      name: trigger
+      in: path
+      required: true
+      description: Paywall context the client is dismissing (see design brief §13.4).
+      schema: { $ref: '#/components/schemas/PaywallTriggerKind' }
     Cursor:
       name: cursor
       in: query
@@ -1264,13 +1483,21 @@ components:
           properties:
             code:
               type: string
-              description: Stable machine-readable error code.
+              description: |
+                Stable machine-readable error code.
+
+                - `TIER_LIMIT_EXCEEDED` — quota exhausted on the current tier
+                  (e.g. 5/5 AI messages today). UI shows usage-reset messaging.
+                - `FEATURE_LOCKED` — tier does not include this feature at all
+                  (e.g. Free/Plus calling `/portfolio/analytics`). UI shows
+                  the upgrade/blur-preview treatment from design brief §13.5.
               enum:
                 - VALIDATION_ERROR
                 - INVALID_REQUEST
                 - UNAUTHENTICATED
                 - FORBIDDEN
                 - TIER_LIMIT_EXCEEDED
+                - FEATURE_LOCKED
                 - NOT_FOUND
                 - CONFLICT
                 - DUPLICATE_TRANSACTION
@@ -1357,11 +1584,13 @@ components:
         tier: { $ref: '#/components/schemas/SubscriptionTier' }
         counters:
           type: object
-          required: [ai_messages_daily, connected_accounts]
+          required: [ai_messages_daily, connected_accounts, insights_weekly]
           properties:
             ai_messages_daily:
               $ref: '#/components/schemas/UsageCounter'
             connected_accounts:
+              $ref: '#/components/schemas/UsageCounter'
+            insights_weekly:
               $ref: '#/components/schemas/UsageCounter'
 
     UsageCounter:
@@ -1645,7 +1874,7 @@ components:
       properties:
         period:
           type: string
-          enum: [1m, 3m, 6m, 1y, all]
+          enum: [1d, 1w, 1m, 3m, 6m, 1y, all]
         base_currency: { $ref: '#/components/schemas/Currency' }
         display_currency: { $ref: '#/components/schemas/Currency' }
         points:
@@ -1894,6 +2123,28 @@ components:
           description: |
             Optional override; defaults to the server-side Claude model for
             the user's tier.
+        context:
+          $ref: '#/components/schemas/ChatContext'
+
+    ChatContext:
+      type: object
+      required: [type]
+      additionalProperties: false
+      description: |
+        Caller-supplied hint describing where the conversation was opened from.
+        The AI service uses this to seed the system prompt (e.g. slide-over
+        chat opened on a position detail → "About AAPL"). Clients MAY omit it
+        for plain `/chat` page conversations.
+      properties:
+        type:
+          type: string
+          enum: [dashboard, position, insight, transaction]
+        ref_id:
+          type: [string, "null"]
+          description: |
+            Resource identifier matching the `type`. For `type=position` this
+            is a symbol (e.g. `AAPL`) or a positions UUID; for `insight` /
+            `transaction` it is the corresponding UUID. Ignored when `type=dashboard`.
 
     AIChatResponse:
       type: object
@@ -2075,6 +2326,194 @@ components:
       required: [url]
       properties:
         url: { type: string, format: uri }
+
+    Invoice:
+      type: object
+      required: [id, amount_due, amount_paid, currency, status, created_at]
+      description: Read-only mirror of the subset of fields rendered in settings > billing.
+      properties:
+        id: { type: string, description: Stripe invoice id (in_...). }
+        number:
+          type: [string, "null"]
+          description: Human-readable invoice number (Stripe-assigned).
+        amount_due: { $ref: '#/components/schemas/Money' }
+        amount_paid: { $ref: '#/components/schemas/Money' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        status:
+          type: string
+          enum: [draft, open, paid, uncollectible, void]
+        hosted_invoice_url:
+          type: [string, "null"]
+          format: uri
+        invoice_pdf_url:
+          type: [string, "null"]
+          format: uri
+        period_start:
+          type: [string, "null"]
+          format: date-time
+        period_end:
+          type: [string, "null"]
+          format: date-time
+        created_at: { type: string, format: date-time }
+
+    CancellationReason:
+      type: string
+      enum: [not_using_enough, too_expensive, missing_feature, other]
+
+    CancellationFeedbackRequest:
+      type: object
+      required: [reason]
+      additionalProperties: false
+      properties:
+        reason: { $ref: '#/components/schemas/CancellationReason' }
+        free_text:
+          type: string
+          maxLength: 2000
+        counter_offer_accepted:
+          type: boolean
+          default: false
+          description: |
+            True if the user accepted one of the retention counter-offers
+            (see design brief §13.8). False for "cancel anyway".
+
+    CancellationFeedback:
+      allOf:
+        - $ref: '#/components/schemas/CancellationFeedbackRequest'
+        - type: object
+          required: [id, created_at]
+          properties:
+            id: { type: string, format: uuid }
+            stripe_subscription_id:
+              type: [string, "null"]
+            created_at: { type: string, format: date-time }
+
+    # ── Paywall dismissals ────────────────────────────────────
+    PaywallTriggerKind:
+      type: string
+      description: |
+        Context key for a soft-paywall modal. Keep in sync with frontend
+        constants in packages/ui (see design brief §13.3/§13.4).
+      enum:
+        - ai_messages_daily
+        - insights_weekly
+        - connected_accounts
+        - pro_feature
+
+    PaywallDismissal:
+      type: object
+      required: [trigger, dismissed_on, reset_at]
+      properties:
+        trigger: { $ref: '#/components/schemas/PaywallTriggerKind' }
+        dismissed_on:
+          type: string
+          format: date
+          description: UTC day bucket when the dismissal was recorded.
+        reset_at:
+          type: string
+          format: date-time
+          description: Next UTC midnight — client MAY re-show the paywall after this instant.
+
+    PaywallDismissalList:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/PaywallDismissal' }
+
+    # ── Notifications ─────────────────────────────────────────
+    NotificationType:
+      type: string
+      enum:
+        - insight_generated
+        - sync_completed
+        - sync_failed
+        - dividend_paid
+        - price_alert
+        - billing_event
+
+    Notification:
+      type: object
+      required: [id, type, title, body, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        type: { $ref: '#/components/schemas/NotificationType' }
+        title: { type: string, maxLength: 200 }
+        body: { type: string }
+        data:
+          type: object
+          additionalProperties: true
+          description: |
+            Loose type-specific payload (e.g. `{ "insight_id": "...", "symbol": "AAPL" }`).
+            Clients SHOULD prefer `deep_link` for navigation and use `data`
+            only for rendering enrichments.
+        deep_link:
+          type: [string, "null"]
+          description: |
+            In-app path (e.g. `/insights/<id>`, `/settings/accounts`). Never a
+            fully-qualified URL — relative to the web/iOS app root.
+        read_at:
+          type: [string, "null"]
+          format: date-time
+        created_at: { type: string, format: date-time }
+
+    NotificationUnreadCount:
+      type: object
+      required: [unread]
+      properties:
+        unread:
+          type: integer
+          minimum: 0
+          description: Capped at 99+ server-side — the UI shows "99+" past that.
+
+    NotificationChannelPreference:
+      type: object
+      required: [email, push, in_app]
+      properties:
+        email: { type: boolean }
+        push: { type: boolean }
+        in_app: { type: boolean }
+
+    NotificationDigestPreferences:
+      type: object
+      required: [enabled, weekday]
+      properties:
+        enabled: { type: boolean }
+        weekday:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: ISO weekday, 0 = Monday.
+        quiet_start:
+          type: [string, "null"]
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+          description: Local time HH:mm. iOS-only; mirrored server-side for symmetry.
+        quiet_end:
+          type: [string, "null"]
+          pattern: '^[0-2][0-9]:[0-5][0-9]$'
+
+    NotificationPreferences:
+      type: object
+      required: [preferences, digest]
+      properties:
+        preferences:
+          type: object
+          description: |
+            Map keyed by `NotificationType`. Missing keys default to all
+            channels enabled.
+          additionalProperties:
+            $ref: '#/components/schemas/NotificationChannelPreference'
+        digest: { $ref: '#/components/schemas/NotificationDigestPreferences' }
+
+    NotificationPreferencesUpdate:
+      type: object
+      additionalProperties: false
+      properties:
+        preferences:
+          type: object
+          additionalProperties:
+            $ref: '#/components/schemas/NotificationChannelPreference'
+        digest: { $ref: '#/components/schemas/NotificationDigestPreferences' }
 
     # ── FX & prices ───────────────────────────────────────────
     FxRate:
