@@ -24,6 +24,7 @@ import (
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/aiservice"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/db"
@@ -99,6 +100,11 @@ func run() error {
 		return errors.New("clerk jwks: nil without error — check CLERK_JWKS_URL")
 	}
 
+	// AI Service client. baseURL + bearer token come from config;
+	// the client itself does not allocate connections until first
+	// call so no boot-time check beyond non-empty config is needed.
+	aiClient := aiservice.New(cfg.AIServiceURL, cfg.AIServiceToken)
+
 	deps := &app.Deps{
 		Cfg:      cfg,
 		Log:      log,
@@ -107,6 +113,7 @@ func run() error {
 		UserRepo: users.NewRepo(pool),
 		JWKS:     jwks,
 		Asynq:    asynqPub,
+		AI:       aiClient,
 	}
 
 	a, err := server.New(deps)
