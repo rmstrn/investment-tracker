@@ -2559,8 +2559,17 @@ components:
       required: [benchmark, benchmark_return_percent, alpha_percent]
       properties:
         benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
-        benchmark_return_percent: { type: number, format: float }
-        alpha_percent: { type: number, format: float }
+        benchmark_return_percent:
+          type: [number, "null"]
+          format: float
+          description: >
+            Same nullability rule as PortfolioPerformance. Null when
+            benchmark_prices is unavailable; X-Benchmark-Unavailable
+            response header signals the gap (TD-020).
+        alpha_percent:
+          type: [number, "null"]
+          format: float
+          description: Null whenever benchmark_return_percent is null.
         series:
           type: array
           items:

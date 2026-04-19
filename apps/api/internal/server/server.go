@@ -96,6 +96,7 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/transactions/:id", handlers.GetTransaction(deps))
 	reads.Get("/portfolio/history", handlers.GetPortfolioHistory(deps))
 	reads.Get("/portfolio/allocation", handlers.GetPortfolioAllocation(deps))
+	reads.Get("/portfolio/performance/compare", handlers.ComparePortfolioPerformance(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {
