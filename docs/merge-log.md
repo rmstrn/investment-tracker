@@ -15,6 +15,20 @@ Newest entries at the top.
 
 ---
 
+## Docs-only direct-to-main — PO handoff sync (post-#40)
+
+**Tip SHA on origin/main:** `84465f7`
+**Original local commit SHA (pre-rebase):** `8532301` — осиротел локально после `git pull --rebase` (local main стоял на pre-B3-i base); в `origin/main` живёт только rewritten `84465f7`.
+**Pushed:** 2026-04-20
+**Base:** `11d6098` (PR #40 squash).
+**Scope:** docs-only sync — 14 файлов (11 modified + 3 new). Полный PO handoff pass: PO_HANDOFF.md создан, merge-log.md / RUNBOOK_ai_flip.md / PR_C_preflight.md материализованы (ghost-files fix), README + TECH_DEBT + TASK файлы приведены к актуальному состоянию после B3-i.
+**Policy note:** direct-to-main без PR. Squash-only policy применяется к **merge PRs**, не к docs-only PO commits. Логируется здесь для audit trail (через 3 месяца при debugging было видно что это не-PR landing).
+**CI:** не применимо (docs-only, no code touched).
+**Admin-bypass:** нет.
+**Migrations:** нет.
+
+---
+
 ## PR #40 — B3-i: data-path mutations + asynq + idempotency lock
 
 **Squash SHA:** `11d6098bd5eba4d756af22bf72ca1500b2f0192e`
