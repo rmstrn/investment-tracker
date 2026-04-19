@@ -182,3 +182,88 @@ func (q *Queries) ListTransactionsByUser(ctx context.Context, arg ListTransactio
 	}
 	return items, nil
 }
+
+const listTransactionsFiltered = `-- name: ListTransactionsFiltered :many
+SELECT id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at FROM transactions
+WHERE user_id = $1
+  AND (executed_at, id) < ($2::timestamptz, $3::uuid)
+  AND ($4::uuid       IS NULL OR account_id       = $4::uuid)
+  AND ($5::text           IS NULL OR symbol           = $5::text)
+  AND ($6::text       IS NULL OR asset_type       = $6::text)
+  AND ($7::text IS NULL OR transaction_type = $7::text)
+  AND ($8::timestamptz   IS NULL OR executed_at      >= $8::timestamptz)
+  AND ($9::timestamptz     IS NULL OR executed_at      <= $9::timestamptz)
+ORDER BY executed_at DESC, id DESC
+LIMIT $10
+`
+
+type ListTransactionsFilteredParams struct {
+	UserID          uuid.UUID
+	CursorTs        pgtype.Timestamptz
+	CursorID        uuid.UUID
+	AccountID       *uuid.UUID
+	Symbol          *string
+	AssetType       *string
+	TransactionType *string
+	FromTs          pgtype.Timestamptz
+	ToTs            pgtype.Timestamptz
+	RowLimit        int32
+}
+
+// Flexible list-transactions with optional filters. Uses sqlc.narg so
+// any combination can be NULL → "no filter on this column". Cursor
+// pagination via (executed_at, id) descending.
+//
+// Explicit casts on @cursor_ts / @cursor_id are required — without
+// them sqlc cannot infer the element types of the row tuple and
+// generates pgtype.Timestamptz for @cursor_id (UUID column), breaking
+// bind marshalling. Same pattern should be applied if
+// ListTransactionsByUser is ever wired to a handler.
+func (q *Queries) ListTransactionsFiltered(ctx context.Context, arg ListTransactionsFilteredParams) ([]Transaction, error) {
+	rows, err := q.db.Query(ctx, listTransactionsFiltered,
+		arg.UserID,
+		arg.CursorTs,
+		arg.CursorID,
+		arg.AccountID,
+		arg.Symbol,
+		arg.AssetType,
+		arg.TransactionType,
+		arg.FromTs,
+		arg.ToTs,
+		arg.RowLimit,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Transaction{}
+	for rows.Next() {
+		var i Transaction
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.AccountID,
+			&i.Symbol,
+			&i.AssetType,
+			&i.TransactionType,
+			&i.Quantity,
+			&i.Price,
+			&i.Currency,
+			&i.Fee,
+			&i.ExecutedAt,
+			&i.Source,
+			&i.SourceDetails,
+			&i.Fingerprint,
+			&i.Notes,
+			&i.ManuallyEdited,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

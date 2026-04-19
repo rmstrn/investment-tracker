@@ -42,6 +42,16 @@ type Querier interface {
 	// Cursor pagination by (executed_at, id) — descending. Clients pass the
 	// last seen values as $2/$3; first page passes far-future / NULL.
 	ListTransactionsByUser(ctx context.Context, arg ListTransactionsByUserParams) ([]Transaction, error)
+	// Flexible list-transactions with optional filters. Uses sqlc.narg so
+	// any combination can be NULL → "no filter on this column". Cursor
+	// pagination via (executed_at, id) descending.
+	//
+	// Explicit casts on @cursor_ts / @cursor_id are required — without
+	// them sqlc cannot infer the element types of the row tuple and
+	// generates pgtype.Timestamptz for @cursor_id (UUID column), breaking
+	// bind marshalling. Same pattern should be applied if
+	// ListTransactionsByUser is ever wired to a handler.
+	ListTransactionsFiltered(ctx context.Context, arg ListTransactionsFilteredParams) ([]Transaction, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side

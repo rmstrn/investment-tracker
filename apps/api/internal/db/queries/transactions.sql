@@ -25,3 +25,25 @@ WHERE user_id = $1
   AND (executed_at, id) < ($2, $3)
 ORDER BY executed_at DESC, id DESC
 LIMIT $4;
+
+-- name: ListTransactionsFiltered :many
+-- Flexible list-transactions with optional filters. Uses sqlc.narg so
+-- any combination can be NULL → "no filter on this column". Cursor
+-- pagination via (executed_at, id) descending.
+--
+-- Explicit casts on @cursor_ts / @cursor_id are required — without
+-- them sqlc cannot infer the element types of the row tuple and
+-- generates pgtype.Timestamptz for @cursor_id (UUID column), breaking
+-- bind marshalling. Same pattern should be applied if
+-- ListTransactionsByUser is ever wired to a handler.
+SELECT * FROM transactions
+WHERE user_id = @user_id
+  AND (executed_at, id) < (@cursor_ts::timestamptz, @cursor_id::uuid)
+  AND (sqlc.narg('account_id')::uuid       IS NULL OR account_id       = sqlc.narg('account_id')::uuid)
+  AND (sqlc.narg('symbol')::text           IS NULL OR symbol           = sqlc.narg('symbol')::text)
+  AND (sqlc.narg('asset_type')::text       IS NULL OR asset_type       = sqlc.narg('asset_type')::text)
+  AND (sqlc.narg('transaction_type')::text IS NULL OR transaction_type = sqlc.narg('transaction_type')::text)
+  AND (sqlc.narg('from_ts')::timestamptz   IS NULL OR executed_at      >= sqlc.narg('from_ts')::timestamptz)
+  AND (sqlc.narg('to_ts')::timestamptz     IS NULL OR executed_at      <= sqlc.narg('to_ts')::timestamptz)
+ORDER BY executed_at DESC, id DESC
+LIMIT @row_limit;
