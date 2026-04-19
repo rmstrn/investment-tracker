@@ -7,7 +7,7 @@ requires-python = ">=3.13"
 authors = [{ name = "Ruslan Maistrenko", email = "rmaistrenko.job@gmail.com" }]
 license = { text = "MIT" }
 
-# Runtime deps. Pinned loosely at scaffold stage — TASK_05 will tighten.
+# Runtime deps.
 dependencies = [
   "fastapi>=0.115",
   "uvicorn[standard]>=0.32",
@@ -16,14 +16,13 @@ dependencies = [
   "httpx>=0.28",
   "structlog>=24.4",
   "python-json-logger>=2.0",
+  "anthropic>=0.40",
+  "sentry-sdk[fastapi]>=2.18",
+  "posthog>=3.7",
 ]
 
 [project.optional-dependencies]
-# Full set — install with `uv sync --extra llm` (or `uv sync --all-extras`).
-llm = [
-  "anthropic>=0.40",
-  "langgraph>=0.2",
-]
+# Reserved for future RAG work (pgvector embeddings). Not used on MVP.
 db = [
   "asyncpg>=0.30",
   "pgvector>=0.3",
