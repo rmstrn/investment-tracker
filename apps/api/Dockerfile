@@ -7,7 +7,7 @@
 # docker-compose and Fly.io deploy pick the target via `target:` / `build.target`.
 
 # -------- Stage 1: build --------
-FROM golang:1.23-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 ENV CGO_ENABLED=0 \
     GOOS=linux \
