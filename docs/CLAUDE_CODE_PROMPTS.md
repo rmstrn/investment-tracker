@@ -98,7 +98,7 @@ claude
 - Важно: ты УЖЕ мог что-то начать — в packages/design-tokens/ может быть состояние. Изучи что там, продолжай оттуда, НЕ перезаписывай.
 
 ЗАБЛОКИРОВАННЫЕ РЕШЕНИЯ PO (переопределяют TASK_02.md если расходятся):
-- Роль: code-first design system. Figma — опционально, НЕ блокирует разработку. Нет human-дизайнера.
+- Роль: code-first design system (react/typescript компоненты — источник правды). Figma — опционально, НЕ блокирует разработку. Нет human-дизайнера в команде.
 - Product name: "Portfolio" (placeholder на весь MVP). Хранится в design tokens как brand.productName = "Portfolio". Нигде не хардкодь строкой в компонентах.
 - Accent color: #6D28D9 (violet-700, deep violet)
 - Typography: Geist Sans + Geist Mono
@@ -147,8 +147,7 @@ claude
 - Бриф: docs/00_PROJECT_BRIEF.md
 
 ЗАБЛОКИРОВАННЫЕ РЕШЕНИЯ PO:
-- Подход: spec-first. openapi.yaml = source of truth, Go сервер генерится через oapi-codegen (ServerInterface), handlers реализуют сгенерированный интерфейс
-- OpenAPI spec пишется в 3.1 (`type: [X, "null"]` для nullable), но фактическая генерация проходит через 3.0-preprocessor (TD-007) — преобразует `type:[X,"null"]` → `nullable: true`, потому что oapi-codegen 3.1 ещё не полностью поддерживает nullable union types
+- Подход: spec-first. `tools/openapi/openapi.yaml` = source of truth; Go-код генерится через **oapi-codegen** (не huma v2 — см. DECISIONS.md 2026-04-19). Генерит `types.gen.go` + `server.gen.go` (ServerInterface). TD-007 препроцессор конвертит OpenAPI 3.1 `type: [X, "null"]` → 3.0 `nullable: true` до feed'а в oapi-codegen
 - Все пути под /v1/ префиксом
 - UUIDv7 генерится в приложении (Go: github.com/google/uuid v1.6+, Python: uuid_utils). В миграциях НЕТ DEFAULT gen_random_uuid() — id UUID PRIMARY KEY NOT NULL без default
 - JSONB formal schemas (в components/schemas):
@@ -209,19 +208,14 @@ claude
 - Детали задачи: docs/TASK_04_core_backend.md
 - Архитектура: docs/02_ARCHITECTURE.md
 - API спека: tools/openapi/openapi.yaml (source of truth)
-- Стек: Go 1.25+ (использует `go tool` для pinned dev deps: sqlc, oapi-codegen), Fiber v3, oapi-codegen (spec-first, не huma), sqlc, pgx v5, goose, asynq, zerolog, shopspring/decimal, go-redis v9
+- Стек: Go 1.25+, Fiber v3, oapi-codegen (spec-first, не huma), sqlc, pgx v5, goose, asynq, zerolog, shopspring/decimal, go-redis v9, svix, stripe-go
 
 ЗАБЛОКИРОВАННЫЕ РЕШЕНИЯ PO:
 - Go single module: apps/api/go.mod, module github.com/rmstrn/investment-tracker/apps/api
 - Два бинаря: cmd/api/main.go (HTTP), cmd/workers/main.go (asynq)
 - Shared internal/: config, db (sqlc output + pgx pool), models, clients, auth (Clerk JWT), crypto (envelope encryption)
 - Domain: internal/domain/{portfolio,transactions,accounts,insights,ai,billing}
-- oapi-codegen handlers: реализуем сгенерированный `ServerInterface` из `internal/api/server.gen.go`. Spec-as-truth — спека не описывается «вручную в коде», любое расхождение handlers ↔ openapi.yaml = баг
-- Dual-mode auth middleware: Clerk JWT (production) ИЛИ Bearer CORE_API_INTERNAL_TOKEN + `X-User-Id` header (service-to-service, напр. AI Service → Core API)
-- Idempotency middleware: `Idempotency-Key` header для POST/PUT, Redis SETNX lock + 24h кэш ответа; GET passthrough кэшируется отдельно
-- Cursor pagination: base64({last_id, last_ts}) со стабильным tie-break по id
-- FX resolver: Redis (TTL 5min) → Postgres fx_rates → inverse-pair fallback (EUR/USD ↔ USD/EUR)
-- Tiers.limits shared module: `internal/domain/tiers/limits.go` — единая структура `TierLimits` используется и read-path (gating), и write-path (mutation caps) доменами
+- oapi-codegen handlers: имплементируем `ServerInterface` (метод per-operation), dual-mode auth middleware (Clerk JWT ИЛИ internal-token + X-User-Id для AI Service/workers), idempotency middleware с SETNX + 24h кэш, cursor pagination base64, FX resolver (Redis→PG→inverse), tiers.Limits shared module (не хардкодить `user.Tier == "pro"`)
 - UUIDv7 через github.com/google/uuid (NewV7)
 - Envelope encryption для broker credentials: KEK из env (пока одна), DEK per credential, AES-256-GCM
 - Fingerprint для dedup транзакций: SHA-256 от (account_id, external_id || (date, amount, symbol, type))
@@ -237,7 +231,7 @@ claude
 2. Если scaffold apps/api уже есть от TASK_01 — продолжай, не перезаписывай
 3. Имплементируй всё по TASK_04 DoD
 4. Используй sqlc для генерации Go кода из миграций (sqlc.yaml в apps/api/)
-5. Все endpoints из openapi.yaml через реализацию oapi-codegen `ServerInterface` (types.gen.go + server.gen.go — источник типов, handlers в `internal/api/handlers/*`)
+5. Все endpoints из openapi.yaml через `ServerInterface` реализацию (oapi-codegen)
 6. Integration тесты на критичный path (auth, CRUD transactions, positions compute, snapshot)
 7. make api, make workers, make test — должны работать
 8. Dockerfile + docker-compose.yml в корне уже должен быть от TASK_01 — добавь api и workers services

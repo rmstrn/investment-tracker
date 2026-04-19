@@ -6,16 +6,18 @@
 
 | Компонент | Технология | Версия | Обоснование |
 |---|---|---|---|
-| Язык Core API | Go | 1.25+ | производительность, конкурентность, поддержка `go tool` для pinned dev deps (sqlc, oapi-codegen) — закреплено PR A |
+| Язык Core API | Go | 1.25+ | производительность, конкурентность, поддержка `go tool` для pinned dev deps (sqlc, oapi-codegen) |
 | Web framework | Fiber | v3 | самый быстрый в экосистеме Go, Express-like API |
-| ORM / Queries | sqlc + pgx | latest | генерит типобезопасные Go-структуры из SQL, без runtime-магии |
+| ORM / Queries | sqlc + pgx v5 | latest | генерит типобезопасные Go-структуры из SQL, без runtime-магии |
+| Decimal arithmetic | shopspring/decimal | latest | никогда float64 для денег |
 | Миграции БД | goose | latest | простые версионируемые SQL-миграции |
 | Очереди | asynq | latest | фоновые задачи с ретраями, работает поверх Redis |
+| HTTP client (Redis) | go-redis | v9 | стандарт |
 | Валидация | go-playground/validator | v10 | стандарт |
 | Логирование | zerolog | latest | структурированные JSON-логи |
-| OpenAPI | oapi-codegen | latest | **spec-first**: openapi.yaml = source of truth, генерит `types.gen.go` + `server.gen.go` (ServerInterface) из спеки. Spec пишется в 3.1 (`type:[X,"null"]`), но код генерится через 3.0-preprocessor (TD-007: 3.1 nullable → 3.0 `nullable:true`) |
-| Decimal arithmetic | shopspring/decimal | latest | деньги и quantities — ТОЛЬКО через decimal, никаких float64 |
-| HTTP client (Redis) | go-redis v9 | latest | cursor pagination state, FX cache, idempotency keys, SETNX locks |
+| OpenAPI | oapi-codegen | latest | **spec-first** (не huma v2 — см. DECISIONS.md 2026-04-19 «Core API: spec-first via oapi-codegen, not code-first via huma»). Генерит `types.gen.go` + `server.gen.go` (ServerInterface) из `tools/openapi/openapi.yaml`. TD-007: preprocessor OpenAPI 3.1 `type: [X, "null"]` → 3.0 `nullable: true` |
+| Webhook signing (Clerk) | svix | latest | подпись + верификация |
+| Webhook signing (Stripe) | stripe-go | latest | подпись + верификация |
 
 ## AI-сервис
 

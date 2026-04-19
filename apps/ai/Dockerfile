@@ -19,14 +19,14 @@ WORKDIR /src
 
 # Cache dep resolution layer
 COPY pyproject.toml uv.lock* ./
-RUN uv sync --frozen --no-install-project --no-dev --extra llm --extra db || \
-    uv sync --no-install-project --no-dev --extra llm --extra db
+RUN uv sync --frozen --no-install-project --no-dev || \
+    uv sync --no-install-project --no-dev
 
 # Copy source and install the project
 COPY src ./src
 COPY README.md ./
-RUN uv sync --frozen --no-dev --extra llm --extra db || \
-    uv sync --no-dev --extra llm --extra db
+RUN uv sync --frozen --no-dev || \
+    uv sync --no-dev
 
 # -------- Stage 2: runtime --------
 FROM python:${PYTHON_VERSION}-slim AS runtime

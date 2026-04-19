@@ -1,7 +1,7 @@
 # TASK 08 — iOS App (Swift/SwiftUI)
 
-**Волна:** 2
-**Зависит от:** TASK_02 (design system), TASK_03 (API contract), TASK_04 (Core API)
+**Волна:** 4 (deferred — нужен Mac + Xcode, отдельный репозиторий; стартует после Волны 3 / web beta)
+**Зависит от:** TASK_02 (design system), TASK_03 (API contract), TASK_04 (Core API полностью закрыт: A / B1 / B2a / B2b / B2c / B3-i / B3-ii / B3-iii / C), TASK_07 (web как референс паттернов UX/navigation/state)
 **Блокирует:** ничего (конечный продукт)
 **Срок:** 6-8 недель
 

@@ -2076,8 +2076,13 @@ components:
                 - NOT_FOUND
                 - CONFLICT
                 - DUPLICATE_TRANSACTION
+                - IDEMPOTENCY_KEY_CONFLICT
+                - IDEMPOTENCY_IN_PROGRESS
+                - JURISDICTION_NOT_SUPPORTED
+                - QUOTE_NOT_AVAILABLE
                 - RATE_LIMIT_EXCEEDED
                 - EXTERNAL_SERVICE_ERROR
+                - NOT_IMPLEMENTED
                 - INTERNAL_ERROR
             message:
               type: string
@@ -2501,11 +2506,20 @@ components:
         period: { type: string, enum: [1m, 3m, 6m, 1y, all] }
         benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
         portfolio_return_percent: { type: number, format: float }
-        benchmark_return_percent: { type: number, format: float }
-        alpha_percent:
-          type: number
+        benchmark_return_percent:
+          type: [number, "null"]
           format: float
-          description: portfolio_return - benchmark_return.
+          description: >
+            Return of the benchmark over the same period. Null when
+            benchmark data is unavailable — callers that need a hard
+            fail can key on the `X-Benchmark-Unavailable` response
+            header (TD-020 tracks populating this with real data).
+        alpha_percent:
+          type: [number, "null"]
+          format: float
+          description: >
+            portfolio_return - benchmark_return. Null whenever
+            benchmark_return_percent is null.
         stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
         series:
           type: array
@@ -2550,8 +2564,17 @@ components:
       required: [benchmark, benchmark_return_percent, alpha_percent]
       properties:
         benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
-        benchmark_return_percent: { type: number, format: float }
-        alpha_percent: { type: number, format: float }
+        benchmark_return_percent:
+          type: [number, "null"]
+          format: float
+          description: >
+            Same nullability rule as PortfolioPerformance. Null when
+            benchmark_prices is unavailable; X-Benchmark-Unavailable
+            response header signals the gap (TD-020).
+        alpha_percent:
+          type: [number, "null"]
+          format: float
+          description: Null whenever benchmark_return_percent is null.
         series:
           type: array
           items:
@@ -3449,6 +3472,12 @@ components:
         - factor_exposure
         - style_box
         - correlation_matrix
+      description: >
+        factor_exposure, style_box and correlation_matrix are nullable
+        until the factor-model / classification feeds land
+        (TD-032/033). The X-Analytics-Partial response header signals
+        when any of them are null so clients that need a hard fail
+        can key on it.
       properties:
         period: { type: string, enum: [3m, 6m, 1y, 3y, all] }
         sharpe: { type: number, format: float }
@@ -3470,40 +3499,54 @@ components:
               date: { type: string, format: date }
               drawdown_percent: { type: number, format: float }
         factor_exposure:
-          type: object
-          required: [value, growth, momentum, quality, size]
-          properties:
-            value: { type: number, format: float }
-            growth: { type: number, format: float }
-            momentum: { type: number, format: float }
-            quality: { type: number, format: float }
-            size: { type: number, format: float }
+          oneOf:
+            - type: object
+              required: [value, growth, momentum, quality, size]
+              properties:
+                value: { type: number, format: float }
+                growth: { type: number, format: float }
+                momentum: { type: number, format: float }
+                quality: { type: number, format: float }
+                size: { type: number, format: float }
+            - type: "null"
+          description: >
+            Null when the factor-model feed is unavailable (TD-032).
         style_box:
-          type: array
-          minItems: 3
-          maxItems: 3
-          description: |
-            3×3 grid (growth/core/value × small/mid/large). Row-major:
-            `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
-            Values are fractions summing to ~1.0.
-          items:
-            type: array
-            minItems: 3
-            maxItems: 3
-            items: { type: number, format: float }
-        correlation_matrix:
-          type: object
-          required: [symbols, values]
-          properties:
-            symbols:
-              type: array
-              items: { type: string }
-            values:
-              type: array
-              description: Square matrix, same ordering as `symbols`.
+          oneOf:
+            - type: array
+              minItems: 3
+              maxItems: 3
+              description: |
+                3×3 grid (growth/core/value × small/mid/large). Row-major:
+                `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
+                Values are fractions summing to ~1.0.
               items:
                 type: array
+                minItems: 3
+                maxItems: 3
                 items: { type: number, format: float }
+            - type: "null"
+          description: >
+            Null when the style-classification feed is unavailable
+            (TD-032).
+        correlation_matrix:
+          oneOf:
+            - type: object
+              required: [symbols, values]
+              properties:
+                symbols:
+                  type: array
+                  items: { type: string }
+                values:
+                  type: array
+                  description: Square matrix, same ordering as `symbols`.
+                  items:
+                    type: array
+                    items: { type: number, format: float }
+            - type: "null"
+          description: >
+            Null when the per-symbol price series is too sparse to
+            compute a reliable matrix (TD-033).
 
     # ── Tax (Pro) ─────────────────────────────────────────────
     TaxReport:
@@ -3523,7 +3566,15 @@ components:
         realized_gains: { $ref: '#/components/schemas/Money' }
         realized_losses: { $ref: '#/components/schemas/Money' }
         dividends_received: { $ref: '#/components/schemas/Money' }
-        withholding_tax: { $ref: '#/components/schemas/Money' }
+        withholding_tax:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: "null"
+          description: >
+            Null when per-transaction withholding is not captured in
+            the schema yet (TD-031). The X-Withholding-Unavailable
+            response header signals the scope-cut to callers that
+            need to fail closed.
         estimated_taxable_income: { $ref: '#/components/schemas/Money' }
         transactions:
           type: array

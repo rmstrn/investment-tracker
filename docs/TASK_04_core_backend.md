@@ -6,21 +6,19 @@
 **Блокирует:** TASK_05 (AI Service нужны портфельные данные), TASK_06 (интеграции), TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель (параллельно с другими)
 
-**PR plan:**
-- **PR A (foundation)** — config+logger+Fiber, sqlc+queries, oapi-codegen+TD-007 preprocessor, Clerk auth+user repo+errors, Redis cache+rate-limit+idempotency, AES-GCM envelope, fingerprint+portfolio calculator. No handlers. ✅ **merged as PR #35 → `14f95468`** (12 commits squashed, 8/8 CI green, no admin bypass).
-- **PR B — split into B1/B2/B3:**
-  - **PR B1 (AI Service unblock)** — ✅ **merged as PR #36 → `462d2993`** (11 commits: migration + sqlc + dual-mode auth + UUIDv7 request-id + Sentry + handler + unit + integration + 3 chore CI fixes). Closes TD-013 on Core API side. New TD-019 entered (integration tests not in CI). Follow-up: AI Service flip 404-swallow in `apps/ai/src/ai_service/clients/core_api.py` — separate PR in apps/ai, non-blocking.
-  - **PR B2a (foundation + 6 AI-facing GETs)** — ✅ **merged as PR #37 → `272e5fe6`** (16 commits: commit 0 fail-fast JWKS + 4 foundation + 6 AI-facing GETs + cross-handler AI-auth test + gosec silence + 3 pre-merge fixes: benchmark nullable openapi spec, `?display_currency=` rename, `errs.ErrQuoteNotAvailable` sentinel). Closed TD-025 pre-merge. New TD-020/021/022/024 entered.
-  - **PR B2b (rest of read path)** — ✅ **merged as PR #38 → `fdcf39f4`** (18 commits: 20 handlers across 8 domain groups — `/me*` ×6, `/accounts*` ×3, detail GETs ×3, portfolio history/allocation/performance-compare ×3, market search/history ×2, plumbing `/fx_rates`+`/prices`, AI conversations/insights ×3, glossary ×2 — + extended cross-handler AI-auth test + gosec G109 silence). Scope landed at ~3700 LOC (vs 1700-1800 est — integration test per endpoint doubled volume, accepted pattern from B2a). Scope-adjacent: 14 new sqlc queries, nullable openapi fix for `PortfolioPerformanceBenchmark` (same pattern as PR #37, parallel to TD-020), new `internal/domain/tiers/limits.go` shared per-tier caps module (reads + B3 mutation gates), `/glossary*` mounted outside authenticated group per `security: []` spec. 14 stubs/degraded responses all signal via response headers (`X-Clerk-Unavailable`, `X-Search-Provider`, `X-Benchmark-Unavailable`) or explicit 501 NOT_IMPLEMENTED — no placeholder data anywhere. New TD entered: TD-027 (Clerk Backend SDK for sessions), TD-028 (monthly rollup for best_month/worst_month), TD-029 (symbol-master provider for `/market/search`), TD-030 (OHLC ingest pipeline — `/market/history` returns 501 with working validation).
-  - **PR B2c (analytics + tax domain)** — ✅ **merged as PR #39 → `fb16525`** (7 commits + pre-merge compliance fix `ce23519` for `X-Tax-Advisory: mvp-estimate` header, 8/8 CI green, no admin bypass). Spec-compliant (period enum `3m/6m/1y/3y/all`, tax params `jurisdiction + year` — cost-basis method became internal detail per spec). `internal/domain/analytics/` — pure Sharpe/Sortino/MaxDD/Volatility/underwater_series. `internal/domain/tax/` — FIFO hardcoded in handler, LIFO in pkg for future. Pro-only via `tiers.Limit.AdvancedAnalytics` + `tiers.Limit.TaxReports`. US + DE jurisdictions; others → 400 `JURISDICTION_NOT_SUPPORTED`. Scope-cuts signal via `X-Analytics-Partial` + `X-Withholding-Unavailable` headers + openapi nullable fields (same pattern as PR #37 benchmark, PR #38 performance). ~1600 LOC (~7% overshoot). New TDs 31-37 + TD-038 (ListAllTransactionsByUser unbounded).
-  - **PR B3 — split into B3-i/B3-ii/B3-iii** (per DECISIONS 2026-04-19 "PR B3 split by coherent surface"). Pre-flight scope audit: 36 mutation endpoints + 5 deferred GETs + 3 infra blocks (SSE proxy, Clerk+SDK, Stripe+SDK) + asynq publisher + TD-011 close. One-PR was ~5500-6500 LOC / 40-50 commits — unreviewable.
-    - **PR B3-i (Data-path + asynq, ~2200 LOC)** — 19 handlers: accounts mutations (7: POST, PATCH/DELETE /{id}, POST /{id}/sync|reconnect|pause|resume), transactions (3: POST, PATCH/DELETE /{id}), /me data mutations (5: PATCH/DELETE /me, POST /paywalls/{t}/dismiss, POST /undo-deletion, PATCH /notification-preferences), notifications reads (2: GET list + unread_count), exports (1 GET /{id} + 1 POST async 202 stub). Infra: asynq publisher thin wrapper + deps wire-in, SETNX idempotency lock middleware with 30s TTL + 409 `IDEMPOTENCY_IN_PROGRESS`. Closes **TD-011** (idempotency race) and **TD-021** (asynq publisher). Expected new TDs: TD-039 (CSV export worker consumer — handler ships 202 stub), TD-041 (hard_delete_user consumer for DELETE /me 7-day delayed purge), TD-045 (undo-deletion worker idempotency re-check).
-    - **PR B3-ii (AI bundle, ~1400 LOC)** — 7 handlers: ai conversations POST+DELETE (2), `POST /ai/chat` (JSON response), `POST /ai/chat/stream` (SSE reverse-proxy to AI Service via `httputil.ReverseProxy` with `FlushInterval: -1`, token flow = Clerk JWT in → internal Bearer + `X-User-Id` out), `POST /ai/insights/generate`, `POST /ai/insights/{id}/dismiss`, `POST /ai/insights/{id}/viewed`. Tier rate-limits via `tiers.Limit.AIMessagesPerDay` + `InsightsPerWeek`. Backpressure through shared `context.Context`; AI Service error framing protocol confirmed pre-start. Expected new TDs: TD-040 (SSE reconnect/resume event-ID replay — MVP fail-fast on disconnect), TD-044 (concurrent AI chat cap per user — currently 10 tabs = 10 parallel Claude streams).
-    - **PR B3-iii (Auth + billing, ~2400 LOC)** — 11 mutation handlers + 2 webhooks + 2 billing GETs: /me/2fa enroll/verify/disable + backup-codes/regenerate (4), DELETE /me/sessions/{id} + /me/sessions/others (2), billing checkout + portal + cancellation-feedback (3), GET /billing/subscription + /billing/invoices (2), POST /auth/webhook (Clerk via Svix library with `svix-id`+`svix-timestamp`+`svix-signature` HMAC-SHA256 + 5-min tolerance, events: user.{created,updated,deleted} handled, session.{created,revoked} skip-200 + TD, org/role.* skip-200), POST /billing/webhook (Stripe via stripe-go webhook package, events: customer.subscription.{created,updated,deleted} + invoice.payment_{succeeded,failed} + checkout.session.completed). Infra: Clerk Backend SDK wire-up + Stripe SDK wire-up + `webhook_events(source, event_id)` migration for idempotency. Closes **TD-027** (Clerk Backend SDK — enables real /me/sessions list via SDK). Expected new TDs: TD-042 (Stripe invoice.payment_failed notification wiring — needs notifications mutation pipeline not in B3-iii scope), TD-043 (2FA backup codes storage — Clerk SDK self-hosted vs managed will decide).
-    - **Sequential merge ordering is hard:** B3-ii depends on B3-i's idempotency middleware + asynq pattern landing first; B3-iii depends on both (shared DB namespace for `webhook_events` migration). No parallel feature branches.
-- **PR C (ops)** — Dockerfile (<50MB distroless), fly.toml, k6 load-test script, deploy runbook.
+**Статус (2026-04-19):** 🚧 6 of ~8 PRs merged.
 
-**Follow-ups tracked:** `TECH_DEBT.md` → TD-007 (oapi-codegen 3.1 nullable), TD-011 (idempotency race), TD-018 (KEK rotation uncovered by test), TD-019 (integration tests not in CI), TD-020 (benchmark ingest), TD-021 (asynq publisher wire-in — closes in B3), TD-022 (dividends/corporate_actions table), TD-024 (previous_close modeling), TD-027 (Clerk Backend SDK — closes in B3), TD-028 (monthly rollup best/worst month), TD-029 (symbol-master provider), TD-030 (OHLC ingest pipeline), TD-031 (withholding_amount per-tx schema), TD-032 (factor-model + style feeds), TD-033 (correlation_matrix from prices — depends on TD-030), TD-034 (cost-basis method UI + tax_lots migration), TD-035 (IT/FR/UK/PL/ES/NL jurisdictions), TD-036 (full tax rule set incl wash-sale, long/short split, DE couples), TD-037 (short-sale / uncovered-qty handling), TD-038 (paginate/stream ListAllTransactionsByUser). `DECISIONS.md` → 2026-04-19 entries for oapi-codegen vs huma, Go 1.25, go-tool deps, preprocessor, idempotency plumbing, portfolio pure function, Core API dual-mode auth, AI usage telemetry, tiers.limits as shared per-tier caps module.
+| PR | Scope | Status |
+|---|---|---|
+| A | skeleton, config, middleware basics | ✅ merged (14f95468) |
+| B1 | first read handlers | ✅ merged (462d2993) |
+| B2a | read handlers batch 2 | ✅ merged (272e5fe6) |
+| B2b | read handlers batch 3 | ✅ merged (fdcf39f4) |
+| B2c | final read handlers (30 GET authenticated) | ✅ merged (fb16525) |
+| **B3-i** | **write-path mutations + asynq + idempotency lock** | **✅ merged 2026-04-19 (11d6098, PR #40)** |
+| B3-ii | AI mutations + SSE reverse-proxy + tier rate-limit | 🚧 next (anchor ~2000-2500 LOC) |
+| B3-iii | Clerk/Stripe webhooks + webhook_events idempotency | ⏳ queued |
+| C | Dockerfile + fly.toml + k6 smoke + deploy runbook | ⏳ queued (см. PR_C_preflight.md) |
 
 ## Цель
 
@@ -30,16 +28,18 @@
 
 ## Стек
 
-- **Go 1.25** — hard floor (Fiber v3.1.0 requirement); see DECISIONS 2026-04-19 "Go 1.25 as minimum version"
+- **Go 1.25+** (требуется `go tool` для pinned dev deps)
 - **Fiber v3** — web framework
-- **oapi-codegen** — server interfaces + types from `openapi.yaml` (spec-first; huma is out, see DECISIONS 2026-04-19 "Core API: spec-first via oapi-codegen")
-- **sqlc** — типобезопасные запросы из SQL
+- **oapi-codegen** — spec-first codegen (не huma v2 — см. DECISIONS.md 2026-04-19); генерит `types.gen.go` + `server.gen.go` (ServerInterface) из `tools/openapi/openapi.yaml`. TD-007: preprocessor конвертит OpenAPI 3.1 `type: [X, "null"]` → 3.0 `nullable: true`
+- **sqlc** — типобезопасные запросы из SQL (pinned via `go tool`)
 - **pgx v5** — Postgres driver
 - **goose** — миграции (запускается отдельно)
-- **asynq** — публикация задач в очередь (для workers)
-- **go-playground/validator v10** — валидация структур
+- **asynq** — публикация задач в очередь (для workers); wrapper в `internal/clients/asynqpub` с nil-safe `Enabled()`
+- **shopspring/decimal** — decimal arithmetic для денег (никогда float64)
+- **svix** — Clerk webhook signature verification
+- **stripe-go** — Stripe SDK + webhook verification
 - **zerolog** — structured logging
-- **go-redis/v9** — Redis client
+- **go-redis v9** — Redis client
 - **jwt-go v5** — JWT валидация (для Clerk)
 
 **Tooling via `go tool`:** `sqlc` and `oapi-codegen` pinned in `go.mod` / `go.sum`, invoked as `go tool sqlc generate` / `go tool oapi-codegen`. No PATH installs. (DECISIONS 2026-04-19.)
@@ -223,53 +223,80 @@ func Fingerprint(accountID uuid.UUID, symbol string, qty, price decimal.Decimal,
 
 ### 5. Envelope encryption для credentials
 
-Токены брокеров, API-ключи бирж — чувствительные данные. Шифруем **AES-256-GCM** envelope (см. `02_ARCHITECTURE.md` секция «5. Encryption at rest для credentials» — полный формат BYTEA blob):
+Токены брокеров, API-ключи бирж — чувствительные данные. Шифруем AES-256-GCM envelope:
+
+- **KEK (Key Encryption Key):** 32-байтный мастер-ключ в env (`KEK_MASTER_V1`), с индикатором текущей версии `KEK_PRIMARY_ID`. Ротация — через добавление `KEK_MASTER_V2` и bump `KEK_PRIMARY_ID` без вайпа старых записей (они расшифровываются по своему `kek_id`).
+- **DEK (Data Encryption Key):** 32 байта, генерится на каждую запись.
+- **Nonce:** 12 байт для каждого AES-GCM (outer и inner — два отдельных nonce).
 
 ```go
 // internal/crypto/envelope.go
 
-// KEK (Key Encryption Key) — 256-bit, из env: KEK_MASTER_V1 + KEK_PRIMARY_ID.
-// На MVP одна версия ключа. Ротация = добавить KEK_MASTER_V2 и ре-энкрипт существующих записей.
-// DEK (Data Encryption Key) — генерится случайно per credential, шифруется KEK через AES-256-GCM.
+// BYTEA blob format в БД (credentials_encrypted column):
+// [kek_id (1 byte) || nonce_outer (12) || encrypted_dek (32+16 tag) || nonce_inner (12) || ciphertext || auth_tag (16)]
 
-func Encrypt(plaintext []byte, kek []byte) ([]byte, error) {
-    dek := generateDEK(32)
-    ciphertext := aesGCMEncrypt(plaintext, dek)
-    encryptedDEK := aesGCMEncrypt(dek, kek)
-    // BYTEA blob: [kek_id || nonce_outer || encrypted_dek || nonce_inner || ciphertext || auth_tag]
-    return combine(encryptedDEK, ciphertext), nil
+func Encrypt(plaintext []byte, kekPrimaryID byte, keks map[byte][]byte) ([]byte, error) {
+    dek := randomBytes(32)
+    nonceOuter := randomBytes(12)
+    nonceInner := randomBytes(12)
+
+    // outer: encrypt DEK with KEK
+    encryptedDEK := aesGCMSeal(keks[kekPrimaryID], nonceOuter, dek, nil)
+
+    // inner: encrypt plaintext with DEK
+    ciphertext := aesGCMSeal(dek, nonceInner, plaintext, nil)
+
+    return bytes.Join([][]byte{
+        {kekPrimaryID},
+        nonceOuter,
+        encryptedDEK,
+        nonceInner,
+        ciphertext,
+    }, nil), nil
 }
 ```
 
-Плейнтекст декодируется только в памяти воркера в момент HTTP-вызова брокера — никогда не пишется в лог. В MVP KEK хранится в Doppler/env; перевод на AWS KMS / GCP KMS отложен в TD (infra-hardening после MVP).
+**TD на миграцию в KMS/HSM** (записан): когда будет compliance-давление (SOC 2 type 2), переедем на AWS KMS для KEK. Сейчас env-KEK приемлем до public GA.
 
 ### 6. Tier-based authorization
 
-Все гейтинг-решения (feature flags + численные caps) идут через единый модуль **`internal/domain/tiers/limits.go`** (см. DECISIONS 2026-04-19 «`internal/domain/tiers/limits.go` as shared per-tier caps module»). Это shared источник правды для read-path (gating) и write-path (mutation caps) — изменил число в одном месте, везде согласовано.
+Единый источник правды — shared Go module `internal/domain/tiers/limits.go`. Ни один handler не должен хардкодить строковое сравнение `user.Tier == "pro"` — это anti-pattern, ломается при rebranding тарифов и trial-экспериментах.
 
 ```go
 // internal/domain/tiers/limits.go
+
 type TierLimits struct {
-    MaxAccounts            int
+    MaxAccounts             int
     MaxTransactionsPerMonth int
-    AIMessagesPerDay       int
-    AIMonthlyBudgetCents   int
-    InsightsEnabled        bool
-    InsightsPerWeek        int
-    ExportsEnabled         bool
-    AdvancedAnalytics      bool      // Sharpe/Sortino/MaxDD — B2c
-    TaxReports             bool      // FIFO/LIFO realized gains — B2c
+    AIMessagesPerDay        int
+    AIMonthlyBudgetCents    int
+    InsightsEnabled         bool
+    InsightsPerWeek         int
+    ExportsEnabled          bool     // см. TD-047 — P1 pre-GA
+    CSVExport               bool     // TD-047 target: дискретный флаг
+    AdvancedAnalytics       bool
+    TaxReports              bool
 }
 
-func For(tier string) TierLimits { /* free | plus | pro */ }
+func For(tier string) TierLimits {
+    switch tier {
+    case "pro":
+        return TierLimits{MaxAccounts: -1, AIMessagesPerDay: 100, InsightsEnabled: true, ExportsEnabled: true, AdvancedAnalytics: true, TaxReports: true, ...}
+    case "plus":
+        return TierLimits{MaxAccounts: 10, AIMessagesPerDay: 20, InsightsEnabled: true, ExportsEnabled: true, ...}
+    default: // free
+        return TierLimits{MaxAccounts: 2, AIMessagesPerDay: 3, InsightsEnabled: false, ExportsEnabled: false, ...}
+    }
+}
 
-// Middleware:
+// Middleware factory принимает функцию-предикат, не строку
 func RequireTier(flag func(TierLimits) bool) fiber.Handler {
     return func(c *fiber.Ctx) error {
         user := c.Locals("user").(*User)
-        if !flag(tiers.For(user.SubscriptionTier)) {
+        limits := tiers.For(user.SubscriptionTier)
+        if !flag(limits) {
             return httpError(c, 403, "TIER_LIMIT_EXCEEDED",
-                "This feature requires a higher tier",
+                "This feature requires an upgraded plan",
                 map[string]string{"upgrade_url": "/pricing"})
         }
         return c.Next()
@@ -277,7 +304,20 @@ func RequireTier(flag func(TierLimits) bool) fiber.Handler {
 }
 
 // Использование:
-app.Get("/portfolio/tax-report", AuthMiddleware, RequireTier(func(l TierLimits) bool { return l.TaxReports }), taxReportHandler)
+app.Get("/portfolio/tax-report", AuthMiddleware,
+    RequireTier(func(l TierLimits) bool { return l.TaxReports }),
+    taxReportHandler)
+```
+
+**Anti-pattern (НЕ делаем):**
+
+```go
+// ❌ никогда
+if user.Tier == "pro" { ... }
+if user.HasTier("pro") { ... }
+
+// ✅ всегда через tiers.For + предикат
+if tiers.For(user.Tier).TaxReports { ... }
 ```
 
 **Важно:** не хардкодить строковое сравнение `user.Tier == "pro"` в handler-ах — всё через `tiers.For(tier).<Flag>`. Тесты tier-авторизации тоже читают из этого же модуля.

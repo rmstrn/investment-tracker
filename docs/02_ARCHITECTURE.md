@@ -341,43 +341,38 @@ CREATE TABLE audit_log (
 ```
 
 ### ai_usage
-**AI-бюджет ledger per-user per-month** — считает токены и стоимость AI-вызовов для гейтинга по тиру.
+Per-user per-month AI budget ledger. Источник правды для enforcement AI-лимитов из `tiers.Limits.AIMonthlyBudgetCents`.
 
 ```sql
 CREATE TABLE ai_usage (
-  id                  UUID PRIMARY KEY,           -- UUIDv7
-  user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  conversation_id     UUID REFERENCES ai_conversations(id),
-  model               TEXT NOT NULL,              -- 'claude-sonnet-4-6' | 'claude-haiku-4-5'
-  input_tokens        INTEGER NOT NULL,
-  output_tokens       INTEGER NOT NULL,
-  cache_read_tokens   INTEGER NOT NULL DEFAULT 0,
-  cache_write_tokens  INTEGER NOT NULL DEFAULT 0,
-  cost_usd_cents      INTEGER NOT NULL,           -- целочисленно в центах
-  feature             TEXT NOT NULL,              -- 'chat' | 'insight' | 'parse_import'
-  created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+  id                 BIGSERIAL PRIMARY KEY,
+  user_id            UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  model              TEXT NOT NULL,              -- 'claude-sonnet-4-6' | 'claude-haiku-4-5' | etc.
+  input_tokens       INTEGER NOT NULL,
+  output_tokens      INTEGER NOT NULL,
+  cache_read_tokens  INTEGER NOT NULL DEFAULT 0,
+  cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+  cost_usd_cents     INTEGER NOT NULL,           -- стоимость в центах, computed server-side
+  feature            TEXT NOT NULL,              -- 'chat' | 'insight' | 'parse' | ...
+  created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_ai_usage_user_month ON ai_usage(user_id, (date_trunc('month', created_at)));
+CREATE INDEX idx_ai_usage_user_month ON ai_usage(user_id, date_trunc('month', created_at));
 ```
 
-Read-path (`GET /v1/usage/ai`) агрегирует за текущий месяц и сравнивает с `TierLimits.AIMonthlyBudgetCents`. Write-path (AI Service) пишет запись после каждого ответа Claude.
-
 ### webhook_events
-**Идемпотентность входящих webhook-ов** (Clerk user events, Stripe billing events). Двойная доставка от провайдера → одно применение у нас.
+Идемпотентность Clerk + Stripe webhook'ов. Упреждает double-processing при ретраях от провайдера.
 
 ```sql
 CREATE TABLE webhook_events (
-  source      TEXT NOT NULL,                      -- 'clerk' | 'stripe'
-  event_id    TEXT NOT NULL,                      -- провайдерский ID (svix msg-id / stripe evt_id)
-  received_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  processed_at TIMESTAMPTZ,
-  payload     JSONB NOT NULL,                     -- для re-play и дебага
+  source          TEXT NOT NULL,                 -- 'clerk' | 'stripe'
+  event_id        TEXT NOT NULL,                 -- svix-id / stripe event.id
+  processed_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (source, event_id)
 );
 ```
 
-Handler: `INSERT ... ON CONFLICT (source, event_id) DO NOTHING RETURNING *`. Если INSERT не вернул строку — событие уже обработано, возвращаем 200 без side-effects.
+Handler делает `INSERT ... ON CONFLICT DO NOTHING` первым шагом — если `rows_affected == 0`, значит уже обработан, сразу 200.
 
 ## Ключевые архитектурные решения
 
@@ -397,87 +392,55 @@ Positions ВЫЧИСЛЯЮТСЯ из transactions, не хранятся нез
 Все суммы хранятся в нативной валюте сделки. Конвертация в display_currency — только на чтении, с использованием fx_rates на дату сделки или текущих (по выбору).
 
 ### 5. Encryption at rest для credentials
-Токены брокеров и API-ключи шифруются **AES-256-GCM envelope encryption**:
-- **KEK** (Key Encryption Key) — из env (`KEK_MASTER_V1`, `KEK_PRIMARY_ID`), 256-bit. На MVP одна версия, ротация через добавление `KEK_MASTER_V2` + ре-энкрипт.
-- **DEK** (Data Encryption Key) — генерится per credential случайно, шифруется KEK через AES-256-GCM, хранится рядом с ciphertext в `credentials_encrypted` (BYTEA: `[kek_id || nonce || encrypted_dek || dek_nonce || ciphertext || auth_tag]`).
-- **Плейнтекст** (access tokens, API secrets) — никогда не пишется в лог, декодируется только в момент HTTP-вызова брокера в памяти воркера.
-- **Управление ключами через KMS** (AWS KMS / GCP KMS) — отложено: TD (infra-hardening) после MVP. Сейчас достаточно env + Doppler как secret manager.
+Токены брокеров и API-ключи шифруются AES-256-GCM envelope. KEK в env (`KEK_MASTER_V1` + `KEK_PRIMARY_ID` для ротации без вайпа старых записей), DEK генерится per-record. Blob format: `[kek_id || nonce_outer || encrypted_dek || nonce_inner || ciphertext || auth_tag]`. Плейнтекст никогда не пишется в лог. **TD:** переход на AWS KMS/HSM для KEK при SOC 2 type 2.
 
 ### 6. Read-only только
 Никогда не запрашиваем OAuth scopes или права, которые позволили бы торговать. Если интеграция предлагает только "read+trade" — обходимся без неё.
 
-### 7. Idempotency middleware (Redis SETNX + 24h cache)
-**POST/PUT endpoints** принимают опциональный `Idempotency-Key` header. Middleware в Core API:
-1. При первом запросе — SETNX в Redis на `idempotency:{user_id}:{key}` с TTL 24h, значение = placeholder «processing».
-2. Если ключ уже есть и значение = кэшированный ответ → возвращаем его с `X-Idempotent-Replay: true`.
-3. Если значение = «processing» → 409 CONFLICT (параллельный дубликат) или короткий polling.
-4. После выполнения handler-а middleware апдейтит Redis-запись на реальный ответ.
+### 7. Idempotency middleware (SETNX request-collapsing lock)
+Все mutations в Core API проходят через middleware, который делает `SET idem:{key} pending NX EX 10` на входе. Второй concurrent-запрос с тем же `Idempotency-Key` получит `409 IDEMPOTENCY_IN_PROGRESS` с `Retry-After`. На успешном завершении — `SET idem:{key} {response-json} EX 86400`. На 5xx/panic — `DEL idem:{key}` (чтобы клиент мог ретраить). Закрывает TD-R011.
 
-**GET endpoints** используют отдельный read-through кэш (ключи без `Idempotency-Key`), TTL короче, в зависимости от ресурса.
-
-Закреплено PR B3-i (TD-011 closure).
-
-### 8. Cursor pagination
-Все list-endpoint-ы возвращают `{data: [...], next_cursor: "<base64>"}` вместо `offset/limit`.
-
-- **Cursor шифруется** base64 от JSON `{last_id: UUID, last_ts: TIMESTAMPTZ}` (или поле, по которому сортируется ресурс).
-- **Стабильный tie-break** по `id` — если два объекта имеют одинаковый `created_at`, `id` разводит их детерминированно.
-- **Нет total count** — для больших таблиц (`transactions`, `insights`) `COUNT(*)` слишком дорог. Клиент знает «есть ли ещё» по наличию `next_cursor`.
+### 8. Cursor pagination (не offset)
+Все list-endpoints возвращают `base64({last_id, last_ts})` курсор. Tie-break по `id` для стабильности. Offset-pagination запрещён — при concurrent-вставках приводит к пропуску/дубликатам.
 
 ### 9. FX resolver (Redis → Postgres → inverse-pair fallback)
-Любой расчёт в `display_currency ≠ base_currency` идёт через **FX resolver**:
-1. **Redis** (`fx:{base}:{quote}:{date}`, TTL 5 min) — hot cache курсов дня.
-2. **Postgres `fx_rates`** по `(base, quote, as_of)` — если в Redis нет.
-3. **Inverse-pair fallback** — если нет прямой пары `EUR/USD`, берём `USD/EUR` и считаем `1/rate` (обе стороны equivalent до округления).
-4. Если ни одного источника нет — API возвращает значение в `base_currency` + response header `X-FX-Unavailable: true` (scope-cut pattern).
+Конвертация валют: сначала Redis (TTL 5 мин) → Postgres `fx_rates` → inverse-pair (`USD→EUR = 1 / EUR→USD`). Если ни одна пара не найдена — возвращаем partial-response с `X-FX-Unavailable: true` header.
 
-### 10. Tier limits как shared module
-**`internal/domain/tiers/limits.go`** — единственный источник правды о лимитах тарифов.
-
-```go
-type TierLimits struct {
-    MaxAccounts            int
-    MaxTransactionsPerMonth int
-    AIMonthlyBudgetCents   int
-    InsightsEnabled        bool
-    ExportsEnabled         bool
-    // ...
-}
-
-func For(tier string) TierLimits { ... }  // 'free' | 'plus' | 'pro'
-```
-
-Используется и read-path (gating `GET /v1/insights` для free), и write-path (cap на `POST /v1/transactions` в B3), и usage endpoints. Одно изменение — во всех местах согласованно. Закреплено в DECISIONS.md (2026-04-19).
+### 10. `tiers.Limits` shared Go module
+Единый источник правды для тарифов. Handler'ы **никогда** не сравнивают `user.Tier == "pro"` — только через `tiers.For(user.Tier)` + предикат. См. TASK_04 секция 6.
 
 ### 11. Dual-mode auth middleware
-Core API принимает запросы двумя способами:
-- **Clerk JWT** (production, Bearer `eyJ...`) — middleware валидирует подпись через JWKS endpoint Clerk-а, извлекает `sub` → резолвит через `clerk_user_id` в наш `users.id`.
-- **Service token** (internal, Bearer `CORE_API_INTERNAL_TOKEN` + обязательный `X-User-Id: <uuid>` header) — для AI Service и воркеров, которые обращаются в Core API от имени пользователя.
+Core API принимает либо Clerk JWT (`Authorization: Bearer <jwt>`), либо internal-service token (`Authorization: Bearer <CORE_API_INTERNAL_TOKEN>` + `X-User-Id: <uuid>`). Второй путь — для AI Service и workers, которым нужно ходить за user-scoped данными без Clerk-сессии.
 
-Middleware выбирает режим по первому совпадению; ошибка в одном режиме не означает fallback на другой — retry = 401.
+### 12. Scope-cut pattern через response headers + TD
+Когда функциональность временно не доступна (внешний провайдер down, tier не позволяет, фича ещё не реализована) — вместо 500 возвращаем 200 с пустым/частичным body и explicit header. Клиент знает, что данных не хватает, и показывает graceful fallback. Полный перечень scope-cut headers:
 
-### 12. Scope-cut pattern для неимплементированных зависимостей
-Принцип: **никогда не возвращаем placeholder-данные**. Если внешний сервис недоступен или фича отложена — ответ явно маркируется:
+| Header | Значение true → | Источник |
+|---|---|---|
+| `X-Clerk-Unavailable` | Clerk JWKS недоступен, использован local cache | auth middleware |
+| `X-Search-Provider` | какой провайдер реально ответил (`polygon` / `local`) | /market/search |
+| `X-Benchmark-Unavailable` | S&P 500 comparison data не достали | /portfolio/performance |
+| `X-Analytics-Partial` | часть метрик пропущена (decimal overflow, missing prices) | /portfolio/analytics |
+| `X-Withholding-Unavailable` | tax withholding rules для юрисдикции отсутствуют | /tax/* |
+| `X-Tax-Advisory` | «это не tax advice» disclaimer | /tax/* |
+| `X-FX-Unavailable` | курс не найден, показан в нативной валюте | любой endpoint с конвертацией |
+| `X-Partial-Portfolio` | part of accounts not synced, values stale | /portfolio |
+| `X-Export-Pending` | export в процессе, result_url ещё пустой | /exports/{id} |
+| `X-Async-Unavailable` | handler хотел enqueue задачу, но asynq publisher был nil | /market/quote, /accounts/sync, /me DELETE, /exports |
 
-- **Response headers** — `X-Clerk-Unavailable`, `X-Search-Provider`, `X-Benchmark-Unavailable`, `X-Analytics-Partial`, `X-Withholding-Unavailable`, `X-Tax-Advisory`, `X-FX-Unavailable`.
-- **OpenAPI nullable** — поля, которые могут быть недоступны в деградации, помечены `nullable: true` в спеке (через TD-007 preprocessor).
-- **501 NOT_IMPLEMENTED** — для endpoint-ов, которые зарезервированы в спеке, но ещё не построены.
-- **TD-запись** — каждый scope-cut получает TD-номер и описание условий снятия.
-
-Антипаттерн, который этим закрывается: «вернуть пустой массив вместо падения» / «вернуть стабовый объект вместо 503» — оба прячут деградацию от клиента и бьют по trust.
+Все такие случаи также логируются как TD с триггером на revisit.
 
 ## Общение между сервисами
 
-- **Web/iOS ↔ Core API:** REST (JSON, OpenAPI-спека), SSE для стриминга чата
+- **Web/iOS ↔ Core API:** REST (JSON, `tools/openapi/openapi.yaml`), cursor pagination, SSE для стриминга. Core API принимает Clerk JWT.
 - **Core API ↔ AI Service:**
-  - Non-streaming: REST с Bearer `CORE_API_INTERNAL_TOKEN` + `X-User-Id` header (dual-mode auth, см. решение 11)
-  - **SSE reverse-proxy**: Core API проксирует `POST /v1/ai/chat/stream` в AI Service через `httputil.ReverseProxy` с `FlushInterval: -1` (немедленный flush каждого SSE event)
-  - AI Service → Core API tool calls: тот же Bearer service token + `X-User-Id`, читает portfolio/positions/transactions через Core API REST
-- **Core API ↔ Workers:** через Redis (asynq) — `sync-account`, `compute-positions`, `snapshot-daily`, `generate-insights`, `ai-embedding` очереди
-- **Workers ↔ внешние API (брокеры, market data, FX):** HTTPS с retry (exp backoff) + circuit breaker (`sony/gobreaker`)
-- **AI Service ↔ Claude API:** Anthropic SDK, prompt caching на system prompt + tool definitions, `claude-sonnet-4-6` для chat / `claude-haiku-4-5` для инсайтов
-- **Clerk webhooks** → Core API `POST /v1/webhooks/clerk` — верификация через Svix SDK, идемпотентность через `webhook_events(source='clerk', event_id=svix_msg_id)`
-- **Stripe webhooks** → Core API `POST /v1/webhooks/stripe` — верификация через stripe-go (`Stripe-Signature`), идемпотентность через `webhook_events(source='stripe', event_id=evt_id)`
+  - Request path: Core API проксирует `POST /v1/ai/chat/stream` в AI Service через `httputil.ReverseProxy` с `FlushInterval: -1` (немедленный flush для SSE). Core API добавляет `Authorization: Bearer <CORE_API_INTERNAL_TOKEN>` + `X-User-Id`.
+  - Tool-calls back: AI Service ходит в Core API за user-scoped данными через тот же internal-token путь (dual-mode auth, см. решение #11 выше). Сейчас AI Service soft-swallow'ит 404 — после B3-iii merge катим flip через RUNBOOK_ai_flip.md.
+- **Core API ↔ Workers:** через Redis (asynq). Publisher wrapper `internal/clients/asynqpub` с nil-safe `Enabled()`. Queue names: `default` (user-initiated), `sync` (account sync), `prices` (market data), `insights` (AI insights generation), `exports` (CSV materialise), `deletions` (hard-delete 7d delay).
+- **Workers ↔ внешние API:** HTTPS с retry (asynq backoff) + circuit breaker.
+- **AI Service ↔ Claude:** Anthropic SDK (Python).
+- **Clerk webhooks → Core API:** подпись проверяется через svix-library. Идемпотентность — через `webhook_events (source='clerk', event_id=<svix-id>)` с `INSERT ... ON CONFLICT DO NOTHING`.
+- **Stripe webhooks → Core API:** подпись проверяется через stripe-go SDK. Идемпотентность — та же таблица, `source='stripe'`, `event_id=event.id`.
 
 ## Observability
 

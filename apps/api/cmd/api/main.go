@@ -1,61 +1,168 @@
-// Placeholder HTTP server for the Core API.
-// TASK_04 will replace this with a Fiber app wired to Postgres/Redis and Clerk auth.
-
+// Core API entry point.
+//
+// Responsibilities: load config, init logger + Sentry, build the pgx
+// pool and Redis client, assemble Deps, build the Fiber app via
+// internal/server.New, listen, and gracefully shut down on SIGINT /
+// SIGTERM.
+//
+// Everything specific to a single route lives in handlers; this file
+// is the wiring sheet.
 package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/gofiber/fiber/v3"
+	"github.com/rs/zerolog"
+
+	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/db"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/logger"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/server"
 )
 
+// main is intentionally tiny — run() owns the error path so defers
+// (pool.Close, Sentry flush, ctx cancel) always fire before process
+// exit. main just converts an error to a non-zero status.
 func main() {
-	addr := envOr("API_LISTEN_ADDR", ":8080")
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = fmt.Fprintln(w, `{"status":"ok","service":"api","note":"placeholder — TASK_04 pending"}`)
-	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, _ *http.Request) {
-		_, _ = fmt.Fprintln(w, "api server placeholder")
-	})
-
-	srv := &http.Server{
-		Addr:              addr,
-		Handler:           mux,
-		ReadHeaderTimeout: 5 * time.Second,
-	}
-
-	go func() {
-		log.Printf("api: listening on %s", addr)
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			log.Fatalf("api: serve error: %v", err)
-		}
-	}()
-
-	// Graceful shutdown
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
-	log.Println("api: shutting down")
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := srv.Shutdown(ctx); err != nil {
-		log.Printf("api: shutdown error: %v", err)
+	if err := run(); err != nil {
+		// Fall-back to a bootstrap stderr logger when run() failed before
+		// the real logger was built.
+		boot := zerolog.New(os.Stderr).
+			With().Timestamp().Str("service", "api").Logger()
+		boot.Error().Err(err).Msg("api exit")
+		os.Exit(1)
 	}
 }
 
-func envOr(key, fallback string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
+func run() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("config: %w", err)
 	}
-	return fallback
+
+	log := logger.New(logger.Options{
+		Env:     cfg.Env,
+		Level:   cfg.LogLevel,
+		Format:  cfg.LogFormat,
+		Service: "api",
+	})
+
+	initSentry(cfg, log)
+	defer sentry.Flush(2 * time.Second)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	pool, err := db.NewPool(ctx, db.DefaultPoolConfig(cfg.DatabaseURL))
+	if err != nil {
+		return fmt.Errorf("db pool: %w", err)
+	}
+	defer pool.Close()
+
+	rcache, err := cache.New(ctx, cfg.RedisURL)
+	if err != nil {
+		return fmt.Errorf("redis: %w", err)
+	}
+	defer func() { _ = rcache.Close() }()
+
+	// asynq publisher reuses the same Redis as the cache — keeps the
+	// boot-time dependency surface tight; if a future deployment
+	// wants a separate broker Redis, split the config var.
+	asynqPub, err := asynqpub.New(cfg.RedisURL, log)
+	if err != nil {
+		return fmt.Errorf("asynq publisher: %w", err)
+	}
+	defer func() { _ = asynqPub.Close() }()
+
+	// Clerk JWKS is fetched once at boot. Both a fetch error and a
+	// nil-without-error result are startup failures: a silent nil here
+	// would let every Clerk-authenticated request 401 against a
+	// running-but-broken server, which is the opposite of fail-fast.
+	jwks, err := middleware.NewJWKS(ctx, cfg.ClerkJWKSURL)
+	if err != nil {
+		return fmt.Errorf("clerk jwks fetch: %w", err)
+	}
+	if jwks == nil {
+		return errors.New("clerk jwks: nil without error — check CLERK_JWKS_URL")
+	}
+
+	deps := &app.Deps{
+		Cfg:      cfg,
+		Log:      log,
+		Pool:     pool,
+		Cache:    rcache,
+		UserRepo: users.NewRepo(pool),
+		JWKS:     jwks,
+		Asynq:    asynqPub,
+	}
+
+	a, err := server.New(deps)
+	if err != nil {
+		return fmt.Errorf("server build: %w", err)
+	}
+
+	return startAndWait(ctx, a, log, cfg)
+}
+
+// initSentry wires Sentry SDK when a DSN is present. A missing DSN is a
+// valid dev configuration — local runs should not need a Sentry project.
+func initSentry(cfg *config.Config, log zerolog.Logger) {
+	if cfg.SentryDSN == "" {
+		log.Info().Msg("sentry disabled (no DSN)")
+		return
+	}
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:              cfg.SentryDSN,
+		Environment:      cfg.Env,
+		AttachStacktrace: true,
+		// Sample rate 100% until we see volume — PR B3 tunes this per env.
+		TracesSampleRate: 1.0,
+	})
+	if err != nil {
+		log.Error().Err(err).Msg("sentry init failed — continuing without it")
+		return
+	}
+	log.Info().Str("env", cfg.Env).Msg("sentry initialised")
+}
+
+func startAndWait(ctx context.Context, a *fiber.App, log zerolog.Logger, cfg *config.Config) error {
+	serverErrs := make(chan error, 1)
+	go func() {
+		log.Info().Str("addr", cfg.ListenAddr).Msg("api listening")
+		if err := a.Listen(cfg.ListenAddr); err != nil {
+			serverErrs <- err
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case sig := <-quit:
+		log.Info().Str("signal", sig.String()).Msg("shutdown initiated")
+	case err := <-serverErrs:
+		return fmt.Errorf("server crashed: %w", err)
+	case <-ctx.Done():
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
+	defer cancel()
+	if err := a.ShutdownWithContext(shutdownCtx); err != nil {
+		return fmt.Errorf("graceful shutdown: %w", err)
+	}
+	log.Info().Msg("api stopped")
+	return nil
 }

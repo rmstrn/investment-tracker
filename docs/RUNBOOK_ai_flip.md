@@ -21,7 +21,7 @@ This was a deliberate temporary bridge. Once Core API is feature-complete (B3-ii
 
 ### Core API coverage
 - **Read path:** ✅ closed (B2c merged → 30 GET endpoints authenticated)
-- **Write path:** 🚧 in progress (B3-i started; B3-ii and B3-iii not yet started)
+- **Write path:** 🚧 B3-i merged (2026-04-19, SHA 11d6098); B3-ii in progress; B3-iii queued.
 - AI Service uses only read endpoints; write-path gap doesn't affect AI flows directly. But AI chat depends on `POST /v1/ai/chat/stream` being proxied by Core API (lands in B3-ii) → so **full AI flow is not end-to-end until B3-ii is merged**.
 
 ### AI Service swallow code (to be removed)
