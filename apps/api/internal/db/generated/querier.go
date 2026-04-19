@@ -33,6 +33,9 @@ type Querier interface {
 	// by as_of so stale cross-listings are deprioritised.
 	GetLatestPrice(ctx context.Context, arg GetLatestPriceParams) (Price, error)
 	GetLatestSnapshotByUser(ctx context.Context, userID uuid.UUID) (PortfolioSnapshot, error)
+	// User-scoped single position lookup. Powers GET /positions/{id}.
+	// Cross-user access surfaces as ErrNoRows → handler 404.
+	GetPositionByID(ctx context.Context, arg GetPositionByIDParams) (Position, error)
 	GetPrice(ctx context.Context, arg GetPriceParams) (Price, error)
 	// Portfolio calculation fan-out: one round-trip for every unique
 	// (symbol, asset_type, currency) in the user's positions.
@@ -70,6 +73,12 @@ type Querier interface {
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
 	// Drives the /portfolio/history endpoint. $2 is the inclusive start date.
 	ListSnapshotsByUserSince(ctx context.Context, arg ListSnapshotsByUserSinceParams) ([]PortfolioSnapshot, error)
+	// Powers GET /positions/{id}/transactions. positions are materialised
+	// views keyed by (user_id, account_id, symbol) — there is no FK from
+	// transactions to a position id, so we join on those three fields.
+	// Cursor pagination matches the rest of the API (executed_at DESC,
+	// id DESC).
+	ListTransactionsByPosition(ctx context.Context, arg ListTransactionsByPositionParams) ([]Transaction, error)
 	// Cursor pagination by (executed_at, id) — descending. Clients pass the
 	// last seen values as $2/$3; first page passes far-future / NULL.
 	ListTransactionsByUser(ctx context.Context, arg ListTransactionsByUserParams) ([]Transaction, error)

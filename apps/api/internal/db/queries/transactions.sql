@@ -48,6 +48,22 @@ WHERE user_id = @user_id
 ORDER BY executed_at DESC, id DESC
 LIMIT @row_limit;
 
+-- name: ListTransactionsByPosition :many
+-- Powers GET /positions/{id}/transactions. positions are materialised
+-- views keyed by (user_id, account_id, symbol) — there is no FK from
+-- transactions to a position id, so we join on those three fields.
+-- Cursor pagination matches the rest of the API (executed_at DESC,
+-- id DESC).
+SELECT t.* FROM transactions t
+JOIN positions p ON p.user_id = t.user_id
+                 AND p.account_id = t.account_id
+                 AND p.symbol = t.symbol
+WHERE p.id = @position_id
+  AND p.user_id = @user_id
+  AND (t.executed_at, t.id) < (@cursor_ts::timestamptz, @cursor_id::uuid)
+ORDER BY t.executed_at DESC, t.id DESC
+LIMIT @row_limit;
+
 -- name: ListDividendTransactions :many
 -- Historical dividend feed for /portfolio/dividends. Filters by user +
 -- transaction_type='dividend' and honours cursor + optional date range.
