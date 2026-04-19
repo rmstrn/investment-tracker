@@ -17,7 +17,11 @@
       "primary": { "$value": "{color.neutral.50}", "$type": "color" },
       "secondary": { "$value": "{color.neutral.300}", "$type": "color" },
       "tertiary": { "$value": "{color.neutral.400}", "$type": "color" },
-      "muted": { "$value": "{color.neutral.500}", "$type": "color" },
+      "muted": {
+        "$value": "{color.neutral.400}",
+        "$type": "color",
+        "$description": "#94A3B8 — WCAG AA on dark bg; raised from neutral-500 (borderline 4.1:1)"
+      },
       "brand": {
         "$value": "{color.brand.400}",
         "$type": "color",
@@ -28,7 +32,11 @@
     },
 
     "border": {
-      "subtle": { "$value": "{color.neutral.800}", "$type": "color" },
+      "subtle": {
+        "$value": "{color.neutral.700}",
+        "$type": "color",
+        "$description": "#334155 — raised from neutral-800 (1.4:1 vs bg-primary, nearly invisible)"
+      },
       "default": { "$value": "{color.neutral.700}", "$type": "color" },
       "strong": { "$value": "{color.neutral.600}", "$type": "color" },
       "focus": { "$value": "{color.brand.400}", "$type": "color" }

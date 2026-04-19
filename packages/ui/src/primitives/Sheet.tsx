@@ -99,7 +99,7 @@ export function SheetContent({ className, children, ...props }: HTMLAttributes<H
         tabIndex={-1}
         className={cn(
           'absolute bg-background-elevated shadow-xl focus:outline-none p-6',
-          'border-border-subtle',
+          'border-border-default',
           sidePos[side],
           className,
         )}

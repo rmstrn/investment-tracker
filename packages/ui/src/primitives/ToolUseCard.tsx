@@ -34,7 +34,7 @@ export function ToolUseCard({
   return (
     <div
       className={cn(
-        'my-2 rounded-md border border-border-subtle bg-background-secondary',
+        'my-2 rounded-md border border-border-default bg-background-secondary',
         'overflow-hidden text-sm',
         className,
       )}

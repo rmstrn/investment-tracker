@@ -37,7 +37,11 @@
       "primary": { "$value": "{color.neutral.900}", "$type": "color" },
       "secondary": { "$value": "{color.neutral.600}", "$type": "color" },
       "tertiary": { "$value": "{color.neutral.500}", "$type": "color" },
-      "muted": { "$value": "{color.neutral.400}", "$type": "color" },
+      "muted": {
+        "$value": "{color.neutral.500}",
+        "$type": "color",
+        "$description": "#64748B — WCAG AA (4.76:1 vs white); raised from neutral-400 (2.56:1 failed)"
+      },
       "brand": {
         "$value": "{color.brand.700}",
         "$type": "color",

@@ -38,7 +38,7 @@ export function TrustRow({
   return (
     <div
       className={cn(
-        'flex items-start gap-3 rounded-lg border border-border-subtle bg-background-secondary p-4',
+        'flex items-start gap-3 rounded-lg border border-border-default bg-background-secondary p-4',
         className,
       )}
       {...props}

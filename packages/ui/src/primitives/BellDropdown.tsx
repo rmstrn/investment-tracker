@@ -115,7 +115,7 @@ export function BellDropdown({
         <div
           role="menu"
           className={cn(
-            'absolute right-0 top-full z-40 mt-2 w-96 overflow-hidden rounded-xl border border-border-subtle bg-background-elevated shadow-md',
+            'absolute right-0 top-full z-40 mt-2 w-96 overflow-hidden rounded-xl border border-border-default bg-background-elevated shadow-md',
           )}
         >
           <div className="flex items-center justify-between border-b border-border-subtle px-4 py-3">

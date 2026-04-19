@@ -65,7 +65,7 @@ export function TabsList({ className, ...props }: HTMLAttributes<HTMLDivElement>
     <div
       role="tablist"
       className={cn(
-        'inline-flex h-10 items-center gap-1 rounded-md bg-background-secondary p-1',
+        'inline-flex h-10 items-center gap-1 rounded-md border border-border-default bg-background-secondary p-1',
         className,
       )}
       {...props}

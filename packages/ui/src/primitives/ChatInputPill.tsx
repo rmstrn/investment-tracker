@@ -77,7 +77,7 @@ export const ChatInputPill = forwardRef<HTMLTextAreaElement, ChatInputPillProps>
     return (
       <div
         className={cn(
-          'flex w-full items-end gap-2 rounded-full border border-border-subtle bg-background-elevated',
+          'flex w-full items-end gap-2 rounded-full border border-border-default bg-background-elevated',
           'px-3 py-2 shadow-xs',
           'focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-transparent',
           'transition-colors duration-fast ease-out',
