@@ -24,6 +24,7 @@ import (
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/db"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
@@ -77,6 +78,15 @@ func run() error {
 	}
 	defer func() { _ = rcache.Close() }()
 
+	// asynq publisher reuses the same Redis as the cache — keeps the
+	// boot-time dependency surface tight; if a future deployment
+	// wants a separate broker Redis, split the config var.
+	asynqPub, err := asynqpub.New(cfg.RedisURL, log)
+	if err != nil {
+		return fmt.Errorf("asynq publisher: %w", err)
+	}
+	defer func() { _ = asynqPub.Close() }()
+
 	// Clerk JWKS is fetched once at boot. Both a fetch error and a
 	// nil-without-error result are startup failures: a silent nil here
 	// would let every Clerk-authenticated request 401 against a
@@ -96,6 +106,7 @@ func run() error {
 		Cache:    rcache,
 		UserRepo: users.NewRepo(pool),
 		JWKS:     jwks,
+		Asynq:    asynqPub,
 	}
 
 	a, err := server.New(deps)
