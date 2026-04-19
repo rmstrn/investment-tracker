@@ -68,6 +68,11 @@ type Querier interface {
 	// handler does not need a second round-trip per row.
 	ListAIConversationsByUser(ctx context.Context, arg ListAIConversationsByUserParams) ([]ListAIConversationsByUserRow, error)
 	ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]Account, error)
+	// Full unbounded ledger for the tax-report builder. FIFO lot-matching
+	// needs every historical transaction to reconstruct cost basis, so
+	// no cursor / no LIMIT. Called only by GET /portfolio/tax — the
+	// usual list endpoints use the filtered / cursor variants.
+	ListAllTransactionsByUser(ctx context.Context, userID uuid.UUID) ([]Transaction, error)
 	// Historical dividend feed for /portfolio/dividends. Filters by user +
 	// transaction_type='dividend' and honours cursor + optional date range.
 	// A dedicated dividends / corporate_actions table does not yet exist

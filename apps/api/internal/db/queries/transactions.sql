@@ -48,6 +48,15 @@ WHERE user_id = @user_id
 ORDER BY executed_at DESC, id DESC
 LIMIT @row_limit;
 
+-- name: ListAllTransactionsByUser :many
+-- Full unbounded ledger for the tax-report builder. FIFO lot-matching
+-- needs every historical transaction to reconstruct cost basis, so
+-- no cursor / no LIMIT. Called only by GET /portfolio/tax — the
+-- usual list endpoints use the filtered / cursor variants.
+SELECT * FROM transactions
+WHERE user_id = $1
+ORDER BY executed_at ASC, id ASC;
+
 -- name: ListTransactionsByPosition :many
 -- Powers GET /positions/{id}/transactions. positions are materialised
 -- views keyed by (user_id, account_id, symbol) — there is no FK from
