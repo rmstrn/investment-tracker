@@ -8,6 +8,78 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-053 — `/ai/insights/generate` per-week / per-day tier gate
+
+**Added:** 2026-04-20 (PR B3-ii-a)
+**Source:** openapi `/ai/insights/generate` doc string says Free=1/week, Plus=1/day, Pro=unlimited. Текущий handler гейтится через `airatelimit` middleware, который считает против `ai_messages_daily` (Free=5/day, Plus=50/day, Pro=∞) — тот же бюджет что /ai/chat. Бюджет защищён, но семантика «1 в неделю на Free» не enforced — Free может позвать /generate 5 раз в день.
+**Risk:** низкий — UI button click frequency низкая, нет abuse signals; openapi-described gate это UX cap, не cost cap.
+**Fix:** новый dedicated counter `insights_generated_<period>` в Redis (или usage_counters table). Per-tier window: Free=1/week, Plus=1/day, Pro=skip. Отдельный middleware либо параметризованный airatelimit с кастомным TTL+cap.
+**Trigger to revisit:** product решает «Free спамят /generate, нужна жёсткая 1/week крышка», или UI feedback показывает что текущая шаринг-с-чатом семантика confusит.
+**Owner:** backend
+**Scope:** ~80 LOC + tests — 2 часа
+
+---
+
+### TD-052 — AIRateLimit pre-increment overcount (P2)
+
+**Added:** 2026-04-20 (PR B3-ii-a)
+**Source:** `airatelimit` middleware INCRementit Redis counter ДО handler вызова. Если post-INCR n > cap → 429 + counter сидит на n (over). Если handler 5xx (AI Service down) — counter уже инкрементирован, юзер «потерял» попытку.
+**Risk:** низкий — overcount-by-1 на 429 = ноль разница для юзера (он уже отгеймлен). Counter-inflate-on-5xx = плохой DX (юзер «потратил quota» на upstream сбой).
+**Fix:** «reserve + commit» паттерн. Lua script: SETNX reservation (TTL 60s), handler runs, on success — INCR daily counter + DEL reservation; on failure — DEL reservation; на 429 — никаких inserts. Атомарно, точно.
+**Trigger to revisit:** complaint «я не делал столько запросов» или audit показывает >5% overcount drift против ai_usage ledger.
+**Owner:** backend
+**Scope:** ~50 LOC + tests — 1.5 часа
+
+---
+
+### TD-051 — SSE parser в Core API дублирует AI Service знание о frame format
+
+**Added:** 2026-04-20 (PR B3-ii-a planning, lands in B3-ii-b)
+**Source:** B3-ii-b SSE proxy handler парсит frames AI Service'а (event: <type>\ndata: <json>\n\n) для tee → DB persist. AI Service одновременно владеет тем же contract'ом в `ai_service/llm/streaming.py`. Оба должны быть синхронны.
+**Risk:** drift при schema bump на одной из сторон. Например, если AI Service добавит новое поле в JSON payload — Core API `tee` parser его игнорит (OK), но если frame format поменяется (CRLF вместо LF, multi-line data:) — silent break.
+**Fix:** общий контракт-test: AI Service publishes a fixture set of canonical frames; Core API parser test consumes the same fixture. Или: вытащить `sseproxy` в отдельный Go pkg + Python equivalent с shared spec.
+**Trigger to revisit:** при первом silent-bug на streaming side (production incident OR CI canary).
+**Owner:** backend + AI lead
+**Scope:** ~40 LOC contract-test (фаза 1); полный shared-spec rewrite — отдельный story.
+
+---
+
+### TD-050 — `/ai/insights/generate` Path B handler hangs 5-30s (Fly.io idle 60s)
+
+**Added:** 2026-04-20 (PR B3-ii-a)
+**Source:** Path B = sync inline AI Service call. Handler блокирует HTTP request на 5-30s ждущий LLM. Под Fly.io idle timeout (60s) safe, но LB / browser disconnect могут убить connection до завершения.
+**Risk:** LB или client side timeout → 502/504, insights не сохранятся, юзер видит ошибку, при retry — ещё один LLM call ($).
+**Fix:** Async path — handler enqueue'ит asynq task, returns 202 + status=queued + job_id; worker (TASK_06) пулл'ит → AI Service → INSERT insights → job done. Нужна `insight_generation_jobs` table + `WorkerHardDeleteJob` analog для статусов.
+**Trigger to revisit:** asynq worker landed (TASK_06), OR первый production incident про timeout на /generate.
+**Owner:** backend (handler) + ops (TASK_06 worker)
+**Scope:** ~150 LOC + migration `insight_generation_jobs` + worker handler — 4-6 часов
+
+---
+
+### TD-049 — SSE Last-Event-ID resume protocol
+
+**Added:** 2026-04-20 (PR B3-ii-a planning, lands in B3-ii-b)
+**Source:** MVP SSE proxy не поддерживает client-side reconnect+resume. Если client потерял connection mid-stream (network blip, mobile cellular handoff) — он начинает новый chat message. Token cost double, history может задвоиться.
+**Risk:** mobile users с unstable connectivity платят 2x за один answer. UI может показать assistant message дважды (если client успел persist первый chunk).
+**Fix:** Last-Event-ID header support per SSE spec. Server emits per-frame `id: <uuid>`. На reconnect client sends `Last-Event-ID: <uuid>` → server resumes from that point (нужен per-conversation event log в Redis). Полное решение: persistent SSE journal.
+**Trigger to revisit:** mobile launch (TASK_08), или metrics показывают >5% chat sessions с reconnect events.
+**Owner:** backend
+**Scope:** ~200 LOC + Redis schema + integration tests — 1 день
+
+---
+
+### TD-048 — SSE error event payload extension — request_id field
+
+**Added:** 2026-04-20 (PR B3-ii-a planning, lands in B3-ii-b)
+**Source:** AI Service SSE `event: error` payload (см. `ai_service/agents/chat_agent.py` ErrorEvent) carries `message` + `code`, но НЕ `request_id`. Sentry-correlation Core API ↔ AI Service сейчас работает только на HTTP-уровне (X-Request-Id header в request log) — для in-stream errors trace потеряется.
+**Risk:** debugging mid-stream errors потребует cross-correlate logs по timestamp + user_id вместо одной trace ID. Slower MTTR.
+**Fix:** AI Service ErrorEvent добавляет `request_id: str` field; Core API SSE proxy пропагирует его как полученный X-Request-Id в headers. Координация через TASK_05 CC.
+**Trigger to revisit:** первый mid-stream production incident требующий cross-service trace; OR routine TASK_05 update.
+**Owner:** backend lead + AI lead (TASK_05 coordination)
+**Scope:** ~10 LOC AI Service + ~5 LOC Core API + spec bump
+
+---
+
 ### TD-047 — CSVExport tier flag heuristic (P1 pre-GA)
 
 **Added:** 2026-04-19 (PR #40 / B3-i)

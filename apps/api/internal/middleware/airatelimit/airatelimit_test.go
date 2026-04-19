@@ -54,6 +54,11 @@ func buildApp(t *testing.T, tier string) (*fiber.App, *miniredis.Miniredis, *int
 	return a, mr, &passed
 }
 
+// doPost is the test wrapper for POST /try. The returned response's
+// body is closed via t.Cleanup so callers can trigger the bodyclose
+// linter — //nolint:bodyclose at each call site documents the intent.
+//
+//nolint:bodyclose // closed via t.Cleanup inside the helper
 func doPost(t *testing.T, a *fiber.App) *http.Response {
 	t.Helper()
 	req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/try", strings.NewReader(""))
@@ -61,6 +66,7 @@ func doPost(t *testing.T, a *fiber.App) *http.Response {
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
 	}
+	t.Cleanup(func() { _ = resp.Body.Close() })
 	return resp
 }
 
@@ -70,7 +76,7 @@ func TestFreeTier_GatesAt5thPlus1(t *testing.T) {
 	a, _, passed := buildApp(t, "free")
 
 	for i := 1; i <= 5; i++ {
-		resp := doPost(t, a)
+		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 		if resp.StatusCode != fiber.StatusOK {
 			t.Fatalf("attempt %d: status = %d, want 200", i, resp.StatusCode)
 		}
@@ -87,7 +93,7 @@ func TestFreeTier_GatesAt5thPlus1(t *testing.T) {
 	}
 
 	// 6th attempt — 429.
-	resp := doPost(t, a)
+	resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 	if resp.StatusCode != fiber.StatusTooManyRequests {
 		t.Fatalf("6th status = %d, want 429", resp.StatusCode)
 	}
@@ -118,7 +124,7 @@ func TestPlusTier_GatesAt51st(t *testing.T) {
 	a, _, passed := buildApp(t, "plus")
 
 	for i := 1; i <= 50; i++ {
-		resp := doPost(t, a)
+		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 		if resp.StatusCode != fiber.StatusOK {
 			t.Fatalf("attempt %d: status = %d", i, resp.StatusCode)
 		}
@@ -127,7 +133,7 @@ func TestPlusTier_GatesAt51st(t *testing.T) {
 		t.Fatalf("passed = %d, want 50", got)
 	}
 
-	resp := doPost(t, a)
+	resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 	if resp.StatusCode != fiber.StatusTooManyRequests {
 		t.Fatalf("51st status = %d, want 429", resp.StatusCode)
 	}
@@ -140,7 +146,7 @@ func TestProTier_NeverGated(t *testing.T) {
 	a, mr, passed := buildApp(t, "pro")
 
 	for i := 0; i < 200; i++ {
-		resp := doPost(t, a)
+		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 		if resp.StatusCode != fiber.StatusOK {
 			t.Fatalf("attempt %d: status = %d", i, resp.StatusCode)
 		}

@@ -125,7 +125,7 @@ func (c *Client) GenerateInsights(ctx context.Context, userID uuid.UUID, request
 	if err != nil {
 		return nil, fmt.Errorf("aiservice: do request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
 		return nil, ErrUpstreamAuth
