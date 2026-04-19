@@ -166,6 +166,48 @@ func (q *Queries) ListAccountsByUser(ctx context.Context, userID uuid.UUID) ([]A
 	return items, nil
 }
 
+const setAccountSyncState = `-- name: SetAccountSyncState :one
+UPDATE accounts
+SET sync_status = $3,
+    updated_at  = now()
+WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+RETURNING id, user_id, broker_name, display_name, account_type, connection_type, external_account_id, credentials_encrypted, credentials_kek_id, base_currency, last_synced_at, sync_status, sync_error, deleted_at, created_at, updated_at, is_included_in_portfolio
+`
+
+type SetAccountSyncStateParams struct {
+	ID         uuid.UUID
+	UserID     uuid.UUID
+	SyncStatus string
+}
+
+// Pause/resume: just flips sync_status with no side effects on
+// last_synced_at (UpdateAccountSyncStatus is for the post-sync
+// transition, where we want last_synced_at = now() on ok).
+func (q *Queries) SetAccountSyncState(ctx context.Context, arg SetAccountSyncStateParams) (Account, error) {
+	row := q.db.QueryRow(ctx, setAccountSyncState, arg.ID, arg.UserID, arg.SyncStatus)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.BrokerName,
+		&i.DisplayName,
+		&i.AccountType,
+		&i.ConnectionType,
+		&i.ExternalAccountID,
+		&i.CredentialsEncrypted,
+		&i.CredentialsKekID,
+		&i.BaseCurrency,
+		&i.LastSyncedAt,
+		&i.SyncStatus,
+		&i.SyncError,
+		&i.DeletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsIncludedInPortfolio,
+	)
+	return i, err
+}
+
 const softDeleteAccount = `-- name: SoftDeleteAccount :one
 UPDATE accounts
 SET deleted_at = now(),
@@ -181,6 +223,55 @@ type SoftDeleteAccountParams struct {
 
 func (q *Queries) SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error) {
 	row := q.db.QueryRow(ctx, softDeleteAccount, arg.ID, arg.UserID)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.BrokerName,
+		&i.DisplayName,
+		&i.AccountType,
+		&i.ConnectionType,
+		&i.ExternalAccountID,
+		&i.CredentialsEncrypted,
+		&i.CredentialsKekID,
+		&i.BaseCurrency,
+		&i.LastSyncedAt,
+		&i.SyncStatus,
+		&i.SyncError,
+		&i.DeletedAt,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.IsIncludedInPortfolio,
+	)
+	return i, err
+}
+
+const updateAccountDisplayOptions = `-- name: UpdateAccountDisplayOptions :one
+UPDATE accounts
+SET display_name             = COALESCE($1,             display_name),
+    is_included_in_portfolio = COALESCE($2, is_included_in_portfolio),
+    updated_at               = now()
+WHERE id = $3 AND user_id = $4 AND deleted_at IS NULL
+RETURNING id, user_id, broker_name, display_name, account_type, connection_type, external_account_id, credentials_encrypted, credentials_kek_id, base_currency, last_synced_at, sync_status, sync_error, deleted_at, created_at, updated_at, is_included_in_portfolio
+`
+
+type UpdateAccountDisplayOptionsParams struct {
+	DisplayName           *string
+	IsIncludedInPortfolio *bool
+	ID                    uuid.UUID
+	UserID                uuid.UUID
+}
+
+// Powers PATCH /accounts/{id}. Both fields are optional (sqlc.narg);
+// COALESCE keeps the column when the field is NULL so callers can
+// update display_name or the inclusion flag independently.
+func (q *Queries) UpdateAccountDisplayOptions(ctx context.Context, arg UpdateAccountDisplayOptionsParams) (Account, error) {
+	row := q.db.QueryRow(ctx, updateAccountDisplayOptions,
+		arg.DisplayName,
+		arg.IsIncludedInPortfolio,
+		arg.ID,
+		arg.UserID,
+	)
 	var i Account
 	err := row.Scan(
 		&i.ID,

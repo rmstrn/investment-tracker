@@ -148,6 +148,10 @@ type Querier interface {
 	// integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
 	// multiple-currency rows do not duplicate.
 	SearchPriceSymbols(ctx context.Context, arg SearchPriceSymbolsParams) ([]SearchPriceSymbolsRow, error)
+	// Pause/resume: just flips sync_status with no side effects on
+	// last_synced_at (UpdateAccountSyncStatus is for the post-sync
+	// transition, where we want last_synced_at = now() on ok).
+	SetAccountSyncState(ctx context.Context, arg SetAccountSyncStateParams) (Account, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
 	// Aggregate a counter for (user, counter_type) across [from, to]
 	// inclusive. Used by GET /me/usage — daily counters pass from=to=today,
@@ -155,6 +159,10 @@ type Querier interface {
 	// exist so the handler never has to nil-check.
 	SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error)
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
+	// Powers PATCH /accounts/{id}. Both fields are optional (sqlc.narg);
+	// COALESCE keeps the column when the field is NULL so callers can
+	// update display_name or the inclusion flag independently.
+	UpdateAccountDisplayOptions(ctx context.Context, arg UpdateAccountDisplayOptionsParams) (Account, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
 	// Called by the Stripe webhook path. Idempotent: same payload replayed

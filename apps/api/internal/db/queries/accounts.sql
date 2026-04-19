@@ -38,3 +38,24 @@ SET deleted_at = now(),
     updated_at = now()
 WHERE id = $1 AND user_id = $2
 RETURNING *;
+
+-- name: UpdateAccountDisplayOptions :one
+-- Powers PATCH /accounts/{id}. Both fields are optional (sqlc.narg);
+-- COALESCE keeps the column when the field is NULL so callers can
+-- update display_name or the inclusion flag independently.
+UPDATE accounts
+SET display_name             = COALESCE(sqlc.narg('display_name'),             display_name),
+    is_included_in_portfolio = COALESCE(sqlc.narg('is_included_in_portfolio'), is_included_in_portfolio),
+    updated_at               = now()
+WHERE id = @id AND user_id = @user_id AND deleted_at IS NULL
+RETURNING *;
+
+-- name: SetAccountSyncState :one
+-- Pause/resume: just flips sync_status with no side effects on
+-- last_synced_at (UpdateAccountSyncStatus is for the post-sync
+-- transition, where we want last_synced_at = now() on ok).
+UPDATE accounts
+SET sync_status = $3,
+    updated_at  = now()
+WHERE id = $1 AND user_id = $2 AND deleted_at IS NULL
+RETURNING *;

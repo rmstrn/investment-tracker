@@ -110,6 +110,29 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/ai/insights", handlers.ListInsights(deps))
 	reads.Get("/portfolio/analytics", handlers.GetPortfolioAnalytics(deps))
 	reads.Get("/portfolio/tax", handlers.GetPortfolioTax(deps))
+
+	// Mutations group: Idempotency middleware + write-side rate-limit
+	// (real 429 gate, not passthrough). Idempotency takes the
+	// request-collapsing SETNX lock added in B3-i; callers that send
+	// the same Idempotency-Key replay within 24h and collapse on the
+	// in-flight branch with 409 IDEMPOTENCY_IN_PROGRESS.
+	mutations := api.Group("",
+		middleware.RateLimit(middleware.RateLimitConfig{
+			Cache:  deps.Cache,
+			Key:    "mutations",
+			Limit:  120,
+			Window: time.Minute,
+		}),
+		middleware.Idempotency(middleware.IdempotencyConfig{Cache: deps.Cache}),
+	)
+	// Accounts mutations.
+	mutations.Post("/accounts", handlers.CreateAccount(deps))
+	mutations.Patch("/accounts/:id", handlers.UpdateAccount(deps))
+	mutations.Delete("/accounts/:id", handlers.DeleteAccount(deps))
+	mutations.Post("/accounts/:id/sync", handlers.SyncAccount(deps))
+	mutations.Post("/accounts/:id/reconnect", handlers.ReconnectAccount(deps))
+	mutations.Post("/accounts/:id/pause", handlers.PauseAccount(deps))
+	mutations.Post("/accounts/:id/resume", handlers.ResumeAccount(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {
