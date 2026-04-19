@@ -27,6 +27,10 @@ type Querier interface {
 	// them. Capped at 99 in the handler so the UI can render "99+".
 	CountUnreadNotifications(ctx context.Context, userID uuid.UUID) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	// Row-first insert so the handler can return a valid ExportJob body
+	// alongside the 202. status starts at 'queued'; the worker flips it
+	// to running → done/failed and patches result_url + row_count.
+	CreateExportJob(ctx context.Context, arg CreateExportJobParams) (ExportJob, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Manual-only hard delete. Returns affected-row count so the handler
 	// can distinguish missing / non-manual / other-user from success.
@@ -35,6 +39,8 @@ type Querier interface {
 	GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error)
 	// Scoped by user_id to enforce ownership at the query layer.
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
+	// Scoped by user_id so cross-user polling surfaces as ErrNoRows → 404.
+	GetExportJobByID(ctx context.Context, arg GetExportJobByIDParams) (ExportJob, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
 	// Composite-key lookup for GET /glossary/{slug}?locale=. pgx.ErrNoRows
 	// → handler 404.

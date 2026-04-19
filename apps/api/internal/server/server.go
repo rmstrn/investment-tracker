@@ -112,6 +112,7 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/portfolio/tax", handlers.GetPortfolioTax(deps))
 	reads.Get("/notifications", handlers.ListNotifications(deps))
 	reads.Get("/notifications/unread_count", handlers.GetUnreadNotificationCount(deps))
+	reads.Get("/exports/:id", handlers.GetExport(deps))
 
 	// Mutations group: Idempotency middleware + write-side rate-limit
 	// (real 429 gate, not passthrough). Idempotency takes the
@@ -148,6 +149,8 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	// Notifications mutations.
 	mutations.Post("/notifications/:id/read", handlers.MarkNotificationRead(deps))
 	mutations.Post("/notifications/read_all", handlers.MarkAllNotificationsRead(deps))
+	// Exports.
+	mutations.Post("/exports", handlers.CreateExport(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {
