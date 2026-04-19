@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -29,13 +30,24 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/server"
 )
 
+// main is intentionally tiny — run() owns the error path so defers
+// (pool.Close, Sentry flush, ctx cancel) always fire before process
+// exit. main just converts an error to a non-zero status.
 func main() {
-	cfg, err := config.Load()
-	if err != nil {
+	if err := run(); err != nil {
+		// Fall-back to a bootstrap stderr logger when run() failed before
+		// the real logger was built.
 		boot := zerolog.New(os.Stderr).
 			With().Timestamp().Str("service", "api").Logger()
-		boot.Error().Err(err).Msg("config load failed")
+		boot.Error().Err(err).Msg("api exit")
 		os.Exit(1)
+	}
+}
+
+func run() error {
+	cfg, err := config.Load()
+	if err != nil {
+		return fmt.Errorf("config: %w", err)
 	}
 
 	log := logger.New(logger.Options{
@@ -53,15 +65,13 @@ func main() {
 
 	pool, err := db.NewPool(ctx, db.DefaultPoolConfig(cfg.DatabaseURL))
 	if err != nil {
-		log.Error().Err(err).Msg("db pool init failed")
-		os.Exit(1)
+		return fmt.Errorf("db pool: %w", err)
 	}
 	defer pool.Close()
 
 	rcache, err := cache.New(ctx, cfg.RedisURL)
 	if err != nil {
-		log.Error().Err(err).Msg("redis init failed")
-		os.Exit(1)
+		return fmt.Errorf("redis: %w", err)
 	}
 	defer func() { _ = rcache.Close() }()
 
@@ -75,11 +85,10 @@ func main() {
 
 	a, err := server.New(ctx, deps)
 	if err != nil {
-		log.Error().Err(err).Msg("server build failed")
-		os.Exit(1)
+		return fmt.Errorf("server build: %w", err)
 	}
 
-	startAndWait(ctx, a, log, cfg)
+	return startAndWait(ctx, a, log, cfg)
 }
 
 // initSentry wires Sentry SDK when a DSN is present. A missing DSN is a
@@ -103,11 +112,11 @@ func initSentry(cfg *config.Config, log zerolog.Logger) {
 	log.Info().Str("env", cfg.Env).Msg("sentry initialised")
 }
 
-func startAndWait(ctx context.Context, app *fiber.App, log zerolog.Logger, cfg *config.Config) {
+func startAndWait(ctx context.Context, a *fiber.App, log zerolog.Logger, cfg *config.Config) error {
 	serverErrs := make(chan error, 1)
 	go func() {
 		log.Info().Str("addr", cfg.ListenAddr).Msg("api listening")
-		if err := app.Listen(cfg.ListenAddr); err != nil {
+		if err := a.Listen(cfg.ListenAddr); err != nil {
 			serverErrs <- err
 		}
 	}()
@@ -119,17 +128,15 @@ func startAndWait(ctx context.Context, app *fiber.App, log zerolog.Logger, cfg *
 	case sig := <-quit:
 		log.Info().Str("signal", sig.String()).Msg("shutdown initiated")
 	case err := <-serverErrs:
-		log.Error().Err(err).Msg("server crashed")
+		return fmt.Errorf("server crashed: %w", err)
 	case <-ctx.Done():
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	err := app.ShutdownWithContext(shutdownCtx)
-	cancel()
-
-	if err != nil {
-		log.Error().Err(err).Msg("graceful shutdown failed")
-		os.Exit(1)
+	defer cancel()
+	if err := a.ShutdownWithContext(shutdownCtx); err != nil {
+		return fmt.Errorf("graceful shutdown: %w", err)
 	}
 	log.Info().Msg("api stopped")
+	return nil
 }
