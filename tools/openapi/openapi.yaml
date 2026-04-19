@@ -341,6 +341,86 @@ paths:
         '401': { $ref: '#/components/responses/Unauthorized' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /accounts/{id}/reconnect:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: reconnectAccount
+      summary: Re-authenticate an aggregator-backed account
+      description: |
+        Produces a fresh aggregator connect URL (OAuth flow) or re-opens the
+        API-key input for the account. Used when `sync_status=error` due to
+        expired auth / rotated API key (design brief §18.4).
+
+        For `connection_type=manual` accounts this returns `connect_url=null`
+        and the endpoint is a no-op (`200`).
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                redirect_url:
+                  type: string
+                  format: uri
+                  description: Where to return the user after OAuth.
+      responses:
+        '200':
+          description: Reconnection flow started
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountReconnectResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/pause:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: pauseAccount
+      summary: Pause automatic sync for this account
+      description: |
+        Transitions `sync_status` → `paused`. The scheduled sync worker
+        skips paused accounts until `POST /accounts/{id}/resume` is called.
+        Manual `POST /accounts/{id}/sync` is still permitted while paused.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Paused
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/resume:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: resumeAccount
+      summary: Resume automatic sync for this account
+      description: |
+        Transitions `sync_status` from `paused` → `pending`. Next scheduled
+        run will pick the account up.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Resumed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
   # ──────────────────────── Transactions ─────────────────────────
   /transactions:
     get:
@@ -550,11 +630,53 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
+  /portfolio/performance/compare:
+    get:
+      tags: [Portfolio]
+      operationId: comparePortfolioPerformance
+      summary: Compare portfolio against up to three benchmarks
+      description: |
+        Multi-benchmark variant backing the `/performance` screen (design
+        brief §15.2). Returns per-benchmark returns + alpha + series, plus a
+        single `stats` block summarising the portfolio itself (best/worst
+        month, average return, volatility). Tier-gated: Plus+.
+      parameters:
+        - name: benchmarks
+          in: query
+          required: true
+          description: Comma-separated list, 1–3 items.
+          schema:
+            type: string
+            examples: ['SPX', 'SPX,QQQ', 'SPX,QQQ,ACWI']
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1m, 3m, 6m, 1y, all]
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Multi-benchmark comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioPerformanceCompare' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Multi-benchmark comparison requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
   /portfolio/dividends:
     get:
       tags: [Portfolio]
       operationId: getPortfolioDividends
       summary: Upcoming and historical dividends
+      description: |
+        Tier-gated: Plus+ only. Free callers receive `403 FEATURE_LOCKED`.
+        See design brief §15.1.
       parameters:
         - $ref: '#/components/parameters/Cursor'
         - $ref: '#/components/parameters/Limit'
@@ -579,6 +701,11 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/DividendEvent' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Dividend calendar requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
 
   # ─────────────────────────── Positions ─────────────────────────
   /positions:
@@ -1009,6 +1136,46 @@ paths:
                         type: array
                         items: { $ref: '#/components/schemas/Insight' }
         '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /ai/insights/generate:
+    post:
+      tags: [AI]
+      operationId: generateInsight
+      summary: Request an immediate insight generation run
+      description: |
+        Backs the `[Generate new ↻]` CTA on `/insights` (design brief §5.5).
+        Returns `202` with the in-progress job — clients poll
+        `/ai/insights?include_dismissed=false` or listen for the
+        `insight_generated` notification to pick it up once created.
+
+        Tier-gated: Free users may call once per week (cap enforced server-side,
+        returns `429 TIER_LIMIT_EXCEEDED`). Plus: daily. Pro: unlimited.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                insight_type:
+                  $ref: '#/components/schemas/InsightType'
+                  description: Optional — hint to focus the run on a category.
+      responses:
+        '202':
+          description: Generation queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/InsightGenerationJob' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Tier feature-locked
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '429': { $ref: '#/components/responses/RateLimited' }
 
   /ai/insights/{id}/dismiss:
     parameters:
@@ -1464,13 +1631,32 @@ components:
       enum: [broker, crypto, manual]
     SyncState:
       type: string
-      enum: [pending, syncing, ok, error]
+      enum: [pending, syncing, ok, error, paused]
+      description: |
+        - `pending` — created, not yet synced.
+        - `syncing` — a sync is in-flight.
+        - `ok` — last sync succeeded.
+        - `error` — last sync failed; user action needed (§18.2).
+        - `paused` — user-initiated pause; cron skips this account until
+          `POST /accounts/{id}/resume`.
     SubscriptionTier:
       type: string
       enum: [free, plus, pro]
     InsightSeverity:
       type: string
       enum: [info, warning, critical]
+    InsightType:
+      type: string
+      description: |
+        Fixed taxonomy for rendering (icon, colour). `behavioral` covers the
+        Behavioral Coach module (design brief §14.1).
+      enum:
+        - diversification
+        - risk
+        - performance
+        - rebalance
+        - cost
+        - behavioral
 
     # ── Envelopes ─────────────────────────────────────────────
     ErrorEnvelope:
@@ -1630,6 +1816,7 @@ components:
         - connection_type
         - base_currency
         - sync_status
+        - is_included_in_portfolio
         - created_at
         - updated_at
       properties:
@@ -1657,6 +1844,12 @@ components:
         sync_status: { $ref: '#/components/schemas/SyncState' }
         sync_error:
           type: [string, "null"]
+        is_included_in_portfolio:
+          type: boolean
+          description: |
+            When false, the account is hidden from portfolio aggregations
+            (`/portfolio`, `/positions`, snapshots) but still listed in
+            `/settings/accounts` (§18.1). Toggled via `PATCH /accounts/{id}`.
         deleted_at:
           type: [string, "null"]
           format: date-time
@@ -1700,6 +1893,9 @@ components:
       additionalProperties: false
       properties:
         display_name: { type: string, maxLength: 120 }
+        is_included_in_portfolio:
+          type: boolean
+          description: Toggle inclusion in portfolio aggregations (§18.1).
 
     AccountSyncStatus:
       type: object
@@ -1715,6 +1911,18 @@ components:
         next_sync_at:
           type: [string, "null"]
           format: date-time
+
+    AccountReconnectResponse:
+      type: object
+      required: [account]
+      properties:
+        account: { $ref: '#/components/schemas/Account' }
+        connect_url:
+          type: [string, "null"]
+          format: uri
+          description: |
+            Fresh aggregator OAuth URL. Open in browser/webview. `null` for
+            `manual` accounts or when the account has no prior external auth.
 
     # ── Transaction ───────────────────────────────────────────
     Transaction:
@@ -1901,6 +2109,7 @@ components:
           type: number
           format: float
           description: portfolio_return - benchmark_return.
+        stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
         series:
           type: array
           items:
@@ -1910,6 +2119,71 @@ components:
               date: { type: string, format: date }
               portfolio_return_percent: { type: number, format: float }
               benchmark_return_percent: { type: number, format: float }
+
+    PortfolioPerformanceStats:
+      type: object
+      description: |
+        Rolled-up stats over the selected period, independent of any
+        benchmark. Rendered in the period breakdown table (§15.2).
+      required: [avg_return_percent, volatility]
+      properties:
+        best_month:
+          type: [object, "null"]
+          required: [month, return_percent]
+          properties:
+            month: { type: string, description: 'YYYY-MM' }
+            return_percent: { type: number, format: float }
+        worst_month:
+          type: [object, "null"]
+          required: [month, return_percent]
+          properties:
+            month: { type: string, description: 'YYYY-MM' }
+            return_percent: { type: number, format: float }
+        avg_return_percent:
+          type: number
+          format: float
+          description: Arithmetic mean of monthly returns over the period.
+        volatility:
+          type: number
+          format: float
+          description: Annualised stdev of monthly returns (unitless decimal, 0.12 == 12%).
+
+    PortfolioPerformanceBenchmark:
+      type: object
+      required: [benchmark, benchmark_return_percent, alpha_percent]
+      properties:
+        benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
+        benchmark_return_percent: { type: number, format: float }
+        alpha_percent: { type: number, format: float }
+        series:
+          type: array
+          items:
+            type: object
+            required: [date, benchmark_return_percent]
+            properties:
+              date: { type: string, format: date }
+              benchmark_return_percent: { type: number, format: float }
+
+    PortfolioPerformanceCompare:
+      type: object
+      required: [period, portfolio_return_percent, benchmarks, stats]
+      properties:
+        period: { type: string, enum: [1m, 3m, 6m, 1y, all] }
+        portfolio_return_percent: { type: number, format: float }
+        portfolio_series:
+          type: array
+          items:
+            type: object
+            required: [date, portfolio_return_percent]
+            properties:
+              date: { type: string, format: date }
+              portfolio_return_percent: { type: number, format: float }
+        benchmarks:
+          type: array
+          minItems: 1
+          maxItems: 3
+          items: { $ref: '#/components/schemas/PortfolioPerformanceBenchmark' }
+        stats: { $ref: '#/components/schemas/PortfolioPerformanceStats' }
 
     DividendEvent:
       type: object
@@ -2254,12 +2528,7 @@ components:
       required: [id, insight_type, title, body, severity, generated_at]
       properties:
         id: { type: string, format: uuid }
-        insight_type:
-          type: string
-          description: |
-            Machine-readable insight category, e.g.
-            `concentration_risk`, `behavioral_pattern`, `diversification`,
-            `performance_review`, `rebalance_suggestion`, `cost_audit`.
+        insight_type: { $ref: '#/components/schemas/InsightType' }
         title: { type: string, maxLength: 200 }
         body: { type: string }
         severity: { $ref: '#/components/schemas/InsightSeverity' }
@@ -2282,8 +2551,22 @@ components:
         introduced once TASK_05 finalises the insight catalogue (see
         `tools/openapi/README.md` → "Open questions").
       # TODO(TASK_05): replace with a discriminated oneOf on insight_type
-      #   covering: diversification, concentration_risk, performance_review,
-      #   rebalance_suggestion, cost_audit. Track in Decisions log.
+      #   covering: diversification, risk, performance, rebalance, cost,
+      #   behavioral. Track in Decisions log.
+
+    InsightGenerationJob:
+      type: object
+      required: [job_id, status, queued_at]
+      properties:
+        job_id: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [queued, running, done, failed]
+        queued_at: { type: string, format: date-time }
+        insight_id:
+          type: [string, "null"]
+          format: uuid
+          description: Populated once status transitions to `done`.
 
     # ── Billing ───────────────────────────────────────────────
     Subscription:
