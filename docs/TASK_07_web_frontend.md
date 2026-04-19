@@ -195,7 +195,7 @@ export function usePositions(filters?: PositionsFilters) {
 **Technical:**
 - Используем EventSource (SSE) для стрима
 - Store conversation in state, persist в бекенд после каждого message
-- Показываем rate limit (5/день для Free)
+- Показываем rate limit из response headers `X-RateLimit-*` — лимиты исходят из `tiers.Limit.AIMessagesPerDay` (shared Go module `internal/domain/tiers/limits.go`). Не хардкодим число в UI
 
 ### 8. Insights Page
 
