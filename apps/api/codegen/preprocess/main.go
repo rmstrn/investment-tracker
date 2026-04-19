@@ -60,7 +60,7 @@ func main() {
 		fatal("marshal output: %v", err)
 	}
 
-	if err := os.WriteFile(*outPath, out, 0o644); err != nil {
+	if err := os.WriteFile(*outPath, out, 0o600); err != nil {
 		fatal("write output: %v", err)
 	}
 

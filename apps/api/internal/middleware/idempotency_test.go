@@ -43,7 +43,7 @@ func TestIdempotency_PassthroughWhenNoKey(t *testing.T) {
 	app, _, _, calls := buildIdemApp(t)
 
 	for i := 0; i < 3; i++ {
-		req := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
+		req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
 		req.Header.Set("Content-Type", "application/json")
 		resp, err := app.Test(req)
 		if err != nil {
@@ -62,7 +62,7 @@ func TestIdempotency_ReplaysSameKeySameBody(t *testing.T) {
 	app, _, _, calls := buildIdemApp(t)
 
 	body := strings.NewReader(`{"x":1}`)
-	req := httptest.NewRequest(fiber.MethodPost, "/create", body)
+	req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", body)
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Idempotency-Key", "abc-123")
 	if _, err := app.Test(req); err != nil {
@@ -70,7 +70,7 @@ func TestIdempotency_ReplaysSameKeySameBody(t *testing.T) {
 	}
 
 	// Repeat same key + same body
-	req2 := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
+	req2 := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
 	req2.Header.Set("Content-Type", "application/json")
 	req2.Header.Set("Idempotency-Key", "abc-123")
 	resp, err := app.Test(req2)
@@ -95,14 +95,14 @@ func TestIdempotency_ReplaysSameKeySameBody(t *testing.T) {
 func TestIdempotency_ConflictOnSameKeyDifferentBody(t *testing.T) {
 	app, _, _, _ := buildIdemApp(t)
 
-	req1 := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
+	req1 := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{"x":1}`))
 	req1.Header.Set("Content-Type", "application/json")
 	req1.Header.Set("Idempotency-Key", "conflict-key")
 	if _, err := app.Test(req1); err != nil {
 		t.Fatalf("first: %v", err)
 	}
 
-	req2 := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{"x":999}`))
+	req2 := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{"x":999}`))
 	req2.Header.Set("Content-Type", "application/json")
 	req2.Header.Set("Idempotency-Key", "conflict-key")
 	resp, err := app.Test(req2)
@@ -131,7 +131,7 @@ func TestIdempotency_TTLExpires(t *testing.T) {
 	})
 
 	for i := 0; i < 2; i++ {
-		req := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{}`))
+		req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{}`))
 		req.Header.Set("Idempotency-Key", "ttl-key")
 		if _, err := app2.Test(req); err != nil {
 			t.Fatalf("req %d: %v", i, err)
@@ -141,7 +141,7 @@ func TestIdempotency_TTLExpires(t *testing.T) {
 	// Fast-forward miniredis past the TTL.
 	mr.FastForward(500 * time.Millisecond)
 
-	req := httptest.NewRequest(fiber.MethodPost, "/create", strings.NewReader(`{}`))
+	req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/create", strings.NewReader(`{}`))
 	req.Header.Set("Idempotency-Key", "ttl-key")
 	if _, err := app2.Test(req); err != nil {
 		t.Fatalf("post-ttl: %v", err)

@@ -101,9 +101,10 @@ func startAndWait(app *fiber.App, log zerolog.Logger, cfg *config.Config) {
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
-	defer cancel()
+	err := app.ShutdownWithContext(ctx)
+	cancel()
 
-	if err := app.ShutdownWithContext(ctx); err != nil {
+	if err != nil {
 		log.Error().Err(err).Msg("graceful shutdown failed")
 		os.Exit(1)
 	}

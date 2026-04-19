@@ -15,13 +15,11 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
-func buildTestApp(t *testing.T) (*fiber.App, *miniredis.Miniredis, *cache.Client) {
+func buildTestApp(t *testing.T) (*fiber.App, *cache.Client) {
 	t.Helper()
 	mr := miniredis.RunT(t)
 	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
-	c := cache.NewFromRDB(rdb)
-	app := fiber.New()
-	return app, mr, c
+	return fiber.New(), cache.NewFromRDB(rdb)
 }
 
 func injectUser(app *fiber.App, userID uuid.UUID) {
@@ -32,7 +30,7 @@ func injectUser(app *fiber.App, userID uuid.UUID) {
 }
 
 func TestRateLimit_AllowsUnderLimit(t *testing.T) {
-	app, _, ch := buildTestApp(t)
+	app, ch := buildTestApp(t)
 	injectUser(app, uuid.Must(uuid.NewV7()))
 	app.Use(middleware.RateLimit(middleware.RateLimitConfig{
 		Cache: ch, Key: "test", Limit: 3, Window: time.Minute,
@@ -40,7 +38,7 @@ func TestRateLimit_AllowsUnderLimit(t *testing.T) {
 	app.Get("/", func(c fiber.Ctx) error { return c.SendString("ok") })
 
 	for i := 1; i <= 3; i++ {
-		req := httptest.NewRequest(fiber.MethodGet, "/", nil)
+		req := httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/", nil)
 		resp, err := app.Test(req)
 		if err != nil {
 			t.Fatalf("request %d: %v", i, err)
@@ -55,7 +53,7 @@ func TestRateLimit_AllowsUnderLimit(t *testing.T) {
 }
 
 func TestRateLimit_Rejects429OverLimit(t *testing.T) {
-	app, _, ch := buildTestApp(t)
+	app, ch := buildTestApp(t)
 	injectUser(app, uuid.Must(uuid.NewV7()))
 	app.Use(middleware.RateLimit(middleware.RateLimitConfig{
 		Cache: ch, Key: "test", Limit: 2, Window: time.Minute,
@@ -64,10 +62,10 @@ func TestRateLimit_Rejects429OverLimit(t *testing.T) {
 
 	// Burn two, then hit the limit.
 	for i := 0; i < 2; i++ {
-		req := httptest.NewRequest(fiber.MethodGet, "/", nil)
+		req := httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/", nil)
 		_, _ = app.Test(req)
 	}
-	req := httptest.NewRequest(fiber.MethodGet, "/", nil)
+	req := httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/", nil)
 	resp, err := app.Test(req)
 	if err != nil {
 		t.Fatalf("unexpected err: %v", err)
@@ -81,7 +79,7 @@ func TestRateLimit_Rejects429OverLimit(t *testing.T) {
 }
 
 func TestRateLimit_ScopedPerUser(t *testing.T) {
-	app, _, ch := buildTestApp(t)
+	app, ch := buildTestApp(t)
 	userA := uuid.Must(uuid.NewV7())
 	userB := uuid.Must(uuid.NewV7())
 
@@ -100,13 +98,13 @@ func TestRateLimit_ScopedPerUser(t *testing.T) {
 	app.Get("/x", func(c fiber.Ctx) error { return c.SendString("ok") })
 
 	// user A hits the limit
-	_, _ = app.Test(httptest.NewRequest(fiber.MethodGet, "/x?u=a", nil))
-	resp, _ := app.Test(httptest.NewRequest(fiber.MethodGet, "/x?u=a", nil))
+	_, _ = app.Test(httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/x?u=a", nil))
+	resp, _ := app.Test(httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/x?u=a", nil))
 	if resp.StatusCode != fiber.StatusTooManyRequests {
 		t.Fatalf("user A second call: expected 429, got %d", resp.StatusCode)
 	}
 	// user B is fresh
-	resp, _ = app.Test(httptest.NewRequest(fiber.MethodGet, "/x?u=b", nil))
+	resp, _ = app.Test(httptest.NewRequestWithContext(t.Context(), fiber.MethodGet, "/x?u=b", nil))
 	if resp.StatusCode != fiber.StatusOK {
 		t.Fatalf("user B first call: expected 200, got %d", resp.StatusCode)
 	}

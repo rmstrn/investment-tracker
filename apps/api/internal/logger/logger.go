@@ -38,8 +38,8 @@ func New(opts Options) zerolog.Logger {
 	zerolog.DurationFieldUnit = time.Millisecond
 	zerolog.DurationFieldInteger = false
 
-	var w = os.Stdout
-	var writer zerolog.LevelWriter = zerolog.MultiLevelWriter(w)
+	w := os.Stdout
+	writer := zerolog.MultiLevelWriter(w)
 
 	useConsole := opts.Format == "console" ||
 		(opts.Format == "" && (opts.Env == "development" || opts.Env == "test"))
