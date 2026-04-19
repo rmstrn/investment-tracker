@@ -11,6 +11,7 @@
 @import "tailwindcss";
 @import "@investment-tracker/design-tokens/css";
 @import "@investment-tracker/design-tokens/theme.css";
+@import "@investment-tracker/design-tokens/animations.css";
 
 /*
  * Ensure Tailwind picks up class usage in the shared UI package — content

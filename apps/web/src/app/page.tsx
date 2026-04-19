@@ -15,7 +15,7 @@ export default function HomePage() {
         <p className="text-sm text-text-secondary">{brand.tagline}</p>
         <Link
           href="/design"
-          className="inline-flex h-10 items-center justify-center rounded-lg bg-interactive-primary px-5 text-sm font-medium text-text-onBrand transition-colors hover:bg-interactive-primaryHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary"
+          className="inline-flex h-10 items-center justify-center rounded-md bg-interactive-primary px-5 text-sm font-medium text-text-onBrand transition-colors hover:bg-interactive-primaryHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary"
         >
           Open design preview →
         </Link>

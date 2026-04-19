@@ -11,12 +11,12 @@ const variants: Record<Variant, string> = {
   default: 'bg-background-elevated border border-border-subtle',
   elevated: 'bg-background-elevated border border-border-subtle shadow-md',
   interactive:
-    'bg-background-elevated border border-border-subtle shadow-sm transition-shadow duration-normal ease-out hover:shadow-md focus-within:ring-2 focus-within:ring-brand-500',
+    'bg-background-elevated border border-border-subtle shadow-sm transition-shadow duration-base ease-out hover:shadow-md focus-within:ring-2 focus-within:ring-brand-500',
 };
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', ...props }, ref) => (
-    <div ref={ref} className={cn('rounded-xl p-5', variants[variant], className)} {...props} />
+    <div ref={ref} className={cn('rounded-lg p-5', variants[variant], className)} {...props} />
   ),
 );
 Card.displayName = 'Card';

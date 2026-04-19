@@ -145,7 +145,12 @@ function buildCss(primitives, light, dark) {
   lines.push(':root {');
   lines.push('  /* Primitives — identical across light/dark */');
   for (const t of primitives) {
-    lines.push(`  ${cssVarName(t.path)}: ${t.resolved};`);
+    // Gradients emit as --gradient-{name}; others use their natural path.
+    if (t.path[0] === 'gradient') {
+      lines.push(`  --gradient-${t.path[1]}: ${t.resolved};`);
+    } else {
+      lines.push(`  ${cssVarName(t.path)}: ${t.resolved};`);
+    }
   }
   lines.push('');
   lines.push('  /* Semantic — light mode */');
@@ -397,6 +402,14 @@ function buildTailwindThemeCss(primitives, light) {
   lines.push('  /* Motion — easings */');
   for (const t of primitives.filter((t) => t.path[0] === 'motion' && t.path[1] === 'easing')) {
     lines.push(`  --ease-${t.path[2]}: ${t.resolved};`);
+  }
+
+  // --- Gradients (emitted as plain custom properties; consumers use
+  //     style={{ background: 'var(--gradient-ai)' }} or bg-[var(...)]).
+  lines.push('');
+  lines.push('  /* Gradients */');
+  for (const t of primitives.filter((t) => t.path[0] === 'gradient')) {
+    lines.push(`  --gradient-${t.path[1]}: ${t.resolved};`);
   }
 
   lines.push('}');

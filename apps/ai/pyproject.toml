@@ -93,6 +93,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 namespace_packages = true
 explicit_package_bases = true
+mypy_path = "src"
 files = ["src"]
 
 [[tool.mypy.overrides]]

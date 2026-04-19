@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  AskAiButton,
   Avatar,
   Badge,
   Button,
@@ -9,6 +10,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CountUpNumber,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -19,11 +21,14 @@ import {
   DropdownMenu,
   DropdownSeparator,
   DropdownTrigger,
+  EmptyState,
   Input,
+  SegmentedControl,
   Sheet,
   SheetContent,
   SheetTitle,
   SheetTrigger,
+  Shimmer,
   Skeleton,
   Tabs,
   TabsContent,
@@ -33,6 +38,7 @@ import {
   useToast,
 } from '@investment-tracker/ui';
 import { ChevronDown } from 'lucide-react';
+import { useState } from 'react';
 
 export function PrimitivesSection() {
   return (
@@ -64,6 +70,37 @@ export function PrimitivesSection() {
             </div>
           ))}
         </div>
+      </Sub>
+
+      <Sub title="AskAiButton — special moments only (brief §6.2)">
+        <div className="flex items-center gap-3 flex-wrap">
+          <AskAiButton size="sm">Ask AI</AskAiButton>
+          <AskAiButton size="md">Ask anything</AskAiButton>
+          <AskAiButton size="lg">Should I rebalance?</AskAiButton>
+          <AskAiButton fab aria-label="Ask AI FAB" />
+          <span className="font-mono text-[11px] text-text-tertiary">
+            ai-gradient + shadow-ai glow
+          </span>
+        </div>
+      </Sub>
+
+      <Sub title="SegmentedControl — period picker (brief §5.1)">
+        <SegmentedControl
+          label="Period"
+          defaultValue="1M"
+          options={[
+            { value: '1D', label: '1D' },
+            { value: '1W', label: '1W' },
+            { value: '1M', label: '1M' },
+            { value: '3M', label: '3M' },
+            { value: '1Y', label: '1Y' },
+            { value: 'All', label: 'All' },
+          ]}
+        />
+      </Sub>
+
+      <Sub title="CountUpNumber — tabular-nums exp-out (brief §3.5)">
+        <CountUpDemo />
       </Sub>
 
       <Sub title="Input">
@@ -108,12 +145,32 @@ export function PrimitivesSection() {
         </div>
       </Sub>
 
-      <Sub title="Skeleton">
-        <div className="space-y-3 max-w-sm">
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="h-24 w-full" />
+      <Sub title="Skeleton / Shimmer (brief §6.8 — never spinners)">
+        <div className="grid grid-cols-2 gap-6 max-w-2xl">
+          <div className="space-y-3">
+            <span className="font-mono text-xs text-text-tertiary">Skeleton (static pulse)</span>
+            <Skeleton className="h-4 w-40" />
+            <Skeleton className="h-4 w-64" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+          <div className="space-y-3">
+            <span className="font-mono text-xs text-text-tertiary">Shimmer (violet sweep)</span>
+            <Shimmer className="h-4 w-40" />
+            <Shimmer className="h-4 w-64" />
+            <Shimmer className="h-24 w-full" />
+          </div>
         </div>
+      </Sub>
+
+      <Sub title="EmptyState (brief §6.7)">
+        <Card className="!p-0">
+          <EmptyState
+            title="No transactions yet"
+            description="Connect an account or add your first manual transaction to start tracking."
+            primaryAction={<Button>+ Connect account</Button>}
+            secondaryAction={<Button variant="outline">+ Add manually</Button>}
+          />
+        </Card>
       </Sub>
 
       <Sub title="Tabs">
@@ -157,6 +214,32 @@ function Sub({ title, children }: { title: string; children: React.ReactNode }) 
   );
 }
 
+function CountUpDemo() {
+  const [v, setV] = useState(127450);
+  return (
+    <div className="space-y-3">
+      <p
+        className="font-bold tracking-tighter"
+        style={{ fontSize: 'var(--text-display-lg)', lineHeight: '1.1' }}
+      >
+        $
+        <CountUpNumber
+          value={v}
+          format={(n) => n.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+        />
+      </p>
+      <div className="flex gap-2">
+        <Button size="sm" onClick={() => setV((x) => x + 1234)}>+ $1,234</Button>
+        <Button variant="outline" size="sm" onClick={() => setV((x) => x - 567)}>− $567</Button>
+        <Button variant="ghost" size="sm" onClick={() => setV(127450)}>Reset</Button>
+      </div>
+      <p className="text-[11px] text-text-tertiary">
+        800ms exp-out · tabular-nums · respects prefers-reduced-motion.
+      </p>
+    </div>
+  );
+}
+
 function DialogDemo() {
   return (
     <Dialog>
@@ -196,7 +279,7 @@ function SheetDemo() {
 function DropdownDemo() {
   return (
     <Dropdown>
-      <DropdownTrigger className="inline-flex h-10 items-center gap-2 rounded-lg border border-border-default bg-background-elevated px-4 text-sm text-text-primary hover:bg-interactive-ghostHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
+      <DropdownTrigger className="inline-flex h-10 items-center gap-2 rounded-md border border-border-default bg-background-elevated px-4 text-sm text-text-primary hover:bg-interactive-ghostHover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500">
         Options
         <ChevronDown size={14} aria-hidden="true" />
       </DropdownTrigger>

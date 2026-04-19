@@ -1,25 +1,38 @@
 {
   "shadow": {
+    "xs": {
+      "$value": "0 1px 2px rgba(0, 0, 0, 0.04)",
+      "$type": "shadow",
+      "$description": "Subtle card elevation — default cards"
+    },
     "sm": {
-      "$value": "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-      "$type": "shadow"
+      "$value": "0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)",
+      "$type": "shadow",
+      "$description": "Hoverable card lifted"
     },
     "md": {
-      "$value": "0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.04)",
-      "$type": "shadow"
+      "$value": "0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
+      "$type": "shadow",
+      "$description": "Dropdown, popover"
     },
     "lg": {
-      "$value": "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)",
-      "$type": "shadow"
+      "$value": "0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)",
+      "$type": "shadow",
+      "$description": "Modal, floating chat bubble"
     },
     "xl": {
       "$value": "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
       "$type": "shadow"
     },
+    "ai": {
+      "$value": "0 0 24px rgba(124, 58, 237, 0.25)",
+      "$type": "shadow",
+      "$description": "AI-accent violet glow — FAB, Ask AI button, chat bubble"
+    },
     "focusRing": {
       "$value": "0 0 0 3px rgba(109, 40, 217, 0.4)",
       "$type": "shadow",
-      "$description": "Accessible focus ring — 3px @ brand.700 (#6D28D9) @ 40% alpha. Visible in both light and dark."
+      "$description": "Accessible focus ring — 3px @ brand.700 @ 40% alpha"
     }
   }
 }

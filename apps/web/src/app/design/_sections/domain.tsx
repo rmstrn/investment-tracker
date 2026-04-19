@@ -45,7 +45,7 @@ export function DomainSection() {
       </Sub>
 
       <Sub title="AssetRow">
-        <div className="divide-y divide-border-subtle rounded-lg border border-border-subtle bg-background-elevated">
+        <div className="divide-y divide-border-subtle rounded-md border border-border-subtle bg-background-elevated">
           <AssetRow
             symbol="AAPL"
             name="Apple Inc."
@@ -75,7 +75,7 @@ export function DomainSection() {
       </Sub>
 
       <Sub title="TransactionRow">
-        <div className="rounded-lg border border-border-subtle bg-background-elevated">
+        <div className="rounded-md border border-border-subtle bg-background-elevated">
           <TransactionRow
             kind="buy"
             symbol="AAPL"
@@ -121,7 +121,7 @@ export function DomainSection() {
       </Sub>
 
       <Sub title="ChatMessage">
-        <div className="max-w-xl space-y-3 rounded-lg border border-border-subtle bg-background-elevated p-4">
+        <div className="max-w-xl space-y-3 rounded-md border border-border-subtle bg-background-elevated p-4">
           <ChatMessage role="system">Apr 18, 2026</ChatMessage>
           <ChatMessage role="user" timestamp="10:24">
             Why is my portfolio down today?
@@ -153,7 +153,7 @@ export function DomainSection() {
       </Sub>
 
       <Sub title="Logo variants">
-        <div className="flex items-center gap-8 rounded-lg border border-border-subtle bg-background-elevated p-6">
+        <div className="flex items-center gap-8 rounded-md border border-border-subtle bg-background-elevated p-6">
           <LogoDemo variant="full" />
           <LogoDemo variant="mark" />
           <LogoDemo variant="wordmark" />

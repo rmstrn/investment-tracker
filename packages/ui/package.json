@@ -10,6 +10,10 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./charts": {
+      "types": "./src/charts/index.ts",
+      "default": "./src/charts/index.ts"
     }
   },
   "files": ["src"],
@@ -29,6 +33,7 @@
     "@investment-tracker/design-tokens": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
+    "recharts": "^3.8.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

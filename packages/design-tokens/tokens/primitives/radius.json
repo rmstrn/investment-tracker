@@ -1,11 +1,19 @@
 {
   "radius": {
     "none": { "$value": "0px", "$type": "dimension" },
-    "sm": { "$value": "4px", "$type": "dimension" },
-    "md": { "$value": "6px", "$type": "dimension", "$description": "Inputs, small cards" },
-    "lg": { "$value": "8px", "$type": "dimension", "$description": "Buttons, cards" },
-    "xl": { "$value": "12px", "$type": "dimension", "$description": "Dialogs, elevated cards" },
-    "2xl": { "$value": "16px", "$type": "dimension" },
-    "full": { "$value": "9999px", "$type": "dimension" }
+    "sm": {
+      "$value": "6px",
+      "$type": "dimension",
+      "$description": "Inputs, small buttons, badges"
+    },
+    "md": { "$value": "8px", "$type": "dimension", "$description": "Buttons, chips" },
+    "lg": { "$value": "12px", "$type": "dimension", "$description": "Cards, list rows" },
+    "xl": { "$value": "16px", "$type": "dimension", "$description": "Large panels, modals" },
+    "2xl": { "$value": "24px", "$type": "dimension", "$description": "Hero blocks" },
+    "full": {
+      "$value": "9999px",
+      "$type": "dimension",
+      "$description": "Pills, avatars, chat input"
+    }
   }
 }

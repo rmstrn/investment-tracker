@@ -104,7 +104,7 @@ export function DialogContent({ className, children, ...props }: DialogContentPr
         aria-describedby={descId}
         tabIndex={-1}
         className={cn(
-          'w-full max-w-md rounded-xl bg-background-elevated p-6 shadow-xl',
+          'w-full max-w-md rounded-lg bg-background-elevated p-6 shadow-xl',
           'border border-border-subtle',
           'focus:outline-none',
           className,

@@ -12,7 +12,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       type={type}
       aria-invalid={invalid || undefined}
       className={cn(
-        'flex h-10 w-full rounded-md border bg-background-elevated px-3 text-sm',
+        'flex h-10 w-full rounded-sm border bg-background-elevated px-3 text-sm',
         'text-text-primary placeholder:text-text-muted',
         'border-border-default',
         'transition-colors duration-fast ease-out',
