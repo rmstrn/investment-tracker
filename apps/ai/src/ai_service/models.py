@@ -57,9 +57,20 @@ class MessageStartEvent(BaseModel):
     message_id: str
 
 
+class ContentBlockStartEvent(BaseModel):
+    type: Literal["content_block_start"] = "content_block_start"
+    index: int
+    block_type: Literal["text", "tool_use"]
+
+
 class ContentDeltaEvent(BaseModel):
     type: Literal["content_delta"] = "content_delta"
     text: str
+
+
+class ContentBlockStopEvent(BaseModel):
+    type: Literal["content_block_stop"] = "content_block_stop"
+    index: int
 
 
 class ToolUseEvent(BaseModel):
@@ -92,7 +103,9 @@ class ErrorEvent(BaseModel):
 
 ChatStreamEvent = Annotated[
     MessageStartEvent
+    | ContentBlockStartEvent
     | ContentDeltaEvent
+    | ContentBlockStopEvent
     | ToolUseEvent
     | ToolResultEvent
     | MessageStopEvent
