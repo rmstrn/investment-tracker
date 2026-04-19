@@ -29,7 +29,7 @@ RUN go build -trimpath -ldflags="-s -w" -o /out/api     ./cmd/api     && \
     go build -trimpath -ldflags="-s -w" -o /out/workers ./cmd/workers
 
 # -------- Stage 2: common runtime base --------
-FROM alpine:3.21 AS runtime-base
+FROM alpine:3.23 AS runtime-base
 
 RUN apk add --no-cache ca-certificates tzdata && \
     adduser -D -u 10001 app
