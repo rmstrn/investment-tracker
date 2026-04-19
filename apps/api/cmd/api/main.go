@@ -34,7 +34,8 @@ func main() {
 	if err != nil {
 		boot := zerolog.New(os.Stderr).
 			With().Timestamp().Str("service", "api").Logger()
-		boot.Fatal().Err(err).Msg("config load failed")
+		boot.Error().Err(err).Msg("config load failed")
+		os.Exit(1)
 	}
 
 	log := logger.New(logger.Options{
@@ -52,13 +53,15 @@ func main() {
 
 	pool, err := db.NewPool(ctx, db.DefaultPoolConfig(cfg.DatabaseURL))
 	if err != nil {
-		log.Fatal().Err(err).Msg("db pool init failed")
+		log.Error().Err(err).Msg("db pool init failed")
+		os.Exit(1)
 	}
 	defer pool.Close()
 
 	rcache, err := cache.New(ctx, cfg.RedisURL)
 	if err != nil {
-		log.Fatal().Err(err).Msg("redis init failed")
+		log.Error().Err(err).Msg("redis init failed")
+		os.Exit(1)
 	}
 	defer func() { _ = rcache.Close() }()
 
@@ -70,12 +73,13 @@ func main() {
 		UserRepo: users.NewRepo(pool),
 	}
 
-	app, err := server.New(ctx, deps)
+	a, err := server.New(ctx, deps)
 	if err != nil {
-		log.Fatal().Err(err).Msg("server build failed")
+		log.Error().Err(err).Msg("server build failed")
+		os.Exit(1)
 	}
 
-	startAndWait(ctx, app, log, cfg)
+	startAndWait(ctx, a, log, cfg)
 }
 
 // initSentry wires Sentry SDK when a DSN is present. A missing DSN is a
@@ -115,7 +119,7 @@ func startAndWait(ctx context.Context, app *fiber.App, log zerolog.Logger, cfg *
 	case sig := <-quit:
 		log.Info().Str("signal", sig.String()).Msg("shutdown initiated")
 	case err := <-serverErrs:
-		log.Fatal().Err(err).Msg("server crashed")
+		log.Error().Err(err).Msg("server crashed")
 	case <-ctx.Done():
 	}
 

@@ -48,8 +48,8 @@ type aiUsageRequest struct {
 	UserID         uuid.UUID       `json:"user_id"`
 	ConversationID *uuid.UUID      `json:"conversation_id"`
 	Model          string          `json:"model"`
-	InputTokens    int             `json:"input_tokens"`
-	OutputTokens   int             `json:"output_tokens"`
+	InputTokens    int32           `json:"input_tokens"`
+	OutputTokens   int32           `json:"output_tokens"`
 	CostUSD        decimal.Decimal `json:"cost_usd"`
 }
 
@@ -143,8 +143,8 @@ func writeAIUsageTx(ctx context.Context, deps *app.Deps, req aiUsageRequest) err
 		UserID:         req.UserID,
 		ConversationID: req.ConversationID,
 		Model:          req.Model,
-		InputTokens:    int32(req.InputTokens),
-		OutputTokens:   int32(req.OutputTokens),
+		InputTokens:    req.InputTokens,
+		OutputTokens:   req.OutputTokens,
 		CostUsd:        req.CostUSD,
 	}); err != nil {
 		return fmt.Errorf("insert ai_usage: %w", err)
