@@ -6,7 +6,7 @@ version: "2"
 
 run:
   timeout: 3m
-  go: "1.23"
+  go: "1.25"
   tests: true
 
 linters:
@@ -17,11 +17,8 @@ linters:
     - ineffassign
     - staticcheck
     - unused
-    - gosimple
     - gocritic
     - revive
-    - gofmt
-    - goimports
     - gosec
     - misspell
     - unparam
@@ -29,6 +26,23 @@ linters:
     - noctx
     - rowserrcheck
     - sqlclosecheck
+  settings:
+    gosec:
+      excludes:
+        - G404 # weak RNG — fine for non-crypto uses
+    revive:
+      rules:
+        - name: exported
+          disabled: true # too noisy for internal/*
+  exclusions:
+    paths:
+      - internal/db/sqlc # generated code
+      - internal/mocks
+    rules:
+      - path: _test\.go
+        linters:
+          - gosec
+          - errcheck
 
 formatters:
   enable:
@@ -38,22 +52,3 @@ formatters:
     goimports:
       local-prefixes:
         - github.com/rmstrn/investment-tracker
-
-linters-settings:
-  gosec:
-    excludes:
-      - G404 # weak RNG — fine for non-crypto uses
-  revive:
-    rules:
-      - name: exported
-        disabled: true # too noisy for internal/*
-
-issues:
-  exclude-dirs:
-    - internal/db/sqlc # generated code
-    - internal/mocks
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - gosec
-        - errcheck
