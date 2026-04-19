@@ -5,6 +5,7 @@
 package app
 
 import (
+	"github.com/MicahParks/keyfunc/v3"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog"
 
@@ -23,4 +24,9 @@ type Deps struct {
 	Pool     *pgxpool.Pool
 	Cache    *cache.Client
 	UserRepo *users.Repo
+	// JWKS is the Clerk verification key set, fetched once at startup
+	// (main.run) and asserted non-nil there. Hoisting it to Deps lets
+	// server.New stay synchronous — no network on the server-assembly
+	// path.
+	JWKS keyfunc.Keyfunc
 }

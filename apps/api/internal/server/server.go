@@ -1,12 +1,10 @@
 package server
 
 import (
-	"context"
 	"errors"
 	"net/http"
 	"time"
 
-	"github.com/MicahParks/keyfunc/v3"
 	"github.com/gofiber/fiber/v3"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
@@ -19,8 +17,11 @@ import (
 // route registered. Separate from main so tests can construct it
 // against an in-memory stack (testcontainers Postgres + miniredis) and
 // hit it with app.Test(req).
-func New(ctx context.Context, deps *app.Deps) (*fiber.App, error) {
-	app := fiber.New(fiber.Config{
+//
+// deps.JWKS must be non-nil — main asserts this at startup. server.New
+// no longer fetches it.
+func New(deps *app.Deps) (*fiber.App, error) {
+	a := fiber.New(fiber.Config{
 		AppName:      "investment-tracker-api",
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -28,45 +29,35 @@ func New(ctx context.Context, deps *app.Deps) (*fiber.App, error) {
 		ErrorHandler: defaultErrorHandler(deps),
 	})
 
-	jwks, err := middleware.NewJWKS(ctx, deps.Cfg.ClerkJWKSURL)
-	if err != nil {
-		return nil, err
-	}
-
 	authCfg := middleware.AuthConfig{
-		JWKS:          jwks,
+		JWKS:          deps.JWKS,
 		UserRepo:      deps.UserRepo,
-		Issuer:        "", // strict issuer check lands in PR B2 when /me wires real JWKS
+		Issuer:        "", // strict issuer check lands when /me wires real JWKS end-to-end
 		InternalToken: deps.Cfg.CoreAPIInternalToken,
 	}
 
 	// Chain order matters: RequestID first (so errs.Respond has it even
 	// on auth failure), RequestLog second (so it logs auth outcomes),
 	// Auth third (so handlers see authenticated user).
-	app.Use(middleware.RequestID())
-	app.Use(middleware.RequestLog(deps.Log))
+	a.Use(middleware.RequestID())
+	a.Use(middleware.RequestLog(deps.Log))
 
 	// Public routes — no auth.
-	app.Get("/health", healthHandler(deps))
+	a.Get("/health", healthHandler(deps))
 
 	// Authenticated API surface. Routes are registered per PR:
 	//   PR B1: /internal/ai/usage (internal-only)
 	//   PR B2: public read handlers
 	//   PR B3: mutations + webhooks
-	registerAuthenticated(app, deps, authCfg, jwks)
+	registerAuthenticated(a, deps, authCfg)
 
-	return app, nil
+	return a, nil
 }
 
 // registerAuthenticated mounts everything behind Auth. Split out so the
 // group setup is one place.
-func registerAuthenticated(
-	app *fiber.App,
-	deps *app.Deps,
-	authCfg middleware.AuthConfig,
-	_ keyfunc.Keyfunc,
-) {
-	api := app.Group("", middleware.Auth(authCfg))
+func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.AuthConfig) {
+	api := a.Group("", middleware.Auth(authCfg))
 
 	// /internal/* routes live on Auth but gate further via
 	// RequireInternalAuth — a valid Clerk user must not be able to
