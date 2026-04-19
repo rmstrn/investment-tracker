@@ -21,6 +21,11 @@ type Querier interface {
 	// computed on the fly from the insights table itself — authoritative
 	// as long as insights are never deleted.
 	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
+	// Fast bell-badge query. The unread-partial index
+	// idx_notifications_user_unread makes this O(unread) rather than
+	// O(all) so a user with thousands of read rows does not pay for
+	// them. Capped at 99 in the handler so the UI can render "99+".
+	CountUnreadNotifications(ctx context.Context, userID uuid.UUID) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Manual-only hard delete. Returns affected-row count so the handler
@@ -104,6 +109,11 @@ type Querier interface {
 	// Per-type channel settings. Missing rows default to all channels on
 	// (handler rule, see openapi NotificationPreferences.preferences).
 	ListNotificationPreferencesByUser(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error)
+	// Cursor-paginated center listing. Sort is (created_at DESC, id DESC)
+	// so freshest rows surface first; read/unread rows both included so
+	// the UI can render a "history" tab. Optional unread-only filter via
+	// the sqlc.narg — the handler toggles on ?unread_only=true.
+	ListNotificationsByUser(ctx context.Context, arg ListNotificationsByUserParams) ([]Notification, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
@@ -138,6 +148,13 @@ type Querier interface {
 	// dismissed today. Returns rows in (counter_type, counter_date)
 	// ascending order so dedup downstream is trivial.
 	ListUsageCountersInRange(ctx context.Context, arg ListUsageCountersInRangeParams) ([]UsageCounter, error)
+	// Bulk mark-all-as-read. Only flips unread rows so a second call
+	// within the same second stays idempotent (no timestamp churn).
+	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) (int64, error)
+	// Single-row mark-as-read. Returns affected-row count so the
+	// handler can emit 404 when the id is unknown or already belongs
+	// to another user.
+	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) (int64, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side
