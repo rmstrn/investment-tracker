@@ -23,6 +23,9 @@ type Querier interface {
 	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Manual-only hard delete. Returns affected-row count so the handler
+	// can distinguish missing / non-manual / other-user from success.
+	DeleteManualTransaction(ctx context.Context, arg DeleteManualTransactionParams) (int64, error)
 	// Scoped by user_id so cross-user access → ErrNoRows → 404.
 	GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error)
 	// Scoped by user_id to enforce ownership at the query layer.
@@ -164,6 +167,12 @@ type Querier interface {
 	// update display_name or the inclusion flag independently.
 	UpdateAccountDisplayOptions(ctx context.Context, arg UpdateAccountDisplayOptionsParams) (Account, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
+	// Partial update scoped to manual-sourced rows only. API / aggregator
+	// rows are immutable by policy (§15.5). Handler layer returns 403
+	// when the caller hits this on a non-manual row — at the SQL level
+	// we simply filter and a non-manual row yields ErrNoRows, which the
+	// handler maps to 403 by re-checking source via GetTransactionByID.
+	UpdateManualTransaction(ctx context.Context, arg UpdateManualTransactionParams) (Transaction, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
 	// Called by the Stripe webhook path. Idempotent: same payload replayed
 	// yields the same row.

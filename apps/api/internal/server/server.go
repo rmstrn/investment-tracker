@@ -133,6 +133,10 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	mutations.Post("/accounts/:id/reconnect", handlers.ReconnectAccount(deps))
 	mutations.Post("/accounts/:id/pause", handlers.PauseAccount(deps))
 	mutations.Post("/accounts/:id/resume", handlers.ResumeAccount(deps))
+	// Transactions mutations.
+	mutations.Post("/transactions", handlers.CreateTransaction(deps))
+	mutations.Patch("/transactions/:id", handlers.UpdateTransaction(deps))
+	mutations.Delete("/transactions/:id", handlers.DeleteTransaction(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

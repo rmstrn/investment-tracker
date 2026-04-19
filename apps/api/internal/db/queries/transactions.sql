@@ -17,6 +17,30 @@ RETURNING *;
 -- name: GetTransactionByID :one
 SELECT * FROM transactions WHERE id = $1 AND user_id = $2;
 
+-- name: UpdateManualTransaction :one
+-- Partial update scoped to manual-sourced rows only. API / aggregator
+-- rows are immutable by policy (§15.5). Handler layer returns 403
+-- when the caller hits this on a non-manual row — at the SQL level
+-- we simply filter and a non-manual row yields ErrNoRows, which the
+-- handler maps to 403 by re-checking source via GetTransactionByID.
+UPDATE transactions
+SET quantity    = COALESCE(sqlc.narg('quantity'),    quantity),
+    price       = COALESCE(sqlc.narg('price'),       price),
+    fee         = COALESCE(sqlc.narg('fee'),         fee),
+    executed_at = COALESCE(sqlc.narg('executed_at'), executed_at),
+    notes       = COALESCE(sqlc.narg('notes'),       notes),
+    manually_edited = TRUE
+WHERE id = @id
+  AND user_id = @user_id
+  AND source = 'manual'
+RETURNING *;
+
+-- name: DeleteManualTransaction :execrows
+-- Manual-only hard delete. Returns affected-row count so the handler
+-- can distinguish missing / non-manual / other-user from success.
+DELETE FROM transactions
+WHERE id = $1 AND user_id = $2 AND source = 'manual';
+
 -- name: ListTransactionsByUser :many
 -- Cursor pagination by (executed_at, id) — descending. Clients pass the
 -- last seen values as $2/$3; first page passes far-future / NULL.
