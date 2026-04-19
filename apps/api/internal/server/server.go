@@ -157,6 +157,10 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	// in airatelimit; create/delete are admin-style ops).
 	mutations.Post("/ai/conversations", handlers.CreateAIConversation(deps))
 	mutations.Delete("/ai/conversations/:id", handlers.DeleteAIConversation(deps))
+	// AI insight bookkeeping (also outside airatelimit — only the
+	// LLM-cost surface goes through the daily counter).
+	mutations.Post("/ai/insights/:id/dismiss", handlers.DismissInsight(deps))
+	mutations.Post("/ai/insights/:id/viewed", handlers.MarkInsightViewed(deps))
 
 	// AI cost-incurring endpoints — every call hits the daily
 	// AIMessagesDaily counter via airatelimit before reaching the
