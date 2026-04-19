@@ -16,7 +16,7 @@ const tierLabel: Record<PlanTier, string> = {
 };
 
 const tierStyle: Record<PlanTier, string> = {
-  free: 'bg-background-tertiary text-text-secondary',
+  free: 'bg-background-tertiary text-text-secondary border border-border-subtle',
   plus: 'text-static-white bg-[var(--gradient-plus)] shadow-xs',
   pro: 'text-static-white bg-[var(--gradient-pro)] shadow-xs',
 };

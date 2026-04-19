@@ -16,7 +16,7 @@ export const SuggestedPrompt = forwardRef<HTMLButtonElement, SuggestedPromptProp
       ref={ref}
       type={type}
       className={cn(
-        'inline-flex items-center gap-2 rounded-full border border-border-subtle bg-background-elevated',
+        'inline-flex items-center gap-2 rounded-full border border-border-default bg-background-elevated',
         'px-3 py-1.5 text-sm text-text-primary',
         'transition-colors duration-fast ease-out',
         'hover:bg-background-secondary hover:border-border-default',

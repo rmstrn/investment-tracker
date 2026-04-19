@@ -81,7 +81,7 @@ export function SegmentedControl<T extends string = string>({
       role="radiogroup"
       aria-label={label}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full bg-background-secondary p-1',
+        'inline-flex items-center gap-1 rounded-full border border-border-default bg-background-secondary p-1',
         sizeStyles[size],
         className,
       )}
