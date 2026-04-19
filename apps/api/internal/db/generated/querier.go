@@ -17,6 +17,11 @@ type Querier interface {
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
 	GetLatestFXRate(ctx context.Context, arg GetLatestFXRateParams) (FxRate, error)
+	// Single-quote lookup that is currency-agnostic on input — the
+	// MarketQuote API does not require callers to pick a currency.
+	// Preference: USD (the market's reporting currency), then most recent
+	// by as_of so stale cross-listings are deprioritised.
+	GetLatestPrice(ctx context.Context, arg GetLatestPriceParams) (Price, error)
 	GetLatestSnapshotByUser(ctx context.Context, userID uuid.UUID) (PortfolioSnapshot, error)
 	GetPrice(ctx context.Context, arg GetPriceParams) (Price, error)
 	// Portfolio calculation fan-out: one round-trip for every unique
