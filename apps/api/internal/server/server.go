@@ -9,7 +9,9 @@ import (
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/gofiber/fiber/v3"
 
+	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
@@ -17,7 +19,7 @@ import (
 // route registered. Separate from main so tests can construct it
 // against an in-memory stack (testcontainers Postgres + miniredis) and
 // hit it with app.Test(req).
-func New(ctx context.Context, deps *Deps) (*fiber.App, error) {
+func New(ctx context.Context, deps *app.Deps) (*fiber.App, error) {
 	app := fiber.New(fiber.Config{
 		AppName:      "investment-tracker-api",
 		ReadTimeout:  10 * time.Second,
@@ -60,7 +62,7 @@ func New(ctx context.Context, deps *Deps) (*fiber.App, error) {
 // group setup is one place.
 func registerAuthenticated(
 	app *fiber.App,
-	deps *Deps,
+	deps *app.Deps,
 	authCfg middleware.AuthConfig,
 	_ keyfunc.Keyfunc,
 ) {
@@ -68,11 +70,12 @@ func registerAuthenticated(
 
 	// /internal/* routes live on Auth but gate further via
 	// RequireInternalAuth — a valid Clerk user must not be able to
-	// write to these endpoints. Actual handlers wired in later commits.
-	_ = api.Group("/internal", middleware.RequireInternalAuth())
+	// write to these endpoints.
+	internalGroup := api.Group("/internal", middleware.RequireInternalAuth())
+	internalGroup.Post("/ai/usage", handlers.InternalAIUsage(deps))
 }
 
-func healthHandler(deps *Deps) fiber.Handler {
+func healthHandler(deps *app.Deps) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		return c.JSON(fiber.Map{
 			"status":  "ok",
@@ -86,7 +89,7 @@ func healthHandler(deps *Deps) fiber.Handler {
 // defaultErrorHandler is the fallback when a handler returns a bare
 // error instead of going through errs.Respond. Produces the same
 // envelope shape so clients never see a raw Fiber error page.
-func defaultErrorHandler(deps *Deps) fiber.ErrorHandler {
+func defaultErrorHandler(deps *app.Deps) fiber.ErrorHandler {
 	return func(c fiber.Ctx, err error) error {
 		code := http.StatusInternalServerError
 		var fe *fiber.Error

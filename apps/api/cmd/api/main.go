@@ -20,6 +20,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/rs/zerolog"
 
+	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/db"
@@ -61,7 +62,7 @@ func main() {
 	}
 	defer func() { _ = rcache.Close() }()
 
-	deps := &server.Deps{
+	deps := &app.Deps{
 		Cfg:      cfg,
 		Log:      log,
 		Pool:     pool,
