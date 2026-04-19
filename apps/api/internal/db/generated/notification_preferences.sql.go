@@ -9,6 +9,7 @@ import (
 	"context"
 
 	uuid "github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getUserDigestPreferences = `-- name: GetUserDigestPreferences :one
@@ -67,4 +68,91 @@ func (q *Queries) ListNotificationPreferencesByUser(ctx context.Context, userID 
 		return nil, err
 	}
 	return items, nil
+}
+
+const upsertNotificationPreference = `-- name: UpsertNotificationPreference :one
+INSERT INTO notification_preferences (user_id, type, email, push, in_app)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (user_id, type) DO UPDATE
+SET email      = EXCLUDED.email,
+    push       = EXCLUDED.push,
+    in_app     = EXCLUDED.in_app,
+    updated_at = now()
+RETURNING user_id, type, email, push, in_app, created_at, updated_at
+`
+
+type UpsertNotificationPreferenceParams struct {
+	UserID uuid.UUID
+	Type   string
+	Email  bool
+	Push   bool
+	InApp  bool
+}
+
+// Per-type upsert so PATCH /me/notification-preferences can send a
+// partial `preferences` map — rows for untouched types stay on
+// defaults.
+func (q *Queries) UpsertNotificationPreference(ctx context.Context, arg UpsertNotificationPreferenceParams) (NotificationPreference, error) {
+	row := q.db.QueryRow(ctx, upsertNotificationPreference,
+		arg.UserID,
+		arg.Type,
+		arg.Email,
+		arg.Push,
+		arg.InApp,
+	)
+	var i NotificationPreference
+	err := row.Scan(
+		&i.UserID,
+		&i.Type,
+		&i.Email,
+		&i.Push,
+		&i.InApp,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const upsertUserDigestPreferences = `-- name: UpsertUserDigestPreferences :one
+INSERT INTO user_digest_preferences (user_id, digest_enabled, digest_weekday, quiet_start, quiet_end)
+VALUES ($1, $2, $3, $4, $5)
+ON CONFLICT (user_id) DO UPDATE
+SET digest_enabled = EXCLUDED.digest_enabled,
+    digest_weekday = EXCLUDED.digest_weekday,
+    quiet_start    = EXCLUDED.quiet_start,
+    quiet_end      = EXCLUDED.quiet_end,
+    updated_at     = now()
+RETURNING user_id, digest_enabled, digest_weekday, quiet_start, quiet_end, created_at, updated_at
+`
+
+type UpsertUserDigestPreferencesParams struct {
+	UserID        uuid.UUID
+	DigestEnabled bool
+	DigestWeekday int16
+	QuietStart    pgtype.Time
+	QuietEnd      pgtype.Time
+}
+
+// Wholesale replace of digest settings. PATCH semantics at the
+// openapi layer: `digest` is replaced when present, omitted when
+// absent — that branching lives in the handler.
+func (q *Queries) UpsertUserDigestPreferences(ctx context.Context, arg UpsertUserDigestPreferencesParams) (UserDigestPreference, error) {
+	row := q.db.QueryRow(ctx, upsertUserDigestPreferences,
+		arg.UserID,
+		arg.DigestEnabled,
+		arg.DigestWeekday,
+		arg.QuietStart,
+		arg.QuietEnd,
+	)
+	var i UserDigestPreference
+	err := row.Scan(
+		&i.UserID,
+		&i.DigestEnabled,
+		&i.DigestWeekday,
+		&i.QuietStart,
+		&i.QuietEnd,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }

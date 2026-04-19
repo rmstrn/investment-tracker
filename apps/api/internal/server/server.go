@@ -137,6 +137,12 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	mutations.Post("/transactions", handlers.CreateTransaction(deps))
 	mutations.Patch("/transactions/:id", handlers.UpdateTransaction(deps))
 	mutations.Delete("/transactions/:id", handlers.DeleteTransaction(deps))
+	// /me data mutations.
+	mutations.Patch("/me", handlers.UpdateMe(deps))
+	mutations.Delete("/me", handlers.DeleteMe(deps))
+	mutations.Post("/me/paywalls/:trigger/dismiss", handlers.DismissPaywall(deps))
+	mutations.Post("/me/undo-deletion", handlers.UndoDeletion(deps))
+	mutations.Patch("/me/notification-preferences", handlers.UpdateNotificationPreferences(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

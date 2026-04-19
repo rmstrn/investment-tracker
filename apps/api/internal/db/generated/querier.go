@@ -178,9 +178,17 @@ type Querier interface {
 	// yields the same row.
 	UpdateUserSubscription(ctx context.Context, arg UpdateUserSubscriptionParams) (User, error)
 	UpsertFXRate(ctx context.Context, arg UpsertFXRateParams) (FxRate, error)
+	// Per-type upsert so PATCH /me/notification-preferences can send a
+	// partial `preferences` map — rows for untouched types stay on
+	// defaults.
+	UpsertNotificationPreference(ctx context.Context, arg UpsertNotificationPreferenceParams) (NotificationPreference, error)
 	UpsertPortfolioSnapshot(ctx context.Context, arg UpsertPortfolioSnapshotParams) (PortfolioSnapshot, error)
 	UpsertPosition(ctx context.Context, arg UpsertPositionParams) (Position, error)
 	UpsertPrice(ctx context.Context, arg UpsertPriceParams) (Price, error)
+	// Wholesale replace of digest settings. PATCH semantics at the
+	// openapi layer: `digest` is replaced when present, omitted when
+	// absent — that branching lives in the handler.
+	UpsertUserDigestPreferences(ctx context.Context, arg UpsertUserDigestPreferencesParams) (UserDigestPreference, error)
 }
 
 var _ Querier = (*Queries)(nil)
