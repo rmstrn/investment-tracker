@@ -11,12 +11,18 @@ WHERE user_id = $1 AND generated_at >= $2;
 
 -- name: ListInsightsByUser :many
 -- Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
--- the ordering matches the rest of the API. Optional since-filter
--- (sqlc.narg) keeps the same query handy if a caller ever wants to
--- poll for fresh rows.
+-- the ordering matches the rest of the API.
+--
+-- include_dismissed controls the dismissed_at filter: when the narg
+-- IS NULL we default to active-only (dismissed_at IS NULL); when the
+-- caller passes a non-null value we surface dismissed rows too. A
+-- boolean narg for "include or exclude" would be cleaner but sqlc's
+-- narg layer only round-trips nullable scalars, so a sentinel text
+-- ("include"/NULL) does the job without a bool helper.
 SELECT * FROM insights
 WHERE user_id = @user_id
   AND (generated_at, id) < (@cursor_ts::timestamptz, @cursor_id::uuid)
   AND (sqlc.narg('since_ts')::timestamptz IS NULL OR generated_at >= sqlc.narg('since_ts')::timestamptz)
+  AND (sqlc.narg('include_dismissed')::text IS NOT NULL OR dismissed_at IS NULL)
 ORDER BY generated_at DESC, id DESC
 LIMIT @row_limit;

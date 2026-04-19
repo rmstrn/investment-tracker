@@ -41,28 +41,36 @@ SELECT id, user_id, insight_type, title, body, severity, data, generated_at, vie
 WHERE user_id = $1
   AND (generated_at, id) < ($2::timestamptz, $3::uuid)
   AND ($4::timestamptz IS NULL OR generated_at >= $4::timestamptz)
+  AND ($5::text IS NOT NULL OR dismissed_at IS NULL)
 ORDER BY generated_at DESC, id DESC
-LIMIT $5
+LIMIT $6
 `
 
 type ListInsightsByUserParams struct {
-	UserID   uuid.UUID
-	CursorTs pgtype.Timestamptz
-	CursorID uuid.UUID
-	SinceTs  pgtype.Timestamptz
-	RowLimit int32
+	UserID           uuid.UUID
+	CursorTs         pgtype.Timestamptz
+	CursorID         uuid.UUID
+	SinceTs          pgtype.Timestamptz
+	IncludeDismissed *string
+	RowLimit         int32
 }
 
 // Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
-// the ordering matches the rest of the API. Optional since-filter
-// (sqlc.narg) keeps the same query handy if a caller ever wants to
-// poll for fresh rows.
+// the ordering matches the rest of the API.
+//
+// include_dismissed controls the dismissed_at filter: when the narg
+// IS NULL we default to active-only (dismissed_at IS NULL); when the
+// caller passes a non-null value we surface dismissed rows too. A
+// boolean narg for "include or exclude" would be cleaner but sqlc's
+// narg layer only round-trips nullable scalars, so a sentinel text
+// ("include"/NULL) does the job without a bool helper.
 func (q *Queries) ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error) {
 	rows, err := q.db.Query(ctx, listInsightsByUser,
 		arg.UserID,
 		arg.CursorTs,
 		arg.CursorID,
 		arg.SinceTs,
+		arg.IncludeDismissed,
 		arg.RowLimit,
 	)
 	if err != nil {

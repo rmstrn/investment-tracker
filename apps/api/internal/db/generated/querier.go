@@ -74,9 +74,14 @@ type Querier interface {
 	// base/quote if given.
 	ListFXRatesOnDate(ctx context.Context, arg ListFXRatesOnDateParams) ([]FxRate, error)
 	// Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
-	// the ordering matches the rest of the API. Optional since-filter
-	// (sqlc.narg) keeps the same query handy if a caller ever wants to
-	// poll for fresh rows.
+	// the ordering matches the rest of the API.
+	//
+	// include_dismissed controls the dismissed_at filter: when the narg
+	// IS NULL we default to active-only (dismissed_at IS NULL); when the
+	// caller passes a non-null value we surface dismissed rows too. A
+	// boolean narg for "include or exclude" would be cleaner but sqlc's
+	// narg layer only round-trips nullable scalars, so a sentinel text
+	// ("include"/NULL) does the job without a bool helper.
 	ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error)
 	// Latest cached rate per (base, quote) pair. Optional filters on
 	// base / quote narrow the set; as_of is deferred to the handler
