@@ -11,6 +11,21 @@ import (
 	uuid "github.com/google/uuid"
 )
 
+const countActiveAccountsByUser = `-- name: CountActiveAccountsByUser :one
+SELECT COUNT(*)::int AS total
+FROM accounts
+WHERE user_id = $1 AND deleted_at IS NULL
+`
+
+// Used by GET /me/usage to populate the `connected_accounts` counter.
+// "Active" = not soft-deleted; tier limit applies to this count.
+func (q *Queries) CountActiveAccountsByUser(ctx context.Context, userID uuid.UUID) (int32, error) {
+	row := q.db.QueryRow(ctx, countActiveAccountsByUser, userID)
+	var total int32
+	err := row.Scan(&total)
+	return total, err
+}
+
 const createAccount = `-- name: CreateAccount :one
 INSERT INTO accounts (
     id, user_id, broker_name, display_name, account_type,

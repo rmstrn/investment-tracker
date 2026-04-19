@@ -11,6 +11,16 @@ import (
 )
 
 type Querier interface {
+	// Used by GET /me/usage to populate the `connected_accounts` counter.
+	// "Active" = not soft-deleted; tier limit applies to this count.
+	CountActiveAccountsByUser(ctx context.Context, userID uuid.UUID) (int32, error)
+	// Weekly-window count of insights the Core has generated for this user.
+	// Feeds the `insights_weekly` counter on GET /me/usage: the
+	// usage_counters table would need an incrementer wired from the
+	// insight-generation path (PR B3 scope), so until then the gauge is
+	// computed on the fly from the insights table itself — authoritative
+	// as long as insights are never deleted.
+	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	// Scoped by user_id to enforce ownership at the query layer.
@@ -44,6 +54,11 @@ type Querier interface {
 	// A dedicated dividends / corporate_actions table does not yet exist
 	// (TD-022); paid dividends live in the transactions ledger today.
 	ListDividendTransactions(ctx context.Context, arg ListDividendTransactionsParams) ([]Transaction, error)
+	// Feeds GET /ai/insights. Cursor pagination by (generated_at, id) so
+	// the ordering matches the rest of the API. Optional since-filter
+	// (sqlc.narg) keeps the same query handy if a caller ever wants to
+	// poll for fresh rows.
+	ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
@@ -62,6 +77,11 @@ type Querier interface {
 	// bind marshalling. Same pattern should be applied if
 	// ListTransactionsByUser is ever wired to a handler.
 	ListTransactionsFiltered(ctx context.Context, arg ListTransactionsFilteredParams) ([]Transaction, error)
+	// Detail variant returning every (counter_type, date, count) row. Used
+	// by GET /me/paywalls to enumerate the distinct triggers a user has
+	// dismissed today. Returns rows in (counter_type, counter_date)
+	// ascending order so dedup downstream is trivial.
+	ListUsageCountersInRange(ctx context.Context, arg ListUsageCountersInRangeParams) ([]UsageCounter, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side
@@ -70,6 +90,11 @@ type Querier interface {
 	// not belong to any chat conversation.
 	RecordAIUsage(ctx context.Context, arg RecordAIUsageParams) (AiUsage, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
+	// Aggregate a counter for (user, counter_type) across [from, to]
+	// inclusive. Used by GET /me/usage — daily counters pass from=to=today,
+	// weekly counters pass from=monday, to=today. Returns 0 when no rows
+	// exist so the handler never has to nil-check.
+	SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error)
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
