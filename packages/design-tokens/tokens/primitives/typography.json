@@ -1,0 +1,43 @@
+{
+  "font": {
+    "family": {
+      "sans": {
+        "$value": "Geist, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+        "$type": "fontFamily",
+        "$description": "Primary UI font. Geist by Vercel. Fallback: native system."
+      },
+      "mono": {
+        "$value": "'Geist Mono', ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
+        "$type": "fontFamily",
+        "$description": "For numbers, tickers, portfolio values. MUST be paired with tabular-nums."
+      }
+    },
+    "size": {
+      "xs": { "$value": "12px", "$type": "dimension" },
+      "sm": { "$value": "14px", "$type": "dimension" },
+      "base": { "$value": "16px", "$type": "dimension" },
+      "lg": { "$value": "18px", "$type": "dimension" },
+      "xl": { "$value": "20px", "$type": "dimension" },
+      "2xl": { "$value": "24px", "$type": "dimension" },
+      "3xl": { "$value": "30px", "$type": "dimension" },
+      "4xl": { "$value": "36px", "$type": "dimension" }
+    },
+    "weight": {
+      "regular": { "$value": 400, "$type": "fontWeight" },
+      "medium": { "$value": 500, "$type": "fontWeight" },
+      "semibold": { "$value": 600, "$type": "fontWeight" },
+      "bold": { "$value": 700, "$type": "fontWeight" }
+    },
+    "lineHeight": {
+      "tight": { "$value": "1.1", "$type": "number", "$description": "Headings" },
+      "snug": { "$value": "1.25", "$type": "number" },
+      "normal": { "$value": "1.5", "$type": "number", "$description": "Body text default" },
+      "relaxed": { "$value": "1.625", "$type": "number" }
+    },
+    "letterSpacing": {
+      "tight": { "$value": "-0.02em", "$type": "dimension", "$description": "Display headings" },
+      "normal": { "$value": "0", "$type": "dimension" },
+      "wide": { "$value": "0.025em", "$type": "dimension" }
+    }
+  }
+}

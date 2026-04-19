@@ -1,0 +1,7 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+  # apps/api (Go) and apps/ai (Python) ship an adapter package.json so Turborepo
+  # can pipeline their lint/build/test targets alongside the JS/TS apps.
+  # Their package.json has no node dependencies — pnpm resolves them as empty.

@@ -1,0 +1,55 @@
+{
+  "name": "investment-tracker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "AI-native investment portfolio tracker — monorepo root",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmstrn/investment-tracker.git"
+  },
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "dev:infra": "docker compose up -d && echo '\\nPostgres: localhost:5432  Redis: localhost:6379  Adminer: http://localhost:8081'",
+    "dev:infra:down": "docker compose down",
+    "dev:infra:reset": "docker compose down -v && docker compose up -d",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "openapi:lint": "pnpm --filter @investment-tracker/openapi lint",
+    "openapi:preview": "pnpm --filter @investment-tracker/openapi preview",
+    "openapi:bundle": "pnpm --filter @investment-tracker/openapi bundle",
+    "generate": "pnpm --filter @investment-tracker/openapi generate",
+    "generate:types": "pnpm --filter @investment-tracker/openapi generate:ts",
+    "generate:client": "pnpm --filter @investment-tracker/openapi generate:ts",
+    "generate:go": "pnpm --filter @investment-tracker/openapi generate:go",
+    "generate:swift": "pnpm --filter @investment-tracker/openapi generate:swift",
+    "clean": "turbo run clean && rm -rf node_modules .turbo",
+    "prepare": "lefthook install"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@commitlint/cli": "^19.6.0",
+    "@commitlint/config-conventional": "^19.6.0",
+    "lefthook": "^1.10.1",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react": "19",
+        "react-dom": "19"
+      }
+    }
+  }
+}

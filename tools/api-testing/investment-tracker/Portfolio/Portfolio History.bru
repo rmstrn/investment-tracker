@@ -1,0 +1,16 @@
+meta {
+  name: Portfolio History
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/portfolio/history?period=1y&display_currency=USD
+  body: none
+  auth: bearer
+}
+
+params:query {
+  period: 1y
+  display_currency: USD
+}

@@ -1,0 +1,18 @@
+meta {
+  name: Market History
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/market/history?symbol=AAPL&asset_type=stock&period=1y&interval=1d
+  body: none
+  auth: bearer
+}
+
+params:query {
+  symbol: AAPL
+  asset_type: stock
+  period: 1y
+  interval: 1d
+}

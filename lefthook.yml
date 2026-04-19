@@ -1,0 +1,37 @@
+# Lefthook — fast, parallel git hooks
+# https://github.com/evilmartians/lefthook
+# Install: `pnpm install` (triggers `lefthook install` via prepare script)
+
+assert_lefthook_installed: true
+min_version: 1.10.0
+colors: true
+
+pre-commit:
+  parallel: true
+  commands:
+    biome:
+      # Only run on staged TS/JS/JSON files that Biome owns. Prefers local
+      # node_modules binary so the hook works without a global pnpm install.
+      glob: "*.{js,jsx,ts,tsx,json,jsonc}"
+      run: sh tools/scripts/hook-biome.sh {staged_files}
+    gofmt:
+      glob: "apps/api/**/*.go"
+      run: sh tools/scripts/hook-gofmt.sh {staged_files}
+    ruff:
+      glob: "apps/ai/**/*.py"
+      run: sh tools/scripts/hook-ruff.sh {staged_files}
+
+commit-msg:
+  commands:
+    commitlint:
+      run: sh tools/scripts/hook-commitlint.sh {1}
+
+pre-push:
+  parallel: true
+  commands:
+    typecheck:
+      run: sh tools/scripts/hook-typecheck.sh
+    go-vet:
+      run: sh tools/scripts/hook-go-vet.sh
+    py-mypy:
+      run: sh tools/scripts/hook-py-mypy.sh

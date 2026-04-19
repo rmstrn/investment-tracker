@@ -1,0 +1,11 @@
+meta {
+  name: Delete Transaction (manual only)
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/transactions/{{transactionId}}
+  body: none
+  auth: bearer
+}

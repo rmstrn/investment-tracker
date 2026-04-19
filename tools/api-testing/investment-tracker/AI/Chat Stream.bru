@@ -1,0 +1,37 @@
+meta {
+  name: Chat (SSE stream)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/ai/chat/stream
+  body: json
+  auth: bearer
+}
+
+headers {
+  Accept: text/event-stream
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "conversation_id": "{{conversationId}}",
+    "message": {
+      "content": [
+        { "type": "text", "text": "Stream a summary of my top 3 holdings." }
+      ]
+    }
+  }
+}
+
+docs {
+  Bruno does not render SSE natively. Use `curl -N` when tailing the stream:
+
+      curl -N -H "Authorization: Bearer $TOKEN" \
+           -H "Content-Type: application/json" \
+           -H "Accept: text/event-stream" \
+           -d @payload.json \
+           "$BASE_URL/ai/chat/stream"
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Create Checkout
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/billing/checkout
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "target_tier": "plus",
+    "success_url": "https://app.investmenttracker.example/billing/success",
+    "cancel_url": "https://app.investmenttracker.example/billing/cancel"
+  }
+}

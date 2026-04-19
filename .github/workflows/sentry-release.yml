@@ -1,0 +1,34 @@
+name: Sentry — release
+
+# Publishes a release to Sentry after deploy. Triggered manually for now —
+# wire into the deploy workflows once SENTRY_* secrets are set.
+on:
+  workflow_dispatch:
+    inputs:
+      service:
+        description: "Which service's release to publish"
+        required: true
+        default: "web"
+        type: choice
+        options: [web, api, ai]
+      version:
+        description: "Version string (usually the short SHA or semver tag)"
+        required: true
+
+jobs:
+  release:
+    name: Publish Sentry release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # TODO: set SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT_WEB/API/AI
+      - name: Create Sentry release
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets[format('SENTRY_PROJECT_{0}', github.event.inputs.service)] }}
+        with:
+          environment: production
+          version: ${{ github.event.inputs.version }}

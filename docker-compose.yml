@@ -1,0 +1,64 @@
+# Local development infrastructure.
+# Start: `pnpm dev:infra` (or `docker compose up -d`)
+# Reset (wipe data): `pnpm dev:infra:reset`
+
+name: investment-tracker
+
+services:
+  postgres:
+    # pgvector-enabled Postgres 17 image. Needed for the AI retrieval layer (TASK_05).
+    # See: https://hub.docker.com/r/pgvector/pgvector
+    image: pgvector/pgvector:pg17
+    container_name: investment-tracker-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: investment
+      POSTGRES_PASSWORD: investment
+      POSTGRES_DB: investment_dev
+      # Extensions we'll need: pgcrypto (gen_random_uuid), pgvector
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --lc-collate=C --lc-ctype=C"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./tools/scripts/postgres-init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U investment -d investment_dev"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    shm_size: 256mb
+
+  redis:
+    image: redis:7-alpine
+    container_name: investment-tracker-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "512mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  adminer:
+    image: adminer:4
+    container_name: investment-tracker-adminer
+    restart: unless-stopped
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DESIGN: dracula
+    ports:
+      - "8081:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    name: investment-tracker-pgdata
+  redisdata:
+    name: investment-tracker-redisdata

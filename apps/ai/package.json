@@ -1,0 +1,15 @@
+{
+  "name": "@investment-tracker/ai",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Adapter package.json so Turborepo can pipeline Python tasks alongside JS/TS apps.",
+  "scripts": {
+    "dev": "sh scripts/with-uv.sh run ai-service",
+    "build": "sh scripts/with-uv.sh sync --frozen",
+    "lint": "sh scripts/with-uv.sh run ruff check src tests",
+    "lint:fix": "sh scripts/with-uv.sh run ruff check --fix src tests && sh scripts/with-uv.sh run ruff format src tests",
+    "typecheck": "sh scripts/with-uv.sh run mypy src",
+    "test": "sh scripts/with-uv.sh run pytest",
+    "clean": "rm -rf .venv .pytest_cache .mypy_cache .ruff_cache"
+  }
+}

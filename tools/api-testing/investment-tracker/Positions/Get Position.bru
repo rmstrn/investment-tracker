@@ -1,0 +1,11 @@
+meta {
+  name: Get Position
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/positions/{{positionId}}
+  body: none
+  auth: bearer
+}

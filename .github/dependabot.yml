@@ -1,0 +1,63 @@
+version: 2
+
+updates:
+  # ---- npm (pnpm) ----
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Warsaw
+    open-pull-requests-limit: 10
+    groups:
+      biome:
+        patterns: ["@biomejs/*"]
+      turborepo:
+        patterns: ["turbo", "@turbo/*"]
+      tailwind:
+        patterns: ["tailwindcss", "@tailwindcss/*"]
+      react:
+        patterns: ["react", "react-dom", "@types/react", "@types/react-dom"]
+      next:
+        patterns: ["next", "@next/*"]
+      types:
+        patterns: ["@types/*"]
+
+  # ---- Go ----
+  - package-ecosystem: gomod
+    directory: "/apps/api"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    groups:
+      fiber:
+        patterns: ["github.com/gofiber/*"]
+
+  # ---- Python (uv reads pyproject.toml) ----
+  - package-ecosystem: pip
+    directory: "/apps/ai"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+
+  # ---- GitHub Actions ----
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+
+  # ---- Docker ----
+  - package-ecosystem: docker
+    directory: "/apps/api"
+    schedule:
+      interval: weekly
+      day: monday
+  - package-ecosystem: docker
+    directory: "/apps/ai"
+    schedule:
+      interval: weekly
+      day: monday

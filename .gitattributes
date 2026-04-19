@@ -1,0 +1,28 @@
+# Normalize line endings across platforms
+* text=auto eol=lf
+
+# Shell scripts must be LF
+*.sh   text eol=lf
+*.bash text eol=lf
+
+# Windows batch / PowerShell — CRLF
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Mark binary files
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
+
+# Mark generated files so diffs are collapsed on GitHub
+pnpm-lock.yaml linguist-generated=true
+uv.lock        linguist-generated=true
+go.sum         linguist-generated=true
+packages/api-client/src/**   linguist-generated=true
+packages/shared-types/src/** linguist-generated=true

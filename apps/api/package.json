@@ -1,0 +1,15 @@
+{
+  "name": "@investment-tracker/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Adapter package.json so Turborepo can pipeline Go tasks alongside JS/TS apps.",
+  "scripts": {
+    "dev": "sh scripts/with-go.sh run ./cmd/api",
+    "build": "make build",
+    "lint": "golangci-lint run ./...",
+    "lint:fix": "golangci-lint run --fix ./... || true",
+    "typecheck": "sh scripts/with-go.sh vet ./...",
+    "test": "sh scripts/with-go.sh test -race -count=1 ./...",
+    "clean": "rm -rf bin"
+  }
+}

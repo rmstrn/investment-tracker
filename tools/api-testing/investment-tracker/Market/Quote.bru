@@ -1,0 +1,16 @@
+meta {
+  name: Market Quote
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/market/quote?symbol=AAPL&asset_type=stock
+  body: none
+  auth: bearer
+}
+
+params:query {
+  symbol: AAPL
+  asset_type: stock
+}

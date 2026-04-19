@@ -1,0 +1,75 @@
+name: Deploy — web (Vercel)
+
+# Disabled by default. Flip to `push: [main]` once VERCEL_* secrets are set
+# (see README § "Secrets to configure before first deploy").
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Vercel environment"
+        required: true
+        default: "preview"
+        type: choice
+        options: [preview, production]
+
+concurrency:
+  group: deploy-web-${{ github.event.inputs.environment }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Vercel deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "9.15.0"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      # TODO: configure these GitHub secrets before enabling the trigger:
+      #   VERCEL_TOKEN       — Vercel personal token
+      #   VERCEL_ORG_ID      — team / user id
+      #   VERCEL_PROJECT_ID  — id of the investment-tracker-web project
+      - name: Pull Vercel env
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          pnpm exec vercel pull --yes \
+            --environment=${{ github.event.inputs.environment }} \
+            --token=$VERCEL_TOKEN \
+            --cwd apps/web
+
+      - name: Build with Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            pnpm exec vercel build --prod --token=$VERCEL_TOKEN --cwd apps/web
+          else
+            pnpm exec vercel build --token=$VERCEL_TOKEN --cwd apps/web
+          fi
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            pnpm exec vercel deploy --prebuilt --prod --token=$VERCEL_TOKEN --cwd apps/web
+          else
+            pnpm exec vercel deploy --prebuilt --token=$VERCEL_TOKEN --cwd apps/web
+          fi

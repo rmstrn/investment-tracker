@@ -1,0 +1,29 @@
+meta {
+  name: Create Account (manual)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/accounts
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "connection_type": "manual",
+    "account_type": "manual",
+    "display_name": "Manual USD Broker",
+    "broker_name": "manual",
+    "base_currency": "USD"
+  }
+}
+
+vars:post-response {
+  accountId: res.body.account.id
+}

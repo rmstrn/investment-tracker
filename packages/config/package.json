@@ -1,0 +1,20 @@
+{
+  "name": "@investment-tracker/config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared tsconfig / biome base configs for other workspaces to extend.",
+  "type": "module",
+  "files": ["tsconfig.base.json", "biome.base.json"],
+  "exports": {
+    "./tsconfig": "./tsconfig.base.json",
+    "./biome": "./biome.base.json"
+  },
+  "scripts": {
+    "build": "echo 'config package — nothing to build' && exit 0",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "echo 'config package — nothing to typecheck' && exit 0",
+    "test": "echo 'no tests' && exit 0",
+    "clean": "rm -rf .turbo node_modules"
+  }
+}

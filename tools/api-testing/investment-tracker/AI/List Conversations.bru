@@ -1,0 +1,15 @@
+meta {
+  name: List Conversations
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/ai/conversations?limit=25
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 25
+}

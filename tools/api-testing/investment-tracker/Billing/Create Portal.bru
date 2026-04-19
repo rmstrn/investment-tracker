@@ -1,0 +1,15 @@
+meta {
+  name: Create Billing Portal
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/billing/portal
+  body: none
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}

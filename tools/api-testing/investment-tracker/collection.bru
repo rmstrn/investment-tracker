@@ -1,0 +1,35 @@
+meta {
+  name: Investment Tracker API
+  seq: 1
+}
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{clerkJwt}}
+}
+
+headers {
+  Accept: application/json
+  Content-Type: application/json
+}
+
+docs {
+  # Investment Tracker API — Bruno collection
+
+  Covers the MVP happy path for every endpoint declared in
+  `tools/openapi/openapi.yaml`.
+
+  ## Environments
+
+  - `local` — docker-compose stack (`pnpm dev:infra && pnpm --filter api dev`)
+  - `staging` — https://api-staging.investmenttracker.example/v1
+  - `prod` — read-only; don't POST/PATCH/DELETE here
+
+  ## Auth
+
+  `{{clerkJwt}}` — paste a Clerk session JWT. Get one from the web app via
+  `sessionStorage` → `__clerk_session` → `getToken({ template: "default" })`.
+}

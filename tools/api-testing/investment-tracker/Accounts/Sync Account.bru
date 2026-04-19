@@ -1,0 +1,15 @@
+meta {
+  name: Sync Account
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/accounts/{{accountId}}/sync
+  body: none
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}

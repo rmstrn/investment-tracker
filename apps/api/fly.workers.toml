@@ -1,0 +1,17 @@
+# Fly.io deployment config — Workers (asynq consumer).
+# Deploy: `fly deploy --config apps/api/fly.workers.toml --dockerfile apps/api/Dockerfile --build-target workers`
+
+app = "investment-tracker-workers"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+  build-target = "workers"
+
+# No http_service — this is a background process.
+[processes]
+  worker = "/app/workers"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

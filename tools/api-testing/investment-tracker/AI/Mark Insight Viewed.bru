@@ -1,0 +1,15 @@
+meta {
+  name: Mark Insight Viewed
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/ai/insights/{{insightId}}/viewed
+  body: none
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}

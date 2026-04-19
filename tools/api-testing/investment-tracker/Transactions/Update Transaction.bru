@@ -1,0 +1,21 @@
+meta {
+  name: Update Transaction (manual only)
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{baseUrl}}/transactions/{{transactionId}}
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "notes": "updated via Bruno"
+  }
+}

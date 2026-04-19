@@ -1,0 +1,86 @@
+{
+  "semantic": {
+    "background": {
+      "primary": { "$value": "{color.neutral.950}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.900}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.800}", "$type": "color" },
+      "elevated": {
+        "$value": "{color.neutral.900}",
+        "$type": "color",
+        "$description": "Elevated in dark uses border rather than shadow"
+      },
+      "inverse": { "$value": "{color.neutral.50}", "$type": "color" },
+      "overlay": { "$value": "rgba(0, 0, 0, 0.7)", "$type": "color" }
+    },
+
+    "text": {
+      "primary": { "$value": "{color.neutral.50}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.300}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.400}", "$type": "color" },
+      "muted": { "$value": "{color.neutral.500}", "$type": "color" },
+      "brand": {
+        "$value": "{color.brand.400}",
+        "$type": "color",
+        "$description": "Lift brand toward 400 for dark — preserves readability"
+      },
+      "inverse": { "$value": "{color.neutral.900}", "$type": "color" },
+      "onBrand": { "$value": "{color.static.white}", "$type": "color" }
+    },
+
+    "border": {
+      "subtle": { "$value": "{color.neutral.800}", "$type": "color" },
+      "default": { "$value": "{color.neutral.700}", "$type": "color" },
+      "strong": { "$value": "{color.neutral.600}", "$type": "color" },
+      "focus": { "$value": "{color.brand.400}", "$type": "color" }
+    },
+
+    "state": {
+      "positive": {
+        "default": { "$value": "{color.green.400}", "$type": "color" },
+        "subtle": { "$value": "rgba(16, 185, 129, 0.15)", "$type": "color" }
+      },
+      "negative": {
+        "default": { "$value": "{color.red.400}", "$type": "color" },
+        "subtle": { "$value": "rgba(239, 68, 68, 0.15)", "$type": "color" }
+      },
+      "warning": {
+        "default": { "$value": "{color.amber.400}", "$type": "color" },
+        "subtle": { "$value": "rgba(245, 158, 11, 0.15)", "$type": "color" }
+      },
+      "info": {
+        "default": { "$value": "{color.cyan.400}", "$type": "color" },
+        "subtle": { "$value": "rgba(6, 182, 212, 0.15)", "$type": "color" }
+      }
+    },
+
+    "portfolio": {
+      "gain": {
+        "default": {
+          "$value": "{color.green.400}",
+          "$type": "color",
+          "$description": "Muted emerald for dark — readable, not neon"
+        },
+        "subtle": { "$value": "rgba(16, 185, 129, 0.12)", "$type": "color" }
+      },
+      "loss": {
+        "default": { "$value": "{color.red.400}", "$type": "color" },
+        "subtle": { "$value": "rgba(239, 68, 68, 0.12)", "$type": "color" }
+      },
+      "neutral": {
+        "default": { "$value": "{color.neutral.400}", "$type": "color" },
+        "subtle": { "$value": "{color.neutral.800}", "$type": "color" }
+      }
+    },
+
+    "interactive": {
+      "primary": { "$value": "{color.brand.500}", "$type": "color" },
+      "primaryHover": { "$value": "{color.brand.400}", "$type": "color" },
+      "primaryActive": { "$value": "{color.brand.300}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.800}", "$type": "color" },
+      "secondaryHover": { "$value": "{color.neutral.700}", "$type": "color" },
+      "secondaryActive": { "$value": "{color.neutral.600}", "$type": "color" },
+      "ghostHover": { "$value": "{color.neutral.800}", "$type": "color" },
+      "ghostActive": { "$value": "{color.neutral.700}", "$type": "color" }
+    }
+  }
+}

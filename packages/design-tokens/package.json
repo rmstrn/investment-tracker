@@ -1,0 +1,28 @@
+{
+  "name": "@investment-tracker/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Source-of-truth design tokens for Portfolio. Compiled via Style Dictionary to Tailwind (web), Swift (iOS), and CSS custom properties.",
+  "main": "build/js/tokens.js",
+  "types": "build/js/tokens.d.ts",
+  "exports": {
+    ".": "./build/js/tokens.js",
+    "./css": "./build/css/tokens.css",
+    "./tailwind": "./build/tailwind/tokens.js",
+    "./theme.css": "./build/tailwind/theme.css",
+    "./brand": "./build/js/brand.js"
+  },
+  "files": ["build", "tokens"],
+  "scripts": {
+    "build": "node build.js",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "typecheck": "echo 'design-tokens: no TS sources' && exit 0",
+    "test": "echo 'no tests yet' && exit 0",
+    "clean": "node -e \"import('node:fs/promises').then(f => f.rm('build', {recursive: true, force: true}))\""
+  },
+  "devDependencies": {
+    "style-dictionary": "^4.3.0"
+  }
+}

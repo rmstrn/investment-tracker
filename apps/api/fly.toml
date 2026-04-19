@@ -1,0 +1,38 @@
+# Fly.io deployment config — Core API.
+# Deploy:  `fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile --build-target api`
+# The workers process runs from the same Dockerfile with --build-target workers; see apps/api/fly.workers.toml.
+
+app = "investment-tracker-api"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+  build-target = "api"
+
+[env]
+  API_LISTEN_ADDR = ":8080"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

@@ -1,0 +1,59 @@
+# golangci-lint config for apps/api
+# Run: `cd apps/api && golangci-lint run ./...`
+# Or from root: `pnpm lint` (via turbo → api workspace)
+
+version: "2"
+
+run:
+  timeout: 3m
+  go: "1.23"
+  tests: true
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - gosimple
+    - gocritic
+    - revive
+    - gofmt
+    - goimports
+    - gosec
+    - misspell
+    - unparam
+    - bodyclose
+    - noctx
+    - rowserrcheck
+    - sqlclosecheck
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/rmstrn/investment-tracker
+
+linters-settings:
+  gosec:
+    excludes:
+      - G404 # weak RNG — fine for non-crypto uses
+  revive:
+    rules:
+      - name: exported
+        disabled: true # too noisy for internal/*
+
+issues:
+  exclude-dirs:
+    - internal/db/sqlc # generated code
+    - internal/mocks
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - errcheck

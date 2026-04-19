@@ -1,0 +1,33 @@
+{
+  "name": "@investment-tracker/shared-types",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript types generated from tools/openapi/openapi.yaml. Do not edit src/generated/* by hand.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./openapi": {
+      "types": "./src/generated/openapi.d.ts",
+      "default": "./src/generated/openapi.d.ts"
+    }
+  },
+  "files": ["src"],
+  "scripts": {
+    "generate": "openapi-typescript ../../tools/openapi/openapi.yaml -o src/generated/openapi.d.ts",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "clean": "rimraf dist .turbo"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.4.4",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2"
+  }
+}

@@ -1,0 +1,13 @@
+extends:
+  - recommended
+
+rules:
+  # We use investmenttracker.example as a placeholder until the prod domain
+  # is finalised. The server list also carries localhost for the docker-compose
+  # stack. Both are intentional.
+  no-server-example.com: off
+  # `/health` is a liveness probe; there's no interesting 4xx to document.
+  operation-4xx-response: off
+  # `InternalError` is declared for every handler to $ref once code lands in
+  # TASK_04; keep it around.
+  no-unused-components: off

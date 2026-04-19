@@ -1,0 +1,15 @@
+meta {
+  name: Portfolio Dividends
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/portfolio/dividends?limit=25
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limit: 25
+}

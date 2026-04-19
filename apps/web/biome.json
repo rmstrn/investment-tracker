@@ -1,0 +1,20 @@
+{
+  "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
+  "extends": ["../../biome.json"],
+  "files": {
+    "ignore": [".next", "node_modules", "dist", "build"]
+  },
+  "overrides": [
+    {
+      "include": ["src/app/design/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useValidAriaRole": "off",
+            "useSemanticElements": "off"
+          }
+        }
+      }
+    }
+  ]
+}

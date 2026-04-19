@@ -1,0 +1,23 @@
+{
+  "motion": {
+    "duration": {
+      "fast": { "$value": "150ms", "$type": "duration", "$description": "Hover, subtle feedback" },
+      "normal": {
+        "$value": "250ms",
+        "$type": "duration",
+        "$description": "Default for transitions"
+      },
+      "slow": {
+        "$value": "400ms",
+        "$type": "duration",
+        "$description": "Sheet/dialog enter, complex movement"
+      }
+    },
+    "easing": {
+      "default": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" },
+      "in": { "$value": "cubic-bezier(0.4, 0, 1, 1)", "$type": "cubicBezier" },
+      "out": { "$value": "cubic-bezier(0, 0, 0.2, 1)", "$type": "cubicBezier" },
+      "inOut": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" }
+    }
+  }
+}

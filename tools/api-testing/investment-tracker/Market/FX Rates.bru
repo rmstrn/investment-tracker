@@ -1,0 +1,16 @@
+meta {
+  name: FX Rates
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/fx_rates?base=USD&quote=EUR
+  body: none
+  auth: bearer
+}
+
+params:query {
+  base: USD
+  quote: EUR
+}

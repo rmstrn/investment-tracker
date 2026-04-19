@@ -1,0 +1,53 @@
+name: Deploy — api (Fly.io)
+
+# Disabled until FLY_API_TOKEN is set. Flip to `push: [main]` once the app is
+# provisioned and the secret is in the repo.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which binary to deploy"
+        required: true
+        default: "api"
+        type: choice
+        options: [api, workers, both]
+
+concurrency:
+  group: deploy-api-${{ github.event.inputs.target }}
+  cancel-in-progress: false
+
+jobs:
+  deploy-api:
+    if: github.event.inputs.target == 'api' || github.event.inputs.target == 'both'
+    name: fly deploy — api
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      # TODO: set FLY_API_TOKEN in repo secrets (see README).
+      - name: Deploy api
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --config apps/api/fly.toml \
+            --dockerfile apps/api/Dockerfile \
+            --build-target api \
+            --remote-only
+
+  deploy-workers:
+    if: github.event.inputs.target == 'workers' || github.event.inputs.target == 'both'
+    name: fly deploy — workers
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy workers
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --config apps/api/fly.workers.toml \
+            --dockerfile apps/api/Dockerfile \
+            --build-target workers \
+            --remote-only

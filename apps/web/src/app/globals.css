@@ -1,0 +1,38 @@
+/*
+ * Tailwind v4 CSS-first entry for Portfolio web app.
+ *
+ * Order matters:
+ *   1. `tailwindcss` — core engine + preflight.
+ *   2. `@investment-tracker/design-tokens/css` — :root + .dark custom props
+ *      emitted by Style Dictionary (packages/design-tokens/build.js).
+ *   3. `@investment-tracker/design-tokens/theme.css` — `@theme` directive
+ *      exposing primitive + semantic tokens as Tailwind utilities.
+ */
+@import "tailwindcss";
+@import "@investment-tracker/design-tokens/css";
+@import "@investment-tracker/design-tokens/theme.css";
+
+/*
+ * Ensure Tailwind picks up class usage in the shared UI package — content
+ * detection is per-app in v4, and workspace packages need explicit sources.
+ */
+@source "../../../../packages/ui/src/**/*.{ts,tsx}";
+
+html,
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-background-primary);
+  color: var(--color-text-primary);
+}
+
+/*
+ * Use the Geist font variables injected by next/font. `geist/font/sans` and
+ * `geist/font/mono` expose --font-geist-sans / --font-geist-mono; we alias
+ * them onto our --font-sans / --font-mono tokens for runtime.
+ */
+:root {
+  --font-sans: var(--font-geist-sans, "Geist"), ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-geist-mono, "Geist Mono"), ui-monospace, "SF Mono", "JetBrains Mono",
+    Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+}

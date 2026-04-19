@@ -1,0 +1,58 @@
+name: Doppler — sync secrets
+
+# Manual trigger: pushes the latest secrets from Doppler into Vercel and Fly.io
+# deploy targets. Keeps GitHub Actions itself free of app secrets.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which target to sync"
+        required: true
+        default: "all"
+        type: choice
+        options: [all, web, api, ai]
+
+jobs:
+  sync:
+    name: Sync secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Doppler CLI
+        uses: dopplerhq/cli-action@v3
+
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+
+      # TODO: set DOPPLER_TOKEN (service token, read-only on prod config)
+      # and the target-specific tokens below.
+      - name: Sync api → Fly
+        if: github.event.inputs.target == 'api' || github.event.inputs.target == 'all'
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_API }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          doppler secrets download --no-file --format=env | \
+            flyctl secrets import --config apps/api/fly.toml
+
+      - name: Sync ai → Fly
+        if: github.event.inputs.target == 'ai' || github.event.inputs.target == 'all'
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_AI }}
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          doppler secrets download --no-file --format=env | \
+            flyctl secrets import --config apps/ai/fly.toml
+
+      - name: Sync web → Vercel
+        if: github.event.inputs.target == 'web' || github.event.inputs.target == 'all'
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN_WEB }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          # TODO: wire `doppler integrations sync vercel` for full sync.
+          # For now, pull + import manually.
+          echo "Web secret sync — implement via Doppler-Vercel integration."
+          exit 0

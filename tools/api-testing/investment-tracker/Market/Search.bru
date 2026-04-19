@@ -1,0 +1,15 @@
+meta {
+  name: Market Search
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{baseUrl}}/market/search?q=apple
+  body: none
+  auth: bearer
+}
+
+params:query {
+  q: apple
+}

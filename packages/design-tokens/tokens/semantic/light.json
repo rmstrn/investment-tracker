@@ -1,0 +1,118 @@
+{
+  "semantic": {
+    "background": {
+      "primary": {
+        "$value": "{color.static.white}",
+        "$type": "color",
+        "$description": "App background"
+      },
+      "secondary": {
+        "$value": "{color.neutral.50}",
+        "$type": "color",
+        "$description": "Subtle sections, striped rows"
+      },
+      "tertiary": {
+        "$value": "{color.neutral.100}",
+        "$type": "color",
+        "$description": "Muted blocks"
+      },
+      "elevated": {
+        "$value": "{color.static.white}",
+        "$type": "color",
+        "$description": "Cards, popovers — pair with shadow"
+      },
+      "inverse": {
+        "$value": "{color.neutral.900}",
+        "$type": "color",
+        "$description": "Reversed surfaces (tooltips, toasts)"
+      },
+      "overlay": {
+        "$value": "rgba(9, 9, 11, 0.55)",
+        "$type": "color",
+        "$description": "Modal backdrop"
+      }
+    },
+
+    "text": {
+      "primary": { "$value": "{color.neutral.900}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.600}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.500}", "$type": "color" },
+      "muted": { "$value": "{color.neutral.400}", "$type": "color" },
+      "brand": {
+        "$value": "{color.brand.700}",
+        "$type": "color",
+        "$description": "#6D28D9 — primary brand on light mode"
+      },
+      "inverse": { "$value": "{color.static.white}", "$type": "color" },
+      "onBrand": {
+        "$value": "{color.static.white}",
+        "$type": "color",
+        "$description": "Text placed on brand-filled surface"
+      }
+    },
+
+    "border": {
+      "subtle": { "$value": "{color.neutral.200}", "$type": "color" },
+      "default": { "$value": "{color.neutral.300}", "$type": "color" },
+      "strong": { "$value": "{color.neutral.400}", "$type": "color" },
+      "focus": { "$value": "{color.brand.500}", "$type": "color" }
+    },
+
+    "state": {
+      "positive": {
+        "default": { "$value": "{color.green.600}", "$type": "color" },
+        "subtle": { "$value": "{color.green.50}", "$type": "color" }
+      },
+      "negative": {
+        "default": { "$value": "{color.red.600}", "$type": "color" },
+        "subtle": { "$value": "{color.red.50}", "$type": "color" }
+      },
+      "warning": {
+        "default": { "$value": "{color.amber.600}", "$type": "color" },
+        "subtle": { "$value": "{color.amber.50}", "$type": "color" }
+      },
+      "info": {
+        "default": { "$value": "{color.cyan.600}", "$type": "color" },
+        "subtle": { "$value": "{color.cyan.50}", "$type": "color" }
+      }
+    },
+
+    "portfolio": {
+      "gain": {
+        "default": {
+          "$value": "{color.green.700}",
+          "$type": "color",
+          "$description": "Portfolio gains — deeper and more muted than state.positive"
+        },
+        "subtle": { "$value": "{color.green.50}", "$type": "color" }
+      },
+      "loss": {
+        "default": { "$value": "{color.red.700}", "$type": "color" },
+        "subtle": { "$value": "{color.red.50}", "$type": "color" }
+      },
+      "neutral": {
+        "default": {
+          "$value": "{color.neutral.500}",
+          "$type": "color",
+          "$description": "Flat / no change"
+        },
+        "subtle": { "$value": "{color.neutral.100}", "$type": "color" }
+      }
+    },
+
+    "interactive": {
+      "primary": {
+        "$value": "{color.brand.700}",
+        "$type": "color",
+        "$description": "#6D28D9 — primary action on light"
+      },
+      "primaryHover": { "$value": "{color.brand.800}", "$type": "color" },
+      "primaryActive": { "$value": "{color.brand.900}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.100}", "$type": "color" },
+      "secondaryHover": { "$value": "{color.neutral.200}", "$type": "color" },
+      "secondaryActive": { "$value": "{color.neutral.300}", "$type": "color" },
+      "ghostHover": { "$value": "{color.neutral.100}", "$type": "color" },
+      "ghostActive": { "$value": "{color.neutral.200}", "$type": "color" }
+    }
+  }
+}

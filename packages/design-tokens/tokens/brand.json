@@ -1,0 +1,62 @@
+{
+  "brand": {
+    "productName": {
+      "$value": "Portfolio",
+      "$type": "string",
+      "$description": "MVP placeholder. Single source of truth. Replace here → rebuild → all outputs (Tailwind, Swift, TS) update. Never hardcode in components."
+    },
+    "productNameShort": {
+      "$value": "Portfolio",
+      "$type": "string",
+      "$description": "Used in tight spaces (mobile header, tab label). Currently same as full."
+    },
+    "tagline": {
+      "$value": "AI-native trader of your investments",
+      "$type": "string",
+      "$description": "Placeholder tagline. Final copy TBD."
+    },
+    "legalName": {
+      "$value": "TBD Ltd.",
+      "$type": "string",
+      "$description": "Company legal entity — shown in footer, ToS, Privacy Policy."
+    },
+    "domain": {
+      "web": {
+        "$value": "localhost:3000",
+        "$type": "string",
+        "$description": "Web app origin. Replace with real domain before launch."
+      },
+      "api": {
+        "$value": "localhost:8080",
+        "$type": "string",
+        "$description": "Go API origin. Replace with real domain before launch."
+      },
+      "marketing": {
+        "$value": "localhost:3001",
+        "$type": "string",
+        "$description": "Marketing / landing page. Optional — may collapse into web app."
+      }
+    },
+    "email": {
+      "support": {
+        "$value": "support@localhost",
+        "$type": "string"
+      },
+      "legal": {
+        "$value": "legal@localhost",
+        "$type": "string"
+      },
+      "noreply": {
+        "$value": "noreply@localhost",
+        "$type": "string"
+      }
+    },
+    "logo": {
+      "$description": "Logo is not a token — it's implemented as <Logo variant='full|mark|wordmark' /> React component. When productName changes, update the SVG wordmark path in packages/ui/src/components/Logo.tsx only.",
+      "variants": {
+        "$value": ["full", "mark", "wordmark"],
+        "$type": "string"
+      }
+    }
+  }
+}

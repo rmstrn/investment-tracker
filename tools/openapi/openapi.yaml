@@ -1,0 +1,2118 @@
+openapi: 3.1.0
+
+info:
+  title: Investment Tracker API
+  version: 0.1.0
+  summary: AI-native portfolio tracker REST API
+  description: |
+    Read-only aggregator for investment portfolios with an AI-first UX.
+
+    ## Design principles
+
+    - **Spec-first.** This file is the source of truth. Go (huma v2), TypeScript
+      (openapi-typescript / openapi-fetch) and Swift (swift-openapi-generator)
+      artefacts are generated from this document.
+    - **All paths under `/v1/`.** Breaking changes go to `/v2/`.
+    - **Cursor pagination** everywhere a list is returned.
+    - **Standard error envelope** with a stable `code` and a `request_id`.
+    - **Rate limits** are communicated via `X-RateLimit-*` headers on every
+      response; `429` is returned when exceeded.
+    - **Idempotency.** All mutating endpoints (`POST`, `PATCH`, `DELETE`) accept
+      an optional `Idempotency-Key` header. The server stores the response for
+      24 hours and replays it for a repeated key.
+    - **Money is a string.** Decimal strings (e.g. `"123.4567890000"`) preserve
+      precision; JSON numbers would not.
+    - **Multi-currency.** Values are always returned in both `base` (USD today)
+      and `display` (user preference, converted on the fly).
+    - **SSE streaming.** `POST /v1/ai/chat/stream` uses `text/event-stream`.
+      A non-stream `POST /v1/ai/chat` counterpart exists for tests and
+      retrospectives.
+  contact:
+    name: Investment Tracker Team
+    email: dev@investmenttracker.example
+  license:
+    name: Proprietary
+    url: https://investmenttracker.example/license
+
+servers:
+  - url: http://localhost:8080/v1
+    description: Local dev (docker-compose)
+  - url: https://api-staging.investmenttracker.example/v1
+    description: Staging
+  - url: https://api.investmenttracker.example/v1
+    description: Production
+
+tags:
+  - name: System
+    description: Health checks and metadata
+  - name: Users
+    description: Authenticated user profile, usage, GDPR
+  - name: Accounts
+    description: Connected broker / exchange accounts
+  - name: Transactions
+    description: Immutable ledger of trades and events
+  - name: Positions
+    description: Computed current holdings
+  - name: Portfolio
+    description: Aggregated portfolio views
+  - name: Market
+    description: Market data proxy
+  - name: AI
+    description: AI chat, conversation history and proactive insights
+  - name: Billing
+    description: Subscription and Stripe integration
+  - name: Webhooks
+    description: Inbound webhooks from Clerk and Stripe
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ─────────────────────────── System ────────────────────────────
+  /health:
+    get:
+      tags: [System]
+      operationId: getHealth
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+
+  # ─────────────────────────── Users ─────────────────────────────
+  /me:
+    get:
+      tags: [Users]
+      operationId: getMe
+      summary: Get the current user
+      responses:
+        '200':
+          description: Current user
+          headers:
+            X-RateLimit-Limit: { $ref: '#/components/headers/RateLimitLimit' }
+            X-RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+            X-RateLimit-Reset: { $ref: '#/components/headers/RateLimitReset' }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    patch:
+      tags: [Users]
+      operationId: updateMe
+      summary: Update the current user's profile
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserUpdateRequest' }
+      responses:
+        '200':
+          description: Updated user
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    delete:
+      tags: [Users]
+      operationId: deleteMe
+      summary: Delete the current user and all associated data (GDPR)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: |
+            Deletion accepted. Hard delete is scheduled as an async job;
+            from the API's perspective the account is immediately inaccessible.
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/export:
+    get:
+      tags: [Users]
+      operationId: exportMe
+      summary: GDPR data export
+      description: |
+        Returns a JSON bundle of every piece of personal data held for the
+        current user. Suitable for download by the user via the app.
+      responses:
+        '200':
+          description: Data export bundle
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserExportBundle' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /me/usage:
+    get:
+      tags: [Users]
+      operationId: getMyUsage
+      summary: Current tier limits and consumption
+      responses:
+        '200':
+          description: Usage summary
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsageSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── Accounts ──────────────────────────
+  /accounts:
+    get:
+      tags: [Accounts]
+      operationId: listAccounts
+      summary: List connected accounts
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Paginated list of accounts
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Accounts]
+      operationId: createAccount
+      summary: Start account connection
+      description: |
+        For `aggregator` connections (SnapTrade / Plaid) this returns a
+        `connect_url` the client should open. The account row is created in
+        `pending` state and transitions to `ok` after the first sync.
+
+        For `manual` accounts the row is created immediately in state `ok` and
+        `connect_url` is `null`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountCreateRequest' }
+      responses:
+        '201':
+          description: Account created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountCreateResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /accounts/{id}:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    get:
+      tags: [Accounts]
+      operationId: getAccount
+      summary: Get a single account
+      responses:
+        '200':
+          description: Account details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Accounts]
+      operationId: updateAccount
+      summary: Update an account (display name only for now)
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccountUpdateRequest' }
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Accounts]
+      operationId: deleteAccount
+      summary: Soft-delete (disconnect) an account
+      description: |
+        Sets `deleted_at`. Historical transactions remain for accurate snapshot
+        reconstruction, but the account no longer appears in active listings,
+        syncs or aggregations.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204':
+          description: Account disconnected
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /accounts/{id}/sync:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    post:
+      tags: [Accounts]
+      operationId: syncAccount
+      summary: Trigger a manual sync
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '202':
+          description: Sync queued
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountSyncStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /accounts/{id}/status:
+    parameters:
+      - $ref: '#/components/parameters/AccountId'
+    get:
+      tags: [Accounts]
+      operationId: getAccountStatus
+      summary: Get last sync status
+      responses:
+        '200':
+          description: Sync status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccountSyncStatus' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ──────────────────────── Transactions ─────────────────────────
+  /transactions:
+    get:
+      tags: [Transactions]
+      operationId: listTransactions
+      summary: List transactions
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - name: account_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: symbol
+          in: query
+          schema: { type: string }
+        - name: asset_type
+          in: query
+          schema: { $ref: '#/components/schemas/AssetType' }
+        - name: transaction_type
+          in: query
+          schema: { $ref: '#/components/schemas/TransactionType' }
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+      responses:
+        '200':
+          description: Paginated list of transactions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Transaction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [Transactions]
+      operationId: createTransaction
+      summary: Manually add a transaction
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionCreateRequest' }
+      responses:
+        '201':
+          description: Transaction created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Duplicate transaction (same fingerprint already exists)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /transactions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/TransactionId'
+    get:
+      tags: [Transactions]
+      operationId: getTransaction
+      summary: Get a single transaction
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Transactions]
+      operationId: updateTransaction
+      summary: Edit a manual transaction
+      description: |
+        Only transactions with `source=manual` can be edited. API-sourced rows
+        are immutable.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TransactionUpdateRequest' }
+      responses:
+        '200':
+          description: Updated transaction
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Transaction' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Transaction is not manually sourced and cannot be edited
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Transactions]
+      operationId: deleteTransaction
+      summary: Remove a manual transaction
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204':
+          description: Transaction removed
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Transaction is not manually sourced and cannot be deleted
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ────────────────────────── Portfolio ──────────────────────────
+  /portfolio:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolio
+      summary: Current portfolio snapshot
+      parameters:
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Portfolio snapshot
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioSnapshot' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /portfolio/history:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioHistory
+      summary: Portfolio value over time
+      parameters:
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1m, 3m, 6m, 1y, all]
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Historical series
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioHistoryResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /portfolio/allocation:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioAllocation
+      summary: Portfolio allocation breakdown
+      responses:
+        '200':
+          description: Allocation by symbol, asset type and currency
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioAllocationResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /portfolio/performance:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioPerformance
+      summary: Portfolio performance vs. a benchmark
+      parameters:
+        - name: benchmark
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [SPX, QQQ, ACWI, BTC]
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1m, 3m, 6m, 1y, all]
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Performance comparison
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortfolioPerformance' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: Benchmark requires Plus or higher
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /portfolio/dividends:
+    get:
+      tags: [Portfolio]
+      operationId: getPortfolioDividends
+      summary: Upcoming and historical dividends
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+        - name: from
+          in: query
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Dividend events
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/DividendEvent' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── Positions ─────────────────────────
+  /positions:
+    get:
+      tags: [Positions]
+      operationId: listPositions
+      summary: List all current positions
+      parameters:
+        - name: group_by
+          in: query
+          schema:
+            type: string
+            enum: [account, symbol, asset_type]
+            default: symbol
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [value_desc, value_asc, pnl_desc, pnl_asc, alpha]
+            default: value_desc
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Positions list
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Position' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /positions/{id}:
+    parameters:
+      - $ref: '#/components/parameters/PositionId'
+    get:
+      tags: [Positions]
+      operationId: getPosition
+      summary: Get one position
+      parameters:
+        - $ref: '#/components/parameters/DisplayCurrency'
+      responses:
+        '200':
+          description: Position detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Position' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /positions/{id}/transactions:
+    parameters:
+      - $ref: '#/components/parameters/PositionId'
+    get:
+      tags: [Positions]
+      operationId: listPositionTransactions
+      summary: All transactions that built a position
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Transactions for this position
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Transaction' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ──────────────────────── FX & cached prices ──────────────────
+  /fx_rates:
+    get:
+      tags: [Market]
+      operationId: listFxRates
+      summary: List cached FX rates
+      description: |
+        Returns FX rates used by the server for base↔display conversion.
+        When `as_of` is omitted the latest cached row per pair is returned.
+      parameters:
+        - name: base
+          in: query
+          description: Filter by base currency (ISO 4217).
+          schema: { $ref: '#/components/schemas/Currency' }
+        - name: quote
+          in: query
+          description: Filter by quote currency (ISO 4217).
+          schema: { $ref: '#/components/schemas/Currency' }
+        - name: as_of
+          in: query
+          description: Return rates for this specific date (latest if omitted).
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: FX rates
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FxRatesResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /prices:
+    get:
+      tags: [Market]
+      operationId: listPrices
+      summary: Bulk latest prices
+      description: |
+        Returns the latest cached quote for every symbol requested. Designed
+        for refreshing a portfolio view in a single call.
+      parameters:
+        - name: symbols
+          in: query
+          required: true
+          description: Comma-separated list of symbols (max 100).
+          schema: { type: string }
+        - name: asset_type
+          in: query
+          schema: { $ref: '#/components/schemas/AssetType' }
+        - name: currency
+          in: query
+          description: Filter by quote currency.
+          schema: { $ref: '#/components/schemas/Currency' }
+      responses:
+        '200':
+          description: Prices
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PricesResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ────────────────────────── Market Data ────────────────────────
+  /market/quote:
+    get:
+      tags: [Market]
+      operationId: getMarketQuote
+      summary: Get a single quote
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          schema: { type: string }
+        - name: asset_type
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/AssetType' }
+      responses:
+        '200':
+          description: Quote
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MarketQuote' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /market/history:
+    get:
+      tags: [Market]
+      operationId: getMarketHistory
+      summary: Historical prices
+      parameters:
+        - name: symbol
+          in: query
+          required: true
+          schema: { type: string }
+        - name: asset_type
+          in: query
+          required: true
+          schema: { $ref: '#/components/schemas/AssetType' }
+        - name: period
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [1d, 5d, 1m, 3m, 6m, 1y, 5y, max]
+        - name: interval
+          in: query
+          schema:
+            type: string
+            enum: [1m, 5m, 15m, 1h, 1d, 1wk, 1mo]
+            default: 1d
+      responses:
+        '200':
+          description: Historical candles
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MarketHistoryResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /market/search:
+    get:
+      tags: [Market]
+      operationId: searchMarket
+      summary: Search tickers and crypto symbols
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 1 }
+        - name: asset_type
+          in: query
+          schema: { $ref: '#/components/schemas/AssetType' }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, minimum: 1, maximum: 50 }
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/MarketSearchResult' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── AI ────────────────────────────────
+  /ai/conversations:
+    get:
+      tags: [AI]
+      operationId: listAIConversations
+      summary: List AI conversations
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/AIConversationSummary' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      tags: [AI]
+      operationId: createAIConversation
+      summary: Start a new conversation
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 200
+                  description: Optional title; otherwise auto-generated from the first user message.
+      responses:
+        '201':
+          description: Conversation created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AIConversation' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: AI Chat tier limit reached
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  /ai/conversations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/ConversationId'
+    get:
+      tags: [AI]
+      operationId: getAIConversation
+      summary: Get conversation with messages
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Conversation detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AIConversationDetail' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [AI]
+      operationId: deleteAIConversation
+      summary: Delete a conversation
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204':
+          description: Deleted
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /ai/chat:
+    post:
+      tags: [AI]
+      operationId: sendAIChat
+      summary: Send a chat message (non-streaming)
+      description: |
+        Sends a user message and returns the full assistant reply as a single
+        JSON response. Mostly used for integration tests, retrospectives and
+        deterministic server-side automations. Production clients should use
+        `POST /ai/chat/stream` for the SSE variant.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AIChatRequest' }
+      responses:
+        '200':
+          description: Assistant reply
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AIChatResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: AI Chat tier limit reached
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /ai/chat/stream:
+    post:
+      tags: [AI]
+      operationId: sendAIChatStream
+      summary: Send a chat message (Server-Sent Events stream)
+      description: |
+        Sends a user message and streams the assistant reply back as
+        Server-Sent Events. The HTTP response is `text/event-stream`.
+
+        ## Event format
+
+        Each event is encoded in the SSE wire format:
+
+        ```text
+        event: <event_type>
+        data: <JSON payload>
+
+        ```
+
+        (A blank line terminates the event.) The JSON payload conforms to
+        `AIChatStreamEvent` below — the `type` field equals `<event_type>`.
+
+        ## Event types
+
+        | `event`              | Meaning                                             |
+        |----------------------|-----------------------------------------------------|
+        | `message_start`      | Server acknowledged the request, streaming opening. |
+        | `content_block_start`| A new content block begins.                         |
+        | `content_delta`      | Incremental text for the current block.             |
+        | `content_block_stop` | Current block finished.                             |
+        | `tool_use`           | Assistant calls a tool (portfolio, quote, …).       |
+        | `tool_result`        | Tool result payload sent back to the model.         |
+        | `message_stop`       | Final message; includes token usage and message id. |
+        | `error`              | Error occurred mid-stream.                          |
+
+        Clients should treat any unknown event types as ignorable and keep
+        reading until `message_stop` or `error`.
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AIChatRequest' }
+      responses:
+        '200':
+          description: SSE stream of AIChatStreamEvent payloads
+          content:
+            text/event-stream:
+              schema: { $ref: '#/components/schemas/AIChatStreamEvent' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403':
+          description: AI Chat tier limit reached
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+        '429': { $ref: '#/components/responses/RateLimited' }
+
+  /ai/insights:
+    get:
+      tags: [AI]
+      operationId: listInsights
+      summary: List active proactive insights
+      parameters:
+        - name: include_dismissed
+          in: query
+          schema: { type: boolean, default: false }
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: Insights
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedEnvelope'
+                  - type: object
+                    required: [data]
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Insight' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /ai/insights/{id}/dismiss:
+    parameters:
+      - $ref: '#/components/parameters/InsightId'
+    post:
+      tags: [AI]
+      operationId: dismissInsight
+      summary: Dismiss an insight
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Dismissed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /ai/insights/{id}/viewed:
+    parameters:
+      - $ref: '#/components/parameters/InsightId'
+    post:
+      tags: [AI]
+      operationId: markInsightViewed
+      summary: Mark an insight as viewed
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '204': { description: Marked viewed }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ───────────────────────────Billing ────────────────────────────
+  /billing/subscription:
+    get:
+      tags: [Billing]
+      operationId: getSubscription
+      summary: Get current subscription
+      responses:
+        '200':
+          description: Subscription state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Subscription' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/checkout:
+    post:
+      tags: [Billing]
+      operationId: createCheckoutSession
+      summary: Create a Stripe Checkout session
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CheckoutRequest' }
+      responses:
+        '200':
+          description: Checkout session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CheckoutResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /billing/portal:
+    post:
+      tags: [Billing]
+      operationId: createBillingPortalSession
+      summary: Create a Stripe Billing Portal session
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Portal session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PortalResponse' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ─────────────────────────── Webhooks ──────────────────────────
+  /auth/webhook:
+    post:
+      tags: [Webhooks]
+      operationId: clerkWebhook
+      summary: Clerk webhook (user.created, user.updated, user.deleted)
+      description: |
+        Verified via Svix signature headers (`svix-id`, `svix-timestamp`,
+        `svix-signature`). The body is the raw Clerk event envelope and is
+        validated on the server — this contract does not enumerate every
+        Clerk event type.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Processed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+  /billing/webhook:
+    post:
+      tags: [Webhooks]
+      operationId: stripeWebhook
+      summary: Stripe webhook
+      description: |
+        Verified via `Stripe-Signature` header. The body is the raw Stripe
+        event payload and is validated server-side against the Stripe SDK.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Processed }
+        '400': { $ref: '#/components/responses/ValidationError' }
+
+components:
+  # ─────────────────────── Security schemes ──────────────────────
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Bearer JWT issued by Clerk. Validated against Clerk JWKS on every
+        request. `sub` claim is mapped to `users.clerk_user_id`.
+
+  # ─────────────────────── Reusable parameters ───────────────────
+  parameters:
+    AccountId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    TransactionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    PositionId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ConversationId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    InsightId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: |
+        Opaque pagination cursor returned in the previous response's `meta.next_cursor`.
+      schema: { type: string }
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        default: 25
+        minimum: 1
+        maximum: 100
+    DisplayCurrency:
+      name: display_currency
+      in: query
+      required: false
+      description: |
+        ISO 4217 currency to use for the `display` half of the response's
+        values. Defaults to the user's `display_currency` on their profile.
+      schema: { $ref: '#/components/schemas/Currency' }
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: false
+      description: |
+        Opaque client-generated key (UUID v4 recommended, max 255 chars).
+        The server stores the response for 24 hours and replays it for a
+        repeated key on the same authenticated user + same endpoint. Keys
+        are ignored on `GET` requests.
+      schema: { type: string, maxLength: 255 }
+
+  # ─────────────────────── Reusable headers ──────────────────────
+  headers:
+    RateLimitLimit:
+      description: Requests permitted in the current window.
+      schema: { type: integer }
+    RateLimitRemaining:
+      description: Requests remaining in the current window.
+      schema: { type: integer }
+    RateLimitReset:
+      description: Unix epoch seconds when the window resets.
+      schema: { type: integer }
+
+  # ─────────────────────── Reusable responses ────────────────────
+  responses:
+    Unauthorized:
+      description: Missing or invalid bearer token.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Forbidden:
+      description: Authenticated but not allowed (e.g. tier limit, not owner).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    NotFound:
+      description: Resource does not exist or is not owned by the caller.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    ValidationError:
+      description: Request failed validation.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    Conflict:
+      description: Resource state conflict (e.g. duplicate fingerprint).
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    RateLimited:
+      description: Rate limit exceeded.
+      headers:
+        X-RateLimit-Limit: { $ref: '#/components/headers/RateLimitLimit' }
+        X-RateLimit-Remaining: { $ref: '#/components/headers/RateLimitRemaining' }
+        X-RateLimit-Reset: { $ref: '#/components/headers/RateLimitReset' }
+        Retry-After:
+          description: Seconds until the caller may retry.
+          schema: { type: integer }
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    InternalError:
+      description: Unhandled server error.
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+  # ─────────────────────────── Schemas ───────────────────────────
+  schemas:
+    # ── Primitives ────────────────────────────────────────────
+    Money:
+      type: string
+      pattern: '^-?[0-9]+(\.[0-9]{1,10})?$'
+      description: |
+        Decimal money string, up to 10 fractional digits. Matches the
+        `NUMERIC(30, 10)` precision used in the database.
+      examples: ['123.4567890000', '-5.0', '0']
+    Currency:
+      type: string
+      pattern: '^[A-Z]{3}$'
+      description: ISO 4217 currency code.
+      examples: ['USD', 'EUR', 'GBP', 'JPY', 'BTC', 'USDT']
+    AssetType:
+      type: string
+      enum: [stock, etf, crypto]
+    TransactionType:
+      type: string
+      enum: [buy, sell, dividend, split, transfer_in, transfer_out, fee]
+    ConnectionType:
+      type: string
+      enum: [api, aggregator, import, manual]
+    AccountType:
+      type: string
+      enum: [broker, crypto, manual]
+    SyncState:
+      type: string
+      enum: [pending, syncing, ok, error]
+    SubscriptionTier:
+      type: string
+      enum: [free, plus, pro]
+    InsightSeverity:
+      type: string
+      enum: [info, warning, critical]
+
+    # ── Envelopes ─────────────────────────────────────────────
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, request_id]
+          properties:
+            code:
+              type: string
+              description: Stable machine-readable error code.
+              enum:
+                - VALIDATION_ERROR
+                - INVALID_REQUEST
+                - UNAUTHENTICATED
+                - FORBIDDEN
+                - TIER_LIMIT_EXCEEDED
+                - NOT_FOUND
+                - CONFLICT
+                - DUPLICATE_TRANSACTION
+                - RATE_LIMIT_EXCEEDED
+                - EXTERNAL_SERVICE_ERROR
+                - INTERNAL_ERROR
+            message:
+              type: string
+              description: Human-readable message. Do not parse this.
+            details:
+              type: object
+              additionalProperties: true
+              description: Structured details for the error (e.g. failing field).
+            request_id:
+              type: string
+              description: Correlation id; include this in bug reports.
+
+    PaginationMeta:
+      type: object
+      required: [has_more]
+      properties:
+        next_cursor:
+          type: [string, "null"]
+          description: Pass as `?cursor=` on the next request. `null` if no more results.
+        has_more:
+          type: boolean
+        total_count:
+          type: [integer, "null"]
+          minimum: 0
+          description: Only populated for endpoints where the count is cheap.
+
+    PaginatedEnvelope:
+      type: object
+      required: [meta]
+      properties:
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    # ── System ────────────────────────────────────────────────
+    Health:
+      type: object
+      required: [status, version]
+      properties:
+        status:
+          type: string
+          enum: [ok, degraded]
+        version: { type: string }
+        uptime_seconds: { type: integer }
+
+    # ── User ──────────────────────────────────────────────────
+    User:
+      type: object
+      required:
+        - id
+        - clerk_user_id
+        - email
+        - display_currency
+        - locale
+        - subscription_tier
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        clerk_user_id: { type: string }
+        email: { type: string, format: email }
+        display_currency: { $ref: '#/components/schemas/Currency' }
+        locale: { type: string, examples: ['en', 'en-US', 'ru'] }
+        subscription_tier: { $ref: '#/components/schemas/SubscriptionTier' }
+        stripe_customer_id:
+          type: [string, "null"]
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    UserUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        display_currency: { $ref: '#/components/schemas/Currency' }
+        locale: { type: string }
+
+    UsageSummary:
+      type: object
+      required: [tier, counters]
+      properties:
+        tier: { $ref: '#/components/schemas/SubscriptionTier' }
+        counters:
+          type: object
+          required: [ai_messages_daily, connected_accounts]
+          properties:
+            ai_messages_daily:
+              $ref: '#/components/schemas/UsageCounter'
+            connected_accounts:
+              $ref: '#/components/schemas/UsageCounter'
+
+    UsageCounter:
+      type: object
+      required: [used, limit]
+      properties:
+        used: { type: integer }
+        limit:
+          type: [integer, "null"]
+          description: '`null` means unlimited.'
+        reset_at:
+          type: [string, "null"]
+          format: date-time
+
+    UserExportBundle:
+      type: object
+      required: [generated_at, user, accounts, transactions]
+      additionalProperties: true
+      properties:
+        generated_at: { type: string, format: date-time }
+        user: { $ref: '#/components/schemas/User' }
+        accounts:
+          type: array
+          items: { $ref: '#/components/schemas/Account' }
+        transactions:
+          type: array
+          items: { $ref: '#/components/schemas/Transaction' }
+
+    # ── Account ───────────────────────────────────────────────
+    Account:
+      type: object
+      required:
+        - id
+        - broker_name
+        - display_name
+        - account_type
+        - connection_type
+        - base_currency
+        - sync_status
+        - created_at
+        - updated_at
+      properties:
+        id: { type: string, format: uuid }
+        broker_name:
+          type: string
+          description: |
+            Canonical broker/exchange identifier. Free-text to allow new
+            integrations without a spec bump; known values include
+            `interactive_brokers`, `schwab`, `fidelity`, `binance`,
+            `coinbase`, `kraken`, `manual`.
+          examples: [interactive_brokers, binance]
+        display_name:
+          type: string
+          maxLength: 120
+          description: User-editable label.
+        account_type: { $ref: '#/components/schemas/AccountType' }
+        connection_type: { $ref: '#/components/schemas/ConnectionType' }
+        external_account_id:
+          type: [string, "null"]
+        base_currency: { $ref: '#/components/schemas/Currency' }
+        last_synced_at:
+          type: [string, "null"]
+          format: date-time
+        sync_status: { $ref: '#/components/schemas/SyncState' }
+        sync_error:
+          type: [string, "null"]
+        deleted_at:
+          type: [string, "null"]
+          format: date-time
+          description: Present on tombstoned rows (usually omitted from live list queries).
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    AccountCreateRequest:
+      type: object
+      required: [connection_type, display_name]
+      additionalProperties: false
+      properties:
+        connection_type: { $ref: '#/components/schemas/ConnectionType' }
+        broker_name:
+          type: string
+          description: Required when `connection_type != manual`.
+        display_name: { type: string, maxLength: 120 }
+        base_currency: { $ref: '#/components/schemas/Currency' }
+        account_type: { $ref: '#/components/schemas/AccountType' }
+        redirect_url:
+          type: string
+          format: uri
+          description: |
+            For `aggregator` connections: URL to send the user after OAuth.
+
+    AccountCreateResponse:
+      type: object
+      required: [account]
+      properties:
+        account: { $ref: '#/components/schemas/Account' }
+        connect_url:
+          type: [string, "null"]
+          format: uri
+          description: |
+            For `aggregator` connections: open this URL in a browser/webview
+            so the user can complete OAuth at SnapTrade/Plaid. `null` for
+            `manual` accounts.
+
+    AccountUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        display_name: { type: string, maxLength: 120 }
+
+    AccountSyncStatus:
+      type: object
+      required: [account_id, sync_status, last_synced_at]
+      properties:
+        account_id: { type: string, format: uuid }
+        sync_status: { $ref: '#/components/schemas/SyncState' }
+        last_synced_at:
+          type: [string, "null"]
+          format: date-time
+        sync_error:
+          type: [string, "null"]
+        next_sync_at:
+          type: [string, "null"]
+          format: date-time
+
+    # ── Transaction ───────────────────────────────────────────
+    Transaction:
+      type: object
+      required:
+        - id
+        - account_id
+        - symbol
+        - asset_type
+        - transaction_type
+        - quantity
+        - currency
+        - executed_at
+        - source
+        - created_at
+      properties:
+        id: { type: string, format: uuid }
+        account_id: { type: string, format: uuid }
+        symbol: { type: string, examples: [AAPL, BTC, VWCE] }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        transaction_type: { $ref: '#/components/schemas/TransactionType' }
+        quantity: { $ref: '#/components/schemas/Money' }
+        price:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: "null"
+          description: Null for `split` events.
+        currency: { $ref: '#/components/schemas/Currency' }
+        fee: { $ref: '#/components/schemas/Money' }
+        executed_at: { type: string, format: date-time }
+        source:
+          type: string
+          enum: [manual, api, aggregator, import]
+        source_details:
+          type: [object, "null"]
+          additionalProperties: true
+          description: |
+            Loose provider-specific payload (e.g. SnapTrade `trade_id`, CSV
+            row number). Not intended to be consumed by clients.
+        fingerprint:
+          type: string
+          description: Opaque dedup hash.
+        notes:
+          type: [string, "null"]
+          maxLength: 1000
+        created_at: { type: string, format: date-time }
+
+    TransactionCreateRequest:
+      type: object
+      required:
+        - account_id
+        - symbol
+        - asset_type
+        - transaction_type
+        - quantity
+        - currency
+        - executed_at
+      additionalProperties: false
+      properties:
+        account_id: { type: string, format: uuid }
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        transaction_type: { $ref: '#/components/schemas/TransactionType' }
+        quantity: { $ref: '#/components/schemas/Money' }
+        price: { $ref: '#/components/schemas/Money' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        fee: { $ref: '#/components/schemas/Money' }
+        executed_at: { type: string, format: date-time }
+        notes: { type: string, maxLength: 1000 }
+
+    TransactionUpdateRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        quantity: { $ref: '#/components/schemas/Money' }
+        price: { $ref: '#/components/schemas/Money' }
+        fee: { $ref: '#/components/schemas/Money' }
+        executed_at: { type: string, format: date-time }
+        notes: { type: string, maxLength: 1000 }
+
+    # ── Portfolio values (multi-currency envelope) ────────────
+    MonetaryValue:
+      type: object
+      required: [currency, total_value, total_cost]
+      properties:
+        currency: { $ref: '#/components/schemas/Currency' }
+        total_value: { $ref: '#/components/schemas/Money' }
+        total_cost: { $ref: '#/components/schemas/Money' }
+
+    DisplayMonetaryValue:
+      allOf:
+        - $ref: '#/components/schemas/MonetaryValue'
+        - type: object
+          required: [fx_rate, fx_date]
+          properties:
+            fx_rate:
+              type: string
+              pattern: '^-?[0-9]+(\.[0-9]{1,10})?$'
+              description: |
+                Rate used to convert `base.currency` → `display.currency`.
+                Value 1 when `base == display`.
+            fx_date:
+              type: string
+              format: date
+              description: '`fx_rates.as_of` used for this conversion.'
+
+    PortfolioValues:
+      type: object
+      required: [base, display]
+      properties:
+        base: { $ref: '#/components/schemas/MonetaryValue' }
+        display: { $ref: '#/components/schemas/DisplayMonetaryValue' }
+
+    # ── Portfolio ─────────────────────────────────────────────
+    PortfolioAllocation:
+      type: object
+      additionalProperties:
+        type: number
+        format: float
+        minimum: 0
+        maximum: 1
+      description: |
+        Fractions summing to ~1.0 (±rounding). Keys are symbols, asset-type
+        labels or currency codes depending on the field.
+
+    PortfolioSnapshot:
+      type: object
+      required: [snapshot_date, values, allocation, by_asset_type, by_currency]
+      properties:
+        snapshot_date: { type: string, format: date }
+        values: { $ref: '#/components/schemas/PortfolioValues' }
+        pnl_absolute:
+          type: object
+          required: [base, display]
+          properties:
+            base: { $ref: '#/components/schemas/Money' }
+            display: { $ref: '#/components/schemas/Money' }
+        pnl_percent:
+          type: number
+          format: float
+          description: Signed fraction; 0.123 == +12.3%.
+        allocation: { $ref: '#/components/schemas/PortfolioAllocation' }
+        by_asset_type: { $ref: '#/components/schemas/PortfolioAllocation' }
+        by_currency: { $ref: '#/components/schemas/PortfolioAllocation' }
+
+    PortfolioHistoryPoint:
+      type: object
+      required: [date, value_base, value_display]
+      properties:
+        date: { type: string, format: date }
+        value_base: { $ref: '#/components/schemas/Money' }
+        value_display: { $ref: '#/components/schemas/Money' }
+
+    PortfolioHistoryResponse:
+      type: object
+      required: [period, base_currency, display_currency, points]
+      properties:
+        period:
+          type: string
+          enum: [1m, 3m, 6m, 1y, all]
+        base_currency: { $ref: '#/components/schemas/Currency' }
+        display_currency: { $ref: '#/components/schemas/Currency' }
+        points:
+          type: array
+          items: { $ref: '#/components/schemas/PortfolioHistoryPoint' }
+
+    PortfolioAllocationResponse:
+      type: object
+      required: [by_symbol, by_asset_type, by_currency]
+      properties:
+        by_symbol: { $ref: '#/components/schemas/PortfolioAllocation' }
+        by_asset_type: { $ref: '#/components/schemas/PortfolioAllocation' }
+        by_currency: { $ref: '#/components/schemas/PortfolioAllocation' }
+
+    PortfolioPerformance:
+      type: object
+      required: [period, benchmark, portfolio_return_percent, benchmark_return_percent]
+      properties:
+        period: { type: string, enum: [1m, 3m, 6m, 1y, all] }
+        benchmark: { type: string, enum: [SPX, QQQ, ACWI, BTC] }
+        portfolio_return_percent: { type: number, format: float }
+        benchmark_return_percent: { type: number, format: float }
+        alpha_percent:
+          type: number
+          format: float
+          description: portfolio_return - benchmark_return.
+        series:
+          type: array
+          items:
+            type: object
+            required: [date, portfolio_return_percent, benchmark_return_percent]
+            properties:
+              date: { type: string, format: date }
+              portfolio_return_percent: { type: number, format: float }
+              benchmark_return_percent: { type: number, format: float }
+
+    DividendEvent:
+      type: object
+      required: [symbol, asset_type, currency, amount_per_share, pay_date, status]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        amount_per_share: { $ref: '#/components/schemas/Money' }
+        ex_date: { type: [string, "null"], format: date }
+        record_date: { type: [string, "null"], format: date }
+        pay_date: { type: string, format: date }
+        total_amount:
+          allOf: [{ $ref: '#/components/schemas/Money' }]
+          description: Based on the user's shares held at ex_date.
+        status:
+          type: string
+          enum: [upcoming, paid]
+
+    # ── Position ──────────────────────────────────────────────
+    Position:
+      type: object
+      required:
+        - id
+        - account_id
+        - symbol
+        - asset_type
+        - quantity
+        - currency
+        - values
+        - last_calculated_at
+      properties:
+        id: { type: string, format: uuid }
+        account_id: { type: string, format: uuid }
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        quantity: { $ref: '#/components/schemas/Money' }
+        avg_cost:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: "null"
+        currency: { $ref: '#/components/schemas/Currency' }
+        values: { $ref: '#/components/schemas/PortfolioValues' }
+        pnl_absolute:
+          type: object
+          required: [base, display]
+          properties:
+            base: { $ref: '#/components/schemas/Money' }
+            display: { $ref: '#/components/schemas/Money' }
+        pnl_percent:
+          type: number
+          format: float
+        last_calculated_at: { type: string, format: date-time }
+
+    # ── Market data ───────────────────────────────────────────
+    MarketQuote:
+      type: object
+      required: [symbol, asset_type, currency, price, as_of, source]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        price: { $ref: '#/components/schemas/Money' }
+        previous_close:
+          oneOf:
+            - $ref: '#/components/schemas/Money'
+            - type: "null"
+        change_percent:
+          type: [number, "null"]
+          format: float
+        as_of: { type: string, format: date-time }
+        source: { type: string, examples: [polygon, coingecko] }
+
+    MarketHistoryPoint:
+      type: object
+      required: [time, open, high, low, close, volume]
+      properties:
+        time: { type: string, format: date-time }
+        open: { $ref: '#/components/schemas/Money' }
+        high: { $ref: '#/components/schemas/Money' }
+        low: { $ref: '#/components/schemas/Money' }
+        close: { $ref: '#/components/schemas/Money' }
+        volume: { type: string, description: 'Integer volume as string (some crypto venues emit very large values).' }
+
+    MarketHistoryResponse:
+      type: object
+      required: [symbol, asset_type, currency, interval, points]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        interval: { type: string }
+        points:
+          type: array
+          items: { $ref: '#/components/schemas/MarketHistoryPoint' }
+
+    MarketSearchResult:
+      type: object
+      required: [symbol, asset_type, name, currency]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        name: { type: string }
+        currency: { $ref: '#/components/schemas/Currency' }
+        exchange: { type: [string, "null"] }
+        logo_url: { type: [string, "null"], format: uri }
+
+    # ── AI: conversations & messages ──────────────────────────
+    AIConversationSummary:
+      type: object
+      required: [id, created_at, updated_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: [string, "null"] }
+        last_message_preview: { type: [string, "null"] }
+        message_count: { type: integer, minimum: 0 }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    AIConversation:
+      allOf:
+        - $ref: '#/components/schemas/AIConversationSummary'
+
+    AIConversationDetail:
+      type: object
+      required: [conversation, messages, meta]
+      properties:
+        conversation: { $ref: '#/components/schemas/AIConversation' }
+        messages:
+          type: array
+          items: { $ref: '#/components/schemas/AIMessage' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    AIMessage:
+      type: object
+      required: [id, conversation_id, role, content, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        conversation_id: { type: string, format: uuid }
+        role:
+          type: string
+          enum: [user, assistant, tool]
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AIMessageContent' }
+        tokens_used:
+          type: [integer, "null"]
+        created_at: { type: string, format: date-time }
+
+    AIMessageContent:
+      oneOf:
+        - $ref: '#/components/schemas/AIMessageContentText'
+        - $ref: '#/components/schemas/AIMessageContentToolUse'
+        - $ref: '#/components/schemas/AIMessageContentToolResult'
+      discriminator:
+        propertyName: type
+        mapping:
+          text: '#/components/schemas/AIMessageContentText'
+          tool_use: '#/components/schemas/AIMessageContentToolUse'
+          tool_result: '#/components/schemas/AIMessageContentToolResult'
+
+    AIMessageContentText:
+      type: object
+      required: [type, text]
+      properties:
+        type: { type: string, const: text }
+        text: { type: string }
+
+    AIMessageContentToolUse:
+      type: object
+      required: [type, tool_use_id, name, input]
+      properties:
+        type: { type: string, const: tool_use }
+        tool_use_id: { type: string }
+        name:
+          type: string
+          description: |
+            Tool name, e.g. `get_portfolio`, `get_positions`, `get_quote`,
+            `get_market_history`, `search_tickers`.
+        input:
+          type: object
+          additionalProperties: true
+
+    AIMessageContentToolResult:
+      type: object
+      required: [type, tool_use_id, is_error, content]
+      properties:
+        type: { type: string, const: tool_result }
+        tool_use_id: { type: string }
+        is_error: { type: boolean }
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AIMessageContentText' }
+
+    AIChatRequest:
+      type: object
+      required: [conversation_id, message]
+      additionalProperties: false
+      properties:
+        conversation_id: { type: string, format: uuid }
+        message:
+          type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              minItems: 1
+              items: { $ref: '#/components/schemas/AIMessageContentText' }
+        model:
+          type: string
+          description: |
+            Optional override; defaults to the server-side Claude model for
+            the user's tier.
+
+    AIChatResponse:
+      type: object
+      required: [conversation_id, message]
+      properties:
+        conversation_id: { type: string, format: uuid }
+        message: { $ref: '#/components/schemas/AIMessage' }
+        tokens_used: { type: integer }
+
+    AIChatStreamEvent:
+      oneOf:
+        - $ref: '#/components/schemas/AIStreamEventMessageStart'
+        - $ref: '#/components/schemas/AIStreamEventContentBlockStart'
+        - $ref: '#/components/schemas/AIStreamEventContentDelta'
+        - $ref: '#/components/schemas/AIStreamEventContentBlockStop'
+        - $ref: '#/components/schemas/AIStreamEventToolUse'
+        - $ref: '#/components/schemas/AIStreamEventToolResult'
+        - $ref: '#/components/schemas/AIStreamEventMessageStop'
+        - $ref: '#/components/schemas/AIStreamEventError'
+      discriminator:
+        propertyName: type
+        mapping:
+          message_start: '#/components/schemas/AIStreamEventMessageStart'
+          content_block_start: '#/components/schemas/AIStreamEventContentBlockStart'
+          content_delta: '#/components/schemas/AIStreamEventContentDelta'
+          content_block_stop: '#/components/schemas/AIStreamEventContentBlockStop'
+          tool_use: '#/components/schemas/AIStreamEventToolUse'
+          tool_result: '#/components/schemas/AIStreamEventToolResult'
+          message_stop: '#/components/schemas/AIStreamEventMessageStop'
+          error: '#/components/schemas/AIStreamEventError'
+
+    AIStreamEventMessageStart:
+      type: object
+      required: [type, message_id, conversation_id]
+      properties:
+        type: { type: string, const: message_start }
+        message_id: { type: string, format: uuid }
+        conversation_id: { type: string, format: uuid }
+
+    AIStreamEventContentBlockStart:
+      type: object
+      required: [type, index, block_type]
+      properties:
+        type: { type: string, const: content_block_start }
+        index: { type: integer }
+        block_type: { type: string, enum: [text, tool_use] }
+
+    AIStreamEventContentDelta:
+      type: object
+      required: [type, index, delta]
+      properties:
+        type: { type: string, const: content_delta }
+        index: { type: integer }
+        delta:
+          type: object
+          description: Partial text or partial tool input.
+          additionalProperties: true
+
+    AIStreamEventContentBlockStop:
+      type: object
+      required: [type, index]
+      properties:
+        type: { type: string, const: content_block_stop }
+        index: { type: integer }
+
+    AIStreamEventToolUse:
+      type: object
+      required: [type, tool_use_id, name, input]
+      properties:
+        type: { type: string, const: tool_use }
+        tool_use_id: { type: string }
+        name: { type: string }
+        input: { type: object, additionalProperties: true }
+
+    AIStreamEventToolResult:
+      type: object
+      required: [type, tool_use_id, is_error, content]
+      properties:
+        type: { type: string, const: tool_result }
+        tool_use_id: { type: string }
+        is_error: { type: boolean }
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/AIMessageContentText' }
+
+    AIStreamEventMessageStop:
+      type: object
+      required: [type, message_id, tokens_used]
+      properties:
+        type: { type: string, const: message_stop }
+        message_id: { type: string, format: uuid }
+        tokens_used: { type: integer }
+        stop_reason:
+          type: string
+          enum: [end_turn, max_tokens, tool_use, error]
+
+    AIStreamEventError:
+      type: object
+      required: [type, error]
+      properties:
+        type: { type: string, const: error }
+        error: { $ref: '#/components/schemas/ErrorEnvelope' }
+
+    # ── AI: insights ──────────────────────────────────────────
+    Insight:
+      type: object
+      required: [id, insight_type, title, body, severity, generated_at]
+      properties:
+        id: { type: string, format: uuid }
+        insight_type:
+          type: string
+          description: |
+            Machine-readable insight category, e.g.
+            `concentration_risk`, `behavioral_pattern`, `diversification`,
+            `performance_review`, `rebalance_suggestion`, `cost_audit`.
+        title: { type: string, maxLength: 200 }
+        body: { type: string }
+        severity: { $ref: '#/components/schemas/InsightSeverity' }
+        data:
+          $ref: '#/components/schemas/InsightData'
+        generated_at: { type: string, format: date-time }
+        viewed_at:
+          type: [string, "null"]
+          format: date-time
+        dismissed_at:
+          type: [string, "null"]
+          format: date-time
+
+    InsightData:
+      type: object
+      additionalProperties: true
+      description: |
+        Structured data payload for rendering the insight UI. The shape is
+        specific to `insight_type`. A typed, discriminated schema will be
+        introduced once TASK_05 finalises the insight catalogue (see
+        `tools/openapi/README.md` → "Open questions").
+      # TODO(TASK_05): replace with a discriminated oneOf on insight_type
+      #   covering: diversification, concentration_risk, performance_review,
+      #   rebalance_suggestion, cost_audit. Track in Decisions log.
+
+    # ── Billing ───────────────────────────────────────────────
+    Subscription:
+      type: object
+      required: [tier, status]
+      properties:
+        tier: { $ref: '#/components/schemas/SubscriptionTier' }
+        status:
+          type: string
+          enum: [active, trialing, past_due, canceled, incomplete]
+        current_period_end:
+          type: [string, "null"]
+          format: date-time
+        cancel_at_period_end:
+          type: boolean
+          default: false
+        stripe_subscription_id:
+          type: [string, "null"]
+
+    CheckoutRequest:
+      type: object
+      required: [target_tier]
+      additionalProperties: false
+      properties:
+        target_tier:
+          type: string
+          enum: [plus, pro]
+        success_url: { type: string, format: uri }
+        cancel_url: { type: string, format: uri }
+
+    CheckoutResponse:
+      type: object
+      required: [session_id, url]
+      properties:
+        session_id: { type: string }
+        url: { type: string, format: uri }
+
+    PortalResponse:
+      type: object
+      required: [url]
+      properties:
+        url: { type: string, format: uri }
+
+    # ── FX & prices ───────────────────────────────────────────
+    FxRate:
+      type: object
+      required: [base_currency, quote_currency, rate, as_of, source]
+      properties:
+        base_currency: { $ref: '#/components/schemas/Currency' }
+        quote_currency: { $ref: '#/components/schemas/Currency' }
+        rate:
+          type: string
+          pattern: '^-?[0-9]+(\.[0-9]{1,10})?$'
+          description: How many `quote_currency` units one `base_currency` unit buys.
+        as_of: { type: string, format: date }
+        source: { type: string, examples: [ecb, openexchangerates] }
+
+    FxRatesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/FxRate' }
+
+    PriceEntry:
+      type: object
+      required: [symbol, asset_type, currency, price, as_of, source]
+      properties:
+        symbol: { type: string }
+        asset_type: { $ref: '#/components/schemas/AssetType' }
+        currency: { $ref: '#/components/schemas/Currency' }
+        price: { $ref: '#/components/schemas/Money' }
+        as_of: { type: string, format: date-time }
+        source: { type: string, examples: [polygon, coingecko] }
+
+    PricesResponse:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/PriceEntry' }

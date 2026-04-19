@@ -1,0 +1,15 @@
+meta {
+  name: Get Portfolio
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/portfolio?display_currency=USD
+  body: none
+  auth: bearer
+}
+
+params:query {
+  display_currency: USD
+}

@@ -1,0 +1,34 @@
+meta {
+  name: Create Transaction
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/transactions
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "account_id": "{{accountId}}",
+    "symbol": "AAPL",
+    "asset_type": "stock",
+    "transaction_type": "buy",
+    "quantity": "10",
+    "price": "175.42",
+    "currency": "USD",
+    "fee": "0",
+    "executed_at": "2026-04-18T14:30:00Z",
+    "notes": "manual entry via Bruno"
+  }
+}
+
+vars:post-response {
+  transactionId: res.body.id
+}

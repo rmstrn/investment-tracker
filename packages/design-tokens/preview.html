@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Portfolio — Design Tokens Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap"
+/>
+<link rel="stylesheet" href="build/css/tokens.css" />
+<style>
+  /* Base */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--font-lineHeight-normal);
+    color: var(--text-primary);
+    background: var(--background-primary);
+    transition: background var(--motion-duration-normal) var(--motion-easing-default),
+                color var(--motion-duration-normal) var(--motion-easing-default);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .mono { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: var(--spacing-10) var(--spacing-6);
+  }
+
+  /* Header */
+  header.topbar {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--background-primary) 85%, transparent);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border-subtle);
+    padding: var(--spacing-4) var(--spacing-6);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  header.topbar h1 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--font-letterSpacing-tight);
+    margin: 0;
+  }
+  header.topbar h1 .tag {
+    display: inline-block;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    background: var(--background-tertiary);
+    padding: 2px var(--spacing-2);
+    border-radius: var(--radius-md);
+    margin-left: var(--spacing-2);
+    font-weight: var(--font-weight-regular);
+  }
+
+  /* Theme toggle */
+  button.toggle {
+    font: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    color: var(--text-primary);
+    background: var(--interactive-secondary);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background var(--motion-duration-fast) var(--motion-easing-default);
+  }
+  button.toggle:hover  { background: var(--interactive-secondaryHover); }
+  button.toggle:active { background: var(--interactive-secondaryActive); }
+  button.toggle:focus-visible { outline: none; box-shadow: var(--shadow-focusRing); }
+
+  /* Sections */
+  section { margin-top: var(--spacing-16); }
+  section h2 {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--font-letterSpacing-tight);
+    margin: 0 0 var(--spacing-2);
+  }
+  section .lede {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0 0 var(--spacing-6);
+  }
+
+  /* Swatches */
+  .scale { display: grid; grid-template-columns: repeat(auto-fit, minmax(88px, 1fr)); gap: var(--spacing-2); }
+  .swatch {
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    overflow: hidden;
+    background: var(--background-secondary);
+  }
+  .swatch .chip { height: 56px; border-bottom: 1px solid var(--border-subtle); }
+  .swatch .meta { padding: var(--spacing-2); }
+  .swatch .name { font-size: var(--font-size-xs); font-weight: var(--font-weight-medium); color: var(--text-primary); }
+  .swatch .hex  { font-family: var(--font-family-mono); font-size: 11px; color: var(--text-tertiary); }
+
+  /* Grid utility */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-4); }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* Cards */
+  .card {
+    background: var(--background-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-5);
+    box-shadow: var(--shadow-sm);
+  }
+  .card .title { font-weight: var(--font-weight-medium); font-size: var(--font-size-sm); color: var(--text-secondary); margin: 0 0 var(--spacing-2); }
+
+  /* Portfolio row — real financial numbers */
+  .pos-row {
+    display: grid;
+    grid-template-columns: 40px 1fr auto auto;
+    align-items: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .pos-row:last-child { border-bottom: 0; }
+  .pos-ticker {
+    width: 40px; height: 40px;
+    border-radius: var(--radius-full);
+    background: var(--background-tertiary);
+    display: grid; place-items: center;
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-xs);
+    color: var(--text-primary);
+  }
+  .pos-name { display: flex; flex-direction: column; line-height: 1.2; }
+  .pos-name .t  { font-weight: var(--font-weight-medium); }
+  .pos-name .d  { font-size: var(--font-size-xs); color: var(--text-tertiary); }
+  .pos-value { font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-weight: var(--font-weight-medium); }
+  .pos-pct {
+    font-family: var(--font-family-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: var(--font-size-sm);
+    padding: 2px var(--spacing-2);
+    border-radius: var(--radius-md);
+    min-width: 78px; text-align: right;
+  }
+  .gain    { color: var(--portfolio-gain-default);    background: var(--portfolio-gain-subtle); }
+  .loss    { color: var(--portfolio-loss-default);    background: var(--portfolio-loss-subtle); }
+  .neutral { color: var(--portfolio-neutral-default); background: var(--portfolio-neutral-subtle); }
+
+  /* Typography demo */
+  .type-row {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    align-items: baseline;
+    gap: var(--spacing-4);
+    padding: var(--spacing-3) 0;
+    border-bottom: 1px dashed var(--border-subtle);
+  }
+  .type-row:last-child { border: 0; }
+  .type-row .lbl { font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--text-tertiary); }
+
+  /* Spacing demo */
+  .spacing-row { display: flex; align-items: center; gap: var(--spacing-3); padding: var(--spacing-2) 0; }
+  .spacing-row .lbl { width: 72px; font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--text-tertiary); }
+  .spacing-row .bar { background: var(--interactive-primary); height: 14px; border-radius: var(--radius-sm); }
+  .spacing-row .pt  { font-family: var(--font-family-mono); font-size: var(--font-size-xs); color: var(--text-secondary); }
+
+  /* Radius demo */
+  .radius-row { display: flex; gap: var(--spacing-4); flex-wrap: wrap; }
+  .radius-box {
+    width: 80px; height: 80px;
+    background: var(--background-tertiary);
+    border: 1px solid var(--border-default);
+    display: grid; place-items: center;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* Shadow demo */
+  .shadow-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: var(--spacing-6); padding: var(--spacing-4) 0; }
+  .shadow-box {
+    height: 88px;
+    border-radius: var(--radius-lg);
+    background: var(--background-elevated);
+    display: grid; place-items: center;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-subtle);
+  }
+
+  /* Button placeholders */
+  .btn-row { display: flex; gap: var(--spacing-3); flex-wrap: wrap; align-items: center; }
+  .btn {
+    font: inherit;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background var(--motion-duration-fast) var(--motion-easing-default);
+  }
+  .btn-primary   { background: var(--interactive-primary); color: var(--text-onBrand); }
+  .btn-primary:hover  { background: var(--interactive-primaryHover); }
+  .btn-secondary { background: var(--interactive-secondary); color: var(--text-primary); border-color: var(--border-default); }
+  .btn-secondary:hover { background: var(--interactive-secondaryHover); }
+  .btn-ghost     { background: transparent; color: var(--text-primary); }
+  .btn-ghost:hover { background: var(--interactive-ghostHover); }
+  .btn:focus-visible { outline: none; box-shadow: var(--shadow-focusRing); }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    padding: 2px var(--spacing-2);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-medium);
+  }
+  .badge-positive { background: var(--state-positive-subtle); color: var(--state-positive-default); }
+  .badge-negative { background: var(--state-negative-subtle); color: var(--state-negative-default); }
+  .badge-warning  { background: var(--state-warning-subtle);  color: var(--state-warning-default); }
+  .badge-info     { background: var(--state-info-subtle);     color: var(--state-info-default); }
+
+  /* Alerts */
+  .alert { padding: var(--spacing-4); border-radius: var(--radius-lg); border: 1px solid transparent; }
+  .alert-positive { background: var(--state-positive-subtle); color: var(--state-positive-default); border-color: color-mix(in srgb, var(--state-positive-default) 30%, transparent); }
+  .alert-negative { background: var(--state-negative-subtle); color: var(--state-negative-default); border-color: color-mix(in srgb, var(--state-negative-default) 30%, transparent); }
+  .alert-info     { background: var(--state-info-subtle);     color: var(--state-info-default);     border-color: color-mix(in srgb, var(--state-info-default) 30%, transparent); }
+
+  footer.brand-footer {
+    margin: var(--spacing-20) 0 var(--spacing-10);
+    padding-top: var(--spacing-6);
+    border-top: 1px solid var(--border-subtle);
+    color: var(--text-tertiary);
+    font-size: var(--font-size-sm);
+  }
+  footer.brand-footer code { font-family: var(--font-family-mono); background: var(--background-tertiary); padding: 2px 6px; border-radius: var(--radius-sm); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <h1>Portfolio <span class="tag">design tokens v0.1.0</span></h1>
+  <button class="toggle" id="themeToggle" type="button">Toggle dark</button>
+</header>
+
+<main class="container">
+
+<section>
+  <h2>Brand · Deep Violet</h2>
+  <p class="lede">Accent color. Primary interactive = <span class="mono">brand.700</span> = <span class="mono">#6D28D9</span>. Lifted to <span class="mono">brand.400</span> in dark mode for readability.</p>
+  <div class="scale" id="brand-scale"></div>
+</section>
+
+<section>
+  <h2>Neutral</h2>
+  <p class="lede">Cool-tinted gray. App surfaces, text, borders.</p>
+  <div class="scale" id="neutral-scale"></div>
+</section>
+
+<section>
+  <h2>Portfolio — gain / loss</h2>
+  <p class="lede">Financial semantics. Deeper and more muted than generic state.positive/negative. Always paired with tabular-nums mono font.</p>
+  <div class="grid2">
+    <div class="card">
+      <p class="title">Positions — sample</p>
+      <div class="pos-row">
+        <div class="pos-ticker">AAPL</div>
+        <div class="pos-name"><span class="t">Apple Inc.</span><span class="d">142 shares · Interactive Brokers</span></div>
+        <div class="pos-value">$31,428.50</div>
+        <div class="pos-pct gain">+2.41%</div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-ticker">NVDA</div>
+        <div class="pos-name"><span class="t">NVIDIA Corp.</span><span class="d">18 shares · Interactive Brokers</span></div>
+        <div class="pos-value">$22,104.12</div>
+        <div class="pos-pct gain">+8.07%</div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-ticker">BTC</div>
+        <div class="pos-name"><span class="t">Bitcoin</span><span class="d">0.42 BTC · Coinbase</span></div>
+        <div class="pos-value">$28,952.00</div>
+        <div class="pos-pct loss">-3.12%</div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-ticker">VOO</div>
+        <div class="pos-name"><span class="t">Vanguard S&amp;P 500 ETF</span><span class="d">60 shares · Trade Republic</span></div>
+        <div class="pos-value">€30,540.00</div>
+        <div class="pos-pct neutral">0.00%</div>
+      </div>
+      <div class="pos-row">
+        <div class="pos-ticker">TSLA</div>
+        <div class="pos-name"><span class="t">Tesla Inc.</span><span class="d">35 shares · Robinhood</span></div>
+        <div class="pos-value">$7,231.80</div>
+        <div class="pos-pct loss">-11.48%</div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="title">Portfolio summary</p>
+      <div style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-semibold); font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; margin-top: var(--spacing-2);">
+        $420,256.42
+      </div>
+      <div style="color: var(--portfolio-gain-default); font-family: var(--font-family-mono); font-variant-numeric: tabular-nums; font-size: var(--font-size-base); margin-top: var(--spacing-1);">
+        +$4,812.30 (+1.16%) today
+      </div>
+      <div style="display: flex; gap: var(--spacing-2); margin-top: var(--spacing-5);">
+        <span class="badge badge-positive">Dividends: +$128</span>
+        <span class="badge badge-info">3 new insights</span>
+        <span class="badge badge-warning">Rebalance due</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>State colors</h2>
+  <p class="lede">Alerts, badges, system messaging. Used for signaling, not for gain/loss (those are <span class="mono">color.portfolio.*</span>).</p>
+  <div class="grid2">
+    <div class="alert alert-positive">Your Interactive Brokers account was successfully connected.</div>
+    <div class="alert alert-negative">We lost connection to Coinbase. Data shown is from 4h ago.</div>
+    <div class="alert alert-info">NVIDIA earnings report available. Ask the assistant about it.</div>
+    <div class="alert" style="background: var(--state-warning-subtle); color: var(--state-warning-default); border: 1px solid color-mix(in srgb, var(--state-warning-default) 30%, transparent);">You've used 4 of 5 AI messages today. Upgrade for unlimited.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Typography · Geist Sans + Geist Mono</h2>
+  <p class="lede">Mono is reserved for numbers, tickers, portfolio values. Always with <span class="mono">font-variant-numeric: tabular-nums</span> for alignment.</p>
+
+  <div class="type-row"><span class="lbl">4xl · 36</span><span style="font-size: var(--font-size-4xl); font-weight: var(--font-weight-semibold); letter-spacing: var(--font-letterSpacing-tight);">Your portfolio today</span></div>
+  <div class="type-row"><span class="lbl">3xl · 30</span><span style="font-size: var(--font-size-3xl); font-weight: var(--font-weight-semibold); letter-spacing: var(--font-letterSpacing-tight);">AI-native portfolio tracker</span></div>
+  <div class="type-row"><span class="lbl">2xl · 24</span><span style="font-size: var(--font-size-2xl); font-weight: var(--font-weight-semibold);">Insight of the day</span></div>
+  <div class="type-row"><span class="lbl">xl · 20</span><span style="font-size: var(--font-size-xl); font-weight: var(--font-weight-medium);">Connected accounts</span></div>
+  <div class="type-row"><span class="lbl">lg · 18</span><span style="font-size: var(--font-size-lg); font-weight: var(--font-weight-medium);">Positions this week</span></div>
+  <div class="type-row"><span class="lbl">base · 16</span><span>Body text — default for descriptions, paragraphs, and AI chat responses. Should feel readable and calm, not dense.</span></div>
+  <div class="type-row"><span class="lbl">sm · 14</span><span style="font-size: var(--font-size-sm); color: var(--text-secondary);">Secondary text — used for metadata, timestamps, row context in tables.</span></div>
+  <div class="type-row"><span class="lbl">xs · 12</span><span style="font-size: var(--font-size-xs); color: var(--text-tertiary);">Tertiary text — only for badges, helper copy, and labels.</span></div>
+  <div class="type-row"><span class="lbl">mono</span><span class="mono" style="font-size: var(--font-size-lg);">$420,256.42   +1.16%   AAPL 142</span></div>
+</section>
+
+<section>
+  <h2>Spacing · 4px base</h2>
+  <p class="lede">Token step → pt value. Used for padding, gap, margin.</p>
+  <div id="spacing-demo"></div>
+</section>
+
+<section>
+  <h2>Radius</h2>
+  <p class="lede">Buttons + inputs: <span class="mono">md</span>. Cards: <span class="mono">lg</span>. Dialogs: <span class="mono">xl</span>.</p>
+  <div class="radius-row">
+    <div class="radius-box" style="border-radius: var(--radius-none);">none</div>
+    <div class="radius-box" style="border-radius: var(--radius-sm);">sm · 4</div>
+    <div class="radius-box" style="border-radius: var(--radius-md);">md · 6</div>
+    <div class="radius-box" style="border-radius: var(--radius-lg);">lg · 8</div>
+    <div class="radius-box" style="border-radius: var(--radius-xl);">xl · 12</div>
+    <div class="radius-box" style="border-radius: var(--radius-2xl);">2xl · 16</div>
+    <div class="radius-box" style="border-radius: var(--radius-full);">full</div>
+  </div>
+</section>
+
+<section>
+  <h2>Shadow</h2>
+  <p class="lede">Soft, low-contrast. Used sparingly — in dark mode, elevation communicated via surface color rather than shadow.</p>
+  <div class="shadow-row">
+    <div class="shadow-box" style="box-shadow: var(--shadow-sm);">sm</div>
+    <div class="shadow-box" style="box-shadow: var(--shadow-md);">md</div>
+    <div class="shadow-box" style="box-shadow: var(--shadow-lg);">lg</div>
+    <div class="shadow-box" style="box-shadow: var(--shadow-xl);">xl</div>
+  </div>
+</section>
+
+<section>
+  <h2>Interactive · buttons</h2>
+  <p class="lede">Early button placeholder. Final component comes in the next phase (shadcn/ui-based React lib).</p>
+  <div class="btn-row">
+    <button class="btn btn-primary" type="button">Connect account</button>
+    <button class="btn btn-secondary" type="button">Cancel</button>
+    <button class="btn btn-ghost" type="button">Learn more</button>
+  </div>
+</section>
+
+<footer class="brand-footer">
+  <p>
+    Generated from <code>packages/design-tokens</code>. Product name (<code id="pname">Portfolio</code>) sourced from
+    <code>tokens/brand.json</code> — placeholder for MVP. Primary accent <code>#6D28D9</code> (<code>brand.700</code>).
+  </p>
+</footer>
+
+</main>
+
+<script type="module">
+  // Theme toggle
+  const btn = document.getElementById('themeToggle');
+  const root = document.documentElement;
+  const applied = () => root.classList.contains('dark');
+  const update = () => { btn.textContent = applied() ? 'Toggle light' : 'Toggle dark'; };
+  btn.addEventListener('click', () => { root.classList.toggle('dark'); update(); });
+
+  // Prefer OS setting on first load
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) { root.classList.add('dark'); }
+  update();
+
+  // Build color scales
+  function readVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function buildScale(groupEl, varPrefix, steps) {
+    for (const s of steps) {
+      const varName = `${varPrefix}-${s}`;
+      const hex = readVar(varName);
+      const el = document.createElement('div');
+      el.className = 'swatch';
+      el.innerHTML = `
+        <div class="chip" style="background: var(${varName});"></div>
+        <div class="meta"><div class="name">${s}</div><div class="hex mono">${hex}</div></div>
+      `;
+      groupEl.appendChild(el);
+    }
+  }
+  buildScale(document.getElementById('brand-scale'), '--color-brand', [50,100,200,300,400,500,600,700,800,900,950]);
+  buildScale(document.getElementById('neutral-scale'), '--color-neutral', [50,100,200,300,400,500,600,700,800,900,950]);
+
+  // Spacing demo
+  const spacingSteps = ['0','1','2','3','4','5','6','8','10','12','16','20','24'];
+  const pxMap = { '0':'0','1':'4','2':'8','3':'12','4':'16','5':'20','6':'24','8':'32','10':'40','12':'48','16':'64','20':'80','24':'96' };
+  const sp = document.getElementById('spacing-demo');
+  for (const s of spacingSteps) {
+    const row = document.createElement('div');
+    row.className = 'spacing-row';
+    row.innerHTML = `
+      <span class="lbl">spacing.${s}</span>
+      <span class="bar" style="width: var(--spacing-${s});"></span>
+      <span class="pt">${pxMap[s]}px</span>
+    `;
+    sp.appendChild(row);
+  }
+</script>
+</body>
+</html>

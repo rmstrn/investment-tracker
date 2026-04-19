@@ -1,0 +1,26 @@
+meta {
+  name: Chat (non-streaming)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/ai/chat
+  body: json
+  auth: bearer
+}
+
+headers {
+  Idempotency-Key: {{$randomUUID}}
+}
+
+body:json {
+  {
+    "conversation_id": "{{conversationId}}",
+    "message": {
+      "content": [
+        { "type": "text", "text": "Summarise my top 3 holdings." }
+      ]
+    }
+  }
+}

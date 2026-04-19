@@ -1,0 +1,207 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "9.15.0"
+  GO_VERSION: "1.23"
+  PYTHON_VERSION: "3.13"
+  UV_VERSION: "0.5.11"
+
+jobs:
+  # ------------------------------------------------------------
+  # Node / TypeScript
+  # ------------------------------------------------------------
+  node-lint-typecheck:
+    name: Node — lint + typecheck + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm exec biome ci .
+
+      - name: Lint (workspace scripts)
+        run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run lint
+
+      - name: Typecheck
+        run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run typecheck
+
+      - name: Build
+        run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run build
+
+  node-test:
+    name: Node — unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run test
+
+  # ------------------------------------------------------------
+  # Go — apps/api
+  # ------------------------------------------------------------
+  go:
+    name: Go — lint + vet + build + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: apps/api/go.sum
+
+      - name: Tidy check (no unexpected module changes)
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.62.2
+          working-directory: apps/api
+          args: --timeout=5m
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Build
+        run: |
+          mkdir -p bin
+          go build -trimpath -o bin/api     ./cmd/api
+          go build -trimpath -o bin/workers ./cmd/workers
+
+      - name: Test
+        run: go test -race -count=1 ./...
+
+  # ------------------------------------------------------------
+  # Python — apps/ai
+  # ------------------------------------------------------------
+  python:
+    name: Python — lint + typecheck + test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/ai
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: "apps/ai/uv.lock"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Sync dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Lint (ruff)
+        run: uv run ruff check src tests
+
+      - name: Format check (ruff)
+        run: uv run ruff format --check src tests
+
+      - name: Typecheck (mypy)
+        run: uv run mypy src
+
+      - name: Test (pytest)
+        run: uv run pytest
+
+  # ------------------------------------------------------------
+  # Security
+  # ------------------------------------------------------------
+  security-secrets:
+    name: Security — secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  security-trivy:
+    name: Security — filesystem scan (trivy)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          scan-ref: .
+          format: sarif
+          output: trivy-results.sarif
+          severity: HIGH,CRITICAL
+          exit-code: "0" # Don't fail the build on findings; upload to security tab
+          ignore-unfixed: true
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  security-govulncheck:
+    name: Security — govulncheck
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...

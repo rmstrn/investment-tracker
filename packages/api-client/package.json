@@ -1,0 +1,31 @@
+{
+  "name": "@investment-tracker/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typed fetch client for the Investment Tracker API. Wraps openapi-fetch on top of @investment-tracker/shared-types.",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "files": ["src"],
+  "scripts": {
+    "build": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.13.4"
+  },
+  "devDependencies": {
+    "@investment-tracker/shared-types": "workspace:*",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.7.2"
+  }
+}

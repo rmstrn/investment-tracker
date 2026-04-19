@@ -1,0 +1,16 @@
+meta {
+  name: List Positions
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/positions?sort=value_desc&group_by=symbol
+  body: none
+  auth: bearer
+}
+
+params:query {
+  sort: value_desc
+  group_by: symbol
+}

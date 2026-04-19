@@ -1,0 +1,16 @@
+meta {
+  name: Portfolio Performance
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/portfolio/performance?benchmark=SPX&period=1y
+  body: none
+  auth: bearer
+}
+
+params:query {
+  benchmark: SPX
+  period: 1y
+}
