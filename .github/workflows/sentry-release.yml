@@ -20,7 +20,7 @@ jobs:
     name: Publish Sentry release
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # TODO: set SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT_WEB/API/AI
       - name: Create Sentry release
