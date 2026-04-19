@@ -126,16 +126,12 @@ function InputDemo() {
         <div className="space-y-1 rounded-md border border-border-subtle bg-background-secondary p-3 text-sm">
           <div className="font-mono text-[11px] text-text-tertiary">Sent:</div>
           {sent.map((m, i) => (
+            // biome-ignore lint/suspicious/noArrayIndexKey: demo-only append-only log; index is the stable identity here.
             <div key={i} className="text-text-primary">
               {m}
             </div>
           ))}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSent([])}
-            className="mt-2"
-          >
+          <Button variant="ghost" size="sm" onClick={() => setSent([])} className="mt-2">
             Clear
           </Button>
         </div>

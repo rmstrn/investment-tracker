@@ -85,6 +85,7 @@ export function BarChart({
           >
             {colorBySign
               ? data.map((d, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: chart data is positionally ordered (time-series); index is the stable identity.
                   <Cell key={i} fill={d.y >= 0 ? CHART_COLORS.gain : CHART_COLORS.loss} />
                 ))
               : null}

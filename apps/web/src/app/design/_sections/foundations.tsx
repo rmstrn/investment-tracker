@@ -182,9 +182,9 @@ export function FoundationsSection() {
 
       <SubSection title="Tabular-nums (money / pct)">
         <div className="space-y-1 font-mono">
-          <p className="text-base tabular-nums">$127,450.32  +$1,204.00  +0.95%</p>
-          <p className="text-base tabular-nums">$089,201.11  -$432.10   -0.48%</p>
-          <p className="text-base">$127,450.32  +$1,204.00  +0.95% (non-tabular)</p>
+          <p className="text-base tabular-nums">$127,450.32 +$1,204.00 +0.95%</p>
+          <p className="text-base tabular-nums">$089,201.11 -$432.10 -0.48%</p>
+          <p className="text-base">$127,450.32 +$1,204.00 +0.95% (non-tabular)</p>
           <p className="text-[11px] text-text-tertiary">
             Tabular-nums keeps digit columns aligned — crucial for tables and hero counters.
           </p>

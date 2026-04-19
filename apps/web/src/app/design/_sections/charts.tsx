@@ -23,8 +23,7 @@ const MONTHLY: ReadonlyArray<{ x: string; y: number }> = [
   { x: 'Jun', y: 1640 },
 ];
 
-const USD = (n: number) =>
-  `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+const USD = (n: number) => `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 
 export function ChartsSection() {
   return (
@@ -76,9 +75,7 @@ export function ChartsSection() {
             formatValue={(n) => `${n}%`}
             centerLabel={
               <div>
-                <div className="text-xs uppercase tracking-wide text-text-tertiary">
-                  Allocation
-                </div>
+                <div className="text-xs uppercase tracking-wide text-text-tertiary">Allocation</div>
                 <div className="font-mono text-xl font-bold tabular-nums">4 classes</div>
               </div>
             }

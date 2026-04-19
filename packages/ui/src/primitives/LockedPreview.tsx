@@ -1,5 +1,5 @@
 import { Lock } from 'lucide-react';
-import { type HTMLAttributes, type ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 
 export interface LockedPreviewProps extends HTMLAttributes<HTMLDivElement> {

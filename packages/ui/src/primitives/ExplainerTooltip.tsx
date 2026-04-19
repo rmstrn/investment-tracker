@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  type HTMLAttributes,
-  type ReactNode,
-  useCallback,
-  useId,
-  useRef,
-  useState,
-} from 'react';
+import { type HTMLAttributes, type ReactNode, useCallback, useId, useRef, useState } from 'react';
 import { cn } from '../lib/cn';
 
 export interface ExplainerTooltipProps extends HTMLAttributes<HTMLSpanElement> {
@@ -41,10 +34,12 @@ export function ExplainerTooltip({
   const clearPending = () => {
     if (timeout.current !== null) window.clearTimeout(timeout.current);
   };
+  // biome-ignore lint/correctness/useExhaustiveDependencies: clearPending only reads timeout.current (stable ref); including it would churn the callback identity without changing behavior.
   const show = useCallback(() => {
     clearPending();
     setOpen(true);
   }, []);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: same rationale as show — clearPending is a stable-ref helper.
   const hide = useCallback(() => {
     clearPending();
     if (pinned) return;
