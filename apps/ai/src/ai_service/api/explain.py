@@ -14,8 +14,7 @@ router = APIRouter(prefix="/internal/explain", tags=["explain"])
 @router.post("", response_model=ExplainResponse)
 async def explain_term(
     payload: ExplainRequest,
-    user_id: InternalUserId,
+    _user_id: InternalUserId,
     explainer: ExplainerDep,
 ) -> ExplainResponse:
-    # Usage is recorded inside Explainer.explain() itself.
-    return await explainer.explain(user_id=user_id, req=payload)
+    return await explainer.explain(req=payload)
