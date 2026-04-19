@@ -40,6 +40,9 @@ type Querier interface {
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
 	GetUserByClerkID(ctx context.Context, clerkUserID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	// Single digest row per user. pgx.ErrNoRows → handler uses defaults
+	// (digest enabled, weekday = Monday, no quiet hours).
+	GetUserDigestPreferences(ctx context.Context, userID uuid.UUID) (UserDigestPreference, error)
 	// Atomic UPSERT: create the day's counter at 1, or +1 if it already
 	// exists. Used by POST /internal/ai/usage (counter_type =
 	// 'ai_messages_daily'). PR B3 paywall-dismissal counters will reuse
@@ -59,6 +62,9 @@ type Querier interface {
 	// (sqlc.narg) keeps the same query handy if a caller ever wants to
 	// poll for fresh rows.
 	ListInsightsByUser(ctx context.Context, arg ListInsightsByUserParams) ([]Insight, error)
+	// Per-type channel settings. Missing rows default to all channels on
+	// (handler rule, see openapi NotificationPreferences.preferences).
+	ListNotificationPreferencesByUser(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
