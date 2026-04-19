@@ -53,6 +53,10 @@ func TestGetPortfolioTax_HappyPath_Pro_US(t *testing.T) {
 	if resp.Header.Get("X-Withholding-Unavailable") != "true" {
 		t.Fatalf("missing X-Withholding-Unavailable header")
 	}
+	// Legal disclaimer signal — UI must render "not tax advice" before totals.
+	if resp.Header.Get("X-Tax-Advisory") != "mvp-estimate" {
+		t.Fatalf("missing X-Tax-Advisory header — UI disclaimer compliance")
+	}
 	// US net = gains - losses = 500.
 	taxable, _ := strconv.ParseFloat(out["estimated_taxable_income"].(string), 64)
 	if taxable < 499.99 || taxable > 500.01 {

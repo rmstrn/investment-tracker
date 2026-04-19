@@ -85,6 +85,13 @@ func GetPortfolioTax(deps *app.Deps) fiber.Handler {
 		}
 
 		c.Set("X-Withholding-Unavailable", "true")
+		// Legal/compliance signal to clients: the numbers in this
+		// response are a best-effort MVP approximation (FIFO only, no
+		// wash-sale, no short/long bracket split, simplified
+		// allowances). The UI MUST render the "not tax advice"
+		// disclaimer before any total. Removing this header requires
+		// TD-036 (full per-jurisdiction rule set) to ship first.
+		c.Set("X-Tax-Advisory", "mvp-estimate")
 		return c.JSON(shapeTaxReport(report, rows))
 	}
 }
