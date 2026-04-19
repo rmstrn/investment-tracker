@@ -4,6 +4,7 @@ package middleware
 
 import (
 	"context"
+	"crypto/subtle"
 	"errors"
 	"fmt"
 	"strings"
@@ -12,6 +13,7 @@ import (
 	"github.com/MicahParks/keyfunc/v3"
 	"github.com/gofiber/fiber/v3"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
@@ -24,8 +26,23 @@ type localsKey string
 const (
 	LocalsUser      localsKey = "auth.user"
 	LocalsClaims    localsKey = "auth.claims"
+	LocalsAuthMode  localsKey = "auth.mode"
 	LocalsRequestID localsKey = "request_id"
 )
+
+// AuthMode values set on c.Locals(LocalsAuthMode). Handlers that are
+// internal-only (POST /internal/ai/usage) gate on AuthModeInternal;
+// everything else accepts both.
+const (
+	AuthModeClerk    = "clerk"
+	AuthModeInternal = "internal"
+)
+
+// internalUserIDHeader identifies the end-user when the caller is
+// authenticating via the internal shared-secret bearer. Canonical spelling
+// follows Fiber's ByteBufferPool-backed header store, which normalises
+// case to "X-User-Id".
+const internalUserIDHeader = "X-User-Id"
 
 // ClerkClaims is the subset of Clerk's ID-token claims we rely on. Clerk's
 // JWT template can be configured to include additional fields; we only
@@ -45,6 +62,13 @@ type AuthConfig struct {
 	// frontend API host (e.g. https://clerk.<yourapp>.com). Empty means
 	// skip the check (dev only).
 	Issuer string
+	// InternalToken is the shared secret that identifies callers as
+	// "internal" (AI Service calling Core API on a user's behalf). When
+	// the Authorization bearer matches this value via constant-time
+	// compare AND X-User-Id is present, the middleware skips Clerk JWT
+	// validation and loads the user by UUID. Empty disables the path
+	// (Clerk-only operation).
+	InternalToken string
 }
 
 // NewJWKS builds a keyfunc for the given JWKS URL with sensible refresh
@@ -57,9 +81,22 @@ func NewJWKS(ctx context.Context, jwksURL string) (keyfunc.Keyfunc, error) {
 	return k, nil
 }
 
-// Auth returns a Fiber middleware that validates a Clerk JWT on every
-// incoming request. On success, the User is attached to c.Locals under
-// LocalsUser; the claims are attached under LocalsClaims.
+// Auth returns a Fiber middleware that authenticates every incoming
+// request. Two modes are supported:
+//
+//   - Internal: Authorization: Bearer <InternalToken> + X-User-Id: <uuid>.
+//     If the bearer matches cfg.InternalToken (constant-time) AND the
+//     header is a valid UUID of an existing user, the request proceeds
+//     with LocalsAuthMode=AuthModeInternal and LocalsUser set. No JWT is
+//     parsed. This is the AI Service → Core API reverse channel.
+//   - Clerk: Authorization: Bearer <JWT>. The JWT is validated via
+//     JWKS, issuer and expiration are enforced, and the user is
+//     loaded (or created on first sight) via GetOrCreateByClerkID.
+//     LocalsAuthMode=AuthModeClerk, LocalsClaims also set.
+//
+// Order: internal first. A bearer that does not match the internal
+// secret falls through to Clerk cleanly — the Clerk parser rejects a
+// non-JWT string with ErrInvalidToken, which we translate to 401.
 func Auth(cfg AuthConfig) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		token, ok := extractBearer(c)
@@ -67,35 +104,88 @@ func Auth(cfg AuthConfig) fiber.Handler {
 			return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
 		}
 
-		claims := &ClerkClaims{}
-		parsed, err := jwt.ParseWithClaims(token, claims, cfg.JWKS.Keyfunc,
-			jwt.WithValidMethods([]string{"RS256", "RS384", "RS512"}),
-			jwt.WithExpirationRequired(),
-			jwt.WithLeeway(30*time.Second),
-		)
-		if err != nil || !parsed.Valid {
-			return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
+		if cfg.InternalToken != "" &&
+			subtle.ConstantTimeCompare([]byte(token), []byte(cfg.InternalToken)) == 1 {
+			return authenticateInternal(c, cfg)
 		}
 
-		if cfg.Issuer != "" && claims.Issuer != cfg.Issuer {
-			return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
-		}
+		return authenticateClerk(c, cfg, token)
+	}
+}
 
-		if claims.Subject == "" {
-			return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
-		}
+// authenticateInternal handles the internal-bearer path. The bearer
+// token has already been verified; this function validates the
+// X-User-Id header and loads the user.
+func authenticateInternal(c fiber.Ctx, cfg AuthConfig) error {
+	raw := c.Get(internalUserIDHeader)
+	if raw == "" {
+		return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
+	}
+	userID, err := uuid.Parse(raw)
+	if err != nil {
+		return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
+	}
 
-		user, err := cfg.UserRepo.GetOrCreateByClerkID(c.Context(), claims.Subject, claims.Email)
-		if err != nil {
-			if errors.Is(err, users.ErrNotFound) {
-				return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
-			}
-			return errs.Respond(c, requestID(c),
-				errs.Wrap(err, 500, "INTERNAL_ERROR", "User lookup failed"))
+	user, err := cfg.UserRepo.GetByID(c.Context(), userID)
+	if err != nil {
+		if errors.Is(err, users.ErrNotFound) {
+			return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
 		}
+		return errs.Respond(c, requestID(c),
+			errs.Wrap(err, 500, "INTERNAL_ERROR", "User lookup failed"))
+	}
 
-		c.Locals(LocalsUser, user)
-		c.Locals(LocalsClaims, claims)
+	c.Locals(LocalsUser, user)
+	c.Locals(LocalsAuthMode, AuthModeInternal)
+	return c.Next()
+}
+
+// authenticateClerk handles the Clerk-JWT path — the existing behaviour
+// from PR A, refactored out so the two modes read separately.
+func authenticateClerk(c fiber.Ctx, cfg AuthConfig, token string) error {
+	claims := &ClerkClaims{}
+	parsed, err := jwt.ParseWithClaims(token, claims, cfg.JWKS.Keyfunc,
+		jwt.WithValidMethods([]string{"RS256", "RS384", "RS512"}),
+		jwt.WithExpirationRequired(),
+		jwt.WithLeeway(30*time.Second),
+	)
+	if err != nil || !parsed.Valid {
+		return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
+	}
+
+	if cfg.Issuer != "" && claims.Issuer != cfg.Issuer {
+		return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
+	}
+
+	if claims.Subject == "" {
+		return errs.Respond(c, requestID(c), errs.ErrInvalidToken)
+	}
+
+	user, err := cfg.UserRepo.GetOrCreateByClerkID(c.Context(), claims.Subject, claims.Email)
+	if err != nil {
+		if errors.Is(err, users.ErrNotFound) {
+			return errs.Respond(c, requestID(c), errs.ErrUnauthenticated)
+		}
+		return errs.Respond(c, requestID(c),
+			errs.Wrap(err, 500, "INTERNAL_ERROR", "User lookup failed"))
+	}
+
+	c.Locals(LocalsUser, user)
+	c.Locals(LocalsClaims, claims)
+	c.Locals(LocalsAuthMode, AuthModeClerk)
+	return c.Next()
+}
+
+// RequireInternalAuth rejects requests that did not authenticate in
+// internal mode. Must come AFTER Auth in the chain. Used by the
+// /internal/* routes where a Clerk user (even a valid one) must not
+// be allowed to fabricate AI usage for themselves.
+func RequireInternalAuth() fiber.Handler {
+	return func(c fiber.Ctx) error {
+		mode, ok := c.Locals(LocalsAuthMode).(string)
+		if !ok || mode != AuthModeInternal {
+			return errs.Respond(c, requestID(c), errs.ErrForbidden)
+		}
 		return c.Next()
 	}
 }

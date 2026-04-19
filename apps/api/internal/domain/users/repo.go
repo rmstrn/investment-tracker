@@ -59,6 +59,21 @@ func (r *Repo) GetByClerkID(ctx context.Context, clerkUserID string) (*User, err
 	return &row, nil
 }
 
+// GetByID returns the user for a UUID, or ErrNotFound. Used by the
+// internal-auth middleware path where the caller has authenticated via
+// a shared-secret bearer token and identifies the user via X-User-Id
+// instead of a Clerk JWT.
+func (r *Repo) GetByID(ctx context.Context, id uuid.UUID) (*User, error) {
+	row, err := r.q.GetUserByID(ctx, id)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("users: get by id: %w", err)
+	}
+	return &row, nil
+}
+
 // GetOrCreateByClerkID returns the existing user or creates a skeleton
 // record. Email is populated from the JWT when the Clerk webhook has not
 // yet fired. The webhook update path is handled elsewhere.
