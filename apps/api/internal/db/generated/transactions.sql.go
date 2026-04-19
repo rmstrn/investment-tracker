@@ -13,6 +13,26 @@ import (
 	decimal "github.com/shopspring/decimal"
 )
 
+const deleteManualTransaction = `-- name: DeleteManualTransaction :execrows
+DELETE FROM transactions
+WHERE id = $1 AND user_id = $2 AND source = 'manual'
+`
+
+type DeleteManualTransactionParams struct {
+	ID     uuid.UUID
+	UserID uuid.UUID
+}
+
+// Manual-only hard delete. Returns affected-row count so the handler
+// can distinguish missing / non-manual / other-user from success.
+func (q *Queries) DeleteManualTransaction(ctx context.Context, arg DeleteManualTransactionParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteManualTransaction, arg.ID, arg.UserID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const getTransactionByID = `-- name: GetTransactionByID :one
 SELECT id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at FROM transactions WHERE id = $1 AND user_id = $2
 `
@@ -452,4 +472,66 @@ func (q *Queries) ListTransactionsFiltered(ctx context.Context, arg ListTransact
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateManualTransaction = `-- name: UpdateManualTransaction :one
+UPDATE transactions
+SET quantity    = COALESCE($1,    quantity),
+    price       = COALESCE($2,       price),
+    fee         = COALESCE($3,         fee),
+    executed_at = COALESCE($4, executed_at),
+    notes       = COALESCE($5,       notes),
+    manually_edited = TRUE
+WHERE id = $6
+  AND user_id = $7
+  AND source = 'manual'
+RETURNING id, user_id, account_id, symbol, asset_type, transaction_type, quantity, price, currency, fee, executed_at, source, source_details, fingerprint, notes, manually_edited, created_at
+`
+
+type UpdateManualTransactionParams struct {
+	Quantity   decimal.NullDecimal
+	Price      decimal.NullDecimal
+	Fee        decimal.NullDecimal
+	ExecutedAt pgtype.Timestamptz
+	Notes      *string
+	ID         uuid.UUID
+	UserID     uuid.UUID
+}
+
+// Partial update scoped to manual-sourced rows only. API / aggregator
+// rows are immutable by policy (§15.5). Handler layer returns 403
+// when the caller hits this on a non-manual row — at the SQL level
+// we simply filter and a non-manual row yields ErrNoRows, which the
+// handler maps to 403 by re-checking source via GetTransactionByID.
+func (q *Queries) UpdateManualTransaction(ctx context.Context, arg UpdateManualTransactionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, updateManualTransaction,
+		arg.Quantity,
+		arg.Price,
+		arg.Fee,
+		arg.ExecutedAt,
+		arg.Notes,
+		arg.ID,
+		arg.UserID,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.AccountID,
+		&i.Symbol,
+		&i.AssetType,
+		&i.TransactionType,
+		&i.Quantity,
+		&i.Price,
+		&i.Currency,
+		&i.Fee,
+		&i.ExecutedAt,
+		&i.Source,
+		&i.SourceDetails,
+		&i.Fingerprint,
+		&i.Notes,
+		&i.ManuallyEdited,
+		&i.CreatedAt,
+	)
+	return i, err
 }

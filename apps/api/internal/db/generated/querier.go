@@ -21,12 +21,26 @@ type Querier interface {
 	// computed on the fly from the insights table itself — authoritative
 	// as long as insights are never deleted.
 	CountInsightsByUserSince(ctx context.Context, arg CountInsightsByUserSinceParams) (int32, error)
+	// Fast bell-badge query. The unread-partial index
+	// idx_notifications_user_unread makes this O(unread) rather than
+	// O(all) so a user with thousands of read rows does not pay for
+	// them. Capped at 99 in the handler so the UI can render "99+".
+	CountUnreadNotifications(ctx context.Context, userID uuid.UUID) (int32, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	// Row-first insert so the handler can return a valid ExportJob body
+	// alongside the 202. status starts at 'queued'; the worker flips it
+	// to running → done/failed and patches result_url + row_count.
+	CreateExportJob(ctx context.Context, arg CreateExportJobParams) (ExportJob, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// Manual-only hard delete. Returns affected-row count so the handler
+	// can distinguish missing / non-manual / other-user from success.
+	DeleteManualTransaction(ctx context.Context, arg DeleteManualTransactionParams) (int64, error)
 	// Scoped by user_id so cross-user access → ErrNoRows → 404.
 	GetAIConversationByID(ctx context.Context, arg GetAIConversationByIDParams) (AiConversation, error)
 	// Scoped by user_id to enforce ownership at the query layer.
 	GetAccountByID(ctx context.Context, arg GetAccountByIDParams) (Account, error)
+	// Scoped by user_id so cross-user polling surfaces as ErrNoRows → 404.
+	GetExportJobByID(ctx context.Context, arg GetExportJobByIDParams) (ExportJob, error)
 	GetFXRateOnDate(ctx context.Context, arg GetFXRateOnDateParams) (FxRate, error)
 	// Composite-key lookup for GET /glossary/{slug}?locale=. pgx.ErrNoRows
 	// → handler 404.
@@ -101,6 +115,11 @@ type Querier interface {
 	// Per-type channel settings. Missing rows default to all channels on
 	// (handler rule, see openapi NotificationPreferences.preferences).
 	ListNotificationPreferencesByUser(ctx context.Context, userID uuid.UUID) ([]NotificationPreference, error)
+	// Cursor-paginated center listing. Sort is (created_at DESC, id DESC)
+	// so freshest rows surface first; read/unread rows both included so
+	// the UI can render a "history" tab. Optional unread-only filter via
+	// the sqlc.narg — the handler toggles on ?unread_only=true.
+	ListNotificationsByUser(ctx context.Context, arg ListNotificationsByUserParams) ([]Notification, error)
 	// Drives the portfolio calculator. Returns every current holding across
 	// accounts; grouping into totals happens in Go, not SQL.
 	ListPositionsByUser(ctx context.Context, userID uuid.UUID) ([]Position, error)
@@ -135,6 +154,13 @@ type Querier interface {
 	// dismissed today. Returns rows in (counter_type, counter_date)
 	// ascending order so dedup downstream is trivial.
 	ListUsageCountersInRange(ctx context.Context, arg ListUsageCountersInRangeParams) ([]UsageCounter, error)
+	// Bulk mark-all-as-read. Only flips unread rows so a second call
+	// within the same second stays idempotent (no timestamp churn).
+	MarkAllNotificationsRead(ctx context.Context, userID uuid.UUID) (int64, error)
+	// Single-row mark-as-read. Returns affected-row count so the
+	// handler can emit 404 when the id is unknown or already belongs
+	// to another user.
+	MarkNotificationRead(ctx context.Context, arg MarkNotificationReadParams) (int64, error)
 	// Soft-deletion start: flags the user. A worker hard-deletes later.
 	MarkUserDeletionRequested(ctx context.Context, id uuid.UUID) (User, error)
 	// Written by POST /internal/ai/usage. The id column uses a DB-side
@@ -148,6 +174,10 @@ type Querier interface {
 	// integration lands (TD-029). DISTINCT ON (symbol, asset_type) so
 	// multiple-currency rows do not duplicate.
 	SearchPriceSymbols(ctx context.Context, arg SearchPriceSymbolsParams) ([]SearchPriceSymbolsRow, error)
+	// Pause/resume: just flips sync_status with no side effects on
+	// last_synced_at (UpdateAccountSyncStatus is for the post-sync
+	// transition, where we want last_synced_at = now() on ok).
+	SetAccountSyncState(ctx context.Context, arg SetAccountSyncStateParams) (Account, error)
 	SoftDeleteAccount(ctx context.Context, arg SoftDeleteAccountParams) (Account, error)
 	// Aggregate a counter for (user, counter_type) across [from, to]
 	// inclusive. Used by GET /me/usage — daily counters pass from=to=today,
@@ -155,15 +185,33 @@ type Querier interface {
 	// exist so the handler never has to nil-check.
 	SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error)
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
+	// Powers PATCH /accounts/{id}. Both fields are optional (sqlc.narg);
+	// COALESCE keeps the column when the field is NULL so callers can
+	// update display_name or the inclusion flag independently.
+	UpdateAccountDisplayOptions(ctx context.Context, arg UpdateAccountDisplayOptionsParams) (Account, error)
 	UpdateAccountSyncStatus(ctx context.Context, arg UpdateAccountSyncStatusParams) (Account, error)
+	// Partial update scoped to manual-sourced rows only. API / aggregator
+	// rows are immutable by policy (§15.5). Handler layer returns 403
+	// when the caller hits this on a non-manual row — at the SQL level
+	// we simply filter and a non-manual row yields ErrNoRows, which the
+	// handler maps to 403 by re-checking source via GetTransactionByID.
+	UpdateManualTransaction(ctx context.Context, arg UpdateManualTransactionParams) (Transaction, error)
 	UpdateUserProfile(ctx context.Context, arg UpdateUserProfileParams) (User, error)
 	// Called by the Stripe webhook path. Idempotent: same payload replayed
 	// yields the same row.
 	UpdateUserSubscription(ctx context.Context, arg UpdateUserSubscriptionParams) (User, error)
 	UpsertFXRate(ctx context.Context, arg UpsertFXRateParams) (FxRate, error)
+	// Per-type upsert so PATCH /me/notification-preferences can send a
+	// partial `preferences` map — rows for untouched types stay on
+	// defaults.
+	UpsertNotificationPreference(ctx context.Context, arg UpsertNotificationPreferenceParams) (NotificationPreference, error)
 	UpsertPortfolioSnapshot(ctx context.Context, arg UpsertPortfolioSnapshotParams) (PortfolioSnapshot, error)
 	UpsertPosition(ctx context.Context, arg UpsertPositionParams) (Position, error)
 	UpsertPrice(ctx context.Context, arg UpsertPriceParams) (Price, error)
+	// Wholesale replace of digest settings. PATCH semantics at the
+	// openapi layer: `digest` is replaced when present, omitted when
+	// absent — that branching lives in the handler.
+	UpsertUserDigestPreferences(ctx context.Context, arg UpsertUserDigestPreferencesParams) (UserDigestPreference, error)
 }
 
 var _ Querier = (*Queries)(nil)

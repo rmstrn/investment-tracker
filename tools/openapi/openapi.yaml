@@ -2076,8 +2076,13 @@ components:
                 - NOT_FOUND
                 - CONFLICT
                 - DUPLICATE_TRANSACTION
+                - IDEMPOTENCY_KEY_CONFLICT
+                - IDEMPOTENCY_IN_PROGRESS
+                - JURISDICTION_NOT_SUPPORTED
+                - QUOTE_NOT_AVAILABLE
                 - RATE_LIMIT_EXCEEDED
                 - EXTERNAL_SERVICE_ERROR
+                - NOT_IMPLEMENTED
                 - INTERNAL_ERROR
             message:
               type: string

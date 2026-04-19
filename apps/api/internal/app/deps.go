@@ -10,6 +10,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/config"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 )
@@ -29,4 +30,10 @@ type Deps struct {
 	// server.New stay synchronous — no network on the server-assembly
 	// path.
 	JWKS keyfunc.Keyfunc
+	// Asynq is the thin publisher over hibiken/asynq. A nil value is
+	// valid — every Enqueue becomes a noop in that case, so
+	// integration tests without a Redis-backed asynq still exercise
+	// the handler's synchronous 2xx path. Production always has a
+	// non-nil publisher bound to the same Redis as Cache.
+	Asynq *asynqpub.Publisher
 }

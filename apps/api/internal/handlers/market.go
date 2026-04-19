@@ -14,6 +14,7 @@ import (
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
 )
@@ -70,6 +71,21 @@ func GetMarketQuote(deps *app.Deps) fiber.Handler {
 		})
 		if err != nil {
 			if errors.Is(err, pgx.ErrNoRows) {
+				// Closes TD-021. Enqueue a fetch_quote task so a
+				// subsequent client retry (after Retry-After) hits the
+				// cache or a fresh prices row. Enqueue errors and nil
+				// publisher are logged but do not block the 404 —
+				// client already has actionable retry info.
+				if !deps.Asynq.Enabled() {
+					c.Set("X-Async-Unavailable", "true")
+				}
+				if _, qerr := deps.Asynq.Enqueue(ctx, asynqpub.TaskFetchQuote,
+					asynqpub.FetchQuotePayload{Symbol: symbol, AssetType: assetType}); qerr != nil {
+					deps.Log.Warn().Err(qerr).
+						Str("request_id", reqID).
+						Str("symbol", symbol).
+						Msg("fetch_quote enqueue failed — client retry still advised")
+				}
 				return respondQuoteMiss(c, reqID, symbol, assetType)
 			}
 			return errs.Respond(c, reqID,

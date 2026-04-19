@@ -104,6 +104,9 @@ func TestAIReadEndpoints_InternalAuth_AllOK(t *testing.T) {
 		// B2c — Pro-only quant + tax reads.
 		{"analytics", "/portfolio/analytics?period=3m"},
 		{"tax", "/portfolio/tax?jurisdiction=US&year=2026"},
+		// B3-i — notification-center reads (tier-independent).
+		{"notifications", "/notifications"},
+		{"unread_count", "/notifications/unread_count"},
 	}
 
 	for _, ep := range endpoints {
