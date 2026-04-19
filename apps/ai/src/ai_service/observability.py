@@ -58,30 +58,3 @@ def shutdown_posthog() -> None:
     except Exception:  # noqa: BLE001
         log.exception("posthog_shutdown_failed")
     _posthog_client = None
-
-
-def capture_ai_usage(
-    user_id: str,
-    model: str,
-    input_tokens: int,
-    output_tokens: int,
-    cost_usd: float,
-    conversation_id: str | None = None,
-) -> None:
-    """Emit a ``ai_usage`` event to PostHog. No-op when PostHog is not configured."""
-    if _posthog_client is None:
-        return
-    try:
-        _posthog_client.capture(  # type: ignore[attr-defined]
-            distinct_id=user_id,
-            event="ai_usage",
-            properties={
-                "model": model,
-                "input_tokens": input_tokens,
-                "output_tokens": output_tokens,
-                "cost_usd": cost_usd,
-                "conversation_id": conversation_id,
-            },
-        )
-    except Exception:  # noqa: BLE001
-        log.exception("posthog_capture_failed")

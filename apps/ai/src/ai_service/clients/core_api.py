@@ -9,12 +9,6 @@ Core API recognises the bearer token as internal-caller mode and uses
 ``X-User-Id`` as identity instead of validating a Clerk JWT. Endpoints used
 are the **public** ones from ``tools/openapi/openapi.yaml`` — there is no
 separate ``/internal/*`` tool surface on Core API side.
-
-One exception: ``record_ai_usage`` targets ``POST /internal/ai/usage`` which
-Core API has **not yet exposed** (tracked in TASK_04 follow-up). Until it
-lands, the stub logs structurally and emits a PostHog event, and silently
-swallows a 404/connection error from Core API so chat flow is not blocked by
-an observability pipeline that isn't wired up yet.
 """
 
 from __future__ import annotations
@@ -26,7 +20,6 @@ import httpx
 import structlog
 
 from ai_service.config import Settings
-from ai_service.observability import capture_ai_usage
 
 log = structlog.get_logger(__name__)
 
@@ -163,68 +156,3 @@ class CoreAPIClient:
             user_id,
             {"from": from_, "to": to, "limit": limit},
         )
-
-    # ------------------------------------------------------------------
-    # Writes
-    # ------------------------------------------------------------------
-
-    async def record_ai_usage(
-        self,
-        user_id: UUID,
-        conversation_id: UUID | None,
-        model: str,
-        input_tokens: int,
-        output_tokens: int,
-        cost_usd: float,
-    ) -> None:
-        """Record token usage. STUB — real endpoint is TASK_04 follow-up.
-
-        Target endpoint (not yet exposed by Core API):
-            POST /internal/ai/usage
-            body: {user_id, conversation_id, input_tokens, output_tokens,
-                   cost_usd, model}
-        """
-        log.info(
-            "ai_usage_recorded",
-            user_id=str(user_id),
-            conversation_id=str(conversation_id) if conversation_id else None,
-            model=model,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cost_usd=cost_usd,
-        )
-        capture_ai_usage(
-            user_id=str(user_id),
-            conversation_id=str(conversation_id) if conversation_id else None,
-            model=model,
-            input_tokens=input_tokens,
-            output_tokens=output_tokens,
-            cost_usd=cost_usd,
-        )
-
-        body = {
-            "user_id": str(user_id),
-            "conversation_id": str(conversation_id) if conversation_id else None,
-            "model": model,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
-            "cost_usd": cost_usd,
-        }
-        try:
-            resp = await self._client.post(
-                f"{self._base_url}/internal/ai/usage",
-                headers=self._headers(user_id),
-                json=body,
-            )
-            if resp.status_code == 404:
-                # Endpoint not exposed yet — expected during TASK_04 parallel dev.
-                log.debug("core_api_ai_usage_endpoint_missing")
-            elif resp.status_code >= 400:
-                log.warning(
-                    "core_api_ai_usage_failed",
-                    status_code=resp.status_code,
-                    body=resp.text[:500],
-                )
-        except httpx.HTTPError as exc:
-            # Don't fail the chat flow because the usage sink is down.
-            log.warning("core_api_ai_usage_error", error=str(exc))

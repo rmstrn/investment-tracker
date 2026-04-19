@@ -6,9 +6,7 @@ Runs on Haiku (cheap + fast). No tool calls; pure text generation.
 from __future__ import annotations
 
 from typing import Any, cast
-from uuid import UUID
 
-from ai_service.clients.core_api import CoreAPIClient
 from ai_service.config import Settings
 from ai_service.llm.client import AnthropicClient
 from ai_service.llm.pricing import calculate_cost_usd
@@ -20,18 +18,12 @@ class Explainer:
     def __init__(
         self,
         llm: AnthropicClient,
-        core_api: CoreAPIClient,
         settings: Settings,
     ) -> None:
         self._llm = llm
-        self._core_api = core_api
         self._settings = settings
 
-    async def explain(
-        self,
-        user_id: UUID,
-        req: ExplainRequest,
-    ) -> ExplainResponse:
+    async def explain(self, req: ExplainRequest) -> ExplainResponse:
         user_content = f"Term: {req.term}\nUser level: {req.user_level}"
         if req.context:
             user_content += f"\nContext: {req.context}"
@@ -53,16 +45,6 @@ class Explainer:
             cost_usd=calculate_cost_usd(
                 model, message.usage.input_tokens, message.usage.output_tokens
             ),
-        )
-
-        # Fire-and-forget usage recording — failure must not block the reply.
-        await self._core_api.record_ai_usage(
-            user_id=user_id,
-            conversation_id=None,
-            model=model,
-            input_tokens=usage.input_tokens,
-            output_tokens=usage.output_tokens,
-            cost_usd=usage.cost_usd,
         )
 
         return ExplainResponse(term=req.term, explanation=explanation, usage=usage)

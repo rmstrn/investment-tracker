@@ -12,8 +12,7 @@ Per-request behaviour:
 3. Stop when ``stop_reason`` is terminal (``end_turn`` / ``max_tokens`` /
    ``stop_sequence``) or after ``MAX_TOOL_ROUNDS`` iterations as a guard
    against runaway loops.
-4. Emit a final ``MessageStopEvent`` with accumulated ``TokenUsage`` and
-   write the usage record via ``CoreAPIClient.record_ai_usage``.
+4. Emit a final ``MessageStopEvent`` with accumulated ``TokenUsage``.
 
 Any exception raised inside the generator surfaces as a single ``ErrorEvent``
 so the SSE consumer always gets a terminal frame.
@@ -193,14 +192,8 @@ class ChatAgent:
             )
             yield MessageStopEvent(stop_reason=final_stop_reason, usage=usage)
 
-            await self._core_api.record_ai_usage(
-                user_id=user_id,
-                conversation_id=conversation_id,
-                model=model,
-                input_tokens=total_input_tokens,
-                output_tokens=total_output_tokens,
-                cost_usd=usage.cost_usd,
-            )
+            # ai_usage tracking owned by Core API (TASK_04 B3-ii-b).
+            # See docs/PO_HANDOFF.md § 9 (ai_usage dual-write resolution).
 
         except Exception as exc:  # noqa: BLE001 — stream must always terminate.
             log.exception(

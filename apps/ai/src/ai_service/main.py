@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.chat_agent = ChatAgent(llm, core_api, settings)
     app.state.insight_generator = InsightGenerator(llm, core_api, settings)
     app.state.behavioral_coach = BehavioralCoach(llm, core_api, settings)
-    app.state.explainer = Explainer(llm, core_api, settings)
+    app.state.explainer = Explainer(llm, settings)
 
     log.info(
         "ai_service_started",

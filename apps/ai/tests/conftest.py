@@ -292,7 +292,7 @@ def test_app(
     app.state.chat_agent = ChatAgent(llm, core_api, settings)  # type: ignore[arg-type]
     app.state.insight_generator = InsightGenerator(llm, core_api, settings)  # type: ignore[arg-type]
     app.state.behavioral_coach = BehavioralCoach(llm, core_api, settings)  # type: ignore[arg-type]
-    app.state.explainer = Explainer(llm, core_api, settings)  # type: ignore[arg-type]
+    app.state.explainer = Explainer(llm, settings)  # type: ignore[arg-type]
 
     yield app
     # httpx.AsyncClient backed by MockTransport doesn't open real sockets, so
