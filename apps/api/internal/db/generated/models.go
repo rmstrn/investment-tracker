@@ -49,6 +49,17 @@ type AiMessage struct {
 	CreatedAt      pgtype.Timestamptz
 }
 
+type AiUsage struct {
+	ID             uuid.UUID
+	UserID         uuid.UUID
+	ConversationID *uuid.UUID
+	Model          string
+	InputTokens    int32
+	OutputTokens   int32
+	CostUsd        decimal.Decimal
+	CreatedAt      pgtype.Timestamptz
+}
+
 type AuditLog struct {
 	ID        int64
 	UserID    *uuid.UUID
