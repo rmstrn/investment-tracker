@@ -58,7 +58,7 @@ func ListDividends(deps *app.Deps) fiber.Handler {
 			items = append(items, shapeDividendEvent(r))
 		}
 
-		hasMore := int32(len(rows)) == params.RowLimit
+		hasMore := len(rows) == int(params.RowLimit)
 		nextCursor := ""
 		if hasMore && len(rows) > 0 {
 			last := rows[len(rows)-1]
