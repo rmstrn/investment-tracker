@@ -296,6 +296,13 @@ func isValidNotificationType(t string) bool {
 	return false
 }
 
+// boolOrDefault returns *p when non-nil, else d. All current call
+// sites pass d=true (defaults in the openapi NotificationChannel +
+// NotificationDigest schemas); the parameter stays here as a
+// generalisation rather than inlined `!= false` so a future
+// default-off channel flips one line instead of a whole branch.
+//
+//nolint:unparam // d always true today; see comment above
 func boolOrDefault(p *bool, d bool) bool {
 	if p == nil {
 		return d

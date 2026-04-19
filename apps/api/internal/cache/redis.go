@@ -67,8 +67,18 @@ func (c *Client) Set(ctx context.Context, key, value string, ttl time.Duration) 
 // SetNX is atomic "set if absent" — returns true when the key was
 // acquired (did not exist), false when another caller owned it.
 // Used by the idempotency middleware's request-collapsing lock.
+// Uses go-redis' Set+NX option per its 2.6.12+ guidance; the older
+// SetNX wrapper is deprecated in upstream.
 func (c *Client) SetNX(ctx context.Context, key, value string, ttl time.Duration) (bool, error) {
-	return c.rdb.SetNX(ctx, key, value, ttl).Result()
+	res, err := c.rdb.SetArgs(ctx, key, value, redis.SetArgs{Mode: "NX", TTL: ttl}).Result()
+	if err != nil {
+		if err == redis.Nil {
+			return false, nil
+		}
+		return false, err
+	}
+	_ = res // "OK" on success; anything else still counts as acquired.
+	return true, nil
 }
 
 // Del removes key. No-op and nil error when the key is absent.
