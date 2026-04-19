@@ -32,6 +32,10 @@ type Querier interface {
 	// to running → done/failed and patches result_url + row_count.
 	CreateExportJob(ctx context.Context, arg CreateExportJobParams) (ExportJob, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	// DELETE /ai/conversations/{id}. CASCADE on ai_messages.conversation_id
+	// removes the message thread automatically. Returns row-count so
+	// the handler can distinguish "deleted" from "not found / cross-user".
+	DeleteAIConversation(ctx context.Context, arg DeleteAIConversationParams) (int64, error)
 	// Manual-only hard delete. Returns affected-row count so the handler
 	// can distinguish missing / non-manual / other-user from success.
 	DeleteManualTransaction(ctx context.Context, arg DeleteManualTransactionParams) (int64, error)
@@ -70,6 +74,10 @@ type Querier interface {
 	// 'ai_messages_daily'). PR B3 paywall-dismissal counters will reuse
 	// this same query.
 	IncrementUsageCounter(ctx context.Context, arg IncrementUsageCounterParams) (UsageCounter, error)
+	// POST /ai/conversations. id is generated app-side (uuid v7);
+	// title is optional — when null the AI Service auto-titles from
+	// the first user message on the next /ai/chat round.
+	InsertAIConversation(ctx context.Context, arg InsertAIConversationParams) (AiConversation, error)
 	// Fingerprint-based dedup: ON CONFLICT DO NOTHING on the (user_id, fingerprint)
 	// unique index. Callers must treat (pgx.ErrNoRows) as "duplicate skipped".
 	InsertTransaction(ctx context.Context, arg InsertTransactionParams) (Transaction, error)

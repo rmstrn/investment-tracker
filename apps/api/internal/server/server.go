@@ -151,6 +151,11 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	mutations.Post("/notifications/read_all", handlers.MarkAllNotificationsRead(deps))
 	// Exports.
 	mutations.Post("/exports", handlers.CreateExport(deps))
+
+	// AI conversation lifecycle (no rate-limit gate — chat counts
+	// in airatelimit; create/delete are admin-style ops).
+	mutations.Post("/ai/conversations", handlers.CreateAIConversation(deps))
+	mutations.Delete("/ai/conversations/:id", handlers.DeleteAIConversation(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {
