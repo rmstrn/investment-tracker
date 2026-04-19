@@ -78,6 +78,219 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/paywalls": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List soft-paywall dismissals active for the current 24h window
+         * @description Returns the paywall triggers the caller has dismissed today. The
+         *     client uses this to avoid re-showing the same soft-paywall modal
+         *     more than once per day (see design brief §13.4). Dismissals are
+         *     bucketed by local day and expire at UTC midnight.
+         */
+        get: operations["listMyPaywallDismissals"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/paywalls/{trigger}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Paywall context the client is dismissing (see design brief §13.4). */
+                trigger: components["parameters"]["PaywallTrigger"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a soft-paywall dismissal for the current day
+         * @description Idempotent per (user, trigger, day) — repeated calls within the
+         *     same UTC day are no-ops and return 200. Stored on the shared
+         *     `usage_counters` table with `counter_type='paywall_dismissed_{trigger}'`.
+         */
+        post: operations["dismissPaywall"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/undo-deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a pending account deletion (within grace period)
+         * @description Clears `deletion_scheduled_at`. Only succeeds while the user is
+         *     within the 7-day grace window (see §17.4). After the window expires
+         *     the hard-delete job runs and this endpoint returns `410 GONE`.
+         */
+        post: operations["undoDeletion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/2fa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get 2FA enrolment status (proxied to Clerk) */
+        get: operations["get2FAStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/2fa/enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start TOTP enrolment (proxied to Clerk)
+         * @description Returns the TOTP shared secret, an `otpauth://` URL (for QR code
+         *     rendering) and a preview of backup codes. Enrolment completes only
+         *     after `POST /me/2fa/verify` with a valid 6-digit code.
+         */
+        post: operations["enroll2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/2fa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Verify the TOTP code and finalise enrolment */
+        post: operations["verify2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/2fa/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Disable 2FA (requires current code) */
+        post: operations["disable2FA"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/2fa/backup-codes/regenerate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerate backup codes (invalidates previous set) */
+        post: operations["regenerate2FABackupCodes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active Clerk sessions */
+        get: operations["listMySessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/sessions/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke a single session */
+        delete: operations["revokeMySession"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/sessions/others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Revoke every session except the current one */
+        delete: operations["revokeOtherSessions"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/accounts": {
         parameters: {
             query?: never;
@@ -162,6 +375,80 @@ export interface paths {
         get: operations["getAccountStatus"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}/reconnect": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-authenticate an aggregator-backed account
+         * @description Produces a fresh aggregator connect URL (OAuth flow) or re-opens the
+         *     API-key input for the account. Used when `sync_status=error` due to
+         *     expired auth / rotated API key (design brief §18.4).
+         *
+         *     For `connection_type=manual` accounts this returns `connect_url=null`
+         *     and the endpoint is a no-op (`200`).
+         */
+        post: operations["reconnectAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}/pause": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Pause automatic sync for this account
+         * @description Transitions `sync_status` → `paused`. The scheduled sync worker
+         *     skips paused accounts until `POST /accounts/{id}/resume` is called.
+         *     Manual `POST /accounts/{id}/sync` is still permitted while paused.
+         */
+        post: operations["pauseAccount"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/accounts/{id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resume automatic sync for this account
+         * @description Transitions `sync_status` from `paused` → `pending`. Next scheduled
+         *     run will pick the account up.
+         */
+        post: operations["resumeAccount"];
         delete?: never;
         options?: never;
         head?: never;
@@ -279,6 +566,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/portfolio/performance/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Compare portfolio against up to three benchmarks
+         * @description Multi-benchmark variant backing the `/performance` screen (design
+         *     brief §15.2). Returns per-benchmark returns + alpha + series, plus a
+         *     single `stats` block summarising the portfolio itself (best/worst
+         *     month, average return, volatility). Tier-gated: Plus+.
+         */
+        get: operations["comparePortfolioPerformance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/portfolio/dividends": {
         parameters: {
             query?: never;
@@ -286,7 +596,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Upcoming and historical dividends */
+        /**
+         * Upcoming and historical dividends
+         * @description Tier-gated: Plus+ only. Free callers receive `403 FEATURE_LOCKED`.
+         *     See design brief §15.1.
+         */
         get: operations["getPortfolioDividends"];
         put?: never;
         post?: never;
@@ -572,6 +886,32 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/insights/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Request an immediate insight generation run
+         * @description Backs the `[Generate new ↻]` CTA on `/insights` (design brief §5.5).
+         *     Returns `202` with the in-progress job — clients poll
+         *     `/ai/insights?include_dismissed=false` or listen for the
+         *     `insight_generated` notification to pick it up once created.
+         *
+         *     Tier-gated: Free users may call once per week (cap enforced server-side,
+         *     returns `429 TIER_LIMIT_EXCEEDED`). Plus: daily. Pro: unlimited.
+         */
+        post: operations["generateInsight"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/insights/{id}/dismiss": {
         parameters: {
             query?: never;
@@ -661,6 +1001,279 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/billing/invoices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Stripe invoices for the current user
+         * @description Proxies Stripe's `invoices.list` for the authenticated user's
+         *     `stripe_customer_id`. Used by settings > billing to render invoice
+         *     history (see design brief §13.7 — last 12 invoices with download).
+         */
+        get: operations["listInvoices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/billing/cancellation-feedback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record retention-modal feedback for a subscription cancellation
+         * @description Called from the retention modal (design brief §13.8) before the
+         *     actual Stripe cancellation. The row is analytics-only — it does NOT
+         *     cancel the subscription. Cancellation itself happens through the
+         *     Stripe Billing Portal.
+         */
+        post: operations["submitCancellationFeedback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List notifications (in-app notification center) */
+        get: operations["listNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/unread_count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get the unread count shown on the bell badge */
+        get: operations["getNotificationUnreadCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["NotificationId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark a single notification as read */
+        post: operations["markNotificationRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/read_all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Mark every unread notification as read */
+        post: operations["markAllNotificationsRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get per-type channel preferences and digest settings */
+        get: operations["getNotificationPreferences"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update channel preferences / digest settings
+         * @description Partial update. Omitted `preferences[*]` entries are left unchanged;
+         *     supply only the rows the user actually toggled. Digest settings are
+         *     replaced wholesale when `digest` is present.
+         */
+        patch: operations["updateNotificationPreferences"];
+        trace?: never;
+    };
+    "/exports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Queue a CSV export job
+         * @description Async-only (see design brief §15.5). Returns `202` with a job id;
+         *     clients poll `GET /exports/{id}` until `status=done` and then
+         *     download `result_url`. Tier-gated: Plus+.
+         */
+        post: operations["createExport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/exports/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        /** Poll an export job */
+        get: operations["getExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/portfolio/analytics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Advanced analytics (Sharpe, Sortino, drawdown, factors, …)
+         * @description Pro-only. Returns the full quant block backing `/analytics`
+         *     (design brief §15.3). Free/Plus receive `403 FEATURE_LOCKED`.
+         */
+        get: operations["getPortfolioAnalytics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/portfolio/tax": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tax report for a jurisdiction and year
+         * @description Pro-only. Free/Plus receive `403 FEATURE_LOCKED`.
+         */
+        get: operations["getPortfolioTax"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/portfolio/tax/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a tax report as PDF or CSV */
+        get: operations["exportPortfolioTax"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/glossary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List financial glossary terms (Explainer module — §14.3) */
+        get: operations["listGlossaryTerms"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/glossary/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        /** Get a single glossary term */
+        get: operations["getGlossaryTerm"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/webhook": {
         parameters: {
             query?: never;
@@ -735,19 +1348,39 @@ export interface components {
         ConnectionType: "api" | "aggregator" | "import" | "manual";
         /** @enum {string} */
         AccountType: "broker" | "crypto" | "manual";
-        /** @enum {string} */
-        SyncState: "pending" | "syncing" | "ok" | "error";
+        /**
+         * @description - `pending` — created, not yet synced.
+         *     - `syncing` — a sync is in-flight.
+         *     - `ok` — last sync succeeded.
+         *     - `error` — last sync failed; user action needed (§18.2).
+         *     - `paused` — user-initiated pause; cron skips this account until
+         *       `POST /accounts/{id}/resume`.
+         * @enum {string}
+         */
+        SyncState: "pending" | "syncing" | "ok" | "error" | "paused";
         /** @enum {string} */
         SubscriptionTier: "free" | "plus" | "pro";
         /** @enum {string} */
         InsightSeverity: "info" | "warning" | "critical";
+        /**
+         * @description Fixed taxonomy for rendering (icon, colour). `behavioral` covers the
+         *     Behavioral Coach module (design brief §14.1).
+         * @enum {string}
+         */
+        InsightType: "diversification" | "risk" | "performance" | "rebalance" | "cost" | "behavioral";
         ErrorEnvelope: {
             error: {
                 /**
                  * @description Stable machine-readable error code.
+                 *
+                 *     - `TIER_LIMIT_EXCEEDED` — quota exhausted on the current tier
+                 *       (e.g. 5/5 AI messages today). UI shows usage-reset messaging.
+                 *     - `FEATURE_LOCKED` — tier does not include this feature at all
+                 *       (e.g. Free/Plus calling `/portfolio/analytics`). UI shows
+                 *       the upgrade/blur-preview treatment from design brief §13.5.
                  * @enum {string}
                  */
-                code: "VALIDATION_ERROR" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "TIER_LIMIT_EXCEEDED" | "NOT_FOUND" | "CONFLICT" | "DUPLICATE_TRANSACTION" | "RATE_LIMIT_EXCEEDED" | "EXTERNAL_SERVICE_ERROR" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "TIER_LIMIT_EXCEEDED" | "FEATURE_LOCKED" | "NOT_FOUND" | "CONFLICT" | "DUPLICATE_TRANSACTION" | "RATE_LIMIT_EXCEEDED" | "EXTERNAL_SERVICE_ERROR" | "INTERNAL_ERROR";
                 /** @description Human-readable message. Do not parse this. */
                 message: string;
                 /** @description Structured details for the error (e.g. failing field). */
@@ -789,6 +1422,14 @@ export interface components {
             locale: string;
             subscription_tier: components["schemas"]["SubscriptionTier"];
             stripe_customer_id?: string | null;
+            /**
+             * Format: date-time
+             * @description Set when the user initiated account deletion (see §17.4).
+             *     The hard-delete worker runs after a 7-day grace period; the user
+             *     can call `POST /me/undo-deletion` within that window to cancel.
+             *     `null` means the account is active / not pending deletion.
+             */
+            deletion_scheduled_at?: string | null;
             /** Format: date-time */
             created_at: string;
             /** Format: date-time */
@@ -803,6 +1444,7 @@ export interface components {
             counters: {
                 ai_messages_daily: components["schemas"]["UsageCounter"];
                 connected_accounts: components["schemas"]["UsageCounter"];
+                insights_weekly: components["schemas"]["UsageCounter"];
             };
         };
         UsageCounter: {
@@ -844,6 +1486,12 @@ export interface components {
             sync_status: components["schemas"]["SyncState"];
             sync_error?: string | null;
             /**
+             * @description When false, the account is hidden from portfolio aggregations
+             *     (`/portfolio`, `/positions`, snapshots) but still listed in
+             *     `/settings/accounts` (§18.1). Toggled via `PATCH /accounts/{id}`.
+             */
+            is_included_in_portfolio: boolean;
+            /**
              * Format: date-time
              * @description Present on tombstoned rows (usually omitted from live list queries).
              */
@@ -878,6 +1526,8 @@ export interface components {
         };
         AccountUpdateRequest: {
             display_name?: string;
+            /** @description Toggle inclusion in portfolio aggregations (§18.1). */
+            is_included_in_portfolio?: boolean;
         };
         AccountSyncStatus: {
             /** Format: uuid */
@@ -888,6 +1538,15 @@ export interface components {
             sync_error?: string | null;
             /** Format: date-time */
             next_sync_at?: string | null;
+        };
+        AccountReconnectResponse: {
+            account: components["schemas"]["Account"];
+            /**
+             * Format: uri
+             * @description Fresh aggregator OAuth URL. Open in browser/webview. `null` for
+             *     `manual` accounts or when the account has no prior external auth.
+             */
+            connect_url?: string | null;
         };
         Transaction: {
             /** Format: uuid */
@@ -999,7 +1658,7 @@ export interface components {
         };
         PortfolioHistoryResponse: {
             /** @enum {string} */
-            period: "1m" | "3m" | "6m" | "1y" | "all";
+            period: "1d" | "1w" | "1m" | "3m" | "6m" | "1y" | "all";
             base_currency: components["schemas"]["Currency"];
             display_currency: components["schemas"]["Currency"];
             points: components["schemas"]["PortfolioHistoryPoint"][];
@@ -1023,6 +1682,7 @@ export interface components {
              * @description portfolio_return - benchmark_return.
              */
             alpha_percent?: number;
+            stats?: components["schemas"]["PortfolioPerformanceStats"];
             series?: {
                 /** Format: date */
                 date: string;
@@ -1031,6 +1691,62 @@ export interface components {
                 /** Format: float */
                 benchmark_return_percent: number;
             }[];
+        };
+        /**
+         * @description Rolled-up stats over the selected period, independent of any
+         *     benchmark. Rendered in the period breakdown table (§15.2).
+         */
+        PortfolioPerformanceStats: {
+            best_month?: {
+                /** @description YYYY-MM */
+                month: string;
+                /** Format: float */
+                return_percent: number;
+            } | null;
+            worst_month?: {
+                /** @description YYYY-MM */
+                month: string;
+                /** Format: float */
+                return_percent: number;
+            } | null;
+            /**
+             * Format: float
+             * @description Arithmetic mean of monthly returns over the period.
+             */
+            avg_return_percent: number;
+            /**
+             * Format: float
+             * @description Annualised stdev of monthly returns (unitless decimal, 0.12 == 12%).
+             */
+            volatility: number;
+        };
+        PortfolioPerformanceBenchmark: {
+            /** @enum {string} */
+            benchmark: "SPX" | "QQQ" | "ACWI" | "BTC";
+            /** Format: float */
+            benchmark_return_percent: number;
+            /** Format: float */
+            alpha_percent: number;
+            series?: {
+                /** Format: date */
+                date: string;
+                /** Format: float */
+                benchmark_return_percent: number;
+            }[];
+        };
+        PortfolioPerformanceCompare: {
+            /** @enum {string} */
+            period: "1m" | "3m" | "6m" | "1y" | "all";
+            /** Format: float */
+            portfolio_return_percent: number;
+            portfolio_series?: {
+                /** Format: date */
+                date: string;
+                /** Format: float */
+                portfolio_return_percent: number;
+            }[];
+            benchmarks: components["schemas"]["PortfolioPerformanceBenchmark"][];
+            stats: components["schemas"]["PortfolioPerformanceStats"];
         };
         DividendEvent: {
             symbol: string;
@@ -1139,7 +1855,13 @@ export interface components {
             /** Format: date-time */
             created_at: string;
         };
-        AIMessageContent: components["schemas"]["AIMessageContentText"] | components["schemas"]["AIMessageContentToolUse"] | components["schemas"]["AIMessageContentToolResult"];
+        AIMessageContent: components["schemas"]["AIMessageContentText"] | components["schemas"]["AIMessageContentToolUse"] | components["schemas"]["AIMessageContentToolResult"] | components["schemas"]["AIMessageContentImpactCard"] | components["schemas"]["AIMessageContentCallout"];
+        /**
+         * @description Subset of `AIMessageContent` that can appear inside a `tool_result`
+         *     block (and anywhere else the protocol allows the model to return
+         *     inline rich content without re-entering the tool-use protocol).
+         */
+        AIMessageRenderableContent: components["schemas"]["AIMessageContentText"] | components["schemas"]["AIMessageContentImpactCard"] | components["schemas"]["AIMessageContentCallout"];
         AIMessageContentText: {
             /**
              * @description discriminator enum property added by openapi-typescript
@@ -1172,7 +1894,59 @@ export interface components {
             type: "tool_result";
             tool_use_id: string;
             is_error: boolean;
-            content: components["schemas"]["AIMessageContentText"][];
+            content: components["schemas"]["AIMessageRenderableContent"][];
+        };
+        /**
+         * @description Structured rendering payload for the Scenario Simulator
+         *     (design brief §14.2). The assistant emits this block inside a
+         *     `tool_result` (or directly as a top-level content block when
+         *     deterministic) so clients render the impact-card UI natively
+         *     instead of parsing narrative text.
+         */
+        AIMessageContentImpactCard: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "impact_card";
+            /** @description User-readable label, e.g. "USD drops 10%". */
+            scenario: string;
+            before: components["schemas"]["PortfolioSnapshot"];
+            after: components["schemas"]["PortfolioSnapshot"];
+            top_affected_positions?: components["schemas"]["AffectedPosition"][];
+            /** @description 1–2 sentence summary of the delta. */
+            narrative?: string;
+        };
+        /**
+         * @description Inline callout block. Drives Behavioral Coach nudges (§14.1) and
+         *     Explainer definitions (§14.3). UI styling is driven by `kind`.
+         */
+        AIMessageContentCallout: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            type: "callout";
+            /** @enum {string} */
+            kind: "behavioral" | "explainer" | "info" | "warning";
+            title: string;
+            body: string;
+            /**
+             * @description For `kind=explainer` — `GlossaryTerm.slug` the callout defines.
+             *     Clients MAY deep-link to `/glossary/{slug}` for more detail.
+             */
+            term_slug?: string | null;
+        };
+        AffectedPosition: {
+            symbol: string;
+            asset_type: components["schemas"]["AssetType"];
+            value_before: components["schemas"]["Money"];
+            value_after: components["schemas"]["Money"];
+            /**
+             * Format: float
+             * @description Signed fraction; 0.123 == +12.3%.
+             */
+            delta_percent: number;
         };
         AIChatRequest: {
             /** Format: uuid */
@@ -1185,6 +1959,23 @@ export interface components {
              *     the user's tier.
              */
             model?: string;
+            context?: components["schemas"]["ChatContext"];
+        };
+        /**
+         * @description Caller-supplied hint describing where the conversation was opened from.
+         *     The AI service uses this to seed the system prompt (e.g. slide-over
+         *     chat opened on a position detail → "About AAPL"). Clients MAY omit it
+         *     for plain `/chat` page conversations.
+         */
+        ChatContext: {
+            /** @enum {string} */
+            type: "dashboard" | "position" | "insight" | "transaction";
+            /**
+             * @description Resource identifier matching the `type`. For `type=position` this
+             *     is a symbol (e.g. `AAPL`) or a positions UUID; for `insight` /
+             *     `transaction` it is the corresponding UUID. Ignored when `type=dashboard`.
+             */
+            ref_id?: string | null;
         };
         AIChatResponse: {
             /** Format: uuid */
@@ -1212,7 +2003,7 @@ export interface components {
             type: "content_block_start";
             index: number;
             /** @enum {string} */
-            block_type: "text" | "tool_use";
+            block_type: "text" | "tool_use" | "impact_card" | "callout";
         };
         AIStreamEventContentDelta: {
             /**
@@ -1279,12 +2070,7 @@ export interface components {
         Insight: {
             /** Format: uuid */
             id: string;
-            /**
-             * @description Machine-readable insight category, e.g.
-             *     `concentration_risk`, `behavioral_pattern`, `diversification`,
-             *     `performance_review`, `rebalance_suggestion`, `cost_audit`.
-             */
-            insight_type: string;
+            insight_type: components["schemas"]["InsightType"];
             title: string;
             body: string;
             severity: components["schemas"]["InsightSeverity"];
@@ -1304,6 +2090,19 @@ export interface components {
          */
         InsightData: {
             [key: string]: unknown;
+        };
+        InsightGenerationJob: {
+            /** Format: uuid */
+            job_id: string;
+            /** @enum {string} */
+            status: "queued" | "running" | "done" | "failed";
+            /** Format: date-time */
+            queued_at: string;
+            /**
+             * Format: uuid
+             * @description Populated once status transitions to `done`.
+             */
+            insight_id?: string | null;
         };
         Subscription: {
             tier: components["schemas"]["SubscriptionTier"];
@@ -1331,6 +2130,128 @@ export interface components {
         PortalResponse: {
             /** Format: uri */
             url: string;
+        };
+        /** @description Read-only mirror of the subset of fields rendered in settings > billing. */
+        Invoice: {
+            /** @description Stripe invoice id (in_...). */
+            id: string;
+            /** @description Human-readable invoice number (Stripe-assigned). */
+            number?: string | null;
+            amount_due: components["schemas"]["Money"];
+            amount_paid: components["schemas"]["Money"];
+            currency: components["schemas"]["Currency"];
+            /** @enum {string} */
+            status: "draft" | "open" | "paid" | "uncollectible" | "void";
+            /** Format: uri */
+            hosted_invoice_url?: string | null;
+            /** Format: uri */
+            invoice_pdf_url?: string | null;
+            /** Format: date-time */
+            period_start?: string | null;
+            /** Format: date-time */
+            period_end?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        /** @enum {string} */
+        CancellationReason: "not_using_enough" | "too_expensive" | "missing_feature" | "other";
+        CancellationFeedbackRequest: {
+            reason: components["schemas"]["CancellationReason"];
+            free_text?: string;
+            /**
+             * @description True if the user accepted one of the retention counter-offers
+             *     (see design brief §13.8). False for "cancel anyway".
+             * @default false
+             */
+            counter_offer_accepted: boolean;
+        };
+        CancellationFeedback: components["schemas"]["CancellationFeedbackRequest"] & {
+            /** Format: uuid */
+            id: string;
+            stripe_subscription_id?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        /**
+         * @description Context key for a soft-paywall modal. Keep in sync with frontend
+         *     constants in packages/ui (see design brief §13.3/§13.4).
+         * @enum {string}
+         */
+        PaywallTriggerKind: "ai_messages_daily" | "insights_weekly" | "connected_accounts" | "pro_feature";
+        PaywallDismissal: {
+            trigger: components["schemas"]["PaywallTriggerKind"];
+            /**
+             * Format: date
+             * @description UTC day bucket when the dismissal was recorded.
+             */
+            dismissed_on: string;
+            /**
+             * Format: date-time
+             * @description Next UTC midnight — client MAY re-show the paywall after this instant.
+             */
+            reset_at: string;
+        };
+        PaywallDismissalList: {
+            data: components["schemas"]["PaywallDismissal"][];
+        };
+        /** @enum {string} */
+        NotificationType: "insight_generated" | "sync_completed" | "sync_failed" | "dividend_paid" | "price_alert" | "billing_event";
+        Notification: {
+            /** Format: uuid */
+            id: string;
+            type: components["schemas"]["NotificationType"];
+            title: string;
+            body: string;
+            /**
+             * @description Loose type-specific payload (e.g. `{ "insight_id": "...", "symbol": "AAPL" }`).
+             *     Clients SHOULD prefer `deep_link` for navigation and use `data`
+             *     only for rendering enrichments.
+             */
+            data?: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description In-app path (e.g. `/insights/<id>`, `/settings/accounts`). Never a
+             *     fully-qualified URL — relative to the web/iOS app root.
+             */
+            deep_link?: string | null;
+            /** Format: date-time */
+            read_at?: string | null;
+            /** Format: date-time */
+            created_at: string;
+        };
+        NotificationUnreadCount: {
+            /** @description Capped at 99+ server-side — the UI shows "99+" past that. */
+            unread: number;
+        };
+        NotificationChannelPreference: {
+            email: boolean;
+            push: boolean;
+            in_app: boolean;
+        };
+        NotificationDigestPreferences: {
+            enabled: boolean;
+            /** @description ISO weekday, 0 = Monday. */
+            weekday: number;
+            /** @description Local time HH:mm. iOS-only; mirrored server-side for symmetry. */
+            quiet_start?: string | null;
+            quiet_end?: string | null;
+        };
+        NotificationPreferences: {
+            /**
+             * @description Map keyed by `NotificationType`. Missing keys default to all
+             *     channels enabled.
+             */
+            preferences: {
+                [key: string]: components["schemas"]["NotificationChannelPreference"];
+            };
+            digest: components["schemas"]["NotificationDigestPreferences"];
+        };
+        NotificationPreferencesUpdate: {
+            preferences?: {
+                [key: string]: components["schemas"]["NotificationChannelPreference"];
+            };
+            digest?: components["schemas"]["NotificationDigestPreferences"];
         };
         FxRate: {
             base_currency: components["schemas"]["Currency"];
@@ -1363,6 +2284,168 @@ export interface components {
         };
         PricesResponse: {
             data: components["schemas"]["PriceEntry"][];
+        };
+        TwoFactorStatus: {
+            enabled: boolean;
+            /** Format: date-time */
+            enrolled_at?: string | null;
+            backup_codes_remaining?: number | null;
+        };
+        TwoFactorEnrollment: {
+            /** @description Base32 TOTP shared secret (manual-entry fallback). */
+            secret: string;
+            /** @description `otpauth://` URL suitable for QR-code rendering. */
+            otpauth_url: string;
+            /** @description One-time backup codes shown once at enrolment. */
+            backup_codes: string[];
+        };
+        TwoFactorVerifyRequest: {
+            code: string;
+        };
+        TwoFactorBackupCodes: {
+            backup_codes: string[];
+        };
+        UserSession: {
+            /** @description Clerk session id. */
+            id: string;
+            /** @description Best-effort device/browser label (e.g. "Chrome on macOS"). */
+            device_label?: string | null;
+            browser?: string | null;
+            os?: string | null;
+            /** @description IPv4/IPv6 address as recorded by Clerk. */
+            ip_address?: string | null;
+            /** @description Best-effort geolocation from IP. */
+            city?: string | null;
+            /** Format: date-time */
+            last_active_at: string;
+            is_current: boolean;
+        };
+        /** @enum {string} */
+        ExportResource: "transactions" | "positions" | "snapshots" | "dividends";
+        ExportCreateRequest: {
+            resource: components["schemas"]["ExportResource"];
+            /** @enum {string} */
+            format: "csv";
+            /** Format: date */
+            from?: string | null;
+            /** Format: date */
+            to?: string | null;
+            /** @description Optional column allow-list; if omitted, default set is exported. */
+            columns?: string[];
+        };
+        ExportJob: {
+            /** Format: uuid */
+            id: string;
+            resource: components["schemas"]["ExportResource"];
+            /** @enum {string} */
+            format: "csv";
+            /** @enum {string} */
+            status: "queued" | "running" | "done" | "failed";
+            filters?: {
+                [key: string]: unknown;
+            };
+            row_count?: number | null;
+            /**
+             * Format: uri
+             * @description Pre-signed URL; expires 24h after `completed_at`.
+             */
+            result_url?: string | null;
+            error?: string | null;
+            /** Format: date-time */
+            created_at: string;
+            /** Format: date-time */
+            completed_at?: string | null;
+        };
+        PortfolioAnalytics: {
+            /** @enum {string} */
+            period: "3m" | "6m" | "1y" | "3y" | "all";
+            /** Format: float */
+            sharpe: number;
+            /** Format: float */
+            sortino: number;
+            /**
+             * Format: float
+             * @description Negative signed fraction; -0.23 == -23%.
+             */
+            max_drawdown: number;
+            /**
+             * Format: float
+             * @description Annualised stdev, unitless decimal.
+             */
+            volatility: number;
+            underwater_series: {
+                /** Format: date */
+                date: string;
+                /** Format: float */
+                drawdown_percent: number;
+            }[];
+            factor_exposure: {
+                /** Format: float */
+                value: number;
+                /** Format: float */
+                growth: number;
+                /** Format: float */
+                momentum: number;
+                /** Format: float */
+                quality: number;
+                /** Format: float */
+                size: number;
+            };
+            /**
+             * @description 3×3 grid (growth/core/value × small/mid/large). Row-major:
+             *     `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
+             *     Values are fractions summing to ~1.0.
+             */
+            style_box: number[][];
+            correlation_matrix: {
+                symbols: string[];
+                /** @description Square matrix, same ordering as `symbols`. */
+                values: number[][];
+            };
+        };
+        TaxReport: {
+            /** @enum {string} */
+            jurisdiction: "US" | "DE" | "FR" | "UK" | "ES" | "NL";
+            year: number;
+            realized_gains: components["schemas"]["Money"];
+            realized_losses: components["schemas"]["Money"];
+            dividends_received: components["schemas"]["Money"];
+            withholding_tax: components["schemas"]["Money"];
+            estimated_taxable_income: components["schemas"]["Money"];
+            transactions: components["schemas"]["TaxTransaction"][];
+            meta?: components["schemas"]["PaginationMeta"];
+        };
+        TaxTransaction: {
+            /** Format: uuid */
+            transaction_id: string;
+            /** Format: date-time */
+            executed_at: string;
+            symbol: string;
+            /**
+             * @description Classification relevant to the selected jurisdiction.
+             * @enum {string}
+             */
+            kind: "realized_gain" | "realized_loss" | "dividend" | "withholding" | "other";
+            amount: components["schemas"]["Money"];
+            currency: components["schemas"]["Currency"];
+            /** @description Short-term vs long-term gain classification input. */
+            holding_period_days?: number | null;
+        };
+        GlossaryTerm: {
+            slug: string;
+            /**
+             * @example en
+             * @example en-US
+             */
+            locale: string;
+            title: string;
+            /** @description One-sentence definition (tooltip copy). */
+            short_def: string;
+            /** @description Expanded paragraph; used by the chat Explainer callout. */
+            long_def?: string | null;
+            related_slugs?: string[];
+            /** Format: date-time */
+            updated_at?: string;
         };
     };
     responses: {
@@ -1441,6 +2524,12 @@ export interface components {
         PositionId: string;
         ConversationId: string;
         InsightId: string;
+        NotificationId: string;
+        /** @description Paywall context the client is dismissing (see design brief §13.4). */
+        PaywallTrigger: components["schemas"]["PaywallTriggerKind"];
+        /** @description ISO-3166 alpha-2 country code for the tax regime. */
+        TaxJurisdiction: "US" | "DE" | "FR" | "UK" | "ES" | "NL";
+        TaxYear: number;
         /** @description Opaque pagination cursor returned in the previous response's `meta.next_cursor`. */
         Cursor: string;
         Limit: number;
@@ -1615,6 +2704,355 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["UsageSummary"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listMyPaywallDismissals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active dismissals */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaywallDismissalList"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    dismissPaywall: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                /** @description Paywall context the client is dismissing (see design brief §13.4). */
+                trigger: components["parameters"]["PaywallTrigger"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dismissal recorded (or already recorded earlier today) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaywallDismissal"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    undoDeletion: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Deletion cancelled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["User"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Account was not pending deletion */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Grace period expired — deletion already processed */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    get2FAStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    enroll2FA: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enrolment payload */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorEnrollment"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 2FA already enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    verify2FA: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description 2FA enabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorStatus"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    disable2FA: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TwoFactorVerifyRequest"];
+            };
+        };
+        responses: {
+            /** @description 2FA disabled */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorStatus"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    regenerate2FABackupCodes: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description New backup codes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TwoFactorBackupCodes"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 2FA is not enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    listMySessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sessions */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["UserSession"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    revokeMySession: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    revokeOtherSessions: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Bulk revoke result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        revoked_count: number;
+                    };
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -1825,6 +3263,112 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AccountSyncStatus"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    reconnectAccount: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /**
+                     * Format: uri
+                     * @description Where to return the user after OAuth.
+                     */
+                    redirect_url?: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Reconnection flow started */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AccountReconnectResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    pauseAccount: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paused */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Account"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    resumeAccount: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: components["parameters"]["AccountId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resumed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Account"];
                 };
             };
             401: components["responses"]["Unauthorized"];
@@ -2046,7 +3590,7 @@ export interface operations {
     getPortfolioHistory: {
         parameters: {
             query: {
-                period: "1m" | "3m" | "6m" | "1y" | "all";
+                period: "1d" | "1w" | "1m" | "3m" | "6m" | "1y" | "all";
                 /**
                  * @description ISO 4217 currency to use for the `display` half of the response's
                  *     values. Defaults to the user's `display_currency` on their profile.
@@ -2130,6 +3674,46 @@ export interface operations {
             };
         };
     };
+    comparePortfolioPerformance: {
+        parameters: {
+            query: {
+                /** @description Comma-separated list, 1–3 items. */
+                benchmarks: string;
+                period: "1m" | "3m" | "6m" | "1y" | "all";
+                /**
+                 * @description ISO 4217 currency to use for the `display` half of the response's
+                 *     values. Defaults to the user's `display_currency` on their profile.
+                 */
+                display_currency?: components["parameters"]["DisplayCurrency"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Multi-benchmark comparison */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioPerformanceCompare"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            /** @description Multi-benchmark comparison requires Plus or higher */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     getPortfolioDividends: {
         parameters: {
             query?: {
@@ -2157,6 +3741,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description Dividend calendar requires Plus or higher */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
         };
     };
     listPositions: {
@@ -2631,6 +4224,52 @@ export interface operations {
             401: components["responses"]["Unauthorized"];
         };
     };
+    generateInsight: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": {
+                    /** @description Optional — hint to focus the run on a category. */
+                    insight_type?: components["schemas"]["InsightType"];
+                };
+            };
+        };
+        responses: {
+            /** @description Generation queued */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InsightGenerationJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Tier feature-locked */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            429: components["responses"]["RateLimited"];
+        };
+    };
     dismissInsight: {
         parameters: {
             query?: never;
@@ -2773,6 +4412,462 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    listInvoices: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned in the previous response's `meta.next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated invoices */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedEnvelope"] & {
+                        data: components["schemas"]["Invoice"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    submitCancellationFeedback: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancellationFeedbackRequest"];
+            };
+        };
+        responses: {
+            /** @description Feedback recorded */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CancellationFeedback"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    listNotifications: {
+        parameters: {
+            query?: {
+                /** @description Opaque pagination cursor returned in the previous response's `meta.next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+                unread_only?: boolean;
+                type?: components["schemas"]["NotificationType"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated notifications */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaginatedEnvelope"] & {
+                        data: components["schemas"]["Notification"][];
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getNotificationUnreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Unread count */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationUnreadCount"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    markNotificationRead: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                id: components["parameters"]["NotificationId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Marked read */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    markAllNotificationsRead: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Mark-all result */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        marked_count: number;
+                    };
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    getNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    updateNotificationPreferences: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NotificationPreferencesUpdate"];
+            };
+        };
+        responses: {
+            /** @description Updated preferences */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NotificationPreferences"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    createExport: {
+        parameters: {
+            query?: never;
+            header?: {
+                /**
+                 * @description Opaque client-generated key (UUID v4 recommended, max 255 chars).
+                 *     The server stores the response for 24 hours and replays it for a
+                 *     repeated key on the same authenticated user + same endpoint. Keys
+                 *     are ignored on `GET` requests.
+                 */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExportCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Export queued */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportJob"];
+                };
+            };
+            400: components["responses"]["ValidationError"];
+            401: components["responses"]["Unauthorized"];
+            /** @description CSV export requires Plus or higher */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getExport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Job state */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportJob"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            404: components["responses"]["NotFound"];
+        };
+    };
+    getPortfolioAnalytics: {
+        parameters: {
+            query: {
+                period: "3m" | "6m" | "1y" | "3y" | "all";
+                /**
+                 * @description ISO 4217 currency to use for the `display` half of the response's
+                 *     values. Defaults to the user's `display_currency` on their profile.
+                 */
+                display_currency?: components["parameters"]["DisplayCurrency"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Analytics block */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PortfolioAnalytics"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Analytics require Pro */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    getPortfolioTax: {
+        parameters: {
+            query: {
+                /** @description ISO-3166 alpha-2 country code for the tax regime. */
+                jurisdiction: components["parameters"]["TaxJurisdiction"];
+                year: components["parameters"]["TaxYear"];
+                /** @description Opaque pagination cursor returned in the previous response's `meta.next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+                limit?: components["parameters"]["Limit"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tax report */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TaxReport"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Tax reports require Pro */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    exportPortfolioTax: {
+        parameters: {
+            query: {
+                /** @description ISO-3166 alpha-2 country code for the tax regime. */
+                jurisdiction: components["parameters"]["TaxJurisdiction"];
+                year: components["parameters"]["TaxYear"];
+                format: "pdf" | "csv";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /**
+             * @description Returns the rendered file directly for PDF/CSV; clients should
+             *     trigger a download rather than parse the body.
+             */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/pdf": string;
+                    "text/csv": string;
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description Tax export requires Pro */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    listGlossaryTerms: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Glossary terms */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["GlossaryTerm"][];
+                    };
+                };
+            };
+        };
+    };
+    getGlossaryTerm: {
+        parameters: {
+            query?: {
+                locale?: string;
+            };
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Glossary term */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlossaryTerm"];
+                };
+            };
+            404: components["responses"]["NotFound"];
         };
     };
     clerkWebhook: {
