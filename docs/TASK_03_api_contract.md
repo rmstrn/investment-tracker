@@ -1,5 +1,9 @@
 # TASK 03 — API Contract & Database Schema
 
+**Status:** ✅ COMPLETED (2026-04-19)
+**Merged:** PR #30 (08f44c2)
+**Follow-ups tracked:** `TECH_DEBT.md` → TD-007 (oapi-codegen OpenAPI 3.1 nullable upstream bug)
+
 **Волна:** 1 (параллельно с TASK_01, TASK_02)
 **Зависит от:** ничего
 **Блокирует:** TASK_04, TASK_05, TASK_07, TASK_08

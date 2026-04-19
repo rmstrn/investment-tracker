@@ -1,13 +1,23 @@
 # 03 — Roadmap: 4 месяца до MVP
 
+## Статус
+
+**Wave 1: ✅ completed** (2026-04-19)
+
+Параллельные таски TASK_01 (monorepo), TASK_02 (design system), TASK_03 (API contract + DB schema) смержены в main. Детали и merge commits — в `merge-log.md`. Design brief v1.1 — `04_DESIGN_BRIEF.md`. Накопленные tech-debt items — `TECH_DEBT.md`.
+
+**Wave 2: starting** — TASK_04 (Go backend) + TASK_05 (Python AI service) в параллельных worktrees. TASK_06/07/08 — после готовности TASK_04.
+
+---
+
 ## Месяц 1 — Фундамент
 
 ### Инфраструктура
-- [ ] Турборепо с apps/web, apps/api, apps/ai, apps/ios, packages/shared
-- [ ] GitHub репозиторий + Actions CI/CD
-- [ ] Docker Compose для локальной разработки
-- [ ] Secrets management (Doppler)
-- [ ] Sentry + PostHog интеграция
+- [x] Турборепо с apps/web, apps/api, apps/ai, apps/ios, packages/shared — TASK_01
+- [x] GitHub репозиторий + Actions CI/CD — TASK_01
+- [x] Docker Compose для локальной разработки — TASK_01
+- [ ] Secrets management (Doppler) — отложено до wave 2/3
+- [ ] Sentry + PostHog интеграция — TASK_07
 
 ### Backend Core
 - [ ] Go проект с Fiber
@@ -18,17 +28,19 @@
 - [ ] Unit-тесты для критичных путей
 
 ### Web
-- [ ] Next.js 15 проект, Tailwind v4, shadcn/ui
-- [ ] Интеграция Clerk (регистрация, логин, email verification)
-- [ ] Эмпти дашборд
-- [ ] UI для ручного добавления сделок
-- [ ] Список позиций (мок-данные)
+- [x] Next.js 15 проект, Tailwind v4, shadcn/ui — TASK_01 + TASK_02
+- [ ] Интеграция Clerk (регистрация, логин, email verification) — TASK_07
+- [ ] Эмпти дашборд — TASK_07
+- [ ] UI для ручного добавления сделок — TASK_07
+- [ ] Список позиций (мок-данные) — TASK_07
 
-### Design System
-- [ ] Figma-файл с токенами (цвета, типографика, spacing)
-- [ ] Style Dictionary экспорт в Tailwind tokens
-- [ ] Ключевые компоненты: Button, Input, Card, Dialog, Tabs
-- [ ] Макеты главных экранов (dashboard, positions, accounts)
+### Design System — ✅ wave 1 completed (TASK_02, PRs #29/#31/#32)
+- [x] Дизайн-токены (цвета, типографика, spacing) в `packages/design-tokens`
+- [x] Style Dictionary экспорт в Tailwind tokens + `{types, default}` subpath exports
+- [x] Ключевые компоненты: Button, Input, Card, Dialog, Tabs, Badge, Tooltip, Dropdown, Sheet, SegmentedControl, Popover + AI-specific (ChatInputPill, ToolUseCard, TrustRow, SuggestedPrompt, ExplainerTooltip, InsightCard, BellDropdown, PaywallModal, UsageMeter)
+- [x] Light + Dark WCAG-audited токены (PR #31 contrast fix)
+- [x] Design brief v1.1 — `04_DESIGN_BRIEF.md`
+- [ ] Макеты главных экранов (Figma) — параллельно с TASK_07
 
 ## Месяц 2 — Данные и интеграции
 
