@@ -195,3 +195,67 @@ and better reviewed visually.
 Doppler flow, or the `release_command` path produce incidents, re-open
 relevant sub-decisions; otherwise consolidate at next review post-first-
 enterprise customer.
+
+## 2026-04-21 — CORS middleware: implicit → allowlist (PR #54 + #55)
+
+**Decision.** Core API теперь несёт Fiber v3 `cors.New()` как первый
+middleware после `RequestID` / `RequestLog` и до Auth. Exact-origin
+allowlist из env var `ALLOWED_ORIGINS` (CSV → `envconfig` сплитит в
+`[]string` нативно). `AllowCredentials: true`, поэтому wildcard `*`
+недопустим — origins должны совпадать посимвольно (без trailing
+slash). `ExposeHeaders` покрывает 10 scope-cut `X-*` (PO_HANDOFF §6) +
+`X-RateLimit-*` + `X-Request-ID` — web client читает их через
+`onRateLimitHeaders` hook (PR #50). Preflight OPTIONS возвращаются 204
+самим middleware — Auth их не видит. `/health` + `/metrics` + webhooks
+no-op'ятся потому что Fly / Clerk / Stripe не шлют `Origin` header.
+
+**Почему allowlist, а не `*`.** Финансовое приложение, в будущем
+ходим через Clerk cookies (credentials mode); браузер игнорит `*` +
+credentials комбо. Также `*.vercel.app` отклоняется — attacker
+регистрирует `evil.vercel.app` и читает user data.
+
+**Ship chain.** PR #54 (`adad1a1`, 2026-04-20) — middleware + config +
+тесты. PR #55 (`f1b5799`, 2026-04-21) — golangci-lint hotfix
+(`bodyclose`×2 + `noctx`×2) в новом `cors_test.go`. Оба PR смёрджены
+squash. Подробности — `merge-log.md`.
+
+### Incident: PR #54 admin-bypass merge with red CI
+
+**What happened.** PR #54 был смёржен с failing `Go — lint + vet +
+build + test` check. 4 golangci-lint issue: два `bodyclose` (missing
+`defer resp.Body.Close()` после `app.Test()`) и два `noctx`
+(`httptest.NewRequest` вместо `NewRequestWithContext`). `go vet` +
+`go test -short` локально были зелёные; lefthook pre-push hook
+прогоняет `gofmt` / `go vet` / `typecheck` / `py-mypy`, но не полный
+`golangci-lint run`. CC не запустил его вручную перед push. PO
+смёржил PR despite red check, доверившись GAP REPORT про "все тесты
+зелёные". Hotfix ушёл в PR #55 (cherry-pick уже готового коммита
+`d3f674a` из мёртвой `feature/api-cors`).
+
+**Classification.** Admin-bypass под TD-006 — incident трассируем, но
+это был сценарий "single red check после approval", не P1 hotfix.
+Повторное использование нормализует policy violation, поэтому ниже
+две TD-записи для предотвращения.
+
+### TD-076 (high) — lefthook pre-push gap: golangci-lint not run locally
+
+`lefthook.yml` pre-push hook сегодня: `typecheck` + `go-vet` +
+`py-mypy`. Этого мало: категории `bodyclose`, `noctx`, `errcheck`,
+`gocritic`, `revive` ловятся ТОЛЬКО на CI. Добавить
+`tools/scripts/hook-golangci-lint.sh` + entry в pre-push. Опция:
+запускать только на staged Go файлах через `{staged_files}` или
+`--new-from-rev=origin/main`, чтобы не гонять full lint каждый push.
+**Owner:** backend lead. **Revisit:** after next Go-touching PR —
+подтвердить что incident не повторяется.
+
+### TD-077 (high) — policy: `gh pr checks <N> --watch` обязателен перед `gh pr merge`
+
+Сейчас CC и PO в разных сессиях могут одновременно одобрить merge без
+синхронизации с CI. Admin-bypass должен быть **явным** решением
+(`--admin` flag + inline comment с reason), не молчаливым default'ом
+когда кто-то торопится. Политика: перед `gh pr merge` обязательный
+`gh pr checks <N> --watch` до получения all-green; если checks red —
+остановиться, запустить hotfix flow (см. CORS slice PR #55 как
+reference). Document'ить это в `PO_HANDOFF.md § 3 Cycle per PR`.
+**Owner:** PO. **Revisit:** 2 PR merge'а подряд без violation →
+считаем абсорбированным.

@@ -15,6 +15,39 @@ Newest entries at the top.
 
 ---
 
+## PR #55 — fix(api): golangci-lint hotfix for cors_test.go
+
+**Squash SHA:** `f1b5799`
+**Merged:** 2026-04-21
+**Base:** `fb68193` (main tip после PR #54 + `19e72b8` docs-only amendment + `fb68193` gitignore chore).
+**Scope:** hotfix за PR #54. Четыре golangci-lint issue в `apps/api/internal/server/cors_test.go`:
+- `bodyclose` × 2 — `resp, err := a.Test(req)` требовал `defer resp.Body.Close()`.
+- `noctx` × 2 — `httptest.NewRequest(...)` → `httptest.NewRequestWithContext(t.Context(), ...)`.
+
+Cherry-pick `d3f674a` из уже-мёртвой `feature/api-cors` (написан сразу после CI fail, не успел попасть в оригинальный PR до admin-bypass merge). Все 8 CI checks зелёные (Go / Node / Python / Security × 3 / Vercel / Trivy).
+
+**Incident:** см. `DECISIONS.md` — «CORS slice lint gap». Две TD записи про gap в pre-push hook и про обязательный `gh pr checks --watch` перед merge.
+
+**No admin-bypass** на этом PR.
+
+---
+
+## PR #54 — feat(api): CORS middleware with ALLOWED_ORIGINS allowlist
+
+**Squash SHA:** `adad1a1`
+**Merged:** 2026-04-20 21:35 UTC
+**Base:** `973fca8`.
+**Scope:** Fiber v3 `cors.New()` middleware на всём авторизованном + публичном API surface.
+- `apps/api/internal/config/config.go` — `AllowedOrigins []string` envconfig tag `ALLOWED_ORIGINS`, default `http://localhost:3000` (envconfig нативно сплитит CSV в slice).
+- `apps/api/internal/server/server.go` — `cors.New(cors.Config{...})` после `RequestID` + `RequestLog`, до Auth. `AllowOrigins` exact-match (wildcards rejected — `AllowCredentials: true`). `ExposeHeaders` = 10 scope-cut `X-*` (PO_HANDOFF §6) + `X-RateLimit-*` + `X-Request-ID`. `AllowMethods` = GET/POST/PUT/PATCH/DELETE/OPTIONS. `MaxAge` = 86400 (браузеры сами capping'ят до 2h).
+- `apps/api/internal/server/cors_test.go` (new) — 2 теста через Fiber `app.Test()`: allowed origin → 204 + exact `Access-Control-Allow-Origin` + `-Credentials: true` + `-Max-Age: 86400`; disallowed origin → ни одного `Access-Control-*` header.
+- `ops/secrets.keys.yaml` — `ALLOWED_ORIGINS` добавлен в `required:` (CSV format, no trailing slash).
+- `docs/RUNBOOK_deploy.md` — Prerequisites/Doppler nudge про формат.
+
+**⚠ Admin-bypass (TD-006):** merged с fail'ящим `Go — lint + vet + build + test` check (golangci-lint вывел 4 issue — `bodyclose` × 2 и `noctx` × 2 в новом `cors_test.go`). CC (Claude) запустил локально только `go vet` + `go test -short` + `gofmt`, не `golangci-lint run`. Lefthook pre-push hook покрывает `gofmt` / `go vet` / `typecheck` / `py-mypy`, но НЕ полный `golangci-lint`. Gap замечен после merge'а; исправлен в PR #55 (см. выше). Пометка оставлена намеренно чтобы incident был трассируем.
+
+---
+
 ## 2026-04-20 — PR C deploy-chain hot-fixes (staging bootstrap)
 
 Direct-to-main commits applied during staging bootstrap to unblock the first real deploy. Each one fixes a pre-existing bug shipped in PR #49 (PR C) that only surfaced because the workflow had never run end-to-end (PR #49's push-on-merge run failed even earlier, on Fly app not existing).

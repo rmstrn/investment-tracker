@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (вечер — PR #50 TASK_07 Slice 3 AI Chat UI merged (`4881dfd`), main tip = `4881dfd` + this docs pass on top. TASK_07 **3 of N slices merged** (Dashboard → Positions → Chat). **TASK_04 closed 10 of 10.** Wave 2 code-complete. Впереди — post-merge operational setup (Doppler/Fly apps/DNS/first deploys) + AI 404-swallow flip + TASK_07 Slice 4 (Insights + FloatingAiFab) или Slice 5 (Paywall + Stripe Checkout) + PR D (workers).)
+**Last updated:** 2026-04-21 (CORS middleware slice landed — PR #54 `adad1a1` (⚠ admin-bypass, см. merge-log) + PR #55 `f1b5799` lint hotfix. Main tip = `f1b5799` + this docs pass on top. Browser `fetch()` от Vercel-web к `api-staging.investment-tracker.app` теперь не блокируется CORS preflight. Впереди — PO Doppler `ALLOWED_ORIGINS` + fly deploy staging + smoke curl.)
 
 ---
 
@@ -16,15 +16,15 @@
 
 ---
 
-## 1. Текущий статус (2026-04-20)
+## 1. Текущий статус (2026-04-21)
 
 ### Волна 1 — ✅ закрыта
 TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 
 ### Волна 2 — ✅ code-complete (10/10 PRs merged; operational setup впереди)
-- **TASK_04 Core API (Go):** 10 of 10 PRs merged.
-  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), **B3-i (write path mutations, 2026-04-19, SHA `11d6098`, PR #40)**, **B3-ii-a (AI foundation + 5 handlers, 2026-04-20, SHA `8c52a4d`, PR #42)**, **B3-ii-b (AI chat sync + SSE reverse-proxy + single-writer ai_usage, 2026-04-20, SHA `c2a2afe`, PR #44)**, **B3-iii (Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs, 2026-04-20, SHA `08e09f4`, PR #46)**, **PR C (deploy infrastructure — Dockerfile polish + fly.toml prod/staging + deploy-api.yml pipeline + k6 smoke + Doppler-first secrets + RUNBOOK_deploy, 2026-04-20, SHA `fa9c9dc`, PR #49)**.
-  - ⏳ Post-merge operational: PO setup Doppler project + Fly apps + GitHub environments/secrets + DNS + первый staging deploy + 24-48h soak + prod cutover. Roadmap — `RUNBOOK_deploy.md § Prerequisites`.
+- **TASK_04 Core API (Go):** 10 of 10 PRs merged + CORS micro-slice (PR #54 + PR #55 hotfix, 2026-04-21).
+  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), **B3-i (write path mutations, 2026-04-19, SHA `11d6098`, PR #40)**, **B3-ii-a (AI foundation + 5 handlers, 2026-04-20, SHA `8c52a4d`, PR #42)**, **B3-ii-b (AI chat sync + SSE reverse-proxy + single-writer ai_usage, 2026-04-20, SHA `c2a2afe`, PR #44)**, **B3-iii (Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs, 2026-04-20, SHA `08e09f4`, PR #46)**, **PR C (deploy infrastructure — Dockerfile polish + fly.toml prod/staging + deploy-api.yml pipeline + k6 smoke + Doppler-first secrets + RUNBOOK_deploy, 2026-04-20, SHA `fa9c9dc`, PR #49)**, **CORS middleware (allowlist из `ALLOWED_ORIGINS`, scope-cut `X-*` + `X-RateLimit-*` в `ExposeHeaders`, 2026-04-21, SHA `adad1a1`, PR #54)** + **hotfix (golangci-lint bodyclose/noctx, SHA `f1b5799`, PR #55)**.
+  - ⏳ Post-merge operational: PO setup Doppler project + Fly apps + GitHub environments/secrets + DNS + первый staging deploy + 24-48h soak + prod cutover. Roadmap — `RUNBOOK_deploy.md § Prerequisites`. **Для CORS слайса:** PO добавляет `ALLOWED_ORIGINS` в Doppler stg/prd + `fly deploy -a investment-tracker-api-staging` + smoke `curl -i -X OPTIONS .../portfolio`.
 - **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger (см. PR #44 B3-ii-b для persist implementation). 404-swallow flip на strict propagation — после PR C prod soak (см. `RUNBOOK_ai_flip.md`).
 
 ### Волна 3 — 🟢 в работе
@@ -40,7 +40,11 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | (после post-merge docs pass PR #50 — обновится этим коммитом) | TBD | 2026-04-20 |
+| **main tip** | (после post-merge docs pass PR #54 + #55 — обновится этим коммитом) | TBD | 2026-04-21 |
+| #55 | fix(api): golangci-lint hotfix for `cors_test.go` — cherry-pick `d3f674a` из feature/api-cors. `bodyclose` ×2 + `noctx` ×2 satisfied. Incident + 2 новые TD записаны в DECISIONS.md (pre-push golangci-lint gap + policy обязательного `gh pr checks --watch` перед merge). | `f1b5799` | 2026-04-21 |
+| #54 ⚠ | feat(api): CORS middleware with `ALLOWED_ORIGINS` allowlist — Fiber v3 `cors.New()` после RequestID/RequestLog. Exact-origin allowlist (credentials mode), 10 scope-cut `X-*` + `X-RateLimit-*` + `X-Request-ID` в `ExposeHeaders`, `MaxAge=86400`. 2 unit теста через `app.Test()`. `ops/secrets.keys.yaml` + `RUNBOOK_deploy.md` обновлены. **Admin-bypass** (TD-006): merged с fail'ящим golangci-lint, hotfixed в PR #55. | `adad1a1` | 2026-04-20 |
+| docs-only | CC owns merge+cleanup+docs post-approval (api-cors slice) | `19e72b8` | 2026-04-20 |
+| chore-only | gitignore local secrets backup files | `fb68193` | 2026-04-20 |
 | #50 | TASK_07 Slice 3: AI Chat UI — `(app)/chat` + `(app)/chat/[id]` routes, SSE client over fetch+ReadableStream, chat reducer, 6 TanStack hooks, 9 UI components (incl. StreamingMessageView / ChatMessageItem 5-way / ImpactCardView §14.2 / CalloutView §14.1-14.3), tier-limit toast, UsageIndicator via `onRateLimitHeaders` extension в api-client. Sidebar activated. 4 Vitest smoke (tests 15→38). TD-068 opened (P3 schema drift). | `4881dfd` | 2026-04-20 |
 | docs-only | kickoff TASK_07 Slice 3 | `7931e8e` | 2026-04-20 |
 | #49 | PR C: Core API deploy infrastructure — migrate subcommand + /metrics + fly.toml (prod + staging) + deploy-api.yml pipeline (staging→smoke→approval→prod) + k6 smoke suite (5) + Doppler-first secrets (`ops/secrets.keys.yaml` + verify script) + `RUNBOOK_deploy.md` + TD-060..064 + TD-066 + TD-067. TASK_04 closed 10/10. | `fa9c9dc` | 2026-04-20 |
