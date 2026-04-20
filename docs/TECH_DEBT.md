@@ -8,6 +8,32 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-067 — deploy-web.yml / deploy-ai.yml pipeline consistency
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P2
+**Source:** PR C rewrote `deploy-api.yml` into a staging → smoke → approve → prod pipeline with k6 + Doppler hygiene. `deploy-web.yml` + `deploy-ai.yml` kept their simpler single-shot `workflow_dispatch` shape from TASK_01. Once all three services deploy frequently a PO clicking through three different dispatch UIs is a footgun.
+**Risk:** low — each workflow is fine in isolation. Divergence cost is confusion + occasional miss (forgetting to run k6 after deploy-web, forgetting Doppler verify before deploy-ai).
+**Fix:** mirror the `deploy-api.yml` pattern for both siblings. Web: Vercel has its own deploy primitive but the k6 gate + approval still apply (smoke scenarios are web-specific — `/design`, sign-in flow, Dashboard hydration). AI: Fly deploy + smoke, same pattern as api with AI-specific scenarios (`/v1/chat/complete` round-trip).
+**Trigger to revisit:** first successful prod deploy of all three services — once the api pattern is validated end-to-end, generalize.
+**Owner:** backend + web + AI (coord)
+**Scope:** ~200 LOC deploy-ai.yml rewrite + ~250 LOC deploy-web.yml rewrite + per-service smoke — 2-3 days total
+
+---
+
+### TD-066 — Restore `workers` deploy target
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P1 (PR D blocker)
+**Source:** PR C removed `target: workers|both` from the `deploy-api.yml` `workflow_dispatch` inputs defensively — `cmd/workers/main.go` is still a placeholder heartbeat (30s log tick, no asynq consumer). Shipping the placeholder to prod by a click-mistake would masquerade as healthy worker coverage while real enqueued tasks silently drop.
+**Risk:** blocks PR D. The whole point of PR D is a real asynq consumer; the CD pipeline must carry it forward the same day.
+**Fix:** re-add `deploy-workers` + `smoke-workers` jobs to `deploy-api.yml` mirroring the api pipeline (staging → smoke → approval → prod → tag). Smoke should hit whatever asynq-inspector endpoint workers exposes (TBD in PR D). Keep workers behind the same GitHub `production` environment gate.
+**Trigger to revisit:** `cmd/workers` acquires a real consumer (PR D scope).
+**Owner:** backend lead
+**Scope:** ~80 LOC workflow + smoke scenario — 1 day
+
+---
+
 ### TD-065 — `TransactionRow.kind`: support split events
 
 **Added:** 2026-04-20 (PR #48 / TASK_07 Slice 2)
@@ -18,6 +44,71 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 **Trigger to revisit:** первый user feedback про отсутствие splits в Transactions list; OR первый seed dataset со split events для UI testing; OR broker integration (TASK_06) начинает поставлять split events массово.
 **Owner:** frontend + design
 **Scope:** ~80 LOC (TransactionRow kind extension + splitRatio helper + test + footnote cleanup в apps/web `PositionTransactionsTab`) — 0.5 day
+
+---
+
+### TD-064 — Blue-green deploys instead of rolling
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P3
+**Source:** `fly.toml` uses `strategy = "rolling"` — machines swap one at a time. Stateless HTTP is fine; SSE streams (e.g. `/ai/chat/stream`) dropped mid-deploy leave the user with a broken frame until `EventSource` reconnects. UX jitter, not data loss.
+**Risk:** low. EventSource auto-reconnects; the tee-parser persists whatever content arrived before the drop. Real risk is user-visible stutter during a deploy.
+**Fix:** Fly's `bluegreen` strategy (v2 app platform) swaps the whole fleet at once with instant rollback. Requires DNS or LB hand-off choreography and longer deploy duration, but removes the mid-stream swap.
+**Trigger to revisit:** first SSE drop incident escalated by a user, OR `smoke-prod` `ai_chat_stream` scenario starts flaking during deploys.
+**Owner:** backend + infra
+**Scope:** ~100 LOC fly.toml delta + RUNBOOK update + rehearsal — weekend of work
+
+---
+
+### TD-063 — Per-tenant rate limits
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P2
+**Source:** Core API rate-limit middleware today is per-IP (DoS protection) + per-user on AI endpoints. Shared resources (prices cache, asynq queues, DB pool) have no per-tenant cap — one abusive tenant can crowd out others.
+**Risk:** medium pre-enterprise. Enterprise contracts usually demand per-tenant SLA; first such conversation will flag this.
+**Fix:** Redis-backed token bucket keyed on `(user_id, endpoint_class)`. Tier-aware caps (Free stricter, Pro looser), integrated with the existing `airatelimit` pattern so there is one rate-limit ladder to reason about.
+**Trigger to revisit:** first enterprise customer conversation, OR a PagerDuty event where one tenant saturated the cache or AI queue.
+**Owner:** backend lead
+**Scope:** ~200 LOC + tests + tier-caps update — 1-2 days
+
+---
+
+### TD-062 — APM / cross-service trace correlation
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P2
+**Source:** PR C ships Sentry + structured logs + Prometheus default metrics. Cross-service traces are manual via `X-Request-Id` correlation through logs. Sufficient at MVP scale; lossy once Core ↔ AI ↔ Workers triple-hops become common.
+**Risk:** debugging time on cross-service incidents grows superlinearly without proper traces. Deferred cost, not immediate pain.
+**Fix:** OpenTelemetry SDK (`go.opentelemetry.io/otel`) across Core API + AI Service, later Workers. Span kind server/client, baggage carries `user_id` + `request_id`. Export to Grafana Tempo (self-host) or Datadog (managed).
+**Trigger to revisit:** alongside the AI Service 404-swallow flip (see `RUNBOOK_ai_flip.md`) — trace correlation makes that flip's debug surface finite.
+**Owner:** backend + AI (coord)
+**Scope:** ~500 LOC per service + Tempo/DD setup + dashboards — 1-2 weeks
+
+---
+
+### TD-061 — Multi-region deploy
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P3
+**Source:** `fly.toml` pins `primary_region = "fra"`. Single-region is an SPOF — a fra outage drops all EU users. Neon/Upstash are similarly single-region at the MVP tier.
+**Risk:** low at MVP scale (most EU users near fra; fly SLA is acceptable). Escalates with traffic and, more importantly, with user count that makes an outage a real PR event.
+**Fix:** add a secondary region (ams or lhr), configure `regions` in fly.toml, verify Neon read-replica + Upstash global configuration cover the second region at acceptable latency.
+**Trigger to revisit:** ~1k paying users, OR a first fra outage user-visible enough to require post-mortem.
+**Owner:** backend + infra
+**Scope:** multi-day — ~400 LOC config + DB/Redis regional setup + failover drills
+
+---
+
+### TD-060 — KMS-managed KEK (replace env-based)
+
+**Added:** 2026-04-20 (PR C / Core API deploy infra)
+**Priority:** P2
+**Source:** `ENCRYPTION_KEK` currently lives as a base64 env var in Fly secrets. Fine for MVP; audit-hostile. A compromised Fly access token reveals the master key, and key rotation is a full re-encrypt.
+**Risk:** medium. SOC2 / enterprise conversations will flag raw-env KEK. GDPR stance at MVP is defensible, but only just.
+**Fix:** AWS KMS (or GCP KMS) as KEK custodian. Core API holds a KEK-ID + IAM role; decryption via `kms.Decrypt` at boot, KEK never touches disk. Unlocks versioned KEKs + clean rotation (TD original intent in `02_ARCHITECTURE.md` § 5).
+**Trigger to revisit:** first enterprise / GDPR-sensitive customer conversation, OR SOC2 Type 2 scoping.
+**Owner:** backend lead + security
+**Scope:** ~300 LOC (KMS client wrapper, boot fetch + caching, rotation runbook update) — 3-4 days
 
 ---
 
