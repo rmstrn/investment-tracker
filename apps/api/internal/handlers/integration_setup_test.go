@@ -61,6 +61,23 @@ import (
 // Authorization: Bearer header.
 const testSharedInternalToken = "integration-shared-secret-placeholder-32b"
 
+// Webhook-related fixtures. Tests sign their synthetic payloads with
+// these same secrets so server.New's real verifiers accept them.
+//
+// testClerkWebhookSecret is the `whsec_<base64>` shape Clerk issues in
+// production — exercising NewWebhook's base64-decode path rather than
+// the NewWebhookRaw fallback, so a prod-secret regression would be
+// caught here rather than post-deploy. The raw key bytes are
+// `some_32byte_raw_key_for_tests_ok` (32 ASCII bytes). The
+// `gitleaks:allow` comment tells the secret scanner this is a
+// placeholder — there is no real Clerk/Stripe endpoint keyed with it.
+const (
+	testClerkWebhookSecret  = "whsec_c29tZV8zMmJ5dGVfcmF3X2tleV9mb3JfdGVzdHNfb2s=" // gitleaks:allow — test placeholder, no real endpoint
+	testStripeWebhookSecret = "whsec_integration_stripe_placeholder_secret"        // gitleaks:allow — test placeholder, no real endpoint
+	testStripePricePlus     = "price_integration_plus"
+	testStripePricePro      = "price_integration_pro"
+)
+
 // Package-level handles set by TestMain. Access them by calling
 // resetDB(t) first — that also doubles as a "I need the shared state"
 // assertion since it nil-checks testPool.
@@ -158,6 +175,7 @@ func resetDB(t *testing.T) {
 			portfolio_snapshots, positions, transactions,
 			prices, fx_rates,
 			accounts,
+			webhook_events,
 			users
 		RESTART IDENTITY CASCADE
 	`)
@@ -203,6 +221,14 @@ func newTestAppWithAI(t *testing.T, aiURL, aiToken string) *fiber.App {
 			CoreAPIInternalToken: testSharedInternalToken,
 			AIServiceURL:         aiURL,
 			AIServiceToken:       aiToken,
+			// Webhook tests sign their payloads with these exact
+			// values to exercise the verifiers end-to-end. Clerk
+			// uses the prod `whsec_<base64>` shape — tests share the
+			// same NewWebhook path production will use.
+			ClerkWebhookSecret:  testClerkWebhookSecret,
+			StripeWebhookSecret: testStripeWebhookSecret,
+			StripePricePlus:     testStripePricePlus,
+			StripePricePro:      testStripePricePro,
 		},
 		Log:      zerolog.New(io.Discard),
 		Pool:     testPool,

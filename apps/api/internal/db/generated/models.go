@@ -242,3 +242,9 @@ type UserDigestPreference struct {
 	CreatedAt     pgtype.Timestamptz
 	UpdatedAt     pgtype.Timestamptz
 }
+
+type WebhookEvent struct {
+	Source      string
+	EventID     string
+	ProcessedAt pgtype.Timestamptz
+}

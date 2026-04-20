@@ -100,6 +100,33 @@ func (q *Queries) GetUserByID(ctx context.Context, id uuid.UUID) (User, error) {
 	return i, err
 }
 
+const getUserByStripeCustomerID = `-- name: GetUserByStripeCustomerID :one
+SELECT id, clerk_user_id, email, display_currency, locale, subscription_tier, stripe_customer_id, created_at, updated_at, deletion_scheduled_at FROM users WHERE stripe_customer_id = $1
+`
+
+// Used by the Stripe webhook path to locate the user owning a given
+// Stripe customer. Requires that /billing/checkout has previously
+// linked the customer back to our row (TD-057). Until that endpoint
+// ships, webhooks arriving for a customer we have never linked will
+// miss this lookup; the handler falls back to subscription metadata.
+func (q *Queries) GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID *string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByStripeCustomerID, stripeCustomerID)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.ClerkUserID,
+		&i.Email,
+		&i.DisplayCurrency,
+		&i.Locale,
+		&i.SubscriptionTier,
+		&i.StripeCustomerID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.DeletionScheduledAt,
+	)
+	return i, err
+}
+
 const markUserDeletionRequested = `-- name: MarkUserDeletionRequested :one
 UPDATE users
 SET deletion_scheduled_at = COALESCE(deletion_scheduled_at, now()),

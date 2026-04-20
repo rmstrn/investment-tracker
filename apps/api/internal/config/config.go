@@ -39,6 +39,14 @@ type Config struct {
 	// ── Billing (Stripe) ────────────────────────────────────────────
 	StripeSecretKey     string `envconfig:"STRIPE_SECRET_KEY" required:"true"`
 	StripeWebhookSecret string `envconfig:"STRIPE_WEBHOOK_SECRET" required:"true"`
+	// StripePricePlus / StripePricePro map the Stripe `price_id` on an
+	// incoming subscription event to our internal tier string. Unset on
+	// local dev and early staging — in that case the Stripe webhook
+	// logs `stripe_webhook_unknown_price` at WARN and leaves
+	// users.subscription_tier unchanged (fail-open). Populated from the
+	// prod Stripe product catalog once billing goes live (TD-057).
+	StripePricePlus string `envconfig:"STRIPE_PRICE_PLUS"`
+	StripePricePro  string `envconfig:"STRIPE_PRICE_PRO"`
 
 	// ── AI service ──────────────────────────────────────────────────
 	// AIServiceToken: Core → AI direction (chat stream, insights, etc.)
