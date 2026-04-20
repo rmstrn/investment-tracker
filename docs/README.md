@@ -18,10 +18,13 @@ docs/
 ├── CLAUDE_CODE_PROMPTS.md       ← шаблоны для параллельных CC сессий
 ├── RUNBOOK_ai_flip.md           ← runbook: AI Service 404-swallow → strict (после B3-iii)
 ├── PR_C_preflight.md            ← pre-flight GAP-анализ финального PR C (Fly.io deploy)
+├── CC_KICKOFF_pr_c.md           ← PR C kickoff (wrapper вокруг PR_C_preflight)
+├── CC_KICKOFF_task07_slice1.md  ← ✅ merged PR #45
+├── CC_KICKOFF_task07_slice2.md  ← TASK_07 Slice 2 (Positions list + detail)
 ├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
 ├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
 ├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
-├── TASK_04_core_backend.md      ← 🚧 wave 2, Go API (8 of ~9 PRs merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a/B3-ii-b; B3-iii next, C впереди)
+├── TASK_04_core_backend.md      ← ✅ wave 2 closed (9/9 merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a/B3-ii-b/B3-iii; PR C Fly.io deploy in flight separately)
 ├── TASK_05_ai_service.md        ← ✅ wave 2, Python AI-сервис (PR #34 initial + PR #43 ai_usage dual-write cleanup 2026-04-20)
 ├── TASK_06_broker_integrations.md  ← wave 3 (стартует после закрытия TASK_04)
 ├── TASK_07_web_frontend.md      ← 🟢 wave 3 in flight (Slice 1 merged PR #45 `a622bd3`)

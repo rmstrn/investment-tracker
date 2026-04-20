@@ -1,6 +1,7 @@
 # Pre-flight — PR C (Core API deploy: Dockerfile + fly.toml + k6 smoke + runbook)
 
-**Status:** DRAFT — pre-flight prepared while B3-ii / B3-iii are still open. PR C opens after B3-iii merges and has clean 24h in staging.
+**Status:** READY — B3-ii (PR #44) and B3-iii (PR #46) merged. TASK_04 closed 9/9. PR C ready to open.
+**Renumbered (2026-04-20):** follow-up TDs TD-048..052 → TD-060..064 (TD-048..052 now occupied by real tech-debt in TECH_DEBT.md).
 **Owner:** TBD (backend maintainer at deploy time)
 **Est. size:** 1800-2400 LOC (Dockerfile + fly.toml + GitHub Actions wire + k6 smoke + runbook + health/metrics wiring + misc)
 **Blast radius:** Core API prod environment — first real deploy. No user data yet in prod DB (will be seeded post-deploy via Clerk first sign-up). Write path is live but backed by a fresh DB.
@@ -21,7 +22,7 @@ Through PRs A → B3-iii, Core API has been built and tested entirely in CI + lo
 **Out of scope for PR C:**
 - Multi-region deploy (single region `fra` for MVP; revisit post-GA)
 - APM (Datadog/New Relic) — using Fly.io native metrics + Grafana Cloud via Prometheus scrape later
-- KMS/Vault integration — KEK stays in Fly secrets for MVP (TD-048)
+- KMS/Vault integration — KEK stays in Fly secrets for MVP (TD-060)
 - Worker deploy (asynq workers) — separate PR D; blocked until we have at least one worker that actually needs to run (currently no-op — `asynqpub.Enabled()` returns false in prod)
 - AI Service deploy — TASK_05 owns its own deploy PR
 - Web / iOS deploy — TASK_07 / TASK_08 own those
@@ -316,20 +317,20 @@ B3-i ships `X-Async-Unavailable: true` header when publisher is disabled; right 
 
 ## Follow-up TDs (propose at PR C open time)
 
-- **TD-048:** Replace env-based KEK with cloud KMS (AWS KMS or GCP KMS). Current env KEK is fine for MVP but audit-hostile. Priority: P2, revisit at first enterprise/GDPR-sensitive customer conversation.
-- **TD-049:** Multi-region deploy. Single `fra` region is an SPOF. Priority: P3, revisit at 1k paying users.
-- **TD-050:** APM/trace correlation (OpenTelemetry → Grafana Tempo or Datadog). Current setup is Sentry + structured logs + Prom metrics; cross-service traces manual via `X-Request-Id`. Priority: P2, do alongside AI Service flip (RUNBOOK_ai_flip).
-- **TD-051:** Per-tenant rate limits via Redis-backed token bucket. Current rate limit is per-IP only (protects from DoS, doesn't protect shared resources from one abusive tenant). Priority: P2, do before first enterprise customer.
-- **TD-052:** Blue-green deploys instead of rolling. Rolling is fine for stateless HTTP but risky for mid-stream SSE. Blue-green gives full switch + instant rollback. Priority: P3, do only if rolling causes real incidents.
+- **TD-060:** Replace env-based KEK with cloud KMS (AWS KMS or GCP KMS). Current env KEK is fine for MVP but audit-hostile. Priority: P2, revisit at first enterprise/GDPR-sensitive customer conversation.
+- **TD-061:** Multi-region deploy. Single `fra` region is an SPOF. Priority: P3, revisit at 1k paying users.
+- **TD-062:** APM/trace correlation (OpenTelemetry → Grafana Tempo or Datadog). Current setup is Sentry + structured logs + Prom metrics; cross-service traces manual via `X-Request-Id`. Priority: P2, do alongside AI Service flip (RUNBOOK_ai_flip).
+- **TD-063:** Per-tenant rate limits via Redis-backed token bucket. Current rate limit is per-IP only (protects from DoS, doesn't protect shared resources from one abusive tenant). Priority: P2, do before first enterprise customer.
+- **TD-064:** Blue-green deploys instead of rolling. Rolling is fine for stateless HTTP but risky for mid-stream SSE. Blue-green gives full switch + instant rollback. Priority: P3, do only if rolling causes real incidents.
 
 ---
 
 ## Sequencing
 
 **Blocked on:**
-- B3-ii merged (AI SSE reverse-proxy live) — otherwise scenario 4 of k6 smoke can't pass
-- B3-iii merged (write path complete) — otherwise deploying an incomplete API
-- 24h clean staging run post-B3-iii — any new bugs surfaced should be fixed before prod deploy
+- ~~B3-ii merged (AI SSE reverse-proxy live)~~ ✅ PR #44
+- ~~B3-iii merged (write path complete)~~ ✅ PR #46
+- 24h clean staging run post-deploy — surface any new bugs before prod cutover (smoke in CI handles this once staging is live)
 
 **Blocks:**
 - First production user onboarding
