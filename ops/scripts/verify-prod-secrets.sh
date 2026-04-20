@@ -76,10 +76,11 @@ if [ -z "$expected" ]; then
 fi
 
 # Actual keys from Fly — `flyctl secrets list --json` returns an array
-# of objects with a Name field. We only care about names; values never
-# leave Fly.
+# of objects with a `name` field (lower-case in current flyctl; older
+# docs showed `Name`, but v0.4+ emits lower-case). We only care about
+# names; values never leave Fly.
 actual="$(flyctl secrets list --app "$FLY_APP" --json 2>/dev/null \
-  | "$PY" -c "import json, sys; [print(s['Name']) for s in json.load(sys.stdin)]" \
+  | "$PY" -c "import json, sys; [print(s['name']) for s in json.load(sys.stdin)]" \
   | sort -u)"
 
 expected_sorted="$(printf '%s\n' "$expected" | sort -u)"
