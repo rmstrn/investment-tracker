@@ -105,6 +105,66 @@ type TokenUsage struct {
 	CostUSD      float64 `json:"cost_usd"`
 }
 
+// ChatHistoryMessage mirrors AI Service `ai_service.models.ChatMessage`.
+// Role is strictly user|assistant — Core API filters out `tool` rows
+// when loading history for context (AI Service pydantic refuses any
+// other value).
+type ChatHistoryMessage struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}
+
+// ChatStreamRequest mirrors AI Service `ai_service.models.ChatRequest`.
+// Message is the already-flattened user turn (text blocks joined by
+// "\n\n" per Anthropic convention); History is oldest-first and
+// capped at 40 entries on the AI-Service side.
+type ChatStreamRequest struct {
+	ConversationID uuid.UUID            `json:"conversation_id"`
+	Message        string               `json:"message"`
+	History        []ChatHistoryMessage `json:"history"`
+}
+
+// StreamChat opens a POST to /internal/chat/stream and returns the
+// raw *http.Response so the caller can stream the SSE body without
+// buffering. On 401/403 the body is drained + closed here and
+// ErrUpstreamAuth returned (same convention as GenerateInsights);
+// on any other non-2xx the error carries the body for logs and the
+// response is closed. On 2xx the caller MUST Close resp.Body when
+// done (sseproxy.Run does this automatically via defer).
+func (c *Client) StreamChat(ctx context.Context, userID uuid.UUID, requestID string, req ChatStreamRequest) (*http.Response, error) {
+	body, err := json.Marshal(req)
+	if err != nil {
+		return nil, fmt.Errorf("aiservice: marshal chat stream request: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost,
+		c.baseURL+"/internal/chat/stream", bytes.NewReader(body))
+	if err != nil {
+		return nil, fmt.Errorf("aiservice: build chat stream request: %w", err)
+	}
+	c.stampHeaders(httpReq, userID, requestID)
+	// Override Accept — the upstream returns SSE, not JSON.
+	httpReq.Header.Set("Accept", "text/event-stream")
+
+	resp, err := c.httpc.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("aiservice: do chat stream request: %w", err)
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden {
+		_, _ = io.Copy(io.Discard, resp.Body)
+		_ = resp.Body.Close()
+		return nil, ErrUpstreamAuth
+	}
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		raw, _ := io.ReadAll(resp.Body)
+		_ = resp.Body.Close()
+		return nil, &ErrUpstreamUnavailable{StatusCode: resp.StatusCode, Body: string(raw)}
+	}
+
+	return resp, nil
+}
+
 // GenerateInsights calls POST /internal/insights/generate. Blocks
 // for the full AI Service round-trip; caller is expected to be on
 // a request-bound context so client disconnect cancels upstream.

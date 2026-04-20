@@ -84,6 +84,46 @@ func (q *Queries) InsertAIConversation(ctx context.Context, arg InsertAIConversa
 	return i, err
 }
 
+const insertAIMessage = `-- name: InsertAIMessage :one
+INSERT INTO ai_messages (id, conversation_id, role, content, tokens_used)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, conversation_id, role, content, tokens_used, created_at
+`
+
+type InsertAIMessageParams struct {
+	ID             uuid.UUID
+	ConversationID uuid.UUID
+	Role           string
+	Content        []byte
+	TokensUsed     *int32
+}
+
+// Written by /ai/chat + /ai/chat/stream after the assistant turn
+// finishes (SSE message_stop). The handler also lands the prior
+// user turn via this same query on the way in. id is app-generated
+// (uuid v7). content is the JSONB content-blocks array per the
+// openapi AIMessageContent[] shape. tokens_used is nullable — only
+// the assistant row carries it (sum of input+output from usage).
+func (q *Queries) InsertAIMessage(ctx context.Context, arg InsertAIMessageParams) (AiMessage, error) {
+	row := q.db.QueryRow(ctx, insertAIMessage,
+		arg.ID,
+		arg.ConversationID,
+		arg.Role,
+		arg.Content,
+		arg.TokensUsed,
+	)
+	var i AiMessage
+	err := row.Scan(
+		&i.ID,
+		&i.ConversationID,
+		&i.Role,
+		&i.Content,
+		&i.TokensUsed,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const listAIConversationMessages = `-- name: ListAIConversationMessages :many
 SELECT id, conversation_id, role, content, tokens_used, created_at FROM ai_messages
 WHERE conversation_id = $1
@@ -108,6 +148,51 @@ func (q *Queries) ListAIConversationMessages(ctx context.Context, arg ListAIConv
 		arg.CursorID,
 		arg.RowLimit,
 	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []AiMessage{}
+	for rows.Next() {
+		var i AiMessage
+		if err := rows.Scan(
+			&i.ID,
+			&i.ConversationID,
+			&i.Role,
+			&i.Content,
+			&i.TokensUsed,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listAIConversationMessagesForContext = `-- name: ListAIConversationMessagesForContext :many
+SELECT id, conversation_id, role, content, tokens_used, created_at FROM ai_messages
+WHERE conversation_id = $1
+  AND role IN ('user', 'assistant')
+ORDER BY created_at ASC, id ASC
+LIMIT $2
+`
+
+type ListAIConversationMessagesForContextParams struct {
+	ConversationID uuid.UUID
+	RowLimit       int32
+}
+
+// Loads the recent turns for the AI Service history payload.
+// ORDER BY created_at ASC so the caller can ship them verbatim
+// (oldest → newest). Role IN ('user','assistant') — `tool` rows
+// live for audit only and never enter the context window; the
+// AI Service does not accept them.
+func (q *Queries) ListAIConversationMessagesForContext(ctx context.Context, arg ListAIConversationMessagesForContextParams) ([]AiMessage, error) {
+	rows, err := q.db.Query(ctx, listAIConversationMessagesForContext, arg.ConversationID, arg.RowLimit)
 	if err != nil {
 		return nil, err
 	}
@@ -207,4 +292,18 @@ func (q *Queries) ListAIConversationsByUser(ctx context.Context, arg ListAIConve
 		return nil, err
 	}
 	return items, nil
+}
+
+const touchAIConversation = `-- name: TouchAIConversation :exec
+UPDATE ai_conversations
+SET updated_at = now()
+WHERE id = $1
+`
+
+// Bumps updated_at so /ai/conversations list surfaces the freshest
+// thread first. Called inside the same tx as the assistant-message
+// insert so the two writes are atomic.
+func (q *Queries) TouchAIConversation(ctx context.Context, id uuid.UUID) error {
+	_, err := q.db.Exec(ctx, touchAIConversation, id)
+	return err
 }

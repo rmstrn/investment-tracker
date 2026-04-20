@@ -52,3 +52,34 @@ RETURNING *;
 -- the handler can distinguish "deleted" from "not found / cross-user".
 DELETE FROM ai_conversations
 WHERE id = $1 AND user_id = $2;
+
+-- name: InsertAIMessage :one
+-- Written by /ai/chat + /ai/chat/stream after the assistant turn
+-- finishes (SSE message_stop). The handler also lands the prior
+-- user turn via this same query on the way in. id is app-generated
+-- (uuid v7). content is the JSONB content-blocks array per the
+-- openapi AIMessageContent[] shape. tokens_used is nullable — only
+-- the assistant row carries it (sum of input+output from usage).
+INSERT INTO ai_messages (id, conversation_id, role, content, tokens_used)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+
+-- name: ListAIConversationMessagesForContext :many
+-- Loads the recent turns for the AI Service history payload.
+-- ORDER BY created_at ASC so the caller can ship them verbatim
+-- (oldest → newest). Role IN ('user','assistant') — `tool` rows
+-- live for audit only and never enter the context window; the
+-- AI Service does not accept them.
+SELECT * FROM ai_messages
+WHERE conversation_id = @conversation_id
+  AND role IN ('user', 'assistant')
+ORDER BY created_at ASC, id ASC
+LIMIT @row_limit;
+
+-- name: TouchAIConversation :exec
+-- Bumps updated_at so /ai/conversations list surfaces the freshest
+-- thread first. Called inside the same tx as the assistant-message
+-- insert so the two writes are atomic.
+UPDATE ai_conversations
+SET updated_at = now()
+WHERE id = $1;

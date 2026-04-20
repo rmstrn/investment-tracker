@@ -78,6 +78,13 @@ type Querier interface {
 	// title is optional — when null the AI Service auto-titles from
 	// the first user message on the next /ai/chat round.
 	InsertAIConversation(ctx context.Context, arg InsertAIConversationParams) (AiConversation, error)
+	// Written by /ai/chat + /ai/chat/stream after the assistant turn
+	// finishes (SSE message_stop). The handler also lands the prior
+	// user turn via this same query on the way in. id is app-generated
+	// (uuid v7). content is the JSONB content-blocks array per the
+	// openapi AIMessageContent[] shape. tokens_used is nullable — only
+	// the assistant row carries it (sum of input+output from usage).
+	InsertAIMessage(ctx context.Context, arg InsertAIMessageParams) (AiMessage, error)
 	// Persists one AI-generated insight. id is uuid v7 from app side;
 	// generated_at defaults to now() so the worker / handler does not
 	// need to thread a timestamp.
@@ -88,6 +95,12 @@ type Querier interface {
 	// Messages for one conversation, cursor-paginated by (created_at, id)
 	// descending so the detail endpoint surfaces freshest first.
 	ListAIConversationMessages(ctx context.Context, arg ListAIConversationMessagesParams) ([]AiMessage, error)
+	// Loads the recent turns for the AI Service history payload.
+	// ORDER BY created_at ASC so the caller can ship them verbatim
+	// (oldest → newest). Role IN ('user','assistant') — `tool` rows
+	// live for audit only and never enter the context window; the
+	// AI Service does not accept them.
+	ListAIConversationMessagesForContext(ctx context.Context, arg ListAIConversationMessagesForContextParams) ([]AiMessage, error)
 	// Cursor pagination by (updated_at, id) descending so the most
 	// recently-touched conversation is on top. Each row brings its
 	// message_count and a last_message_preview via subqueries so the
@@ -203,6 +216,10 @@ type Querier interface {
 	// weekly counters pass from=monday, to=today. Returns 0 when no rows
 	// exist so the handler never has to nil-check.
 	SumUsageCounterInRange(ctx context.Context, arg SumUsageCounterInRangeParams) (int32, error)
+	// Bumps updated_at so /ai/conversations list surfaces the freshest
+	// thread first. Called inside the same tx as the assistant-message
+	// insert so the two writes are atomic.
+	TouchAIConversation(ctx context.Context, id uuid.UUID) error
 	UndoUserDeletion(ctx context.Context, id uuid.UUID) (User, error)
 	// Powers PATCH /accounts/{id}. Both fields are optional (sqlc.narg);
 	// COALESCE keeps the column when the field is NULL so callers can

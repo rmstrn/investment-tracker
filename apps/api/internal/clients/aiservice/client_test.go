@@ -158,3 +158,116 @@ func TestNew_TrimsTrailingSlash(t *testing.T) {
 		t.Fatalf("baseURL = %q, want trailing slash trimmed", c.baseURL)
 	}
 }
+
+// TestStreamChat_StampsHeadersAndAcceptOverride covers the header
+// contract for the chat stream path. Unlike GenerateInsights, the
+// Accept header must be text/event-stream so the upstream FastAPI
+// StreamingResponse fires instead of a JSON render.
+func TestStreamChat_StampsHeadersAndAcceptOverride(t *testing.T) {
+	var gotAuth, gotUser, gotReq, gotAccept, gotPath string
+	var gotBody []byte
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotAuth = r.Header.Get("Authorization")
+		gotUser = r.Header.Get("X-User-Id")
+		gotReq = r.Header.Get("X-Request-Id")
+		gotAccept = r.Header.Get("Accept")
+		gotPath = r.URL.Path
+		buf := make([]byte, 4096)
+		n, _ := r.Body.Read(buf)
+		gotBody = buf[:n]
+		w.Header().Set("Content-Type", "text/event-stream")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("event: message_stop\ndata: {}\n\n"))
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, "stream-token")
+	uid := uuid.Must(uuid.NewV7())
+	convID := uuid.Must(uuid.NewV7())
+
+	resp, err := c.StreamChat(context.Background(), uid, "req-stream", ChatStreamRequest{
+		ConversationID: convID,
+		Message:        "hello",
+		History:        []ChatHistoryMessage{{Role: "user", Content: "prev"}},
+	})
+	if err != nil {
+		t.Fatalf("StreamChat: %v", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if gotPath != "/internal/chat/stream" {
+		t.Errorf("path = %q", gotPath)
+	}
+	if gotAuth != "Bearer stream-token" {
+		t.Errorf("auth = %q", gotAuth)
+	}
+	if gotUser != uid.String() {
+		t.Errorf("x-user-id = %q want %s", gotUser, uid)
+	}
+	if gotReq != "req-stream" {
+		t.Errorf("x-request-id = %q", gotReq)
+	}
+	if gotAccept != "text/event-stream" {
+		t.Errorf("accept = %q", gotAccept)
+	}
+	if !strings.Contains(string(gotBody), `"conversation_id":"`+convID.String()+`"`) {
+		t.Errorf("body missing conversation_id: %s", gotBody)
+	}
+	if !strings.Contains(string(gotBody), `"message":"hello"`) {
+		t.Errorf("body missing message: %s", gotBody)
+	}
+	if !strings.Contains(string(gotBody), `"history":[{"role":"user","content":"prev"}]`) {
+		t.Errorf("body missing history: %s", gotBody)
+	}
+}
+
+// TestStreamChat_401_ReturnsErrUpstreamAuth confirms the same
+// 401/403 → ErrUpstreamAuth mapping as GenerateInsights, with the
+// response body drained so the connection can be reused.
+func TestStreamChat_401_ReturnsErrUpstreamAuth(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"detail":"bad token"}`))
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, "wrong")
+	// On ErrUpstreamAuth StreamChat closes the body itself before
+	// returning nil *http.Response — linter cannot follow the
+	// contract across the call, but the client code does.
+	_, err := c.StreamChat(context.Background(), uuid.Must(uuid.NewV7()), "", ChatStreamRequest{ //nolint:bodyclose // client drains+closes on auth error
+		ConversationID: uuid.Must(uuid.NewV7()),
+		Message:        "x",
+	})
+	if !errors.Is(err, ErrUpstreamAuth) {
+		t.Fatalf("err = %v, want ErrUpstreamAuth", err)
+	}
+}
+
+// TestStreamChat_500_ReturnsErrUpstreamUnavailable surfaces the
+// upstream body so the handler can log it, and closes the response
+// so we do not leak connections.
+func TestStreamChat_500_ReturnsErrUpstreamUnavailable(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusInternalServerError)
+		_, _ = w.Write([]byte(`{"detail":"upstream blew up"}`))
+	}))
+	defer srv.Close()
+
+	c := New(srv.URL, "tok")
+	_, err := c.StreamChat(context.Background(), uuid.Must(uuid.NewV7()), "", ChatStreamRequest{ //nolint:bodyclose // client closes on non-2xx
+		ConversationID: uuid.Must(uuid.NewV7()),
+		Message:        "x",
+	})
+	var upstream *ErrUpstreamUnavailable
+	if !errors.As(err, &upstream) {
+		t.Fatalf("err = %v want *ErrUpstreamUnavailable", err)
+	}
+	if upstream.StatusCode != http.StatusInternalServerError {
+		t.Errorf("status = %d", upstream.StatusCode)
+	}
+	if !strings.Contains(upstream.Body, "upstream blew up") {
+		t.Errorf("body = %q", upstream.Body)
+	}
+}

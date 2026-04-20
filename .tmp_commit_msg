@@ -1,0 +1,19 @@
+feat(api): PR B3-ii-b — /ai/chat + /ai/chat/stream + sseproxy + ai_usage persist
+
+- sseproxy: custom streaming proxy (reader + collector + translator + single-writer loop with frames/heartbeat select) — replaces the original AC #1 httputil.ReverseProxy path per approved decision (race between tee + heartbeat injection was not resolvable under ReverseProxy without hijacking response writer).
+- aiservice.StreamChat extension: mirrors GenerateInsights header contract + Accept: text/event-stream + 401/403 map to ErrUpstreamAuth.
+- handlers/ai_chat_stream: SendStreamWriter + background persist on context.Background with 10s timeout — client disconnect must not roll back billing insert (R3).
+- handlers/ai_chat_sync: consumes the same stream pipeline through io.Discard and assembles AIChatResponse — AI Service has no sync endpoint, keeping history/usage logic in one place.
+- Persist tx: user + assistant InsertAIMessage + RecordAIUsage + TouchAIConversation inside a single pgx tx (AC #9, single-writer ai_usage per DECISIONS 2026-04-20).
+- Idempotency middleware: skip cache-write on text/event-stream content-type; SETNX collapse preserved (AC #4).
+- Cost clamp against NUMERIC(10,6) overflow with WARN log (R4).
+- Frame cap: 1 MiB per SSE frame + ErrFrameTooLarge (R2).
+- Re-serialise layer: AI Service frames translated to openapi AIChatStreamEvent shape — spec-align follow-up as TD-055.
+- sqlc queries: InsertAIMessage, ListAIConversationMessagesForContext (role in user|assistant, ASC, cap 40), TouchAIConversation.
+
+Tests:
+- sseproxy unit: reader TCP-split cases + frame cap + mid-frame EOF + CRLF + comment-skip; translator shape conversion; collector order + token sum; proxy happy path, mid-stream drop, error+stop, heartbeat, ctx cancel, sync-mode discard. 24 cases, all pass.
+- aiservice client: StreamChat header contract + auth mapping.
+- handlers integration: happy path stream+sync, pre-stream 401 to 502, mid-stream drop no-persist, message_stop after error persists, history load + tool-role skip, cross-user 404, validation 400s, airatelimit Free cap, cost clamp.
+
+go vet + golangci-lint v2.11.4 clean; default go test -count=1 green; integration tests require Docker (not run in CI; local-only verification deferred to PO environment per B3-ii-a precedent).
