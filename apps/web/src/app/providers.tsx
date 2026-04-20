@@ -1,7 +1,9 @@
 'use client';
 
+import { ToastProvider } from '@investment-tracker/ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { type ReactNode, useState } from 'react';
+import { RateLimitProvider } from '../hooks/useRateLimit';
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(
@@ -17,5 +19,11 @@ export function Providers({ children }: { children: ReactNode }) {
       }),
   );
 
-  return <QueryClientProvider client={client}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={client}>
+      <ToastProvider>
+        <RateLimitProvider>{children}</RateLimitProvider>
+      </ToastProvider>
+    </QueryClientProvider>
+  );
 }

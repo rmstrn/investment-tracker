@@ -35,13 +35,12 @@ function LinkAdapter({ href, children, ...rest }: LinkAdapterProps): ReactElemen
 
 type AppNavItem = NavItem & { icon: LucideIcon };
 
-// Only `/dashboard` and `/positions` are real routes. Other slugs point
-// back to `/dashboard` as no-op placeholders — real routes land in later
-// slices (Chat / Insights / Accounts / Settings).
+// Real routes: /dashboard, /positions, /chat. Other slugs point back to
+// /dashboard as no-op placeholders until their slice lands.
 const NAV: ReadonlyArray<AppNavItem> = [
   { slug: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
   { slug: 'positions', label: 'Positions', href: '/positions', icon: Briefcase },
-  { slug: 'chat', label: 'Chat', href: '/dashboard', icon: MessageCircle },
+  { slug: 'chat', label: 'Chat', href: '/chat', icon: MessageCircle },
   { slug: 'insights', label: 'Insights', href: '/dashboard', icon: Sparkles },
   { slug: 'accounts', label: 'Accounts', href: '/dashboard', icon: Wallet },
 ];
@@ -51,6 +50,7 @@ const FOOTER_NAV: ReadonlyArray<AppNavItem> = [
 ];
 
 function activeSlugFor(pathname: string): string | undefined {
+  if (pathname.startsWith('/chat')) return 'chat';
   if (pathname.startsWith('/positions')) return 'positions';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
   return undefined;
