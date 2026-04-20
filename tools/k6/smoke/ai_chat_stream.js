@@ -1,0 +1,67 @@
+// Smoke: POST /ai/chat/stream returns 200 and emits at least one
+// `data:` SSE frame within budget.
+//
+// k6 lacks a native SSE reader, so we treat the stream as a long-
+// running HTTP response with a 25s timeout: the reverse proxy in Core
+// API flushes frames as they come, and for a trivial prompt the AI
+// service closes well under that. The body is parsed as text after
+// response end; we assert at least one frame and a reasonable TTFB.
+//
+// Env:
+//   BASE_URL         required
+//   TEST_USER_TOKEN  required
+
+import { check, fail } from 'k6';
+import http from 'k6/http';
+
+export const options = {
+  vus: 1,
+  duration: '30s',
+  thresholds: {
+    // TTFB — Core API proxy must flush the first SSE frame within
+    // 2s. Anything slower is a proxy buffering regression.
+    'http_req_waiting{scenario:ai_chat_stream}': ['p(95)<2000'],
+    http_req_failed: ['rate<0.05'],
+    checks: ['rate>0.95'],
+  },
+};
+
+const BASE_URL = __ENV.BASE_URL;
+const TOKEN = __ENV.TEST_USER_TOKEN;
+if (!BASE_URL || !TOKEN) {
+  throw new Error('BASE_URL and TEST_USER_TOKEN are required');
+}
+
+const body = JSON.stringify({
+  messages: [{ role: 'user', content: 'ping' }],
+});
+
+export default function () {
+  const res = http.post(`${BASE_URL}/ai/chat/stream`, body, {
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
+    },
+    timeout: '25s',
+    tags: { scenario: 'ai_chat_stream' },
+  });
+
+  const ok = check(res, {
+    'status is 200': (r) => r.status === 200,
+    'content-type is text/event-stream': (r) =>
+      String(r.headers['Content-Type'] || r.headers['content-type'] || '').includes(
+        'text/event-stream',
+      ),
+    'body contains at least one data: frame': (r) =>
+      typeof r.body === 'string' && r.body.includes('data:'),
+  });
+  if (!ok) {
+    const preview = typeof res.body === 'string' ? res.body.substring(0, 200) : '<non-text>';
+    fail(
+      `ai chat stream failed: status=${res.status} ct=${
+        res.headers['Content-Type'] || res.headers['content-type']
+      } body=${preview}`,
+    );
+  }
+}
