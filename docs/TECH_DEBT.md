@@ -8,6 +8,31 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-068 — Tighten `AIChatStreamEvent` schema to match translator reality
+
+**Added:** 2026-04-20 (PR #50 / TASK_07 Slice 3)
+**Priority:** P3 (docs-only, no runtime impact — shape stable)
+**Source:** `apps/api/internal/sseproxy/translator.go` normalises Python AI Service-native SSE frames into OpenAPI-compliant frames before forwarding to clients, but the spec for two events in `tools/openapi/openapi.yaml` is out of sync with what actually goes on the wire:
+
+- **`AIStreamEventContentDelta.delta`** is typed `type: object, additionalProperties: true` (line 2972-2975) — too loose. Translator always emits `{text: string}` (translator.go:59-64). No `text_delta` / `input_json_delta` Anthropic-native discriminator exists post-translation.
+- **`AIStreamEventError.error`** is typed as `$ref: ErrorEnvelope` (line 3020) — the full wrapped envelope `{error: {code, message, request_id}}`. Translator emits flat `{code, message, request_id?}` at top level of the event's `error` property (translator.go:148-157 via `errorFrame`).
+
+**Risk:** low — shape is stable today; TypeScript frontend (PR #50) carries `unwrapEnvelope` + `readDeltaText` helpers in `chat-reducer.ts` (~15 LOC) that accept both shapes defensively. Future schema evolution (e.g. adding `input_json_delta` for partial tool args) would widen the gap.
+
+**Fix:** two small schema edits in `tools/openapi/openapi.yaml`:
+1. `AIStreamEventContentDelta.delta` → explicit object with `required: [text]` + `properties: { text: { type: string } }` (or keep additionalProperties: true but make `text` a required named property).
+2. `AIStreamEventError.error` → replace `$ref: ErrorEnvelope` with inline `{code, message, request_id?}` — mirror the actual `errorFrame` output shape.
+
+Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `unwrapEnvelope` helper + `readDeltaText` defensive parse; `chat-reducer.ts` shrinks ~15 LOC.
+
+**Trigger to revisit:** OpenAPI spec housekeeping pass, OR any future expansion of `content_delta.delta` payload (e.g. tool-input deltas arriving for impact_card / callout blocks when server starts emitting them).
+
+**Owner:** backend (Core API spec + translator coord) + frontend (cleanup)
+**Scope:** ~30 LOC (spec edits + regeneration + reducer simplification) — 0.5 day
+**Links:** PR #50 commit `63ac3bf` (defensive parsing); PR #50 `chat-reducer.test.ts` «ignores unknown delta shapes gracefully» test demonstrates the resilience.
+
+---
+
 ### TD-067 — deploy-web.yml / deploy-ai.yml pipeline consistency
 
 **Added:** 2026-04-20 (PR C / Core API deploy infra)

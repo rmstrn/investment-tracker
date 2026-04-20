@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (вечер — PR #49 PR C Core API deploy infra merged (`fa9c9dc`), main tip = `fa9c9dc` + this docs pass on top. **TASK_04 closed 10 of 10.** Wave 2 code-complete. Впереди — post-merge operational setup (Doppler/Fly apps/DNS/first deploys) + AI 404-swallow flip + TASK_07 Slice 3 + PR D (workers).)
+**Last updated:** 2026-04-20 (вечер — PR #50 TASK_07 Slice 3 AI Chat UI merged (`4881dfd`), main tip = `4881dfd` + this docs pass on top. TASK_07 **3 of N slices merged** (Dashboard → Positions → Chat). **TASK_04 closed 10 of 10.** Wave 2 code-complete. Впереди — post-merge operational setup (Doppler/Fly apps/DNS/first deploys) + AI 404-swallow flip + TASK_07 Slice 4 (Insights + FloatingAiFab) или Slice 5 (Paywall + Stripe Checkout) + PR D (workers).)
 
 ---
 
@@ -28,7 +28,7 @@ TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 - **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger (см. PR #44 B3-ii-b для persist implementation). 404-swallow flip на strict propagation — после PR C prod soak (см. `RUNBOOK_ai_flip.md`).
 
 ### Волна 3 — 🟢 в работе
-- **TASK_07 (Web Frontend):** **Slice 1 + Slice 2 merged**. Slice 1 (PR #45, SHA `a622bd3`, 2026-04-20) — Clerk auth + `(app)/dashboard` vertical slice с `PortfolioValueCardLive` + TanStack Query `usePortfolio` + 1 Vitest smoke. ~551 LOC. Slice 2 (PR #48, SHA `366d12f`, 2026-04-20) — `(app)/positions` list + `(app)/positions/[id]` detail read-only: toolbar (sort/group/filter) + desktop/mobile table + Overview/Transactions tabs + price chart поверх `@investment-tracker/ui/charts` subpath (Recharts zero direct dep в apps/web → zero drift с параллельным PR C) + 4 TanStack Query хука (`usePositions` / `usePosition` / `usePositionTransactions` infinite / `useMarketHistory`) + 3 Vitest smoke + sidebar activation. 1443 LOC. Slice 3+ pending (Chat UI streaming / Insights / Accounts CRUD / Settings / Paywall / Pricing marketing / PWA / Vercel deploy / scope-cut header UI).
+- **TASK_07 (Web Frontend):** **Slice 1 + Slice 2 + Slice 3 merged**. Slice 1 (PR #45, SHA `a622bd3`) — Clerk auth + `(app)/dashboard` + `PortfolioValueCardLive` + `usePortfolio`, 1 Vitest smoke, 551 LOC. Slice 2 (PR #48, SHA `366d12f`) — Positions list + detail read-only: toolbar + desktop/mobile table + Overview/Transactions tabs + Recharts price chart via `@investment-tracker/ui/charts` subpath + 4 TanStack hooks + 3 Vitest smoke + sidebar activation, 1443 LOC. **Slice 3 (PR #50, SHA `4881dfd`, 2026-04-20)** — AI Chat UI: `(app)/chat` + `(app)/chat/[id]` routes, SSE client over fetch+ReadableStream (EventSource не пропускает Bearer), chat reducer (state machine над translator-normalized frames), 6 TanStack hooks (conversations CRUD + `useChatStream` AbortController-scoped + `useRateLimit` Context), 9 UI components (StreamingMessageView pure-presentation split, ChatMessageItem 5-way discriminator, ImpactCardView §14.2, CalloutView §14.1/§14.3, ChatMessageList DESC→oldest-top reversal, ConversationsSidebar с delete, ChatInputBar с scoped Esc cancel, EmptyConversationState с 4 SuggestedPrompts), tier-limit toast MVP (`TIER_LIMIT_EXCEEDED` → «Daily AI limit reached. Upgrade to Plus…»), UsageIndicator via canonical `X-RateLimit-*` (`onRateLimitHeaders` extension в `@investment-tracker/api-client`), sidebar activation (href `/chat` + `activeSlugFor` case), 4 Vitest smoke (tests 15→38). **2316 LOC** (anchor 1500-2000, overshoot +16% — defensive TD-068 parsing + RateLimitProvider + ImpactCard/Callout + optimistic user echo, все одобренные Risk #1 decisions). Slice 4+ pending (Insights feed / FloatingAiFab / Accounts CRUD / Settings / Paywall + `/pricing` + Stripe Checkout / PWA / Vercel deploy / scope-cut header UI / mid-stream reconnect TD-049 / `ChatContext` deep-links).
 - **TASK_06 (Broker Integrations):** ⏳ starts после PR C close.
 
 ### Волна 4 — 🧊 отложено
@@ -40,7 +40,9 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | (после post-merge docs pass PR #49 — обновится этим коммитом) | TBD | 2026-04-20 |
+| **main tip** | (после post-merge docs pass PR #50 — обновится этим коммитом) | TBD | 2026-04-20 |
+| #50 | TASK_07 Slice 3: AI Chat UI — `(app)/chat` + `(app)/chat/[id]` routes, SSE client over fetch+ReadableStream, chat reducer, 6 TanStack hooks, 9 UI components (incl. StreamingMessageView / ChatMessageItem 5-way / ImpactCardView §14.2 / CalloutView §14.1-14.3), tier-limit toast, UsageIndicator via `onRateLimitHeaders` extension в api-client. Sidebar activated. 4 Vitest smoke (tests 15→38). TD-068 opened (P3 schema drift). | `4881dfd` | 2026-04-20 |
+| docs-only | kickoff TASK_07 Slice 3 | `7931e8e` | 2026-04-20 |
 | #49 | PR C: Core API deploy infrastructure — migrate subcommand + /metrics + fly.toml (prod + staging) + deploy-api.yml pipeline (staging→smoke→approval→prod) + k6 smoke suite (5) + Doppler-first secrets (`ops/secrets.keys.yaml` + verify script) + `RUNBOOK_deploy.md` + TD-060..064 + TD-066 + TD-067. TASK_04 closed 10/10. | `fa9c9dc` | 2026-04-20 |
 | #48 | TASK_07 Slice 2: Positions list + Position Detail read-only — `(app)/positions` + `(app)/positions/[id]` + toolbar + Recharts price chart (через `@investment-tracker/ui/charts` subpath, zero apps/web direct dep) + infinite transactions + 4 hooks + 3 Vitest smoke + sidebar activation + TD-065 opened | `366d12f` | 2026-04-20 |
 | docs-only | post-merge pass PR #45 TASK_07 Slice 1 | `4e7c67a` | 2026-04-20 |
@@ -94,6 +96,7 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | ID | Priority | Description | Pair / Links |
 |---|---|---|---|
+| TD-068 | P3 | `AIChatStreamEvent` schema drift — `content_delta.delta` additionalProperties vs factual `{text}`, `AIStreamEventError.error` wrapped-in-spec vs flat-on-wire. Reducer carries defensive unwrap. Docs-only spec tightening. | PR #50 commit `63ac3bf` |
 | TD-059 | P3 | `/portfolio/tax/export` downloadable bundle — scope-cut 501 в B3-iii | overlap TD-039 |
 | TD-058 | P2 | GDPR `/me/export` bundle aggregation — scope-cut 501 в B3-iii | legal review pre-EU launch |
 | TD-057 | P2 | Billing CRUD endpoints — scope-cut 501 в B3-iii; нужен prod Stripe catalog | after PR C |
@@ -217,19 +220,42 @@ soak → prod cutover).
 Slice 1 merged (PR #45, squash `a622bd3`) — Clerk auth + `(app)/dashboard`
 vertical slice + `PortfolioValueCardLive` + 1 Vitest. LOC ~551.
 Slice 2 merged (PR #48, squash `366d12f`, 2026-04-20) — `(app)/positions`
-list + `(app)/positions/[id]` detail read-only. Toolbar (sort
-`SegmentedControl` / group + asset-type filter `Dropdown`s), desktop HTML
-table + mobile `AssetRow` cards через `md:` breakpoint, Overview +
-Transactions tabs, price chart поверх `@investment-tracker/ui/charts`
-subpath (Recharts через transit dep `packages/ui` → **zero direct dep в
-apps/web → zero drift `pnpm-lock.yaml` с параллельным PR C**), infinite
-transactions tab (first page hydrated через
-`initialData: { pages:[firstPage], pageParams:[undefined] }`, no
-setQueryData-в-useEffect anti-pattern), split events filtered с footnote
-(TD-065 opened). 4 TanStack Query хука: `usePositions` / `usePosition` /
-`usePositionTransactions` infinite / `useMarketHistory` (period живёт в
-query key + client state — OpenAPI response не эхоит period обратно).
-3 Vitest smoke. Sidebar activation. LOC 1443 (в anchor 1400-1800).
+list + `(app)/positions/[id]` detail read-only. Toolbar, desktop/mobile
+table, Overview + Transactions tabs, price chart через
+`@investment-tracker/ui/charts` subpath (zero direct Recharts dep в
+apps/web), infinite transactions, 4 TanStack hooks, 3 Vitest smoke,
+sidebar activation. LOC 1443. TD-065 opened.
+**Slice 3 merged (PR #50, squash `4881dfd`, 2026-04-20) — AI Chat UI.**
+`(app)/chat` + `(app)/chat/[id]` routes; SSE client over fetch +
+ReadableStream (EventSource не пропускает Bearer); chat reducer = state
+machine над translator-normalized `AIChatStreamEvent` (text / tool_use /
+tool_result blocks; impact_card + callout рендерятся только из
+persisted AIMessage — never emitted live per `collector.go:58-60`);
+6 TanStack hooks (conversations CRUD + `useChatStream`
+AbortController-scoped + `useRateLimit` Context); 9 UI components
+включая `StreamingMessageView` pure-presentation split, `ChatMessageItem`
+5-way discriminator, `ImpactCardView` §14.2 Scenario Simulator,
+`CalloutView` §14.1/§14.3 Behavioral Coach + Explainer, `ChatMessageList`
+с DESC→oldest-top reversal, `ConversationsSidebar` с delete,
+`ChatInputBar` со scoped Esc cancel, `EmptyConversationState` с 4
+SuggestedPrompts. Tier-limit fallback = toast MVP
+(`TIER_LIMIT_EXCEEDED` → «Daily AI limit reached. Upgrade to Plus…»);
+PaywallModal deferred до Slice 5 когда `/pricing` route существует.
+`UsageIndicator` через canonical `X-RateLimit-{Limit,Remaining,Reset}`
+(no `-Daily` suffix anywhere) — реализовано через новый
+`onRateLimitHeaders` opt-in middleware в `@investment-tracker/api-client`
+(+45 LOC extension, shared через RateLimitProvider context). Sidebar
+activated: href `/chat` + `activeSlugFor` case. 4 Vitest smoke
+(10 sse-client + 5 reducer + 4 chat-message-item + 4 streaming-view);
+tests 15→38 total. LOC **2316** (anchor 1500-2000, overshoot +16% —
+defensive TD-068 parsing + RateLimitProvider + Impact/Callout ~175 LOC +
+optimistic user echo, все одобренные Risk #1 decisions). **TD-068
+opened (P3, docs-only)**: schema drift в
+`tools/openapi/openapi.yaml` — `content_delta.delta` typed
+`additionalProperties: true` vs factual `{text: string}`;
+`AIStreamEventError.error` typed wrapped `ErrorEnvelope` vs flat
+`{code, message, request_id?}` on the wire. Reducer carries defensive
+unwrap (~15 LOC) — symptom, не блокер; shape stable.
 Main tip post-docs = этот docs-pass commit.
 
 ### Next
@@ -254,17 +280,27 @@ Main tip post-docs = этот docs-pass commit.
   pipeline для workers (параллельно с api jobs в том же workflow).
   Затем реальный asynq consumer (hard-delete worker TD-041/TD-045,
   CSV export TD-039, broker sync через SnapTrade/Plaid — TASK_06).
-- **TASK_07 Slice 3** — candidate scope: Chat UI streaming (priority
-  — feature differentiator) либо Insights feed + Accounts CRUD
-  (pre-GA dashboard completeness). Kickoff пишется когда PO
-  определит приоритет + после Slice 2 runtime smoke (docker compose
-  + Go API + real Clerk dev project + `/positions` + `/positions/
-  [id]`).
+- **TASK_07 Slice 4+** — candidate scope:
+  - **Slice 4 (Insights + FloatingAiFab):** `(app)/insights` feed
+    page (pre-GA dashboard completeness), `InsightCard` domain component
+    already in `packages/ui`, endpoints `/ai/insights/*` live в main.
+    Plus `FloatingAiFab` context-aware mini-chat activation
+    (Dashboard/Positions `ChatContext` deep-links).
+  - **Slice 5 (Paywall + Pricing + Stripe Checkout):** `/pricing`
+    marketing page + `PaywallModal` wired (Slice 3 toast MVP upgrades
+    to modal), Stripe Checkout flow, tier upgrade roundtrip.
+  - **Slice 6 (Accounts CRUD + Settings):** `(app)/accounts` list +
+    SnapTrade/API-key connect flows, `(app)/settings/*` profile /
+    billing / notifications / data-export / delete-account.
+  - PO chooses after Slice 3 runtime smoke (docker compose + Go API +
+    real Clerk dev project + `/chat` end-to-end с живым SSE stream +
+    tier-limit flow).
 - **AI Service 404-swallow flip** — после prod soak PR C
   (`RUNBOOK_ai_flip.md`).
 
 **Key reference points (предыдущие PRs):**
-- PR #49 (PR C) `fa9c9dc` — Core API deploy infrastructure (см. merge-log entry наверху). TD-060..064, TD-066 (PR D blocker), TD-067 opened.
+- PR #50 (TASK_07 Slice 3) `4881dfd` — AI Chat UI streaming (см. merge-log entry наверху). TD-068 opened (P3 schema drift).
+- PR #49 (PR C) `fa9c9dc` — Core API deploy infrastructure. TD-060..064, TD-066 (PR D blocker), TD-067 opened.
 - PR #48 (TASK_07 Slice 2) `366d12f` — Positions list + Position Detail read-only. TD-065 opened.
 - PR #46 (B3-iii) `08e09f4` — Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs. TD-056..059 opened.
 - PR #45 (TASK_07 Slice 1) `a622bd3` — web vertical slice.
@@ -277,6 +313,7 @@ Main tip post-docs = этот docs-pass commit.
 - `D:/investment-tracker-task07-s1` — `git worktree remove --force D:/investment-tracker-task07-s1 && git worktree prune` + локальную ветку `feature/task07-slice1` уже нет на remote, локально можно снести `git branch -D feature/task07-slice1 post-merge-task07-s1` из D:\СТАРТАП.
 - `D:/investment-tracker-task07-s2` — `git worktree remove --force D:/investment-tracker-task07-s2 && git worktree prune` + локальную ветку `feature/task07-slice2` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/task07-slice2` из `D:\СТАРТАП`.
 - `D:/investment-tracker-pr-c` — `git worktree remove --force D:/investment-tracker-pr-c && git worktree prune` + локальную ветку `feature/pr-c-deploy` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/pr-c-deploy` из `D:\СТАРТАП`.
+- `D:/investment-tracker-task07-s3` — `git worktree remove --force D:/investment-tracker-task07-s3 && git worktree prune` + локальную ветку `feature/task07-slice3` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/task07-slice3` из `D:\СТАРТАП`.
 
 **Ключевая архитектурная точка:** AI chat + persistence полностью в main; web vertical slice готов против `/portfolio`. Клиенты (web/iOS) строятся против стабильного OpenAPI контракта.
 
@@ -310,6 +347,7 @@ Main tip post-docs = этот docs-pass commit.
 - **TD-048..053** — SSE/rate-limit/insights-gate polish (low-medium priority).
 - **TD-054** — CC memory portability (low priority).
 - **TD-055** — AI stream OpenAPI spec drift (P2, Core/TASK_05 coord). Phase 1 ~60 LOC — contract fixture + test.
+- **TD-068** (P3 docs-only) — `AIChatStreamEvent` spec tightening для `content_delta.delta` + `AIStreamEventError.error` shape. ~30 LOC spec edits + reducer cleanup. Non-blocking.
 
 ---
 

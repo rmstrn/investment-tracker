@@ -15,6 +15,53 @@ Newest entries at the top.
 
 ---
 
+## PR #50 — TASK_07 Slice 3: AI Chat UI (streaming + conversations + rich content)
+
+**Squash SHA:** `4881dfd`
+**Merged:** 2026-04-20
+**Base:** `7931e8e` (docs-only kickoff tip post-#49).
+**Scope:** третий vertical slice веб-фронта — полноценный AI Chat: `(app)/chat` + `(app)/chat/[id]` routes, SSE streaming, conversation CRUD, rich content rendering, tier-limit paywall (toast MVP), rate-limit surface через canonical `X-RateLimit-*`.
+- `apps/web/src/lib/ai/sse-client.ts` (+92 LOC) — fetch + ReadableStream SSE parser (EventSource непригоден — не пропускает Bearer). Partial-frame reassembly across chunk boundaries, AbortSignal-aware, trailing-frame flush on `done`.
+- `apps/web/src/lib/ai/chat-reducer.ts` (+240 LOC) — state machine над translator-normalized `AIChatStreamEvent`. `StreamState = idle | streaming | done | error`. Live blocks: text (delta-accumulated) / tool_use (полный frame сразу) / tool_result. Flat `ChatErrorView` (unwrapped from server `ErrorEnvelope`). Defensive `unwrapEnvelope` + `readDeltaText` — см. TD-068.
+- `apps/web/src/lib/api/ai.ts` (+190 LOC) — typed wrappers `fetchConversations` / `fetchConversationDetail` / `createConversation` / `deleteConversation` + native-fetch `sendChatMessageStream` (openapi-fetch буферизует response body, streaming обходит его). `TierLimitError` / `ApiStreamError` carry `ChatErrorView`.
+- `packages/api-client/src/index.ts` — extended (+45 LOC): `onRateLimitHeaders` opt-in callback на каждом response, shared `parseRateLimitHeaders` helper, `RateLimitSnapshot` + `RateLimitHandler` type exports. Canonical `X-RateLimit-{Limit,Remaining,Reset}` only — `-Daily` suffix нигде нет (proof: `airatelimit.go:94-96`, `idempotency.go:157`).
+- `apps/web/src/hooks/useRateLimit.tsx` — React Context holding latest snapshot; monotonic-remaining guard против stale cached responses undoing a fresher update.
+- 6 TanStack Query hooks: `useConversations` (infinite `['ai-conversations']`), `useConversation` (`['ai-conversation', id]`), `useCreateConversation` (invalidates list), `useDeleteConversation` (removes detail + invalidates list), `useChatStream` (AbortController-scoped; invalidates conv query on `done`; surfaces `TierLimitError` via `onTierLimit`).
+- 9 UI components в `apps/web/src/components/chat/`:
+  - `streaming-message-view.tsx` — pure-presentation (как Slice 2 `PositionPriceChartView` паттерн): text + tool_use/tool_result blocks, `TypingCursor` на последнем open text block, `ThinkingDots` при empty blocks.
+  - `chat-message-item.tsx` — persisted `AIMessage` renderer с full 5-way discriminator (text / tool_use / tool_result / impact_card / callout).
+  - `impact-card-view.tsx` — scenario simulator card (§14.2): before/after snapshots, top_affected_positions, narrative. Рендерится ТОЛЬКО из persisted history (never emitted live per `collector.go:58-60`).
+  - `callout-view.tsx` — behavioral / explainer / info / warning tones. Persisted-only.
+  - `chat-message-list.tsx` — scrollable column; reverses DESC API order для oldest-top UX; auto-scroll on new content / stream phase change.
+  - `conversations-sidebar.tsx` + `conversations-sidebar-live.tsx` — thread list с New-chat + delete affordances; delete active convo → redirect `/chat`.
+  - `chat-input-bar.tsx` — `ChatInputPill` + `UsageIndicator` + Stop button во время streaming; Esc listener scoped через `onKeyDown` в pill (no document-level listener — no conflict with Sheet/Dropdown close handlers).
+  - `empty-conversation-state.tsx` + `empty-chat-shell.tsx` — 4 generic SuggestedPrompts per design brief §14.1 framing (factual, never advisory).
+  - `chat-view-live.tsx` — orchestrator: `useConversation` + `useChatStream` + optimistic user-message echo + tier-limit toast.
+- Routes:
+  - `(app)/chat/layout.tsx` — two-column shell.
+  - `(app)/chat/page.tsx` — SC fetch most-recent convo id → `redirect('/chat/{id}')`, or render `EmptyChatShell`.
+  - `(app)/chat/[id]/page.tsx` — SC fetch `/ai/conversations/{id}` with messages; 404 → `notFound()`, 5xx → inline error; hydrates `ChatViewLive` via `initialData`.
+- Sidebar activation в `app-shell-client.tsx`: Chat slot `href: '/dashboard'` → `/chat`, `activeSlugFor` добавлен case `pathname.startsWith('/chat')`.
+- `providers.tsx` — wrap с `ToastProvider` + `RateLimitProvider`, QueryClient остаётся outer.
+- `biome.json` (root) + `apps/web/biome.json` — extended a11y override to `**/apps/web/src/components/chat/**` (mirror existing `design/**` pattern) — `ChatMessage.role` domain prop триггерит `useValidAriaRole` false positive.
+**LOC:** 33 files touched (+2316 / −9 = net +2307). Anchor 1500-2000 — overshoot +16% из-за defensive schema-drift parsing (TD-068 обоснование), RateLimitProvider infra, `ImpactCardView` + `CalloutView` ~175 LOC, optimistic user echo. Все overruns — одобренные Risk #1 decisions, не scope creep.
+**Tests:** 8 files / 38 tests (было 6/15 до слайса, +23):
+- `sse-client.test.ts` (+10): parseFrame edge cases (event/data defaults, multi-data joining, leading-space trim, comment lines), streamSSE chunked streaming, partial-frame reassembly, trailing frame flush, AbortSignal, empty-body error.
+- `chat-reducer.test.ts` (+5): message_start transition, text delta accumulation, tool_use/tool_result block sequencing, error with partial message preserved, unknown-shape delta graceful skip (demonstrates TD-068 defensive parsing).
+- `chat-message-item.test.tsx` (+4): user text, tool_use, impact_card (before/after + top_affected), explainer callout with term_slug.
+- `streaming-message-view.test.tsx` (+4): thinking dots when empty, cursor on last text block, tool_use running label, cursor drop on stream end.
+**CI:** 8/8 green на final squashed SHA (Go lint+vet+build+test 40s, Node lint+typecheck+build 1m26s, Node unit tests 25s, Python 18s, Trivy fs 34s, govulncheck 34s, gitleaks 5s, Trivy side-check 2s).
+**Admin-bypass:** нет.
+**Migrations:** нет (pure frontend slice; no OpenAPI / schema / handler touches).
+**Closed TDs:** —
+**Opened TDs (1):**
+- **TD-068** (P3, docs-only) — schema drift в `tools/openapi/openapi.yaml` для `AIChatStreamEvent`: (1) `content_delta.delta` typed `additionalProperties: true` но factually always `{text: string}` (translator.go:59-64); (2) `AIStreamEventError.error` typed как wrapped `ErrorEnvelope` но translator emits flat `{code, message, request_id?}` (translator.go:149-157). Reducer carries defensive unwrap (~15 LOC). Fix: tighten schema definitions. No runtime impact — shape stable today.
+**Schema drift rationale (TD-068):** Core API `sseproxy/translator.go` normalizes Python AI Service-native SSE shape в OpenAPI-compliant frames, но сама OpenAPI spec для `AIChatStreamEvent.content_delta.delta` и `AIStreamEventError.error` объявлена слишком loose (первое) / слишком wrapped (второе) относительно того что translator реально пишет на wire. Frontend reducer carries defensive parsing — symptom а не блокер. TD отражает clean-up work в spec housekeeping pass.
+**Worktree cleanup (на PO):** `git worktree remove --force D:/investment-tracker-task07-s3 && git worktree prune`. Local branch `feature/task07-slice3` уже удалён с remote (`--delete-branch`); локально можно снести `git branch -D feature/task07-slice3` из `D:\СТАРТАП`.
+**Next:** TASK_07 Slice 4+ candidates — FloatingAiFab activation + Insights page (прочитан через `/ai/insights/*` endpoints в main), либо Slice 5 Paywall + Pricing + Stripe Checkout в зависимости от PO priority. PR D workers deploy (TD-066 blocker) + TASK_06 broker integrations остаются параллельными треками.
+
+---
+
 ## PR #49 — PR C: Core API deploy infrastructure (Fly.io + k6 + runbook)
 
 **Squash SHA:** `fa9c9dc`
