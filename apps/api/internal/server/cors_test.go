@@ -41,7 +41,7 @@ func buildCORSTestApp(origins []string) *fiber.App {
 func TestCORS_PreflightAllowedOrigin(t *testing.T) {
 	a := buildCORSTestApp([]string{"https://staging.investment-tracker.app"})
 
-	req := httptest.NewRequest(http.MethodOptions, "/portfolio", nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodOptions, "/portfolio", nil)
 	req.Header.Set("Origin", "https://staging.investment-tracker.app")
 	req.Header.Set("Access-Control-Request-Method", "GET")
 
@@ -49,6 +49,7 @@ func TestCORS_PreflightAllowedOrigin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusNoContent {
 		t.Fatalf("status: want 204, got %d", resp.StatusCode)
 	}
@@ -66,7 +67,7 @@ func TestCORS_PreflightAllowedOrigin(t *testing.T) {
 func TestCORS_PreflightDisallowedOrigin(t *testing.T) {
 	a := buildCORSTestApp([]string{"https://staging.investment-tracker.app"})
 
-	req := httptest.NewRequest(http.MethodOptions, "/portfolio", nil)
+	req := httptest.NewRequestWithContext(t.Context(), http.MethodOptions, "/portfolio", nil)
 	req.Header.Set("Origin", "https://evil.example.com")
 	req.Header.Set("Access-Control-Request-Method", "GET")
 
@@ -74,6 +75,7 @@ func TestCORS_PreflightDisallowedOrigin(t *testing.T) {
 	if err != nil {
 		t.Fatalf("app.Test: %v", err)
 	}
+	defer resp.Body.Close()
 	// Fiber CORS still answers 204 on preflight, but omits the
 	// Allow-Origin header — which is what the browser uses to veto
 	// the actual request.
