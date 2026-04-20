@@ -23,7 +23,12 @@ kill_timeout = 30
 # Same release_command as prod — staging DB must walk the same goose
 # ladder on every deploy so migration defects surface here first.
 [deploy]
-  release_command = "/app/api migrate up"
+  # ENTRYPOINT ["/app/api"] is prepended by Fly, so release_command
+  # carries only the subcommand args. Writing "/app/api migrate up" here
+  # produced argv = ["/app/api", "/app/api", "migrate", "up"] and main.go
+  # dispatch fell through to the API server boot (timeout on first deploy
+  # attempt before we caught this).
+  release_command = "migrate up"
   strategy = "rolling"
 
 [env]

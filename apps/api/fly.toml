@@ -20,8 +20,11 @@ kill_timeout = 30
 # release_command runs in an ephemeral machine before the rolling swap.
 # If `migrate up` fails the deploy aborts and existing machines keep
 # serving — new schema never ships alongside old code.
+#
+# ENTRYPOINT ["/app/api"] is prepended by Fly; release_command carries
+# only the subcommand args. See fly.staging.toml for the incident note.
 [deploy]
-  release_command = "/app/api migrate up"
+  release_command = "migrate up"
   strategy = "rolling"
 
 [env]
