@@ -32,7 +32,7 @@ export async function* streamSSE(
   }
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  const state = { buffer: '' };
   try {
     while (true) {
       if (signal?.aborted) {
@@ -40,28 +40,34 @@ export async function* streamSSE(
       }
       const { done, value } = await reader.read();
       if (done) {
-        buffer += decoder.decode();
-        const trailing = buffer.trim();
-        if (trailing.length > 0) {
-          yield parseFrame(trailing);
-        }
+        state.buffer += decoder.decode();
+        const trailing = state.buffer.trim();
+        if (trailing.length > 0) yield parseFrame(trailing);
         return;
       }
-      buffer += decoder.decode(value, { stream: true });
-      let sep = buffer.indexOf('\n\n');
-      while (sep !== -1) {
-        const raw = buffer.slice(0, sep);
-        buffer = buffer.slice(sep + 2);
-        if (raw.length > 0) yield parseFrame(raw);
-        sep = buffer.indexOf('\n\n');
-      }
+      state.buffer += decoder.decode(value, { stream: true });
+      yield* flushFrames(state);
     }
   } finally {
-    try {
-      reader.releaseLock();
-    } catch {
-      // reader may already be released when the response errored; swallow.
-    }
+    releaseReader(reader);
+  }
+}
+
+function* flushFrames(state: { buffer: string }): Generator<SSEFrame> {
+  let sep = state.buffer.indexOf('\n\n');
+  while (sep !== -1) {
+    const raw = state.buffer.slice(0, sep);
+    state.buffer = state.buffer.slice(sep + 2);
+    if (raw.length > 0) yield parseFrame(raw);
+    sep = state.buffer.indexOf('\n\n');
+  }
+}
+
+function releaseReader(reader: ReadableStreamDefaultReader<Uint8Array>): void {
+  try {
+    reader.releaseLock();
+  } catch {
+    // already released — e.g. response errored mid-read. Swallow.
   }
 }
 

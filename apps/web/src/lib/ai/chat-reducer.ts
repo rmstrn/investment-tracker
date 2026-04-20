@@ -13,7 +13,19 @@
  *   persisted `AIMessage` reads, not through this reducer.
  */
 
-import type { AIChatStreamEvent, ErrorEnvelope } from '@investment-tracker/shared-types';
+import type { AIChatStreamEvent } from '@investment-tracker/shared-types';
+
+/**
+ * Flattened view of the server `ErrorEnvelope` (`{error: {code, message,
+ * request_id, ...}}`). The UI never needs the outer wrapper, so we lift the
+ * inner fields — and add room for synthetic client errors (abort, network
+ * failure) that have no real `request_id`.
+ */
+export interface ChatErrorView {
+  code: string;
+  message: string;
+  requestId?: string;
+}
 
 export type LiveBlock =
   | { kind: 'text'; index: number; text: string; open: boolean }
@@ -44,7 +56,7 @@ export type StreamState =
   | { phase: 'idle' }
   | { phase: 'streaming'; message: LiveAssistantMessage }
   | { phase: 'done'; message: LiveAssistantMessage }
-  | { phase: 'error'; message: LiveAssistantMessage | null; error: ErrorEnvelope };
+  | { phase: 'error'; message: LiveAssistantMessage | null; error: ChatErrorView };
 
 export const initialState: StreamState = { phase: 'idle' };
 
@@ -165,7 +177,21 @@ export function reduce(state: StreamState, event: AIChatStreamEvent): StreamStat
 
     case 'error': {
       const msg = state.phase === 'streaming' ? state.message : null;
-      return { phase: 'error', message: msg, error: event.error };
+      // OpenAPI schema types `event.error` as full `ErrorEnvelope` (wrapped:
+      // `{error: {code, message, request_id}}`), but `translator.go`
+      // emits flat inner: `event.error = {code, message, request_id?}`.
+      // Accept both shapes — tracked as part of TD-068 schema drift.
+      const raw = event.error as unknown;
+      const inner = unwrapEnvelope(raw);
+      return {
+        phase: 'error',
+        message: msg,
+        error: {
+          code: inner.code ?? 'INTERNAL_ERROR',
+          message: inner.message ?? 'Stream error',
+          requestId: inner.request_id,
+        },
+      };
     }
 
     default:
@@ -177,6 +203,22 @@ function nextBlockIndex(blocks: LiveBlock[]): number {
   let max = -1;
   for (const b of blocks) if (b.index > max) max = b.index;
   return max + 1;
+}
+
+interface InnerEnvelope {
+  code?: string;
+  message?: string;
+  request_id?: string;
+}
+
+function unwrapEnvelope(raw: unknown): InnerEnvelope {
+  if (!raw || typeof raw !== 'object') return {};
+  const obj = raw as Record<string, unknown>;
+  const nested = obj.error;
+  if (nested && typeof nested === 'object' && 'code' in (nested as Record<string, unknown>)) {
+    return nested as InnerEnvelope;
+  }
+  return obj as InnerEnvelope;
 }
 
 function readDeltaText(delta: unknown): string | undefined {

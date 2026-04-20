@@ -90,15 +90,24 @@ describe('chat-reducer', () => {
       { type: 'message_start', message_id: MSG, conversation_id: CONV },
       { type: 'content_block_start', index: 0, block_type: 'text' },
       { type: 'content_delta', index: 0, delta: { text: 'Partial' } },
+      // Wire shape: translator.go emits `event.error = {code, message,
+      // request_id}` flat (not wrapped in `{error: {...}}` as the
+      // generated type claims). Cast proves the reducer handles both.
       {
         type: 'error',
-        error: { code: 'AI_STREAM_ERROR', message: 'upstream blew up' },
-      },
+        error: {
+          code: 'INTERNAL_ERROR',
+          message: 'upstream blew up',
+          request_id: 'req-1',
+        },
+        // biome-ignore lint/suspicious/noExplicitAny: schema drift, see TD-068
+      } as any,
     ];
     const final = runSequence(events);
     expect(final.phase).toBe('error');
     if (final.phase !== 'error') return;
-    expect(final.error.code).toBe('AI_STREAM_ERROR');
+    expect(final.error.code).toBe('INTERNAL_ERROR');
+    expect(final.error.requestId).toBe('req-1');
     expect(final.message?.blocks[0]).toMatchObject({ kind: 'text', text: 'Partial' });
   });
 
