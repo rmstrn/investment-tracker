@@ -54,14 +54,14 @@ const migrateTimeout = 4 * time.Minute
 // touching os.Args or os.Getenv.
 func runMigrate(args []string, stdout, stderr io.Writer) error {
 	if len(args) == 0 {
-		fmt.Fprint(stderr, migrateUsage)
+		_, _ = fmt.Fprint(stderr, migrateUsage)
 		return errMigrateUsage
 	}
 	cmd := args[0]
 	switch cmd {
 	case "up", "status", "version":
 	default:
-		fmt.Fprint(stderr, migrateUsage)
+		_, _ = fmt.Fprint(stderr, migrateUsage)
 		return fmt.Errorf("%w: unknown command %q", errMigrateUsage, cmd)
 	}
 
@@ -117,7 +117,7 @@ func execMigrate(ctx context.Context, db *sql.DB, dir, cmd string, stdout io.Wri
 		if err != nil {
 			return fmt.Errorf("migrate: version: %w", err)
 		}
-		fmt.Fprintf(stdout, "current version: %d\n", v)
+		_, _ = fmt.Fprintf(stdout, "current version: %d\n", v)
 	}
 	log.Info().Str("cmd", cmd).Dur("took", time.Since(start)).Msg("migrate done")
 	return nil
