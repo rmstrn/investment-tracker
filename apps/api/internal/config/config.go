@@ -21,6 +21,13 @@ type Config struct {
 	ListenAddr      string        `envconfig:"API_LISTEN_ADDR" default:":8090"`
 	Env             string        `envconfig:"ENV" default:"development"`
 	ShutdownTimeout time.Duration `envconfig:"SHUTDOWN_TIMEOUT" default:"15s"`
+	// AllowedOrigins is the exact-match CORS allowlist fed to the
+	// Fiber CORS middleware. envconfig splits the CSV env var on
+	// commas; browsers reject wildcard origins paired with
+	// AllowCredentials=true so we never ship `*` here. Populate via
+	// Doppler in stg/prd with the public web origin (and any preview
+	// host) — trailing slashes will fail the origin match.
+	AllowedOrigins []string `envconfig:"ALLOWED_ORIGINS" default:"http://localhost:3000"`
 
 	// ── Observability ───────────────────────────────────────────────
 	LogLevel  string `envconfig:"LOG_LEVEL" default:"info"`

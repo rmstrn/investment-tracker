@@ -7,6 +7,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/gofiber/fiber/v3/middleware/adaptor"
+	"github.com/gofiber/fiber/v3/middleware/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
@@ -45,6 +46,35 @@ func New(deps *app.Deps) (*fiber.App, error) {
 	// Auth third (so handlers see authenticated user).
 	a.Use(middleware.RequestID())
 	a.Use(middleware.RequestLog(deps.Log))
+
+	// CORS sits after RequestID/RequestLog so preflight requests
+	// carry a request-id and show up in logs, and before every
+	// route (public + authenticated) so OPTIONS preflight never
+	// reaches Auth — Fiber's CORS middleware short-circuits the
+	// chain with 204 on a valid preflight. Origins outside the
+	// allowlist simply receive no `Access-Control-Allow-Origin`
+	// header, which the browser treats as a CORS failure.
+	a.Use(cors.New(cors.Config{
+		AllowOrigins: deps.Cfg.AllowedOrigins,
+		AllowMethods: []string{
+			fiber.MethodGet, fiber.MethodPost, fiber.MethodPut,
+			fiber.MethodPatch, fiber.MethodDelete, fiber.MethodOptions,
+		},
+		AllowHeaders: []string{
+			fiber.HeaderAuthorization, fiber.HeaderContentType,
+			"X-User-Id", "Idempotency-Key", "X-Request-ID",
+		},
+		ExposeHeaders: []string{
+			"X-Request-ID",
+			"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset",
+			"X-Async-Unavailable",
+			"X-Partial-Portfolio", "X-FX-Unavailable", "X-Clerk-Unavailable",
+			"X-Search-Provider", "X-Benchmark-Unavailable", "X-Analytics-Partial",
+			"X-Withholding-Unavailable", "X-Tax-Advisory", "X-Export-Pending",
+		},
+		AllowCredentials: true,
+		MaxAge:           int((24 * time.Hour).Seconds()),
+	}))
 
 	// Public routes — no auth.
 	a.Get("/health", healthHandler(deps))
