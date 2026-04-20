@@ -1,10 +1,13 @@
 // Smoke: same POST /accounts with the same Idempotency-Key collapses.
 //
-// First call lands 201 (created). Second call with the same key must
-// return either 200 (idempotent replay of the cached response) or 409
-// (IDEMPOTENCY_IN_PROGRESS if the lock is still held). Both are
-// correct — a second 201 means the SETNX lock was defeated and we
-// have a duplicate-write regression.
+// First call lands 201 (created). Second call with the same key is a
+// cached replay and per `internal/middleware/idempotency.go` preserves
+// the original status, so it also returns 201 — with the SAME account
+// id as the first response (proves cache hit, not a duplicate write).
+// A second 201 with a *different* id would mean the SETNX lock was
+// defeated and we have a real duplicate-write regression.
+// 409 is also accepted — covers the race where the first lock is still
+// held when the second call arrives (IDEMPOTENCY_IN_PROGRESS).
 //
 // Env:
 //   BASE_URL         required
@@ -61,13 +64,26 @@ export default function () {
   if (!firstOk) {
     fail(`first POST /accounts failed: status=${first.status} body=${first.body}`);
   }
+  let firstId = null;
+  try {
+    firstId = first.json()?.account?.id ?? null;
+  } catch (_) {
+    /* tolerated */
+  }
 
   const second = http.post(`${BASE_URL}/accounts`, body, {
     headers,
     tags: { scenario: 'idempotency', call: 'second' },
   });
   check(second, {
-    'second call is 200 or 409 (never 201)': (r) => r.status === 200 || r.status === 409,
-    'second call is not a duplicate-write 201': (r) => r.status !== 201,
+    'second call 201 replay or 409 in-progress': (r) => r.status === 201 || r.status === 409,
+    'replayed account.id matches first (cache hit, not duplicate write)': (r) => {
+      if (r.status !== 201) return true; // 409 has no body to compare
+      try {
+        return firstId && r.json()?.account?.id === firstId;
+      } catch (_) {
+        return false;
+      }
+    },
   });
 }

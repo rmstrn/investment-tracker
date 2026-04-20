@@ -28,25 +28,19 @@ if (!BASE_URL || !TOKEN) {
 }
 
 export default function () {
-  const res = http.get(`${BASE_URL}/positions?limit=20`, {
+  const res = http.get(`${BASE_URL}/positions`, {
     headers: { Authorization: `Bearer ${TOKEN}` },
     tags: { scenario: 'positions_read' },
   });
+  // `/positions` returns `{data: Position[]}` (single-shot list, not
+  // cursor-paginated). Paginated variant lives on
+  // `/positions/{id}/transactions`, out of smoke scope.
   const ok = check(res, {
     'status is 200': (r) => r.status === 200,
-    'has items array': (r) => {
+    'has data array': (r) => {
       try {
         const body = r.json();
-        return body && Array.isArray(body.items);
-      } catch (_) {
-        return false;
-      }
-    },
-    'has next_cursor field (null or string)': (r) => {
-      try {
-        const body = r.json();
-        if (!body) return false;
-        return 'next_cursor' in body;
+        return body && Array.isArray(body.data);
       } catch (_) {
         return false;
       }
