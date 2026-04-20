@@ -85,10 +85,25 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: grafana/setup-k6-action@v1
+      # Clerk session JWTs default to 60s TTL. Mint a fresh one at job
+      # start so k6's auth-gated scenarios don't see "Token invalid or
+      # expired" by the time the first HTTP call fires.
+      - name: Mint fresh Clerk JWT
+        env:
+          CLERK_SK: ${{ secrets.CLERK_SECRET_KEY_STG }}
+          SID: ${{ secrets.STAGING_TEST_SESSION_ID }}
+        run: |
+          jwt=$(curl -sS -X POST "https://api.clerk.com/v1/sessions/$SID/tokens" \
+            -H "Authorization: Bearer $CLERK_SK" -d '{}' | jq -r .jwt)
+          if [ -z "$jwt" ] || [ "$jwt" = "null" ]; then
+            echo "JWT mint failed" >&2
+            exit 1
+          fi
+          echo "::add-mask::$jwt"
+          echo "TEST_USER_TOKEN=$jwt" >> "$GITHUB_ENV"
       - name: Run smoke suite
         env:
           BASE_URL: https://api-staging.investment-tracker.app
-          TEST_USER_TOKEN: ${{ secrets.STAGING_TEST_USER_TOKEN }}
         run: bash tools/k6/run-smoke.sh
 
   verify-prod-secrets:
