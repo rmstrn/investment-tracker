@@ -8,6 +8,58 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-070 — AI Service lacks `fly.staging.toml` + `deploy-ai.yml` staging job
+
+**Added:** 2026-04-20 (staging ops bootstrap)
+**Priority:** P2
+**Source:** PR C shipped `apps/api/fly.staging.toml` + staging pipeline stage inside `deploy-api.yml`. AI Service (apps/ai) was out of PR C scope and still only has `apps/ai/fly.toml` (prod). Staging bootstrap created the Fly app `investment-tracker-ai-staging` per the canonical naming but there is no toml to deploy to it.
+
+**Consequence:** `/ai/chat/*` and `/ai/insights/*` return 503 on staging (Core API's `AIServiceURL` points at `http://investment-tracker-ai-staging.internal:8000` which has no listener). Agreed degrade for first bootstrap; unblocks Core API staging soak without AI integration.
+
+**Fix:** mirror PR C pattern for AI Service:
+1. `apps/ai/fly.staging.toml` — clone `apps/api/fly.staging.toml` shape, swap app name, listen port 8000, `primary_region = "fra"`, `min_machines_running = 1`, `auto_stop_machines = "suspend"`.
+2. `.github/workflows/deploy-ai.yml` — add staging stage (verify-staging-secrets → deploy-staging) mirroring api pipeline. No k6 smoke for AI MVP (stream-scenario is still experimental) — start with `/healthz` probe only.
+3. Doppler config `investment-tracker-ai` stg must hold AI Service's own env set — likely `ANTHROPIC_API_KEY`, `CORE_API_INTERNAL_TOKEN` (inbound), `AI_SERVICE_TOKEN` (outbound), `SENTRY_DSN`. Manifest to be drafted alongside.
+
+**Trigger to revisit:** full-stack staging smoke (Core API + AI chat streaming end-to-end) required, OR when `/ai/chat/*` 503s start hurting manual QA flow.
+
+**Owner:** AI lead (toml + deploy-ai.yml) + backend lead (AI-side secret manifest mirror)
+**Scope:** ~150 LOC (toml + workflow + secrets.keys.yaml) — 0.5 day + Doppler population
+
+---
+
+### TD-069 — `doppler-sync.yml` not env-aware (stg/prd dimension missing)
+
+**Added:** 2026-04-20 (staging ops bootstrap)
+**Priority:** P2
+**Source:** TASK_01/A scaffold shipped `doppler-sync.yml` as a placeholder. PR C did not rewrite it. Current shape:
+- Input: `target` (all|web|api|ai) only — no `env` dimension.
+- Pulls from secrets `DOPPLER_TOKEN_API` / `DOPPLER_TOKEN_AI` / `DOPPLER_TOKEN_WEB` (repo does not hold these; only `DOPPLER_TOKEN_STG` was set during bootstrap).
+- Runs `flyctl secrets import --config apps/api/fly.toml` — targets **prod** toml regardless of intent.
+
+Staging bootstrap bypassed the workflow via local pipe:
+```
+doppler secrets download --no-file --format=env --project investment-tracker-api --config stg \
+  | flyctl secrets import -a investment-tracker-api-staging
+```
+
+**Risk:** medium — blocks automated secret rotations for staging. Any time secrets change, PO must re-run local pipe instead of triggering CI. Drift across environments becomes easier to miss.
+
+**Fix:** matrix-ise the workflow.
+1. New input `env` (stg|prd), alongside existing `target` (all|web|api|ai).
+2. Repo secrets renamed per dimension:
+   - `DOPPLER_TOKEN_STG_API`, `DOPPLER_TOKEN_STG_AI`, `DOPPLER_TOKEN_STG_WEB`
+   - `DOPPLER_TOKEN_PRD_API`, `DOPPLER_TOKEN_PRD_AI`, `DOPPLER_TOKEN_PRD_WEB`
+3. Sync step picks the right Doppler token + the right fly toml (`fly.staging.toml` vs `fly.toml`) based on the env input.
+
+**Trigger to revisit:** first secret rotation event on staging OR first prod deploy cutover (prod sync must be automatable).
+
+**Owner:** backend + infra
+**Scope:** ~120 LOC workflow rewrite + 6 repo-secret provisions — 0.5 day
+**Links:** paired with TD-067 (pipeline consistency across web/ai deploy workflows).
+
+---
+
 ### TD-068 — Tighten `AIChatStreamEvent` schema to match translator reality
 
 **Added:** 2026-04-20 (PR #50 / TASK_07 Slice 3)

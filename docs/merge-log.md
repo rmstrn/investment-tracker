@@ -15,6 +15,27 @@ Newest entries at the top.
 
 ---
 
+## 2026-04-20 — PR C deploy-chain hot-fixes (staging bootstrap)
+
+Direct-to-main commits applied during staging bootstrap to unblock the first real deploy. Each one fixes a pre-existing bug shipped in PR #49 (PR C) that only surfaced because the workflow had never run end-to-end (PR #49's push-on-merge run failed even earlier, on Fly app not existing).
+
+| SHA | Fix | Trigger |
+|---|---|---|
+| `a86aaa3` | `deploy-api.yml` — `sh` → `bash` for verify + smoke steps (Ubuntu `sh` is dash, kills on `set -o pipefail`) | run 24677840667 failed in verify-staging-secrets |
+| `d52822e` | `ops/scripts/verify-prod-secrets.sh` — `flyctl secrets list --json` emits lower-case `name` (older docs showed `Name`) | same run, after a86aaa3 |
+| `80b516d` | `deploy-api.yml` — `working-directory: apps/api` + relative paths so Dockerfile COPY resolves `/go.mod` | run 24678034296 failed at build: `"/go.mod": not found` |
+| `a123d66` | `fly.staging.toml` + `fly.toml` — `release_command = "migrate up"` (was `"/app/api migrate up"`; ENTRYPOINT prepends `/app/api`, so argv double-prefixed and dispatch fell through) | release_command machine timed out running Fiber server instead of migrations |
+
+All four are TASK_04 PR C follow-ups, not new TDs — each has an inlined incident note in the affected file. No admin-bypass used (standard commit + push, commitlint passed, hooks green).
+
+After all four: run 24678493942 — `Deploy — staging` ✅, 9 migrations applied (`20260418120001` → `20260420120001`), `https://investment-tracker-api-staging.fly.dev/health` returns `{"env":"staging","status":"ok"}`, Sentry initialised, 2 healthy machines in `fra`. k6 smoke still red because `api-staging.investment-tracker.app` DNS isn't pointed — that's the documented PO post-deploy step (`RUNBOOK_deploy.md § Prerequisites`).
+
+**Opened TDs (2) — staging-bootstrap gaps:**
+- **TD-069** (P2) — `doppler-sync.yml` not env-aware (stg/prd dimension missing). Bypassed via local pipe for bootstrap.
+- **TD-070** (P2) — `apps/ai/fly.staging.toml` missing (+ `deploy-ai.yml` staging job). Phase C skipped; `/ai/*` 503s on staging.
+
+---
+
 ## PR #50 — TASK_07 Slice 3: AI Chat UI (streaming + conversations + rich content)
 
 **Squash SHA:** `4881dfd`
