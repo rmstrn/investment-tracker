@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/gofiber/fiber/v3/middleware/adaptor"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/webhookidem"
@@ -46,6 +48,13 @@ func New(deps *app.Deps) (*fiber.App, error) {
 
 	// Public routes — no auth.
 	a.Get("/health", healthHandler(deps))
+	// /metrics exposes the prometheus default registry (go_* + process_*
+	// collectors out of the box). Fly's [metrics] block scrapes it from
+	// the private 6PN network; it is also reachable externally on the
+	// same port, which is acceptable for MVP since the surface is pure
+	// process telemetry. Custom app metrics (request_duration, pgx pool
+	// gauges) are a follow-up — see TECH_DEBT.md.
+	a.Get("/metrics", adaptor.HTTPHandler(promhttp.Handler()))
 	// Glossary (openapi `security: []`) is public so UI tooltips
 	// work pre-login and from unauthenticated marketing pages.
 	a.Get("/glossary", handlers.ListGlossaryTerms(deps))
