@@ -529,6 +529,15 @@ Inventory (9 ignores, each with reason):
 
 ## Resolved
 
+### TD-R071 — k6 auth-gated smoke fails on 60s Clerk JWT TTL
+
+**Resolved:** 2026-04-20, this PR (pre-smoke mint step in `deploy-api.yml`).
+**Was:** `STAGING_TEST_USER_TOKEN` repo secret held a Clerk session JWT with Clerk's default 60-second TTL. By the time `deploy-staging` finished and `smoke-staging` hit its first auth-gated scenario (`portfolio_read.js`), the JWT was expired → every auth scenario returned `401 INVALID_TOKEN` and the whole smoke job failed even on a fully-healthy app. Observed on run 24679709643 (2026-04-20, SHA `2c43587`): public scenarios 126/126 green, auth scenarios 0/N green.
+**Fix:** new step `Mint fresh Clerk JWT` in `smoke-staging`, runs before `bash tools/k6/run-smoke.sh`. Pulls a fresh token via `POST /v1/sessions/{SID}/tokens` using `CLERK_SECRET_KEY_STG` + `STAGING_TEST_SESSION_ID` repo secrets, `::add-mask::` on the value, forwards via `GITHUB_ENV` as `TEST_USER_TOKEN`. The stale `STAGING_TEST_USER_TOKEN` secret is no longer read by the workflow (can be deleted separately when convenient).
+**Alternative considered:** Clerk JWT Template with 1h TTL. Rejected because the template has to be configured in the Clerk dashboard (no public API) — pushes manual setup onto PO and is invisible in the repo. Pre-smoke mint keeps the contract in code.
+
+---
+
 ### TD-R021 — `asynq` publisher wrapper + /market/quote cache-miss enqueue
 
 **Resolved:** 2026-04-19 in PR #40 (SHA `11d6098`) commit `b827241`
