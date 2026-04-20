@@ -18,6 +18,8 @@ require (
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/rs/zerolog v1.35.0
 	github.com/shopspring/decimal v1.4.0
+	github.com/stripe/stripe-go/v82 v82.5.1
+	github.com/svix/svix-webhooks v1.90.0
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
 )

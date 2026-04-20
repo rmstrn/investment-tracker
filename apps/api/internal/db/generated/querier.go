@@ -8,9 +8,15 @@ import (
 	"context"
 
 	uuid "github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
+	// Atomic idempotency claim. Returns the row's processed_at when this
+	// call is the first to see (source, event_id); returns pgx.ErrNoRows
+	// when another call / retry has already claimed it. Handlers MUST call
+	// this BEFORE any side-effect and short-circuit to 200 on ErrNoRows.
+	ClaimWebhookEvent(ctx context.Context, arg ClaimWebhookEventParams) (pgtype.Timestamptz, error)
 	// Used by GET /me/usage to populate the `connected_accounts` counter.
 	// "Active" = not soft-deleted; tier limit applies to this count.
 	CountActiveAccountsByUser(ctx context.Context, userID uuid.UUID) (int32, error)
@@ -66,6 +72,12 @@ type Querier interface {
 	GetTransactionByID(ctx context.Context, arg GetTransactionByIDParams) (Transaction, error)
 	GetUserByClerkID(ctx context.Context, clerkUserID string) (User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (User, error)
+	// Used by the Stripe webhook path to locate the user owning a given
+	// Stripe customer. Requires that /billing/checkout has previously
+	// linked the customer back to our row (TD-057). Until that endpoint
+	// ships, webhooks arriving for a customer we have never linked will
+	// miss this lookup; the handler falls back to subscription metadata.
+	GetUserByStripeCustomerID(ctx context.Context, stripeCustomerID *string) (User, error)
 	// Single digest row per user. pgx.ErrNoRows → handler uses defaults
 	// (digest enabled, weekday = Monday, no quiet hours).
 	GetUserDigestPreferences(ctx context.Context, userID uuid.UUID) (UserDigestPreference, error)

@@ -4,6 +4,14 @@ SELECT * FROM users WHERE id = $1;
 -- name: GetUserByClerkID :one
 SELECT * FROM users WHERE clerk_user_id = $1;
 
+-- name: GetUserByStripeCustomerID :one
+-- Used by the Stripe webhook path to locate the user owning a given
+-- Stripe customer. Requires that /billing/checkout has previously
+-- linked the customer back to our row (TD-057). Until that endpoint
+-- ships, webhooks arriving for a customer we have never linked will
+-- miss this lookup; the handler falls back to subscription metadata.
+SELECT * FROM users WHERE stripe_customer_id = $1;
+
 -- name: CreateUser :one
 INSERT INTO users (
     id, clerk_user_id, email, display_currency, locale,

@@ -8,6 +8,7 @@ import (
 	"github.com/gofiber/fiber/v3"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/webhookidem"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
@@ -49,6 +50,26 @@ func New(deps *app.Deps) (*fiber.App, error) {
 	// work pre-login and from unauthenticated marketing pages.
 	a.Get("/glossary", handlers.ListGlossaryTerms(deps))
 	a.Get("/glossary/:slug", handlers.GetGlossaryTerm(deps))
+
+	// Webhooks — public (openapi `security: []`). Authentication is
+	// per-request via signature verification (svix for Clerk,
+	// Stripe-Signature for Stripe) and idempotency via the shared
+	// webhook_events ledger. Auth/idempotency middleware from the
+	// user-facing group would be counter-productive here — we do not
+	// issue Idempotency-Keys to providers, and the Clerk JWT
+	// verifier does not recognise webhook payloads.
+	claimer := webhookidem.NewPool(deps.Pool)
+	clerkWebhook := handlers.ClerkWebhookDeps{
+		Claimer:  claimer,
+		Verifier: handlers.NewClerkWebhookVerifier(deps.Cfg.ClerkWebhookSecret),
+	}
+	stripeWebhook := handlers.StripeWebhookDeps{
+		Claimer:     claimer,
+		Verifier:    handlers.NewStripeWebhookVerifier(deps.Cfg.StripeWebhookSecret),
+		PriceToTier: handlers.BuildPriceToTier(deps.Cfg.StripePricePlus, deps.Cfg.StripePricePro),
+	}
+	a.Post("/auth/webhook", handlers.ClerkWebhook(deps, clerkWebhook))
+	a.Post("/billing/webhook", handlers.StripeWebhook(deps, stripeWebhook))
 
 	// Authenticated API surface. Routes are registered per PR:
 	//   PR B1: /internal/ai/usage (internal-only)
@@ -114,6 +135,16 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	reads.Get("/notifications", handlers.ListNotifications(deps))
 	reads.Get("/notifications/unread_count", handlers.GetUnreadNotificationCount(deps))
 	reads.Get("/exports/:id", handlers.GetExport(deps))
+	// Scope-cut reads (see TD-056 / TD-057 / TD-058 / TD-059).
+	// Pattern: empty-state-200 when the payload can be truthfully empty
+	// (2FA status: "not enrolled"); 501 NOT_IMPLEMENTED when an empty
+	// response would misrepresent real data (GDPR export, tax export,
+	// billing CRUD).
+	reads.Get("/me/2fa", handlers.GetTwoFactorStatus(deps))
+	reads.Get("/me/export", handlers.ExportMe(deps))
+	reads.Get("/portfolio/tax/export", handlers.GetPortfolioTaxExport(deps))
+	reads.Get("/billing/subscription", handlers.GetBillingSubscription(deps))
+	reads.Get("/billing/invoices", handlers.ListBillingInvoices(deps))
 
 	// Mutations group: Idempotency middleware + write-side rate-limit
 	// (real 429 gate, not passthrough). Idempotency takes the
@@ -152,6 +183,19 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 	mutations.Post("/notifications/read_all", handlers.MarkAllNotificationsRead(deps))
 	// Exports.
 	mutations.Post("/exports", handlers.CreateExport(deps))
+	// Scope-cut mutations — 501 NOT_IMPLEMENTED stubs, see
+	// me_clerk_proxy.go (TD-056) and billing.go (TD-057).
+	mutations.Post("/me/2fa/enroll", handlers.Enroll2FA(deps))
+	mutations.Post("/me/2fa/verify", handlers.Verify2FA(deps))
+	mutations.Post("/me/2fa/disable", handlers.Disable2FA(deps))
+	mutations.Post("/me/2fa/backup-codes/regenerate", handlers.RegenerateBackupCodes(deps))
+	// Static path registered first so fiber's router matches
+	// /me/sessions/others before falling through to the :id parametric.
+	mutations.Delete("/me/sessions/others", handlers.RevokeOtherSessions(deps))
+	mutations.Delete("/me/sessions/:id", handlers.RevokeSession(deps))
+	mutations.Post("/billing/checkout", handlers.CreateBillingCheckout(deps))
+	mutations.Post("/billing/portal", handlers.CreateBillingPortal(deps))
+	mutations.Post("/billing/cancellation-feedback", handlers.SubmitCancellationFeedback(deps))
 
 	// AI conversation lifecycle (no rate-limit gate — chat counts
 	// in airatelimit; create/delete are admin-style ops).
