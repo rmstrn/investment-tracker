@@ -106,14 +106,24 @@ grep -riE 'cors|AllowedOrigins|Access-Control' apps/api → 0 matches
 ## Deliverables
 
 1. PR в main: `feat(api): CORS middleware with ALLOWED_ORIGINS allowlist`.
-2. GAP REPORT перед merge — CI status, LOC count, TDs opened/closed (не ожидаю новых TDs).
-3. Post-merge (PO): merge-log + PO_HANDOFF main tip + дополнить `secrets.keys.yaml`-reference в DECISIONS.md что мы ушли от implicit CORS к allowlist.
+2. GAP REPORT перед merge (в чат PO) — CI status, LOC count, TDs opened/closed (не ожидаю новых TDs).
+3. **После PO approval — CC сам делает merge + cleanup + docs pass (PO нигде не жмёт кнопки в GitHub):**
+   - `gh pr merge <N> --squash --delete-branch` (squash-only per PO_HANDOFF § 3).
+   - В main worktree `D:/investment-tracker`: `git checkout main && git pull origin main`.
+   - `git worktree remove D:/investment-tracker-api-cors`.
+   - `git branch -D feature/api-cors` (после squash локальная ветка не выглядит merged — `-D` нужен).
+   - Обновить `docs/merge-log.md` — добавить запись merge'а (дата, squash SHA, scope, LOC delta).
+   - Обновить `docs/PO_HANDOFF.md § 1` и § 2 — зафиксировать новый main tip SHA.
+   - Обновить `docs/DECISIONS.md` — добавить запись "implicit CORS → allowlist-based" (ссылка на этот kickoff + squash SHA).
+   - Commit + push directly to main (docs-only direct push allowed per PO_HANDOFF § 3).
+   - Финальный ping PO в чат: "merged + cleaned + docs done, main tip now `<SHA>`. Готово к Doppler + fly deploy с твоей стороны".
 
 ---
 
-## PO notes
+## PO notes (что реально делает PO — после CC ping'а "merged")
 
-- Squash-only merge.
-- После merge — PO дописывает `ALLOWED_ORIGINS` в Doppler stg (если ещё не сделано) + `fly deploy -a investment-tracker-api-staging` для пересборки образа с новым кодом + Doppler pull.
-- Smoke проверка: `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio -H "Origin: https://staging.investment-tracker.app" -H "Access-Control-Request-Method: GET"` → должен вернуть 204 + Access-Control-* headers.
-- После этого UI на `https://staging.investment-tracker.app` начнёт нормально читать API.
+- Squash-only policy — CC merges сам через `gh pr merge --squash --delete-branch`. PO в GitHub UI не заходит.
+- `doppler secrets set ALLOWED_ORIGINS=https://staging.investment-tracker.app --project investment-tracker-api --config stg` (если ещё не сделано).
+- `fly deploy -a investment-tracker-api-staging` для пересборки образа с новым кодом + Doppler pull.
+- Smoke: `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio -H "Origin: https://staging.investment-tracker.app" -H "Access-Control-Request-Method: GET"` → ожидаем 204 + `Access-Control-Allow-Origin: https://staging.investment-tracker.app` + все expose-headers.
+- После этого UI на `https://staging.investment-tracker.app` начнёт нормально ходить в API.
