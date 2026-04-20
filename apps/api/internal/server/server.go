@@ -169,6 +169,13 @@ func registerAuthenticated(a *fiber.App, deps *app.Deps, authCfg middleware.Auth
 		airatelimit.New(deps),
 	)
 	aiMutations.Post("/ai/insights/generate", handlers.GenerateInsightsHandler(deps))
+	// /ai/chat + /ai/chat/stream — both hit the same daily counter;
+	// the stream variant additionally finishes through
+	// SendStreamWriter, which the Idempotency middleware treats as
+	// non-cacheable (see middleware/idempotency.go text/event-stream
+	// skip branch — collapse-only semantics per AC #4).
+	aiMutations.Post("/ai/chat", handlers.AIChatSync(deps))
+	aiMutations.Post("/ai/chat/stream", handlers.AIChatStream(deps))
 }
 
 func healthHandler(deps *app.Deps) fiber.Handler {

@@ -130,6 +130,20 @@ func Idempotency(cfg IdempotencyConfig) fiber.Handler {
 		}
 
 		status := c.Response().StatusCode()
+
+		// Skip response caching for streaming responses. /ai/chat/stream
+		// emits text/event-stream and finishes through
+		// SendStreamWriter, where c.Response().Body() is empty by
+		// design — re-playing an empty body to a retry would look
+		// like a legitimate successful cached call. The SETNX
+		// collapse (above) still guarantees parallel retries with
+		// the same key get 409 IDEMPOTENCY_IN_PROGRESS instead of
+		// doubling the upstream cost.
+		contentType := string(c.Response().Header.ContentType())
+		if strings.HasPrefix(contentType, "text/event-stream") {
+			return nil
+		}
+
 		respBody := append([]byte(nil), c.Response().Body()...)
 
 		// Capture a conservative set of response headers: content-type and
@@ -137,8 +151,8 @@ func Idempotency(cfg IdempotencyConfig) fiber.Handler {
 		// or per-connection headers (Set-Cookie, Date) that should not be
 		// replayed verbatim.
 		headers := map[string]string{}
-		if ct := string(c.Response().Header.ContentType()); ct != "" {
-			headers[fiber.HeaderContentType] = ct
+		if contentType != "" {
+			headers[fiber.HeaderContentType] = contentType
 		}
 		for _, h := range []string{"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"} {
 			if v := c.Get(h); v != "" {
