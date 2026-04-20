@@ -1,8 +1,41 @@
+# Docker build context for apps/api — flyctl treats the Dockerfile's
+# directory as context (apps/api/), so paths here are relative to that.
+# Exclude anything the builder does not need: editor state, local build
+# artefacts, test coverage, dev-only tooling. Goal is a fast upload to
+# Fly's remote builder and a cache that invalidates only on real source
+# changes.
+
+# VCS metadata — worktree pointer file or full .git dir.
+.git
+.gitignore
+
+# Local build outputs.
 bin/
+dist/
 *.test
 *.out
+coverage/
+coverage.*
+
+# Editor + OS clutter.
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Env files — never bake secrets into an image.
 .env*
 !.env.example
+
+# Lint config is container-irrelevant (golangci runs in CI, not the image).
 .golangci.yml
+
+# Dev-only docs + wrappers.
 README.md
 Makefile
+scripts/
+
+# Tests — `go build ./cmd/...` never reaches them; omitting shaves the
+# context upload and keeps the remote build cache stable across test-only
+# changes.
+**/*_test.go
