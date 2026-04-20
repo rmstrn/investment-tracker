@@ -1,24 +1,46 @@
-# Fly.io deployment config — Core API.
+# Fly.io deployment config — Core API (production).
 # Deploy:  `fly deploy --config apps/api/fly.toml --dockerfile apps/api/Dockerfile --build-target api`
 # The workers process runs from the same Dockerfile with --build-target workers; see apps/api/fly.workers.toml.
+# Staging uses apps/api/fly.staging.toml (cheaper knobs — min=1, auto_stop=suspend).
 
 app = "investment-tracker-api"
 primary_region = "fra"
+
+# SIGTERM lets the fiber graceful-shutdown path drain in-flight requests.
+# 30s is wide enough for SSE streams to close cleanly and for /ai/chat
+# responses still buffering; config.ShutdownTimeout defaults to 15s so we
+# keep headroom above that.
+kill_signal = "SIGTERM"
+kill_timeout = 30
 
 [build]
   dockerfile = "Dockerfile"
   build-target = "api"
 
+# release_command runs in an ephemeral machine before the rolling swap.
+# If `migrate up` fails the deploy aborts and existing machines keep
+# serving — new schema never ships alongside old code.
+[deploy]
+  release_command = "/app/api migrate up"
+  strategy = "rolling"
+
 [env]
   API_LISTEN_ADDR = ":8080"
   PORT = "8080"
+  LOG_LEVEL = "info"
+  LOG_FORMAT = "json"
+  ENV = "production"
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = "suspend"
+  # Prod keeps machines warm — SSE streams and AI latency make cold
+  # starts user-visible. Staging overrides this to "suspend" for $.
+  auto_stop_machines = false
   auto_start_machines = true
-  min_machines_running = 1
+  # Two machines behind the LB for zero-downtime rolling deploys and
+  # basic HA. `fly scale count` adjusts under traffic.
+  min_machines_running = 2
   processes = ["app"]
 
   [http_service.concurrency]
@@ -30,9 +52,17 @@ primary_region = "fra"
     grace_period = "10s"
     interval = "30s"
     method = "GET"
-    path = "/healthz"
+    path = "/health"
     timeout = "5s"
 
 [[vm]]
   size = "shared-cpu-1x"
   memory = "512mb"
+
+# Fly scrapes /metrics on the app port from the private 6PN network.
+# Exposed publicly on the same listener — acceptable for MVP since the
+# default prometheus registry only carries process/go stats. Custom app
+# metrics land as a follow-up (see TECH_DEBT.md).
+[metrics]
+  port = 8080
+  path = "/metrics"

@@ -1,0 +1,64 @@
+# Fly.io deployment config — Core API (staging).
+# Deploy:  `fly deploy --config apps/api/fly.staging.toml --dockerfile apps/api/Dockerfile --build-target api`
+#
+# Staging mirrors prod's runtime shape (region, TLS, healthcheck,
+# release_command, VM size) so a smoke failure here predicts a prod
+# failure. What staging does differently:
+#
+#   - min_machines_running = 1     (no HA target; prod keeps 2)
+#   - auto_stop_machines = suspend (idle machines suspend to $.$ prod stays warm)
+#
+# Everything downstream (CI, smoke suite, runbook) expects this split.
+
+app = "investment-tracker-api-staging"
+primary_region = "fra"
+
+kill_signal = "SIGTERM"
+kill_timeout = 30
+
+[build]
+  dockerfile = "Dockerfile"
+  build-target = "api"
+
+# Same release_command as prod — staging DB must walk the same goose
+# ladder on every deploy so migration defects surface here first.
+[deploy]
+  release_command = "/app/api migrate up"
+  strategy = "rolling"
+
+[env]
+  API_LISTEN_ADDR = ":8080"
+  PORT = "8080"
+  LOG_LEVEL = "info"
+  LOG_FORMAT = "json"
+  ENV = "staging"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Suspend idle machines — staging traffic is bursty (CI smoke + PO
+  # smoke), paying for warm baseline is wasted spend.
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+
+[metrics]
+  port = 8080
+  path = "/metrics"

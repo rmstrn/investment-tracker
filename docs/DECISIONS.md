@@ -114,3 +114,84 @@ quarter, the CI hygiene process itself needs attention.
 **Owner:** backend lead (Core API) + AI lead (Python removal).
 **Revisit:** при next billing schema change (e.g. multi-model pricing,
 partial turn billing). Не ранее MVP launch.
+
+## 2026-04-20 — Core API Fly.io deploy (PR C)
+
+PR C ships the first real deploy infrastructure for `apps/api` —
+Dockerfile, fly.toml (prod + staging), GitHub Actions pipeline, k6
+smoke suite, Doppler-driven secrets, `RUNBOOK_deploy.md`. Preflight was
+written against an empty slate; the repo already carried TASK_01/A
+bootstrap (alpine base, `cmd/api`/`cmd/workers` split, `doppler-sync.yml`,
+manual `deploy-api.yml`). The decisions below capture why we filled the
+gaps rather than rewriting what was there.
+
+**Alpine base image, not distroless.** Distroless would shrink the
+final image by ~10 MB and cut the shell-shaped attack surface, but the
+committed Dockerfile has been alpine since day one — switching mid-wave
+risks breaking implicit TASK_01/A assumptions (CGO edge cases, debug
+convenience via `fly ssh console`) for a marginal security gain.
+Revisit only if the security team mandates it; not treated as debt.
+
+**Doppler as single source of truth for secrets.** `doppler-sync.yml`
+was already committed, so PR C builds on that rather than introducing a
+parallel `ops/secrets.env.template` flow. The CD pipeline asserts the
+invariant via `ops/scripts/verify-prod-secrets.sh` (Fly secret names
+diff against `ops/secrets.keys.yaml`) but never touches values — value
+propagation stays a `doppler-sync.yml` manual dispatch.
+
+**Single region `fra` for MVP.** Neon prod and Upstash prod both live
+in `eu-central-1`; matching with a single Fly region gives <5ms intra-
+region latency, the simplest failure mode, and the cheapest bill.
+Multi-region is TD-061 for ~1k paying users.
+
+**Rolling deploy strategy, not blue-green.** Rolling is Fly's default
+for stateless HTTP with `min_machines_running ≥ 2` and gives zero-
+downtime with half the complexity of blue-green. SSE streams can drop
+mid-deploy; `EventSource` auto-reconnects and the tee-parser persists
+content up to the drop. Blue-green for SSE safety is TD-064 if the
+drop becomes a real incident.
+
+**`migrate` subcommand with `release_command`, not ephemeral machine.**
+`release_command = "/app/api migrate up"` runs in an ephemeral VM
+before the rolling swap. If migrations fail the deploy aborts — new
+code never meets old schema. The alternative (ephemeral `fly machine
+run "goose up"` in the workflow) decouples migrations from deploy and
+opens an "old code against new schema" window that is exactly the
+incident we are trying to prevent. Cost: ~130 LOC subcommand + tests.
+DATABASE_URL is the only env the subcommand reads — it does not need
+config.Load's full Clerk/Stripe/Polygon surface, so migrations stay
+runnable before every machine secret is provisioned.
+
+**Workers deploy target removed from `workflow_dispatch`.**
+`cmd/workers/main.go` is still a 30-second heartbeat placeholder.
+Shipping it to prod by a click-mistake would masquerade as healthy
+worker coverage while real enqueued tasks silently drop. PR D restores
+the target along with a real asynq consumer; tracked as TD-066 so the
+re-enable is a PR D prerequisite, not a wishlist item.
+
+**Health path fix: `/healthz` → `/health`.** fly.toml's bootstrap
+healthcheck pointed at `/healthz`; the handler has always registered
+`/health` (server.go:48). First deploy would have marked every machine
+unhealthy on 404. Handler registration is source of truth; the fly
+config is the bootstrap artefact to align.
+
+**`/metrics` on the same public port.** Prometheus default registry
+(go_* + process_*) exposed at `/metrics` is scraped by Fly's
+[metrics] block from private 6PN. The same path is externally
+reachable on the app port, which is acceptable at MVP — default
+collectors leak process telemetry only. Custom app metrics
+(request_duration, pgx pool gauges) are out of scope; they land when a
+Grafana dashboard actually reads them.
+
+**Separate `fly.staging.toml` rather than parameterised fly.toml.**
+Staging gets cheaper knobs (`min_machines_running = 1`,
+`auto_stop_machines = "suspend"`) that prod cannot afford (SSE cold
+starts would be user-visible). Two small committed files beat a single
+parameterised toml + envsubst layer — the divergence is small, rare,
+and better reviewed visually.
+
+**Owner:** backend lead.
+**Revisit:** first prod deploy + 7 days. If rolling deploys, the
+Doppler flow, or the `release_command` path produce incidents, re-open
+relevant sub-decisions; otherwise consolidate at next review post-first-
+enterprise customer.

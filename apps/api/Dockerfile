@@ -7,7 +7,7 @@
 # docker-compose and Fly.io deploy pick the target via `target:` / `build.target`.
 
 # -------- Stage 1: build --------
-FROM golang:1.26-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 ENV CGO_ENABLED=0 \
     GOOS=linux \
@@ -41,6 +41,10 @@ WORKDIR /app
 FROM runtime-base AS api
 
 COPY --from=builder /out/api /app/api
+# Migrations run via `./api migrate up` invoked by fly.toml
+# release_command. Copying them here keeps the image self-contained —
+# no separate migrations image, no bind-mount at deploy time.
+COPY --from=builder /src/db/migrations /app/db/migrations
 
 EXPOSE 8080
 ENTRYPOINT ["/app/api"]

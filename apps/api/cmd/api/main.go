@@ -37,7 +37,23 @@ import (
 // main is intentionally tiny — run() owns the error path so defers
 // (pool.Close, Sentry flush, ctx cancel) always fire before process
 // exit. main just converts an error to a non-zero status.
+//
+// Subcommand dispatch: `api migrate <up|status|version>` branches
+// before config.Load — migrations only need DATABASE_URL and must be
+// runnable before every machine-level secret is provisioned.
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		if err := runMigrate(os.Args[2:], os.Stdout, os.Stderr); err != nil {
+			boot := zerolog.New(os.Stderr).
+				With().Timestamp().Str("service", "api").Str("subcommand", "migrate").Logger()
+			boot.Error().Err(err).Msg("migrate exit")
+			if errors.Is(err, errMigrateUsage) {
+				os.Exit(2)
+			}
+			os.Exit(1)
+		}
+		return
+	}
 	if err := run(); err != nil {
 		// Fall-back to a bootstrap stderr logger when run() failed before
 		// the real logger was built.

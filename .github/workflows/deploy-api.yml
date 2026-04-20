@@ -1,31 +1,120 @@
 name: Deploy — api (Fly.io)
 
-# Disabled until FLY_API_TOKEN is set. Flip to `push: [main]` once the app is
-# provisioned and the secret is in the repo.
+# Stages: staging → k6 smoke → manual approve (production environment) →
+# prod → k6 smoke (non-blocking) → tag release.
+#
+# Secrets are NOT synced here — `doppler-sync.yml` owns that path and is
+# fired manually when secret values change. This workflow assumes the
+# fly apps already hold a valid secret set (checked by
+# ops/scripts/verify-prod-secrets.sh before each deploy).
+#
+# Prerequisites PO must set up before the first run:
+#   - GitHub Environments `staging` + `production` configured, with
+#     `production` requiring 1 reviewer.
+#   - Repo secrets: FLY_API_TOKEN, STAGING_TEST_USER_TOKEN,
+#     PROD_TEST_USER_TOKEN.
+#   - Fly apps `investment-tracker-api` + `investment-tracker-api-staging`
+#     created.
+#   - DNS for api-staging + api pointed at Fly after the first successful
+#     deploy of each.
+#
+# Workers deploy was removed defensively — the cmd/workers binary is a
+# placeholder heartbeat with no asynq consumer. PR D restores the
+# workers target once a real consumer lands. See TD-066.
+
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - '.github/workflows/deploy-api.yml'
+      - 'tools/k6/**'
   workflow_dispatch:
     inputs:
-      target:
-        description: "Which binary to deploy"
-        required: true
-        default: "api"
+      skip_staging_smoke:
+        description: "Skip the staging smoke gate (emergency hotfix only)"
+        required: false
+        default: "false"
         type: choice
-        options: [api, workers, both]
+        options: ["false", "true"]
 
 concurrency:
-  group: deploy-api-${{ github.event.inputs.target }}
+  group: deploy-api-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  deploy-api:
-    if: github.event.inputs.target == 'api' || github.event.inputs.target == 'both'
-    name: fly deploy — api
+  verify-staging-secrets:
+    name: Verify staging secrets
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      # TODO: set FLY_API_TOKEN in repo secrets (see README).
-      - name: Deploy api
+      - name: Diff Fly secrets against ops/secrets.keys.yaml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP: investment-tracker-api-staging
+        run: sh ops/scripts/verify-prod-secrets.sh
+
+  deploy-staging:
+    name: Deploy — staging
+    needs: verify-staging-secrets
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://api-staging.investment-tracker.app
+    steps:
+      - uses: actions/checkout@v6
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: flyctl deploy → staging
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          flyctl deploy \
+            --config apps/api/fly.staging.toml \
+            --dockerfile apps/api/Dockerfile \
+            --build-target api \
+            --remote-only \
+            --wait-timeout 600
+
+  smoke-staging:
+    name: k6 smoke — staging
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.skip_staging_smoke != 'true' }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: grafana/setup-k6-action@v1
+      - name: Run smoke suite
+        env:
+          BASE_URL: https://api-staging.investment-tracker.app
+          TEST_USER_TOKEN: ${{ secrets.STAGING_TEST_USER_TOKEN }}
+        run: sh tools/k6/run-smoke.sh
+
+  verify-prod-secrets:
+    name: Verify prod secrets
+    needs: smoke-staging
+    if: ${{ always() && needs.deploy-staging.result == 'success' && (needs.smoke-staging.result == 'success' || needs.smoke-staging.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Diff Fly secrets against ops/secrets.keys.yaml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          FLY_APP: investment-tracker-api
+        run: sh ops/scripts/verify-prod-secrets.sh
+
+  deploy-prod:
+    name: Deploy — prod (requires approval)
+    needs: verify-prod-secrets
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://api.investment-tracker.app
+    steps:
+      - uses: actions/checkout@v6
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: flyctl deploy → prod
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
@@ -33,21 +122,38 @@ jobs:
             --config apps/api/fly.toml \
             --dockerfile apps/api/Dockerfile \
             --build-target api \
-            --remote-only
+            --remote-only \
+            --wait-timeout 600
 
-  deploy-workers:
-    if: github.event.inputs.target == 'workers' || github.event.inputs.target == 'both'
-    name: fly deploy — workers
+  smoke-prod:
+    name: k6 smoke — prod (non-blocking)
+    needs: deploy-prod
     runs-on: ubuntu-latest
+    continue-on-error: true
     steps:
       - uses: actions/checkout@v6
-      - uses: superfly/flyctl-actions/setup-flyctl@master
-      - name: Deploy workers
+      - uses: grafana/setup-k6-action@v1
+      - name: Run smoke suite
         env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          BASE_URL: https://api.investment-tracker.app
+          TEST_USER_TOKEN: ${{ secrets.PROD_TEST_USER_TOKEN }}
+        run: sh tools/k6/run-smoke.sh
+
+  tag-release:
+    name: Tag release
+    needs: deploy-prod
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Tag v0.0.${{ github.run_number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          flyctl deploy \
-            --config apps/api/fly.workers.toml \
-            --dockerfile apps/api/Dockerfile \
-            --build-target workers \
-            --remote-only
+          TAG="api-v0.0.${{ github.run_number }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+          gh release create "$TAG" --generate-notes --title "API deploy $TAG"
