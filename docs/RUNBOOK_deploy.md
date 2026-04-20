@@ -54,6 +54,21 @@ a post-merge PO action.
   Add the record *after* the first successful deploy so the app
   exists to be bound to.
 
+**Staging status (2026-04-20):** wired + cert issued.
+- Cloudflare DNS: `api-staging.investment-tracker.app` CNAME →
+  `investment-tracker-api-staging.fly.dev` (DNS-only, proxy off; `.app`
+  TLD's HSTS preload means the Fly-hosted TLS must terminate directly).
+- `fly certs add api-staging.investment-tracker.app -a investment-tracker-api-staging`
+  → Issued within <1 minute. `fly certs list` shows STATUS=Issued.
+- `curl https://api-staging.investment-tracker.app/health` → 200, same
+  JSON as `.fly.dev`.
+- **Known flyctl quirk:** `fly certs show <hostname> -a <app>` returns a
+  500 HTML error page today (platform-side, not cert-side). Use
+  `fly certs list -a <app>` + a direct HTTPS probe to validate status.
+
+**Prod (pending):** same procedure against `api.investment-tracker.app`
+after first prod deploy lands.
+
 ### Secrets population
 
 After Doppler is populated but before the first deploy, fire
