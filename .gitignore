@@ -48,6 +48,10 @@ go.work.sum
 !.env.example
 .doppler/
 .sentry-cli-token
+# Local-only secrets backup — never commit
+SECRETS.local.md
+*.secrets.local.md
+secrets.local.*
 
 # ---------- IDE / editor ----------
 .vscode/
