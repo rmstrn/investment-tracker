@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (позже — PR #46 B3-iii merged (`08e09f4`), main tip = `08e09f4` + docs pass on top. **9 of ~9 PRs merged — TASK_04 closed.** Следующее — PR C (Fly.io deploy) + параллельно TASK_07 (UI) продолжается.)
+**Last updated:** 2026-04-20 (вечер — PR #45 TASK_07 Slice 1 merged (`a622bd3`), main tip = `a622bd3` + this docs pass on top. **TASK_04 closed (9 of 9). TASK_07 Slice 1 in main.** Следующее — PR C (Fly.io deploy) параллельно с TASK_07 Slice 2.)
 
 ---
 
@@ -27,8 +27,9 @@ TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
   - ⏳ PR C — deploy: Dockerfile + fly.toml + k6 smoke + runbook (см. `PR_C_preflight.md`). Blocked-on: 24-48h clean staging post-B3-iii desirable.
 - **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger (см. PR #44 B3-ii-b для persist implementation). 404-swallow flip на strict propagation — после B3-iii (см. `RUNBOOK_ai_flip.md`).
 
-### Волна 3 — 🟢 параллельный старт
-**TASK_07 (Web Frontend)** стартует параллельно с B3-iii. Дизайн-система (TASK_02) и OpenAPI (TASK_03) стабильны, AI mutations (B3-ii-a/b) в main — UI имеет чем питаться. TASK_06 Broker Integrations — после B3-iii close.
+### Волна 3 — 🟢 в работе
+- **TASK_07 (Web Frontend):** **Slice 1 merged** (PR #45, SHA `a622bd3`, 2026-04-20) — Clerk auth (middleware + ClerkProvider + (auth) routes) + `(app)/dashboard` vertical slice с `PortfolioValueCardLive` поверх `GET /portfolio` + TanStack Query `usePortfolio` hook (server-hydrated initialData) + 1 Vitest smoke. ~551 LOC (значительно ниже 1200-1600 anchor — scaffold берёт половину). Slice 2+ pending (Positions / Position Detail / Chat UI / Insights / Accounts / Settings / Paywall / Vercel deploy).
+- **TASK_06 (Broker Integrations):** ⏳ starts после PR C close.
 
 ### Волна 4 — 🧊 отложено
 TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
@@ -39,7 +40,9 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | (после post-merge docs pass PR #46 — обновится этим коммитом) | TBD | 2026-04-20 |
+| **main tip** | (после post-merge docs pass PR #45 — обновится этим коммитом) | TBD | 2026-04-20 |
+| #45 | TASK_07 Slice 1: Clerk auth + middleware + (auth) routes + (app)/dashboard vertical slice + PortfolioValueCardLive + TanStack Query usePortfolio + 1 Vitest | `a622bd3` | 2026-04-20 |
+| docs-only | post-merge pass PR #46 B3-iii | `0c3bea5` | 2026-04-20 |
 | #46 | B3-iii: Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs | `08e09f4` | 2026-04-20 |
 | docs-only | CC_KICKOFF_task07_slice1 revised (+ PO sync kickoff prompts) | `a75f541` / `aa4d4a5` | 2026-04-20 |
 | #44 | B3-ii-b: POST /ai/chat + POST /ai/chat/stream (SSE reverse-proxy, tee-parser, persistTurn single-writer `ai_usage`) | `c2a2afe` | 2026-04-20 |
@@ -187,44 +190,58 @@ Core API эмитит header когда фича частично недосту
 
 ---
 
-## 9. Next action (при входе в новый чат)
+## 9. Параллельные треки
 
-**Статус (2026-04-20, поздний вечер):** **TASK_04 закрыт — 9 of ~9 PRs merged.** Core API feature-complete на main; впереди deploy (PR C).
-- **PR #46 (B3-iii)** squash = `08e09f4`. Clerk/Stripe webhooks (svix + stripe-go) + webhook_events idempotency ledger + 14 scope-cut 501 stubs (2FA × 5, session mutations × 2, billing CRUD × 5, /me/export, /portfolio/tax/export). Production ~1160 LOC, tests ~750 LOC, binary 18 MB (под PR C cap 25 MB). 8/8 CI green (после one-shot squash — изначально два intermediate fix'а на SA1019 VisitAll→All и gitleaks whsec_ allow inline). TD-056..059 opened; TD-041 ⇔ TD-045 publisher-path reaffirmed.
-- **PR #44 (B3-ii-b)** squash = `c2a2afe`. POST /ai/chat (sync) + POST /ai/chat/stream (custom SSE reverse-proxy через `sseproxy/proxy.go` c single-writer goroutine, tee-parser через `handlers.persistTurn` для tee+DB transaction, `sseproxy.Result.GotMessageStop` gate, heartbeat ticker.Reset, `aiservice.ErrUpstreamAuth` → 502, flatten helpers, `stampHeaders` для `X-Request-Id`). 8/8 CI green. LOC 1606 production, 1389 tests. TD-055 opened (openapi spec drift from re-serialize).
-- **PR #42 (B3-ii-a)** squash = `8c52a4d`. AI client foundation + rate-limit middleware + 5 handlers.
-- **PR #43 (TASK_05 cleanup)** squash = `b6108a4`. `record_ai_usage` dual-write удалён — Core API = single-writer.
-- **main tip** = after docs pass update (PR #46 post-merge squash is `08e09f4` + this docs pass commit).
-- Worktree `D:/investment-tracker-b3iii` — готов к cleanup (`git worktree remove --force D:/investment-tracker-b3iii && git worktree prune`).
+**Track 1 — Core API (TASK_04): DONE** ✅
+9 of 9 PRs merged. PR C (Fly.io deploy) unblocked, ждёт morning polish pass.
+Последнее: B3-iii (PR #46, squash `08e09f4`) → docs sync `0c3bea5`.
 
-**Ключевая архитектурная точка:** AI chat + persistence полностью в main. Клиенты (web/iOS) могут строиться против стабильного OpenAPI контракта. Это разрешает параллельный старт TASK_07 (UI).
+**Track 2 — Web Frontend (TASK_07): Wave 3 🟢 in flight**
+Slice 1 merged (PR #45, squash `a622bd3`) — Clerk auth + `(app)/dashboard`
+vertical slice + `PortfolioValueCardLive` + 1 Vitest. LOC ~551. Значительно
+ниже 1200-1600 anchor (anchor был cap'ом, не floor'ом) — scaffold
+(`PortfolioCard`, api-client wrapper, `AppShell`/`Sidebar`/`TopBar`,
+gain/loss tokens) делает половину работы. Main tip post-docs = этот
+docs-pass commit.
 
-### Следующая сессия — PR C + TASK_07 продолжается
+### Next
 
-**Трек 1: PR C (Fly.io deploy)**
+- **TASK_07 Slice 2** — Positions list + Position Detail (анкор TBD,
+  kickoff пишется когда Slice 1 validated post-merge smoke — docker
+  compose + Go API + real Clerk dev project + `/dashboard` runtime).
+- **PR C deploy** — после morning polish (`PR_C_preflight.md` §
+  "Follow-up TDs" — перенумеровать TD-048..052 (заняты в TECH_DEBT.md,
+  плюс TD-056..059 от B3-iii) в TD-060+, либо placeholder `TD-TBD: ...`;
+  плюс § 5/7/6 cleanup items из раздела "Утром — опциональный docs
+  polish pass" ниже).
+- **AI Service 404-swallow flip** — после prod soak PR C
+  (`RUNBOOK_ai_flip.md`).
 
-Scope — см. `PR_C_preflight.md`: Dockerfile + fly.toml + GitHub Actions deploy workflow + k6 smoke suite + `RUNBOOK_deploy.md`. Blast radius: первый production deploy Core API, fresh DB.
+**Blocked-on для PR C:** 24-48h clean staging post-B3-iii desirable.
 
-Blocked-on: 24-48h clean staging post-B3-iii — желателен soak-time прежде чем катить в prod. Нет active active incidents.
+**Key reference points (предыдущие PRs):**
+- PR #46 (B3-iii) `08e09f4` — Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs. TD-056..059 opened.
+- PR #45 (TASK_07 Slice 1) `a622bd3` — web vertical slice (см. merge-log entry наверху).
+- PR #44 (B3-ii-b) `c2a2afe` — AI chat sync + SSE reverse-proxy + single-writer `ai_usage`. TD-055 opened.
+- PR #42 (B3-ii-a) `8c52a4d` — AI client foundation + rate-limit middleware + 5 handlers.
+- PR #43 (TASK_05 cleanup) `b6108a4` — Python `record_ai_usage` dual-write удалён.
 
-После PR C → 24-48h prod soak → AI Service 404-swallow flip (RUNBOOK_ai_flip.md) → MVP launch готовность.
+**Worktree cleanup (на PO):**
+- `D:/investment-tracker-b3iii` — `git worktree remove --force D:/investment-tracker-b3iii && git worktree prune`.
+- `D:/investment-tracker-task07-s1` — `git worktree remove --force D:/investment-tracker-task07-s1 && git worktree prune` + локальную ветку `feature/task07-slice1` уже нет на remote, локально можно снести `git branch -D feature/task07-slice1 post-merge-task07-s1` из D:\СТАРТАП.
 
-**⚠️ Известный drift (морнинг polish):** `PR_C_preflight.md` § "Follow-up TDs" использует TD-048..052 numbering, которое уже занято SSE/rate-limit TDs в TECH_DEBT.md (и теперь TD-056..059 тоже заняты). Перед PR C открытием — перенумеровать preflight TDs (TD-060+) или заменить на placeholder "TD-TBD: ...".
+**Ключевая архитектурная точка:** AI chat + persistence полностью в main; web vertical slice готов против `/portfolio`. Клиенты (web/iOS) строятся против стабильного OpenAPI контракта.
 
-**Трек 2: TASK_07 (Web Frontend) — параллельный kickoff**
+### Что НЕ готово в UI (scope Slice 2+)
 
-Старт разрешён потому что:
-- Дизайн-система (TASK_02) замерджена — Figma + UI kit готовы.
-- OpenAPI контракт (TASK_03) стабилен — клиентская кодогенерация работает.
-- AI endpoints (B3-ii-a/b) в main — можно строить chat UI и insights screen против реальных контрактов.
-- Read path (B2a/b/c) в main — dashboards, portfolio, positions, transactions, accounts, benchmarks.
-- Mutations (B3-i) в main — account CRUD, transactions CRUD, /me settings, notifications.
-
-**Что НЕ готово и где нужны мок/заглушки в UI:**
-- Account deletion UI — будет после B3-iii (можно начинать с disabled state + "Coming soon").
-- Broker integrations (TASK_06) — оставить UI заглушками для wave 3.
-
-CC session для TASK_07: отдельный worktree, свой CC chat, prompt на основе § 10.5 pattern но для Web. Откроем когда Ruslan скажет.
+- Positions list + Position Detail — Slice 2.
+- Chat UI (streaming) — Slice 2 или 3.
+- Insights feed, Accounts CRUD, Settings, Paywall, Pricing marketing — Slice 3+.
+- Visual disabled state для placeholder nav-слотов Sidebar — требует расширения `NavItem` API в `packages/ui` (добавить `disabled?: boolean` + render logic), отдельным micro-slice.
+- `usePortfolioHistory` + period toggle + sparkline — Slice 2+.
+- Vercel preview на PR — отдельный setup PR.
+- Real Sentry/PostHog DSN wiring — после publishable DSN выданы.
+- Real Clerk dev project + runtime sign-in/sign-up smoke — PO post-merge.
 
 ### Утром — опциональный docs polish pass
 

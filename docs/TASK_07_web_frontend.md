@@ -5,6 +5,16 @@
 **Блокирует:** ничего (конечный продукт)
 **Срок:** 5-7 недель
 
+## Статус
+
+| Slice | Scope | Status |
+|---|---|---|
+| **Slice 1** | Clerk auth (middleware + ClerkProvider + (auth) routes) + `(app)/dashboard` vertical slice с `PortfolioValueCardLive` поверх `GET /portfolio` + TanStack Query `usePortfolio` hook + 1 Vitest smoke | ✅ merged — PR #45, squash `a622bd3`, 2026-04-20, ~551 LOC |
+| Slice 2 | Positions list + Position Detail (+ возможно Chat UI) | ⏳ pending |
+| Slice 3+ | Insights, Accounts, Settings, Paywall, Pricing marketing, PWA, Vercel deploy | ⏳ pending |
+
+Детали merge — `merge-log.md` (PR #45 entry).
+
 ## Цель
 
 Веб-приложение — основной интерфейс на старте. Должно ощущаться как

@@ -24,7 +24,7 @@ docs/
 ├── TASK_04_core_backend.md      ← 🚧 wave 2, Go API (8 of ~9 PRs merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a/B3-ii-b; B3-iii next, C впереди)
 ├── TASK_05_ai_service.md        ← ✅ wave 2, Python AI-сервис (PR #34 initial + PR #43 ai_usage dual-write cleanup 2026-04-20)
 ├── TASK_06_broker_integrations.md  ← wave 3 (стартует после закрытия TASK_04)
-├── TASK_07_web_frontend.md      ← wave 3
+├── TASK_07_web_frontend.md      ← 🟢 wave 3 in flight (Slice 1 merged PR #45 `a622bd3`)
 └── TASK_08_ios_app.md           ← wave 4 (deferred — нужен Mac)
 ```
 
@@ -73,12 +73,12 @@ docs/
 | **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 9 of ~9 PRs merged (B3-iii merged 2026-04-20 PR #46 `08e09f4`; PR C Fly.io deploy next) |
 | **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20) |
 
-### Волна 3 — после закрытия TASK_04
+### Волна 3 — 🟢 in flight
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | ⏳ waiting |
+| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting (после PR C) |
+| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 merged (PR #45 `a622bd3`, 2026-04-20); Slice 2+ pending |
 
 ### Волна 4 — отложено
 
