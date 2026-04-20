@@ -70,7 +70,7 @@ docs/
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 8 of ~9 PRs merged (B3-ii-b merged 2026-04-20 PR #44 `c2a2afe`; B3-iii next) |
+| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 9 of ~9 PRs merged (B3-iii merged 2026-04-20 PR #46 `08e09f4`; PR C Fly.io deploy next) |
 | **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20) |
 
 ### Волна 3 — после закрытия TASK_04
@@ -107,4 +107,4 @@ Wave 3 стартует после мержа PR C в TASK_04 (deploy/Dockerfile
 
 ---
 
-**Следующий шаг:** открыть PO_HANDOFF.md (актуальный handoff между сессиями), потом 00_PROJECT_BRIEF.md для концепции. Текущий фронт работ — TASK_04 B3-iii (write-path completion + Clerk/Stripe webhooks + webhook_events idempotency).
+**Следующий шаг:** открыть PO_HANDOFF.md (актуальный handoff между сессиями), потом 00_PROJECT_BRIEF.md для концепции. Текущий фронт работ — PR C (Fly.io deploy — Dockerfile + fly.toml + k6 smoke + runbook, см. PR_C_preflight.md); параллельно TASK_07 Web Frontend slice 1.

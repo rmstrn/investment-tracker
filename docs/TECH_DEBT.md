@@ -8,6 +8,66 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-059 — `/portfolio/tax/export` downloadable bundle
+
+**Added:** 2026-04-20 (PR #46 / B3-iii)
+**Priority:** P3
+**Source:** openapi defines `GET /portfolio/tax/export` returning a downloadable tax package (CSV/PDF). B3-iii shipped a 501 stub; real implementation overlaps TD-039 (export-job worker) + jurisdiction-specific rendering templates.
+**Risk:** low — не влияет на Pro-tier tax report JSON (`GetPortfolioTax` работает). Downloadable export — convenience feature, не блокер GA.
+**Fix:** after export-job worker lands (TASK_06 / TD-039), add renderer per jurisdiction (DE/US/UK/FR/ES/NL) + enqueue pattern matching existing `/exports` flow. Wire stub → real handler.
+**Trigger to revisit:** TASK_06 worker slice landed, product опционально prioritizes tax downloads.
+**Owner:** backend + design (jurisdiction templates)
+**Scope:** ~200 LOC handler + per-jurisdiction renderer packages — 1-2 days per jurisdiction
+
+---
+
+### TD-058 — GDPR `/me/export` data bundle
+
+**Added:** 2026-04-20 (PR #46 / B3-iii)
+**Priority:** P2 (GDPR compliance — требуется для EU retail launch)
+**Source:** openapi `GET /me/export` → `UserExportBundle`. B3-iii shipped 501 stub — aggregation handler не реализован. Empty/partial bundle misrepresents user data, поэтому честнее 501 чем empty-200.
+**Risk:** medium — GDPR Article 15 (right of access) expects a responsive export within a month. MVP launch без endpoint'а = юридически наш `/me/export` должен работать хотя бы на запрос через support. Current gap = soft risk.
+**Fix:** handler aggregates all per-user tables (users, accounts, transactions, positions, portfolio_snapshots, ai_conversations, ai_messages, insights, usage_counters, ai_usage, notifications, notification_preferences, audit_log), optionally decrypts `accounts.credentials_encrypted` (or omits), returns signed JSON. Consider async via export-job flow если размер большой.
+**Trigger to revisit:** перед public EU launch (GA blocker for compliance), OR первый support-ticket с запросом GDPR export.
+**Owner:** backend + legal review
+**Scope:** ~200 LOC aggregation + test fixtures
+
+---
+
+### TD-057 — Billing CRUD endpoints after prod Stripe catalog
+
+**Added:** 2026-04-20 (PR #46 / B3-iii)
+**Priority:** P2 (зависит от Stripe prod setup, не блокер CI)
+**Source:** 5 `/billing/*` endpoints (GET subscription, POST checkout, POST portal, GET invoices, POST cancellation-feedback) зашли scope-cut 501 stubs. `/billing/webhook` уже live (PR #46) — это client-facing half Stripe integration, требует:
+  1. Prod Stripe product+price catalog (price_id'ы для STRIPE_PRICE_PLUS/PRO уже переменные env'а).
+  2. Stripe Customer Portal config в dashboard.
+  3. `cancellation_feedback` таблица (мини-миграция).
+  4. Real Stripe `client.CheckoutSessions.New` с метаданным `user_id` (для webhook resolve fallback — pattern уже закреплён в B3-iii).
+**Risk:** low — пока продовый Stripe не настроен, эти endpoints не нужны. Webhook без them'а graceful degradation через warn+200 до первой checkout-через-UI.
+**Fix:** отдельный slice после PR C. Handler'ы используют client-instance stripe.Client (per-request `client.New(cfg.StripeSecretKey, nil)`) чтобы оставаться consistent с webhook-side no-global-stripe.Key.
+**Trigger to revisit:** prod Stripe setup complete (product catalog + portal config + price_id'ы published).
+**Owner:** backend lead + billing ops
+**Scope:** ~400-500 LOC (5 handlers + cancellation_feedback миграция + tests) — 1-2 days
+
+---
+
+### TD-056 — Clerk Backend SDK wiring (2FA + session mutations)
+
+**Added:** 2026-04-20 (PR #46 / B3-iii)
+**Priority:** P2
+**Pair:** TD-027 (original Clerk SDK gap — оригинально только про `GET /me/sessions`). TD-056 — расширение на полный surface: 2FA × 5 + `DELETE /me/sessions/{id,others}` × 2.
+**Source:** 7 endpoints'ов proxied в Clerk Management API (openapi comment § 234: "All 2FA + session endpoints proxy to Clerk Management API"). B3-iii shipped:
+  - `GET /me/2fa` — empty-state-200 + `X-Clerk-Unavailable` (matches ListMySessions pattern, `{enabled: false, backup_codes: {remaining: 0}}`).
+  - POST `/me/2fa/{enroll,verify,disable,backup-codes/regenerate}` — 501 NOT_IMPLEMENTED + `X-Clerk-Unavailable`.
+  - DELETE `/me/sessions/{id}`, `/me/sessions/others` — 501 NOT_IMPLEMENTED + `X-Clerk-Unavailable`.
+**Risk:** low — web/iOS могут реализовать 2FA напрямую через Clerk SDK (not proxied через наш API). Наши endpoints — convenience для UI stability + fleet visibility. Прямой Clerk SDK — workaround до TD-056.
+**Fix:** add Clerk Backend SDK (`github.com/clerk/clerk-sdk-go/v2`) в `app.Deps`. Handler'ы вызывают `clerkClient.Users.VerifyTOTP(...)`, `clerkClient.Sessions.Revoke(...)` и т.п. Empty-state на `GET /me/2fa` → real `Users.Get(clerkUserID)` + parsing 2FA enrolment fields.
+**Trigger to revisit:** web UI готов интегрировать 2FA flow; OR первый enterprise-customer запрос на session management.
+**Owner:** backend lead
+**Scope:** ~200 LOC (SDK wiring + 7 handlers + tests с Clerk SDK stub) — 1 day
+
+---
+
 ### TD-055 — AI stream OpenAPI spec drift (re-serialize in Core API)
 
 **Added:** 2026-04-20 (PR #44 / B3-ii-b)
@@ -139,6 +199,7 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 **Pair:** **requires** TD-041 (hard_delete_user worker implementation). Физически неразделимы — воркер без этой проверки ломает undo-flow.
 **Source:** DELETE /me не удаляет юзера сразу — помечает `deletion_scheduled_at` + enqueue'ит `hard_delete_user` task с delay=7d. Если юзер передумал и вызвал undo — колонка сбрасывается в NULL, но отложенная задача в asynq остаётся.
 **Fix:** worker consumer в TASK_06 должен первым делом re-fetch'ить юзера и делать no-op, если `deletion_scheduled_at IS NULL`. Логировать как `hard_delete_cancelled_undo`.
+**Status note (2026-04-20):** publisher path verified done в B3-i (`61d6c08`). Clerk `user.deleted` webhook (PR #46 B3-iii) uses the same contract — enqueue через `asynqpub.TaskHardDeleteUser` + `HardDeleteGracePeriod` delay + `X-Async-Unavailable` when publisher off. Comment-anchor в `apps/api/internal/clients/asynqpub/publisher.go:159` фиксирует requirement для consumer. Actively Active до merge TASK_06.
 **Trigger to revisit:** вместе с TD-041 в TASK_06.
 **Owner:** workers lead (TASK_06)
 **Scope:** ~10 LOC + test сценарий undo
@@ -151,6 +212,7 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 **Pair:** **implements** TD-041 but **requires** TD-045 (no-op on undo). Не катить без TD-045.
 **Source:** DELETE /me publisher уже в Core API (PR #40). Consumer-side — в TASK_06.
 **Current state:** задача enqueue'ится с delay=7d, но воркера ещё нет — задачи копятся в asynq `default` queue.
+**Status note (2026-04-20):** publisher-path complete и усилен в B3-iii. Два call-site'а делают enqueue: (1) `DeleteMe` в `me_mutations.go` (user-initiated); (2) `handleClerkUserDeleted` в `webhook_clerk.go` (Clerk webhook driven). Оба следуют одному contract'у. Consumer остаётся scope TASK_06.
 **Fix:** worker в TASK_06 с scope:
   1. fetch user by ID
   2. **re-check `deletion_scheduled_at IS NOT NULL`** (см. TD-045)

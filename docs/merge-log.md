@@ -15,6 +15,36 @@ Newest entries at the top.
 
 ---
 
+## PR #46 — B3-iii: Clerk/Stripe webhooks + webhook_events idempotency
+
+**Squash SHA:** `08e09f4`
+**Merged:** 2026-04-20
+**Base:** `a75f541` (docs-only tip post-#44).
+**Scope:** финальный write-path slice TASK_04.
+- `POST /auth/webhook` (public) — svix `Webhook.Verify` → `user.created/updated/deleted`. Deletion path переиспользует B3-i DELETE /me (MarkUserDeletionRequested + 7d `TaskHardDeleteUser`). svix `NewWebhook` используется и в проде, и в тестах (whsec_<base64> shape).
+- `POST /billing/webhook` (public) — `stripe-go webhook.ConstructEvent` → subscription.created/updated/deleted + invoice.payment_failed. Client-instance verifier (нет global `stripe.Key`). Tier mapping через optional `STRIPE_PRICE_PLUS`/`STRIPE_PRICE_PRO` env. Unknown price → WARN + skip (fail-open, избегаем 72h retry-шторма).
+- Миграция `20260420120001_webhook_events.sql` — PK `(source, event_id)` + CHECK `source IN ('clerk','stripe')`. sqlc `ClaimWebhookEvent` = `INSERT ... ON CONFLICT DO NOTHING RETURNING processed_at`. 0 rows → idempotent replay (200).
+- `internal/clients/webhookidem` — shared Claimer surface поверх sqlc query.
+- User resolve для Stripe events: `stripe_customer_id` → `metadata.user_id` fallback → WARN + 200 no-op (до `/billing/checkout` через TD-057).
+- `stripe_customer_id` preserved on subscription cancel (resub-friendly — коммент в `handleStripeSubscriptionDeleted`).
+- 14 scope-cut 501 stubs для OpenAPI completeness: `/me/2fa/*` (5), `DELETE /me/sessions/{id,others}` (2), `/billing/*` CRUD (5), `/me/export` (1), `/portfolio/tax/export` (1). `GET /me/2fa` эмитит `X-Clerk-Unavailable` + empty-state-200 per ListMySessions pattern.
+- Config: optional `StripePricePlus` + `StripePricePro`. `CLERK_WEBHOOK_SECRET` + `STRIPE_WEBHOOK_SECRET` уже были в config.
+**LOC:** ~1160 production, ~750 tests, ~80 sqlc generated. Grand total ~1900 LOC, 23 файла touched.
+**CI:** 8/8 green (Go lint+vet+build+test, Node lint+typecheck+build, Node unit tests, Python lint+typecheck+test, Trivy fs, govulncheck, gitleaks, Trivy side-check).
+**Admin-bypass:** нет.
+**Migrations:** `20260420120001_webhook_events.sql`.
+**Binary size:** 18 MB (`-s -w`, trimpath) — под PR C cap 25 MB. Delta от baseline ~15 MB = +3 MB (stripe-go + svix + transitive).
+**Mid-flight fix-up (pre-merge, squashed in):** staticcheck SA1019 — `fasthttp RequestHeader.VisitAll` deprecated → перевод на `All()` iterator. Gitleaks generic-api-key triggered на whsec-format test secret → `gitleaks:allow` inline комментарии. Оба зафиксированы в squash перед финальным CI runthrough — чистый one-shot 8/8 green post-squash.
+**Closed TDs:** — (TD-041/TD-045 остаются Active с припиской: publisher done в B3-i commit `61d6c08`; Clerk `user.deleted` webhook использует тот же contract; consumer tracked в TASK_06).
+**Opened TDs:**
+- TD-056 — Clerk Backend SDK wiring (2FA × 5 + session mutations × 2). Pair с TD-027.
+- TD-057 — Billing CRUD endpoints (5) depends on prod Stripe product catalog.
+- TD-058 — GDPR `/me/export` bundle aggregation.
+- TD-059 — `/portfolio/tax/export` tax bundle (overlap с TD-039 worker).
+**Next:** TASK_04 закрыт (9 of ~9 PRs). PR C (Fly.io deploy) — см. `PR_C_preflight.md`. До PR C — 24-48h clean staging desirable; после prod deploy → AI Service 404-swallow flip (`RUNBOOK_ai_flip.md`).
+
+---
+
 ## PR #44 — B3-ii-b: POST /ai/chat + SSE reverse-proxy + ai_usage single-writer
 
 **Squash SHA:** `c2a2afe`
