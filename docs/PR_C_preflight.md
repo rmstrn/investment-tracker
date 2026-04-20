@@ -1,6 +1,8 @@
 # Pre-flight — PR C (Core API deploy: Dockerfile + fly.toml + k6 smoke + runbook)
 
-**Status:** READY — B3-ii (PR #44) and B3-iii (PR #46) merged. TASK_04 closed 9/9. PR C ready to open.
+**Status:** ✅ DONE — merged 2026-04-20 as PR #49, squash SHA `fa9c9dc`. Variant B+C (fill-gaps + Doppler-first) per PO decision — repo already carried alpine Dockerfile, `cmd/api`+`cmd/workers` split, `doppler-sync.yml`, manual `deploy-api.yml` from TASK_01/A bootstrap, so PR C filled gaps rather than rewriting. Final: 24 files touched (+1687/−27 = net +1660 LOC, within 1800-2400 anchor). See `docs/merge-log.md` § PR #49 for full scope + opened TDs (TD-060..064, TD-066 PR D blocker, TD-067). Operational follow-up (Doppler project / Fly apps / DNS / staging soak / prod cutover) is PO post-merge work per `RUNBOOK_deploy.md § Prerequisites`.
+
+**Historical (pre-merge) fields kept for archaeology:**
 **Renumbered (2026-04-20):** follow-up TDs TD-048..052 → TD-060..064 (TD-048..052 now occupied by real tech-debt in TECH_DEBT.md).
 **Owner:** TBD (backend maintainer at deploy time)
 **Est. size:** 1800-2400 LOC (Dockerfile + fly.toml + GitHub Actions wire + k6 smoke + runbook + health/metrics wiring + misc)

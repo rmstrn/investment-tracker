@@ -15,6 +15,58 @@ Newest entries at the top.
 
 ---
 
+## PR #49 — PR C: Core API deploy infrastructure (Fly.io + k6 + runbook)
+
+**Squash SHA:** `fa9c9dc`
+**Merged:** 2026-04-20
+**Base:** `ad73a5a` (docs-only post-#48 tip; rebased mid-flight when Slice 2 landed).
+**Scope:** первый real deploy infra slice TASK_04. «Fill-gaps + Doppler-first» режим — бустрап (alpine Dockerfile, `cmd/api`/`cmd/workers` split, `doppler-sync.yml`, manual `deploy-api.yml`) был уже в репо с TASK_01/A; PR C дополнил без переписывания.
+- `apps/api/cmd/api/migrate.go` + `migrate_test.go` + `migrate_integration_test.go` (tag=integration, testcontainers pg) — subcommand `./api migrate <up|status|version>` для `fly.toml` `release_command` (atomic deploy — new code never meets old schema).
+- `apps/api/cmd/api/main.go` — dispatch на `migrate` subcommand до `config.Load` (DATABASE_URL — единственный env, migrate не требует Clerk/Stripe/Polygon surface).
+- `apps/api/internal/server/server.go` — `/metrics` endpoint через `github.com/prometheus/client_golang/prometheus/promhttp` + Fiber v3 `adaptor.HTTPHandler`. Default registry (go_* + process_*) only; custom app metrics — не-TD per PO decision ("плодить TDs без concrete trigger — bad habit").
+- `apps/api/fly.toml` (prod) — `kill_signal=SIGTERM`, `kill_timeout=30`, `[deploy] release_command + strategy=rolling`, `min_machines_running=2`, `auto_stop_machines=false`, `[metrics]` block, explicit `[env]` (LOG_LEVEL/LOG_FORMAT/ENV=production).
+- `apps/api/fly.staging.toml` (new) — cheaper knobs: `min=1`, `auto_stop=suspend`, `ENV=staging`, остальное зеркалит prod (same region, TLS, healthcheck, release_command).
+- `apps/api/Dockerfile` — `golang:1.26-alpine` → `golang:1.25-alpine` (consistent с go.mod) + `COPY db/migrations /app/db/migrations` (self-contained image для release_command).
+- `apps/api/.dockerignore` — expanded 9 → 35 lines (.git, editor/OS clutter, coverage, test files — context upload speed + cache stability).
+- Healthcheck path mismatch fix: `fly.toml` `/healthz` → `/health` (handler всегда был на `/health` — bootstrap artifact в синxрон с route table; без фикса первый deploy = все машины 404-unhealthy).
+- `.github/workflows/deploy-api.yml` rewrite: push-to-main + workflow_dispatch → verify-staging-secrets → deploy-staging → k6 smoke-staging → verify-prod-secrets → deploy-prod (GitHub Environment `production` approval gate) → smoke-prod (continue-on-error) → tag-release (`api-v0.0.<run_number>`). `target=workers|both` dispatch опции удалены защитно (TD-066 PR D blocker — placeholder binary не должен уехать в prod по клику).
+- `ops/secrets.keys.yaml` (new, Doppler-first) — 15 required + 3 optional keys, value-less manifest.
+- `ops/scripts/verify-prod-secrets.sh` (new) — Python-parsed YAML + `flyctl secrets list --json` diff. Missing required → exit 1; unexpected extras → warning.
+- `tools/k6/smoke/*.js` (5 scenarios: health / portfolio_read / positions_read / ai_chat_stream / idempotency) + `run-smoke.sh` wrapper (skips auth-gated scenarios когда TEST_USER_TOKEN unset) + `seed-user.sh` (Clerk Backend API helper — one-time PO setup).
+- `docs/RUNBOOK_deploy.md` (new, 316 LOC) — 8 headings (standard flow / emergency hotfix / rollback / debugging / secrets rotation / scaling / migrations / observability) + Prerequisites 9-й блок per Q10 (Doppler project, Fly apps, GitHub Environments+secrets, DNS pointing procedure, secrets population через `doppler-sync.yml`).
+- `docs/DECISIONS.md` — "2026-04-20 — Core API Fly.io deploy (PR C)" entry, 9 sub-decisions: alpine preserved (not distroless, not debt — committed TASK_01/A choice), Doppler single-source-of-truth, single-region fra для MVP, rolling strategy (не blue-green, TD-064 для future SSE incident), migrate subcommand > ephemeral `fly machine run`, workers dispatch disabled до PR D, health path /healthz→/health, /metrics on public port, separate `fly.staging.toml` vs parameterised toml.
+**LOC:** 24 files touched (15 new + 9 modified), +1687 / −27 = net +1660. Anchor 1800-2400 — внутри (−7.8%). Prognosis GAP v1 был 1430-1590; overshoot +4.4% из-за richer RUNBOOK + migrate tests (130 LOC integration).
+**Mid-flight events:**
+- **Rebase conflict** в `docs/TECH_DEBT.md` когда PR #48 Slice 2 merged во время PR C work — Slice 2 добавил TD-065 в то же место (top of Active). Resolved placing TD-065 в proper descending numeric order между TD-066 и TD-064. Остальной auto-merge clean.
+- **Lint hotfix** pre-merge: golangci-lint errcheck на `fmt.Fprint/Fprintf` unchecked returns в `migrate.go` → `_, _ = fmt.Fprint(...)` explicit discard. Commit `264352a` перед финальным CI run-through → 8/8 green.
+**CI:** 8/8 green on final squashed SHA (Go lint+vet+build+test 3m5s, Node lint+typecheck+build 1m9s, Node unit tests 23s, Python lint+typecheck+test 17s, Trivy fs 19s, govulncheck 33s, gitleaks 12s, Trivy side-check 2s).
+**Admin-bypass:** нет.
+**Migrations:** нет (migrations были applied ранее через CI dev env; PR C только добавляет deploy-time механизм через release_command).
+**Closed TDs:** —
+**Opened TDs (7):**
+- **TD-060** (P2) — KMS-managed KEK (replace env-based `ENCRYPTION_KEK`). Trigger: first enterprise/GDPR-sensitive conversation или SOC2 scoping.
+- **TD-061** (P3) — Multi-region deploy (fra → + ams/lhr). Trigger: ~1k paying users или first fra outage.
+- **TD-062** (P2) — APM / cross-service trace correlation (OTel → Tempo/Datadog). Trigger: AI Service 404-swallow flip (`RUNBOOK_ai_flip.md`).
+- **TD-063** (P2) — Per-tenant rate limits (per-user token bucket). Trigger: first enterprise conversation или cache/queue saturation incident.
+- **TD-064** (P3) — Blue-green deploys вместо rolling (SSE safety). Trigger: first SSE drop user-visible incident.
+- **TD-066** (P1) — Restore `workers` deploy target в `deploy-api.yml` dispatch inputs. **PR D blocker**. PR D CC kickoff должен читать TD-066 first.
+- **TD-067** (P2) — `deploy-web.yml`/`deploy-ai.yml` pipeline consistency (staging + smoke + approval gate). Trigger: post-first-prod-deploy когда pattern confirmed.
+**Known follow-ups (PO post-merge, operational 8-12h):**
+1. Create Doppler project `investment-tracker-api` + configs dev/stg/prd.
+2. Populate 15 required secrets per `ops/secrets.keys.yaml`.
+3. Add 4 GitHub repo secrets (`FLY_API_TOKEN`, `DOPPLER_TOKEN_STG`, `DOPPLER_TOKEN_PRD`, `STAGING_TEST_USER_TOKEN`, `PROD_TEST_USER_TOKEN`) + 2 Environments (`staging` no gate; `production` 1 required reviewer = PO).
+4. `fly apps create investment-tracker-api --org <org>` + `fly apps create investment-tracker-api-staging --org <org>`.
+5. Dispatch `doppler-sync.yml target=api` — pipes Doppler → Fly secrets.
+6. `tools/k6/seed-user.sh` против staging Clerk → `gh secret set STAGING_TEST_USER_TOKEN`.
+7. Dispatch `deploy-api.yml` — pipeline runs verify-staging-secrets → staging deploy → k6 smoke-staging → verify-prod-secrets → **blocks на production environment approval** → prod deploy → k6 smoke-prod → tag release.
+8. Point DNS `api-staging.investment-tracker.app` + `api.investment-tracker.app` на Fly после первого успешного deploy.
+9. 24-48h staging soak перед prod traffic cutover.
+10. После prod soak — AI Service 404-swallow flip (`RUNBOOK_ai_flip.md`).
+**Worktree cleanup (на PO):** `git worktree remove --force D:/investment-tracker-pr-c && git worktree prune`. Local branch `feature/pr-c-deploy` уже удалён с remote (`--delete-branch`); локально можно снести `git branch -D feature/pr-c-deploy` из `D:\СТАРТАП`.
+**Next:** TASK_04 закрыт 10/10 (A, B1, B2a, B2b, B2c, B3-i, B3-ii-a, B3-ii-b, B3-iii, **PR C**). PR D — workers deploy + asynq consumer (TASK_06 integration) после первого prod soak. TASK_07 Slice 3 идёт параллельно (Chat UI или Insights/Accounts).
+
+---
+
 ## PR #48 — TASK_07 Slice 2: Positions list + Position Detail (read-only)
 
 **Squash SHA:** `366d12f`

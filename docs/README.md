@@ -69,18 +69,18 @@ docs/
 | **TASK_02** | Дизайн-система в Figma | ✅ merged |
 | **TASK_03** | API-контракт + схема БД | ✅ merged |
 
-### Волна 2 — 🚧 в работе
+### Волна 2 — ✅ code-complete
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 9 of ~9 PRs merged (B3-iii merged 2026-04-20 PR #46 `08e09f4`; PR C Fly.io deploy next) |
-| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20) |
+| **TASK_04** (Go API) | TASK_01, TASK_03 | ✅ 10/10 PRs merged (PR C deploy infra merged 2026-04-20, PR #49 `fa9c9dc`; operational setup — Doppler/Fly/DNS/soak — на PO per `RUNBOOK_deploy.md § Prerequisites`) |
+| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20). 404-swallow flip после PR C prod soak (`RUNBOOK_ai_flip.md`) |
 
 ### Волна 3 — 🟢 in flight
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting (после PR C) |
+| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting (после PR C prod soak + PR D workers deploy) |
 | **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 merged (PR #45 `a622bd3`) + Slice 2 merged (PR #48 `366d12f`, 2026-04-20); Slice 3+ pending |
 
 ### Волна 4 — отложено
@@ -89,8 +89,7 @@ docs/
 |---|---|
 | **TASK_08** (iOS) | 🧊 deferred — нужен Mac + Xcode, отдельный репо |
 
-**Важно:** TASK_04 (Go API) — бутылочное горлышко для всего фронта и мобилки.
-Wave 3 стартует после мержа PR C в TASK_04 (deploy/Dockerfile/fly.toml).
+**Важно:** TASK_04 (Go API) code-complete. PR D — workers deploy + asynq consumer (**blocker: TD-066** — restore workers deploy target в deploy-api.yml dispatch). TASK_06 разблокируется после PR D.
 
 ## Советы по параллельным чатам
 
