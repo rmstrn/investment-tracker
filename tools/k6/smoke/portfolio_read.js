@@ -41,10 +41,13 @@ export default function () {
         return false;
       }
     },
-    'has total_value or accounts field': (r) => {
+    'has canonical PortfolioSnapshot shape': (r) => {
       try {
         const body = r.json();
-        return body && (body.total_value !== undefined || body.accounts !== undefined);
+        // Per OpenAPI PortfolioSnapshot: total_value is nested under
+        // values.base / values.display (never top-level). snapshot_date
+        // is a required field, so presence proves the shape.
+        return body?.snapshot_date && body.values?.base?.total_value !== undefined;
       } catch (_) {
         return false;
       }

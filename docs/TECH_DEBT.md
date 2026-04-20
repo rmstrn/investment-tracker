@@ -8,6 +8,19 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-076 — Contract sync test: OpenAPI schema → k6 smoke shape validation
+
+**Added:** 2026-04-20 (paired with TD-R075 — k6 scripts drifted silently against actual API shapes)
+**Priority:** P3
+**Source:** `tools/k6/smoke/*.js` scripts assert response shapes by ad-hoc key checks (`body.items`, `body.total_value`, …). Nothing enforces those keys match the generated OpenAPI types, so a backend rename or a shape rework breaks smoke only at runtime — and the only runtime we have is a deploy-blocking staging job. TD-R075 was exactly that failure mode (4 scripts drifted post-PR #30 schema tighten).
+**Risk:** low per-incident, but each drift blocks a deploy and requires a PR. Cost compounds as more scenarios land.
+**Fix sketch:** a pre-smoke validation step that loads `tools/openapi/openapi.yaml`, extracts the response schema for each hit endpoint, and asserts the k6 script's expected fields are declared in the spec. Alternatively, generate typed fixtures from the spec (JSON Schema / zod) that k6 scripts import. Former is simpler, latter is tighter.
+**Trigger to revisit:** next silent drift OR when smoke scenario count crosses ~10 (today 5).
+**Owner:** backend + infra
+**Scope:** ~150 LOC Python or Node validator + 1 new workflow step — 1 day
+
+---
+
 ### TD-070 — AI Service lacks `fly.staging.toml` + `deploy-ai.yml` staging job
 
 **Added:** 2026-04-20 (staging ops bootstrap)
@@ -528,6 +541,27 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R075 — k6 smoke scripts drift vs actual API response shapes
+
+**Resolved:** 2026-04-20, this PR.
+**Was:** four of five `tools/k6/smoke/*.js` scripts asserted response fields that don't exist on the current API:
+- `portfolio_read.js` expected top-level `body.total_value` / `body.accounts`. Real `/portfolio` shape is `PortfolioSnapshot` — `total_value` is nested under `values.base` / `values.display`; no `accounts` field at all.
+- `positions_read.js` expected `body.items` + `body.next_cursor`. Real `/positions` returns `{data: Position[]}` (single-shot list — cursor-paginated variant lives on `/positions/{id}/transactions`).
+- `idempotency.js` expected the cached replay to return 200. The middleware (`internal/middleware/idempotency.go`) preserves the original status on replay — second identical POST returns 201 with the same body. The real correctness invariant is `account.id` equality between first call and replay, not a status-code rewrite.
+- `ai_chat_stream.js` sent a legacy request shape `{messages:[{role, content}]}`. Real `AIChatRequest` per OpenAPI is nested — `{conversation_id, message: {content: [{type:"text", text}]}}`. Plus AI Service is not yet deployed on staging (TD-070) so `/ai/chat/stream` returns 503 regardless.
+
+Scripts were written before PR #30 tightened the OpenAPI schema; never re-audited. Surfaced on first real end-to-end smoke run 24680345933 after TD-R071 unblocked auth.
+
+**Fix:**
+- `portfolio_read.js`: assert `body.snapshot_date && body.values.base.total_value !== undefined`.
+- `positions_read.js`: drop the `?limit=20` query (ignored), assert `Array.isArray(body.data)`, drop `next_cursor` check.
+- `idempotency.js`: update comments + assertions to accept `201 (replay) | 409 (in-progress)`. New assertion — replayed `account.id` must equal the first call's `account.id`.
+- `ai_chat_stream.js`: correct request body to `AIChatRequest` shape. Accept `200 OR 503`, with 200-conditional SSE content-type + data-frame checks. Scenario will turn strict 200-only automatically once TD-070 closes.
+
+**Alternative considered:** regenerate scripts from OpenAPI at CI build time. Rejected as over-scope for a 25-LOC fix. Recorded as **TD-076** for future contract-sync work.
+
+---
 
 ### TD-R071 — k6 auth-gated smoke fails on 60s Clerk JWT TTL
 
