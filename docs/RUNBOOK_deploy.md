@@ -25,6 +25,11 @@ a post-merge PO action.
   - `prd` — production values.
 - Each config carries every key marked `required:` in
   `ops/secrets.keys.yaml`. `optional:` keys may be blank.
+- `ALLOWED_ORIGINS` is a comma-separated list of exact origins the
+  CORS middleware will accept (e.g. `https://staging.investment-tracker.app`
+  in `stg`, plus the prod origin in `prd`). No trailing slashes —
+  browsers send origins as `scheme://host[:port]` and a mismatch
+  silently drops the `Access-Control-Allow-Origin` header.
 
 ### Fly.io
 
