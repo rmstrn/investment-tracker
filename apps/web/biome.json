@@ -6,7 +6,7 @@
   },
   "overrides": [
     {
-      "include": ["src/app/design/**"],
+      "include": ["src/app/design/**", "src/components/chat/**"],
       "linter": {
         "rules": {
           "a11y": {

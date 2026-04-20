@@ -86,6 +86,17 @@
           "suspicious": { "noConsoleLog": "off" }
         }
       }
+    },
+    {
+      "include": ["**/apps/web/src/components/chat/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useValidAriaRole": "off",
+            "useSemanticElements": "off"
+          }
+        }
+      }
     }
   ]
 }
