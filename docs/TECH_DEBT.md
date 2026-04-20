@@ -8,6 +8,19 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-065 — `TransactionRow.kind`: support split events
+
+**Added:** 2026-04-20 (PR #48 / TASK_07 Slice 2)
+**Priority:** P3
+**Source:** `packages/ui` `TransactionRow.kind` enum = `buy | sell | dividend | deposit | withdrawal | fee`. OpenAPI `TransactionType` enum включает `split` — для которого нет mapping в `kind` (нет cash flow, нет amount column semantics, иконка buy/sell не подходит). PR #48 filter'ит `split` события из `/positions/[id]` Transactions tab + surface'ит footnote `"Stock splits hidden (N)"` если хотя бы один split присутствует в fetched pages.
+**Risk:** low — splits не искажают денежные суммы на detail page (фильтр client-side, API contract не меняется, ledger в БД не трогаем). Visual-only gap: пользователь не видит что 2:1 split произошёл, информация про изменение quantity теряется в UI (хотя сам факт изменения quantity уже отражён в `position.quantity`).
+**Fix:** расширить `TransactionRow.kind` value `'split'`. Display: ratio (`2:1`) + execution date, no amount column (или em-dash). Domain helper `splitRatio(t: Transaction): string` — парсит `t.source_details` либо compute из `quantity_before`/`quantity_after` (требует backend контракт — возможно уже в `source_details` JSONB при импорте). UI: muted tone, distinct icon (`lucide` `Split`). Test coverage: один smoke для splits-variant `TransactionRow`.
+**Trigger to revisit:** первый user feedback про отсутствие splits в Transactions list; OR первый seed dataset со split events для UI testing; OR broker integration (TASK_06) начинает поставлять split events массово.
+**Owner:** frontend + design
+**Scope:** ~80 LOC (TransactionRow kind extension + splitRatio helper + test + footnote cleanup в apps/web `PositionTransactionsTab`) — 0.5 day
+
+---
+
 ### TD-059 — `/portfolio/tax/export` downloadable bundle
 
 **Added:** 2026-04-20 (PR #46 / B3-iii)

@@ -1,5 +1,9 @@
 # CC Kickoff — TASK_07 Web Frontend (Slice 2)
 
+> **Status:** ✅ merged as PR #48, squash `366d12f`, 2026-04-20. Actual LOC 1443, 24 files. См. `merge-log.md` PR #48 entry.
+>
+> **Correction (post-merge, docs consistency):** секция "OpenAPI surface (confirmed)" ниже описывает `GET /market/history` response как содержащий `period` — это неточно. По `tools/openapi/openapi.yaml` response shape = `{ symbol, asset_type, currency, interval, points }`, **без** `period`. Requested period — query param only. `useMarketHistory` хранит period в query key + client state; response не эхоит его обратно. Остальной kickoff accurate.
+
 **Scope:** Positions list + Position Detail (read-only). Расширяет apps/web Slice 1.
 **Anchor:** 1400-1800 LOC.
 **Worktree:** `D:/investment-tracker-task07-s2` (feature/task07-slice2 branch from main).

@@ -10,10 +10,10 @@
 | Slice | Scope | Status |
 |---|---|---|
 | **Slice 1** | Clerk auth (middleware + ClerkProvider + (auth) routes) + `(app)/dashboard` vertical slice с `PortfolioValueCardLive` поверх `GET /portfolio` + TanStack Query `usePortfolio` hook + 1 Vitest smoke | ✅ merged — PR #45, squash `a622bd3`, 2026-04-20, ~551 LOC |
-| Slice 2 | Positions list + Position Detail (+ возможно Chat UI) | ⏳ pending |
-| Slice 3+ | Insights, Accounts, Settings, Paywall, Pricing marketing, PWA, Vercel deploy | ⏳ pending |
+| **Slice 2** | Positions list + Position Detail (read-only): `(app)/positions` + `(app)/positions/[id]` + toolbar (sort/group/filter) + price chart (Recharts via `@investment-tracker/ui/charts` subpath, zero apps/web dep) + infinite transactions tab + 4 hooks + 3 Vitest smoke + sidebar activation | ✅ merged — PR #48, squash `366d12f`, 2026-04-20, 1443 LOC |
+| Slice 3+ | Chat UI streaming, Insights, Accounts CRUD, Settings, Paywall, Pricing marketing, PWA, Vercel deploy, scope-cut header UI (`X-Partial-Portfolio` / `X-FX-Unavailable`), sidebar disabled-state для placeholder nav-слотов | ⏳ pending |
 
-Детали merge — `merge-log.md` (PR #45 entry).
+Детали merge — `merge-log.md` (PR #45, PR #48 entries).
 
 ## Цель
 

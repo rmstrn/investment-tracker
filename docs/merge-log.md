@@ -15,6 +15,44 @@ Newest entries at the top.
 
 ---
 
+## PR #48 — TASK_07 Slice 2: Positions list + Position Detail (read-only)
+
+**Squash SHA:** `366d12f`
+**Merged:** 2026-04-20
+**Base:** `fd3b5c5` (docs-only kickoff tip post-#45).
+**Scope:** второй vertical slice веб-фронта поверх Slice 1 scaffold.
+- `/positions` — Server Component с server-hydrated `initialData` для дефолтного запроса `sort=value_desc + group_by=symbol`. `PositionsListLive` bridge + `PositionsTable` (desktop HTML table + mobile `AssetRow` cards через `md:` breakpoint) + `PositionsToolbar` (Sort `SegmentedControl` / Group `Dropdown` / Asset-type Filter `Dropdown`) + `PositionsRow` desktop row с gain/loss coloring.
+- `/positions/[id]` — Server Component с parallel fetch позиции + первой страницы транзакций. 404 → `notFound()`, 5xx → inline error message (не infinite skeleton). `PositionDetailLive` composes `PositionHeader` + `Tabs(Overview, Transactions)`. Overview = `PositionOverviewTab` (P&L card + Metadata card) + `PositionPriceChart`. Transactions = infinite-query list + "Load more" ghost Button.
+- `PositionPriceChart` поверх `@investment-tracker/ui/charts` `AreaChart` subpath (Recharts pulled through `packages/ui` direct dep; **zero direct dep в `apps/web`**, zero drift `pnpm-lock.yaml` с параллельным PR C). Period `SegmentedControl` 1W/1M/3M/6M/1Y/All (default 1M) → OpenAPI `5d/1m/3m/6m/1y/max`. `PositionPriceChartView` вынесен как pure presentational для smoke-теста без QueryClient — паттерн Slice 1 (`PortfolioValueCardView`).
+- `PositionHeader` использует `CountUpNumber` с `from === value` чтобы первый paint рендерил финальное отформатированное значение; tween запускается только на последующих refetch'ах (no 0→value animation on mount).
+- 4 TanStack Query хука: `usePositions` (initialData для default query only — избегает seeding unrelated query keys), `usePosition`, `usePositionTransactions` (infinite; first page hydrated через `initialData: { pages: [firstPage], pageParams: [undefined] }` + `initialPageParam: undefined` — без setQueryData-в-useEffect anti-pattern), `useMarketHistory` (`period` живёт в query key + client state — OpenAPI response не возвращает `period`, только query param).
+- `lib/api/positions.ts` — thin typed fetch helpers (`fetchPositions` / `fetchPosition` / `fetchPositionTransactions` / `fetchMarketHistory`) типизированы через generated `paths` + `components` из `@investment-tracker/shared-types`. Unwrap на 2xx, throw на non-2xx → TanStack Query surface'ит через `error`.
+- `lib/format.ts` extensions: `formatRelativeTime` (`2h ago` с fallback на абсолютную дату), `formatShortAccountId` (`Account #<last-8 uuid>` placeholder до `/accounts` lookup в Slice 5), `formatDateTime`, `formatAxisDate`. `lib/period.ts` — UI ↔ API period mapping.
+- `components/positions/pnl-helpers.ts` — `formatPositionPnl`: derive percent locally когда `pnl_percent` null но `pnl_absolute` есть (`abs / (total_value - abs)`); both fields optional per OpenAPI contract на `Position`.
+- `TransactionRow.kind` не модели `split` events — фильтруем `split` транзакции с footnote "Stock splits hidden (N)" когда хотя бы один split присутствует. См. **TD-065** ниже.
+- Sidebar: `positions` slot href `/dashboard` → `/positions`; `activeSlugFor` резолвит `/positions*` → `'positions'`. Active-state следует за роутом.
+- Vitest: 3 smoke-теста (`positions-row` — gain/loss/absent P&L + локально-computed percent edge case; `position-header` — symbol + asset-type Badge + CountUpNumber-seeded-with-value invariant + 3 P&L variants; `position-price-chart` — loading/error/chart/empty-points render paths на `PositionPriceChartView`).
+- `vitest.setup.ts` +7 LOC: `afterEach(cleanup)` hook. С Vitest `globals: false` `@testing-library/react` не регистрирует свой built-in cleanup, рендеры копились между `it`-блоками. Slice 1 dodged это случайно (уникальные ассёрты в каждом тесте).
+**LOC:** 1443 insertions, 4 removals, 24 files (21 new, 3 modified: `app-shell-client.tsx`, `format.ts`, `vitest.setup.ts`). В пределах 1400-1800 anchor. Scaffold Slice 1 тянет половину работы.
+**Out-of-spec touches (объявлены в GAP v2):**
+1. `vitest.setup.ts` cleanup hook — real bug fix в test infra, verified не ломает Slice 1.
+2. `PositionPriceChartView` вынесен отдельно — +20 LOC boilerplate, взамен чистый smoke test без QueryClient mock'ов. Следует Slice 1 паттерну.
+3. **Zero `package.json` / `pnpm-lock.yaml` touches** — no deps added. Recharts через `@investment-tracker/ui/charts` subpath.
+**CI:** 8/8 green on push (Go lint+vet+build+test 34s, Node lint+typecheck+build 1m13s, Node unit tests 26s, Python lint+typecheck+test 19s, Trivy fs 27s, govulncheck 37s, gitleaks 5s, Trivy side-check 5s).
+**Admin-bypass:** нет.
+**Migrations:** нет.
+**Closed TDs:** —
+**Opened TDs:**
+- **TD-065** — `TransactionRow.kind` extension для `split` events (display ratio + date, no amount col). P3, owner frontend+design, revisit при первом user feedback про splits. См. TECH_DEBT.md.
+**Known follow-ups (не TDs):**
+- Runtime smoke `/positions → click row → /positions/[id]` с docker compose + Go API + реальными позициями — PO post-merge.
+- Scope-cut headers (`X-Partial-Portfolio`, `X-FX-Unavailable`) на `/positions` — отдельный micro-slice для консистентности с `/dashboard`.
+- Slice 3+ scope без изменений (Chat UI, Insights, Accounts CRUD, Settings, Paywall, Vercel deploy, PWA, sidebar disabled state для placeholder nav-слотов).
+**Worktree cleanup (на PO):** `git worktree remove --force D:/investment-tracker-task07-s2 && git worktree prune`. Local branch `feature/task07-slice2` уже удалён с remote (--delete-branch), локально можно снести `git branch -D feature/task07-slice2` из `D:\СТАРТАП`.
+**Next:** Slice 3 (Chat UI или Insights/Accounts) + параллельно PR C (Fly.io deploy) + продолжает.
+
+---
+
 ## PR #45 — TASK_07 Slice 1: Clerk auth + (app)/dashboard vertical slice
 
 **Squash SHA:** `a622bd3`

@@ -20,7 +20,7 @@ docs/
 ├── PR_C_preflight.md            ← pre-flight GAP-анализ финального PR C (Fly.io deploy)
 ├── CC_KICKOFF_pr_c.md           ← PR C kickoff (wrapper вокруг PR_C_preflight)
 ├── CC_KICKOFF_task07_slice1.md  ← ✅ merged PR #45
-├── CC_KICKOFF_task07_slice2.md  ← TASK_07 Slice 2 (Positions list + detail)
+├── CC_KICKOFF_task07_slice2.md  ← ✅ merged PR #48
 ├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
 ├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
 ├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
@@ -81,7 +81,7 @@ docs/
 | Таск | Зависит от | Статус |
 |---|---|---|
 | **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting (после PR C) |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 merged (PR #45 `a622bd3`, 2026-04-20); Slice 2+ pending |
+| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 merged (PR #45 `a622bd3`) + Slice 2 merged (PR #48 `366d12f`, 2026-04-20); Slice 3+ pending |
 
 ### Волна 4 — отложено
 
