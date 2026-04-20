@@ -5,7 +5,7 @@
 **Блокирует:** TASK_05 (AI Service нужны портфельные данные), TASK_06 (интеграции), TASK_07 (Web), TASK_08 (iOS)
 **Срок:** 4-6 недель (параллельно с другими)
 
-**Статус (2026-04-20):** 🚧 7 of ~9 PRs merged.
+**Статус (2026-04-20):** 🚧 8 of ~9 PRs merged.
 
 | PR | Scope | Status |
 |---|---|---|
@@ -16,7 +16,7 @@
 | B2c | final read handlers (30 GET authenticated) | ✅ merged (fb16525) |
 | **B3-i** | **write-path mutations + asynq + idempotency lock** | **✅ merged 2026-04-19 (11d6098, PR #40)** |
 | **B3-ii-a** | **AI Service HTTP client + rate-limit middleware + 5 handlers (conv create/del, insights generate/dismiss/viewed)** | **✅ merged 2026-04-20 (8c52a4d, PR #42)** |
-| B3-ii-b | POST /ai/chat (sync) + POST /ai/chat/stream (SSE reverse-proxy + tee-parser + persist + ai_usage INSERT in DB tx) + SSE parser pkg | 🚧 next (anchor ~1500 LOC; zavisimosti snyty — см. PO_HANDOFF.md § 9) |
+| **B3-ii-b** | **POST /ai/chat + POST /ai/chat/stream (кастомный SSE reverse-proxy + tee-parser + persist + `ai_usage` single-writer)** | **✅ merged 2026-04-20 (`c2a2afe`, PR #44)** |
 | B3-iii | write-path completion + Clerk/Stripe webhooks + webhook_events idempotency | ⏳ queued |
 | C | Dockerfile + fly.toml + k6 smoke + deploy runbook | ⏳ queued (см. PR_C_preflight.md) |
 

@@ -8,6 +8,19 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-055 — AI stream OpenAPI spec drift (re-serialize in Core API)
+
+**Added:** 2026-04-20 (PR #44 / B3-ii-b)
+**Priority:** P2
+**Source:** AI Service SSE frames (`ai_service/models.py`) diverged from the openapi `AIChatStreamEvent` shape — `message_start` без `conversation_id`, `content_delta {text}` vs openapi `{index, delta:{text}}`, `message_stop` несёт `usage: TokenUsage` вместо `{message_id, tokens_used}`, `error` несёт `{message, code}` вместо обёрнутого `ErrorEnvelope`. Core API `sseproxy/translator.go` сейчас re-serialize'ит каждый frame в openapi-compliant форму перед отдачей клиенту.
+**Risk:** любая schema эволюция на AI Service side должна синхронно отражаться в Core API serializer, иначе silent drift либо на клиенте (web/iOS codegen от openapi) либо на Core tee-parser (который собирает content blocks для persist). Единая точка изменения сейчас — переписать translator + опционально openapi fix.
+**Mitigation:** contract test между AI Service canonical fixture frames и Core API re-serialize output. Фаза 1 — shared fixture set + парный тест. Фаза 2 — align openapi spec к AI Service shape OR align AI Service к openapi (cross-service решение).
+**Trigger to revisit:** первый новый frame type / field в AI Service SSE schema; OR перед public GA когда mobile/web клиенты завязываются на openapi codegen жёстко.
+**Owner:** backend (Core API) + AI lead (TASK_05) для coord.
+**Scope:** фаза 1 ~60 LOC (fixture file + test); полный spec-align — отдельная story.
+
+---
+
 ### TD-054 — CC agent memory lives outside repo (shared invariants gap)
 
 **Added:** 2026-04-20 (flag from TASK_05 cleanup CC, post-PR #43)

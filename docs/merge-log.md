@@ -15,6 +15,22 @@ Newest entries at the top.
 
 ---
 
+## PR #44 — B3-ii-b: POST /ai/chat + SSE reverse-proxy + ai_usage single-writer
+
+**Squash SHA:** `c2a2afe`
+**Merged:** 2026-04-20
+**Base:** `b6108a4` (PR #43 squash)
+**Scope:** вторая половина AI mutations группы — POST /ai/chat (sync) + POST /ai/chat/stream (кастомный SSE reverse-proxy с single-writer goroutine, tee-parser, persist). `sseproxy/proxy.go`, `handlers.persistTurn` (tee+DB transaction, единственный writer `ai_usage`), `sseproxy.Result.GotMessageStop` gate, heartbeat ticker.Reset после frame, `aiservice.ErrUpstreamAuth` → 502, `flattenUserContent`/`flattenStoredContent`, `stampHeaders` для `X-Request-Id`. OpenAPI re-serialize в Core API (трекается через TD-055).
+**LOC:** 1606 production (+7% vs 1500 anchor — nit-lint overhead), 1389 tests, 147 generated/SQL. Grand total +3142/-2.
+**CI:** 8/8 green. Go lint+build+test, Node typecheck+test, Python lint+test, trivy image, govulncheck, gitleaks — всё зелёное (trivy на PR прошёл штатно — pre-existing main-side flake на `Security — filesystem scan` не повторился; отдельный chore-PR на permissions не понадобился).
+**Admin-bypass:** нет (branch protection required checks = 0, нормальный squash).
+**Migrations:** нет.
+**Closed TDs:** — (core mutations закрыты; Path B и tier-per-period остаются отдельно).
+**Opened TDs:** TD-055 — AI stream OpenAPI spec drift from re-serialize в Core API.
+**Next:** B3-iii — DELETE /me + JWKS cache prune + break-glass runbook polish. После этого PR C (Fly.io deploy).
+
+---
+
 ## PR #43 — TASK_05 cleanup: remove Core API `record_ai_usage` dual-write
 
 **Squash SHA:** `b6108a4`

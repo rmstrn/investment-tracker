@@ -21,7 +21,7 @@ docs/
 ├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
 ├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
 ├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
-├── TASK_04_core_backend.md      ← 🚧 wave 2, Go API (7 of ~9 PRs merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a; B3-ii-b next, B3-iii/C впереди)
+├── TASK_04_core_backend.md      ← 🚧 wave 2, Go API (8 of ~9 PRs merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a/B3-ii-b; B3-iii next, C впереди)
 ├── TASK_05_ai_service.md        ← ✅ wave 2, Python AI-сервис (PR #34 initial + PR #43 ai_usage dual-write cleanup 2026-04-20)
 ├── TASK_06_broker_integrations.md  ← wave 3 (стартует после закрытия TASK_04)
 ├── TASK_07_web_frontend.md      ← wave 3
@@ -70,7 +70,7 @@ docs/
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 7 of ~9 PRs merged (B3-ii-a merged 2026-04-20 PR #42 `8c52a4d`; B3-ii-b next) |
+| **TASK_04** (Go API) | TASK_01, TASK_03 | 🚧 8 of ~9 PRs merged (B3-ii-b merged 2026-04-20 PR #44 `c2a2afe`; B3-iii next) |
 | **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20) |
 
 ### Волна 3 — после закрытия TASK_04
@@ -107,4 +107,4 @@ Wave 3 стартует после мержа PR C в TASK_04 (deploy/Dockerfile
 
 ---
 
-**Следующий шаг:** открыть PO_HANDOFF.md (актуальный handoff между сессиями), потом 00_PROJECT_BRIEF.md для концепции. Текущий фронт работ — TASK_04 B3-ii-b (POST /ai/chat + SSE reverse-proxy, anchor ~1500 LOC).
+**Следующий шаг:** открыть PO_HANDOFF.md (актуальный handoff между сессиями), потом 00_PROJECT_BRIEF.md для концепции. Текущий фронт работ — TASK_04 B3-iii (write-path completion + Clerk/Stripe webhooks + webhook_events idempotency).
