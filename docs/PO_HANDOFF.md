@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-20 (ночь — PR #42 B3-ii-a merged (`8c52a4d`), PR #43 TASK_05 cleanup merged (`b6108a4`), main tip = `b6108a4`, день закрыт, завтра — B3-ii-b start)
+**Last updated:** 2026-04-20 (поздний вечер — PR #44 B3-ii-b merged (`c2a2afe`), docs sync `cf5ae55`, main tip = `cf5ae55`. 8 of ~9 PRs merged. Следующее — B3-iii + параллельно TASK_07 (UI) kickoff.)
 
 ---
 
@@ -22,15 +22,14 @@
 TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 
 ### Волна 2 — 🚧 в работе
-- **TASK_04 Core API (Go):** 7 of ~9 PRs merged.
-  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), **B3-i (write path mutations, 2026-04-19, SHA `11d6098`, PR #40)**, **B3-ii-a (AI foundation + 5 handlers, 2026-04-20, SHA `8c52a4d`, PR #42)**
-  - 🚧 B3-ii-b next — POST /ai/chat (sync) + POST /ai/chat/stream (SSE reverse-proxy + tee-parser + persist) + ai_usage INSERT в DB transaction. Anchor ~1500 LOC. Зависимости сняты: B3-ii-a merged + PR #43 merged.
-  - ⏳ B3-iii — write path completion + webhook_events migration
+- **TASK_04 Core API (Go):** 8 of ~9 PRs merged.
+  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), **B3-i (write path mutations, 2026-04-19, SHA `11d6098`, PR #40)**, **B3-ii-a (AI foundation + 5 handlers, 2026-04-20, SHA `8c52a4d`, PR #42)**, **B3-ii-b (AI chat sync + SSE reverse-proxy + single-writer ai_usage, 2026-04-20, SHA `c2a2afe`, PR #44)**
+  - ⏳ B3-iii next — write-path completion + Clerk webhook handler (user lifecycle) + Stripe webhook handler (subscription lifecycle) + `webhook_events` table c idempotency на `(source, event_id)` PK + ON CONFLICT DO NOTHING. Anchor ~1200-1800 LOC.
   - ⏳ PR C — deploy: Dockerfile + fly.toml + k6 smoke + runbook (см. `PR_C_preflight.md`)
-- **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger. 404-swallow flip на strict propagation — после B3-iii (см. `RUNBOOK_ai_flip.md`).
+- **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger (см. PR #44 B3-ii-b для persist implementation). 404-swallow flip на strict propagation — после B3-iii (см. `RUNBOOK_ai_flip.md`).
 
-### Волна 3 — ⏳ ждёт закрытия TASK_04
-TASK_06 Broker Integrations, TASK_07 Web Frontend.
+### Волна 3 — 🟢 параллельный старт
+**TASK_07 (Web Frontend)** стартует параллельно с B3-iii. Дизайн-система (TASK_02) и OpenAPI (TASK_03) стабильны, AI mutations (B3-ii-a/b) в main — UI имеет чем питаться. TASK_06 Broker Integrations — после B3-iii close.
 
 ### Волна 4 — 🧊 отложено
 TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
@@ -41,7 +40,9 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | PR #43 TASK_05 cleanup (remove `record_ai_usage` dual-write) | `b6108a4` | 2026-04-20 |
+| **main tip** | docs sync post-#44 (merge-log + TECH_DEBT TD-055 + TASK_04 + README) | `cf5ae55` | 2026-04-20 |
+| #44 | B3-ii-b: POST /ai/chat + POST /ai/chat/stream (SSE reverse-proxy, tee-parser, persistTurn single-writer `ai_usage`) | `c2a2afe` | 2026-04-20 |
+| #43 | TASK_05 cleanup: remove `record_ai_usage` dual-write (Python) | `b6108a4` | 2026-04-20 |
 | #42 | B3-ii-a: AI client + rate-limit middleware + 5 handlers (conv create/del, insights gen/dismiss/viewed) | `8c52a4d` | 2026-04-20 |
 | docs-only | DECISIONS.md: ai_usage single-writer ADR (reference для PR #43) | `47276bb` | 2026-04-20 |
 | docs-only | PO_HANDOFF + merge-log entry (CC-landed для clean tree перед B3-ii pre-flight) | `e96f6de` | 2026-04-20 |
@@ -85,6 +86,7 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | ID | Priority | Description | Pair / Links |
 |---|---|---|---|
+| TD-055 | P2 | AI stream OpenAPI spec drift: Core API re-serialize'ит SSE frames в openapi shape; schema эволюция на AI Service стороне требует sync update в Core translator | contract-test fixture |
 | TD-054 | P3 | CC agent memory lives outside repo — shared invariants gap | mitigation: DECISIONS.md дисциплина |
 | TD-053 | P2 | `/ai/insights/generate` per-week/per-day tier gate (1/wk Free, 1/day Plus) | planned Redis counter |
 | TD-052 | P2 | AIRateLimit pre-increment overcount (429 или 5xx) | reserve+commit Lua |
@@ -182,60 +184,64 @@ Core API эмитит header когда фича частично недосту
 
 ## 9. Next action (при входе в новый чат)
 
-**Статус (2026-04-20, конец дня):** оба PR смерджены.
-- **PR #42 (B3-ii-a)** squash = `8c52a4d`. AI client foundation + rate-limit middleware + 5 handlers. 8/8 CI green. 6 новых TDs (TD-048..TD-053) в TECH_DEBT.md.
-- **PR #43 (TASK_05 cleanup)** squash = `b6108a4`. `record_ai_usage` dual-write удалён из Python. Core API теперь single-writer `ai_usage`. 8/8 CI green. TD-054 добавлен (CC memory vs repo).
-- **main tip** = `b6108a4`. Оба worktree прибраны (admin record через `git worktree prune`; физические директории в Windows иногда остаются как stale files — safe, не мешает).
+**Статус (2026-04-20, поздний вечер):** ключевой milestone закрыт — AI chat end-to-end на main.
+- **PR #44 (B3-ii-b)** squash = `c2a2afe`. POST /ai/chat (sync) + POST /ai/chat/stream (custom SSE reverse-proxy через `sseproxy/proxy.go` c single-writer goroutine, tee-parser через `handlers.persistTurn` для tee+DB transaction, `sseproxy.Result.GotMessageStop` gate, heartbeat ticker.Reset, `aiservice.ErrUpstreamAuth` → 502, flatten helpers, `stampHeaders` для `X-Request-Id`). 8/8 CI green (trivy flake не повторился). LOC 1606 production (+7% vs 1500 anchor), 1389 tests. TD-055 opened (openapi spec drift from re-serialize).
+- **PR #42 (B3-ii-a)** squash = `8c52a4d`. AI client foundation + rate-limit middleware + 5 handlers.
+- **PR #43 (TASK_05 cleanup)** squash = `b6108a4`. `record_ai_usage` dual-write удалён — Core API = single-writer.
+- **main tip** = `cf5ae55` (docs-only post-merge pass PR #44: merge-log + TECH_DEBT TD-055 + TASK_04 row + README counter).
+- Оба B3-ii worktree прибраны (git-side чисто; физическая директория D:/investment-tracker-b3ii-b с node_modules осталась — safe, не мешает).
 
-День закрыт. Завтра — B3-ii-b.
+**Ключевая архитектурная точка:** AI chat + persistence полностью в main. Клиенты (web/iOS) могут строиться против стабильного OpenAPI контракта. Это разрешает параллельный старт TASK_07 (UI).
 
-### Завтрашний старт B3-ii-b (приоритет 1)
+### Следующая сессия — два параллельных трека
 
-**Scope reminder:** POST /ai/chat (sync) + POST /ai/chat/stream (SSE reverse-proxy + tee-parser + persist + `ai_usage` INSERT в DB transaction после `message_stop`) + SSE parser pkg. Anchor **1500 LOC**.
+**Трек 1: B3-iii (Go Core API, финальный slice перед deploy)**
 
-**Все B3-ii-a зависимости сняты:**
-- Shared AI client и `airatelimit` middleware уже на main (PR #42).
-- `ai_usage` dual-write убран (PR #43), путь чист для Core API single-write.
-- TierLimits.AIChatEnabled уже в коде (dead code = true для всех тарифов, middleware готов к future change).
+Scope (из `TASK_04_core_backend.md` line 20):
+- **Write-path completion** — оставшиеся mutation handlers, которых не было в B3-i (скорее всего DELETE /me + 7-day grace через `deletion_scheduled_at`, связанные позиции). Проверить при CC pre-flight через grep ServerInterface vs реализованных.
+- **Clerk webhook handler** — svix signature verification (подписана уже в `DECISIONS.md`), обработка user lifecycle events (user.created/updated/deleted → sync в нашу users table).
+- **Stripe webhook handler** — `stripe-go` webhook construct event, обработка subscription events (created/updated/deleted + invoice.payment_failed).
+- **webhook_events table + idempotency** — PK `(source, event_id)`, ON CONFLICT DO NOTHING в handler perimeter. Это защита от retry'ев Clerk/Stripe.
+- Hard-delete worker готовность opt-in — DELETE /me kick'ает delayed asynq task (даже если `asynqpub.Enabled()=false`, scope-cut header `X-Async-Unavailable` отработает как в B3-i). TD-041 ⇔ TD-045 стоят P1 и должны быть закрыты в этом слайсе — `deletion_scheduled_at IS NOT NULL` re-check перед wipe в worker consumer (сам consumer в TASK_06, но pattern закрепляем здесь).
 
-**Acceptance criteria для B3-ii-b (из decisions 2026-04-20):**
+Anchor **1200-1800 LOC** (пересмотрено вверх с 800-1200: webhook signature verification + 2 лайфсайкла + миграция + тесты по факту больше).
 
-1. **SSE proxy через `httputil.ReverseProxy`** с `FlushInterval: -1` (typing-effect не буферизуется).
-2. **Tee-parser** собирает frames от AI Service параллельно с проксированием клиенту → после `message_stop` достаёт final assistant content + usage payload → INSERT в `ai_messages` + `ai_usage` в одной DB transaction.
-3. **Failure mid-stream:** skip incomplete assistant message целиком + log incident со всеми собранными chunks. Не пиши partial — ломает AI context на next turn + user видит `...`.
-4. **SSE parser unit tests на TCP-split frames:** ≥3 boundary cases (включая split по середине JSON data payload).
-5. **Heartbeat:** single-writer goroutine через channel (не race), каждые 15s idle, parser игнорирует `:` префикс.
-6. **401/403 от AI Service → 502 BAD_GATEWAY** клиенту + critical log + Sentry alert. Не пропагируй 401 — это bug в Core API internal token config, не user error.
-7. **Content flatten:** join `content[]` blocks через `\n\n` (Anthropic standard). Single-block = `content[0].text`.
-8. **`X-Request-Id`** пропагация Core → AI через header (Sentry correlation). SSE payload с request_id — **TD-048**, не блокер.
-9. **`ai_usage` INSERT только из Core API** (single-writer; AI Service более не пишет — см. DECISIONS.md 2026-04-20).
+После B3-iii → PR C (Fly.io deploy, см. `PR_C_preflight.md`) → 24-48h clean staging → prod live → AI Service 404-swallow flip (RUNBOOK_ai_flip.md).
 
-### Завтра утром — чек-лист
+**⚠️ Известный drift:** `PR_C_preflight.md` § "Follow-up TDs" использует TD-048..052 numbering, которое сейчас занято SSE/rate-limit TDs в TECH_DEBT.md. Перед PR C открытием — перенумеровать preflight TDs (или заменить на placeholder "TD-TBD: ..."). Tracking — task #9 morning polish.
 
-**Docs polish pass (30-40 мин, до CC):**
+**Трек 2: TASK_07 (Web Frontend) — параллельный kickoff**
+
+Старт разрешён потому что:
+- Дизайн-система (TASK_02) замерджена — Figma + UI kit готовы.
+- OpenAPI контракт (TASK_03) стабилен — клиентская кодогенерация работает.
+- AI endpoints (B3-ii-a/b) в main — можно строить chat UI и insights screen против реальных контрактов.
+- Read path (B2a/b/c) в main — dashboards, portfolio, positions, transactions, accounts, benchmarks.
+- Mutations (B3-i) в main — account CRUD, transactions CRUD, /me settings, notifications.
+
+**Что НЕ готово и где нужны мок/заглушки в UI:**
+- Account deletion UI — будет после B3-iii (можно начинать с disabled state + "Coming soon").
+- Broker integrations (TASK_06) — оставить UI заглушками для wave 3.
+
+CC session для TASK_07: отдельный worktree, свой CC chat, prompt на основе § 10.5 pattern но для Web. Откроем когда Ruslan скажет.
+
+### Утром — опциональный docs polish pass
+
+Нестрого обязательно, но если есть 30 мин:
 1. PO_HANDOFF § 5 Decisions quick-ref → ужать до ссылки + highlights (сейчас дублирует DECISIONS.md).
 2. PO_HANDOFF § 7 File map → расширить до всех 21 файла (сейчас 14).
-3. TECH_DEBT → добавить note сверху Active: «P1 = GA blocker, P2 = post-GA OK, P3 = polish».
-4. RUNBOOK_ai_flip → добавить header-note: «Status 2026-04-20: PR #42 + #43 merged; flip trigger = after B3-iii».
-5. 03_ROADMAP → закрыть dangling Doppler TODO (либо Month 2/4 с owner, либо Post-GA).
-6. Tier caps выровнять: в 00_PROJECT_BRIEF + TASK_04 добавить note «code is source of truth (Free=5, Plus=50, Pro=∞)».
+3. TECH_DEBT → добавить legend сверху Active: «P1 = GA blocker, P2 = post-GA OK, P3 = polish».
+4. RUNBOOK_ai_flip → header-note: «Status 2026-04-20: PR #42/#43/#44 merged; flip trigger = after B3-iii».
+5. 03_ROADMAP → закрыть dangling Doppler TODO.
+6. Tier caps: в 00_PROJECT_BRIEF + TASK_04 note «code is source of truth (Free=5, Plus=50, Pro=∞)».
 
-**B3-ii-b CC start:**
-1. Открыть новый CC чат в новом worktree (например `D:/investment-tracker-b3ii-b`).
-2. Дать continuation prompt (§ 12) + scope B3-ii-b (скопировать § 9 acceptance criteria).
-3. CC делает pre-flight audit → GAP REPORT.
-4. Я оцениваю → дам отмашку на write-phase.
+### Открытые TDs (P1/P2)
 
-### Открытые TDs после сегодня (P1/P2)
-
-- **TD-047** — CSVExport tier flag (P1 pre-GA) — must fix до public launch.
-- **TD-045 ⇔ TD-041** — hard-delete worker + undo re-check (P1). Работа в TASK_06.
-- **TD-048..053** — SSE/rate-limit/insights-gate polish, все low-medium priority, revisit по triggers.
-- **TD-054** — CC memory portability. Low priority, mitigation = дисциплина DECISIONS.md.
-
-### После B3-ii-b
-
-B3-iii (write path completion + webhook_events migration) → PR C (Fly.io deploy, см. `PR_C_preflight.md`) → prod live → AI Service 404-swallow flip (см. `RUNBOOK_ai_flip.md`) → Волна 3 (TASK_06 integrations + TASK_07 web frontend).
+- **TD-047** — CSVExport tier flag (P1 pre-GA).
+- **TD-045 ⇔ TD-041** — hard-delete worker + undo re-check (P1). Часть B3-iii scope.
+- **TD-048..053** — SSE/rate-limit/insights-gate polish (low-medium priority).
+- **TD-054** — CC memory portability (low priority).
+- **TD-055** — AI stream OpenAPI spec drift (P2, Core/TASK_05 coord). Phase 1 ~60 LOC — contract fixture + test.
 
 ---
 
