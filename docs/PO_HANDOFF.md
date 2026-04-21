@@ -2,17 +2,17 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-21 (CORS middleware slice landed — PR #54 `adad1a1` (⚠ admin-bypass, см. merge-log) + PR #55 `f1b5799` lint hotfix. Main tip = `f1b5799` + this docs pass on top. Browser `fetch()` от Vercel-web к `api-staging.investment-tracker.app` теперь не блокируется CORS preflight. Впереди — PO Doppler `ALLOWED_ORIGINS` + fly deploy staging + smoke curl.)
+**Last updated:** 2026-04-21 (CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`. Main tip = `fc44782`. `ALLOWED_ORIGINS` добавлен в Doppler stg, fly staging передеплоен, smoke `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio` вернул 204 + все CORS headers. Web `staging.investment-tracker.app` ходит в API без preflight-блокировок. Следующий фокус — Web UI backlog (Slice 4+): см. новый файл `UI_BACKLOG.md`.)
 
 ---
 
 ## 0. Кто я, что за проект
 
-**Ruslan, Product Owner.** Не разработчик. Оркеструю параллельные Claude Code (CC) сессии — каждая CC-сессия работает свой PR в своём worktree (D:\investment-tracker-b3, и т.д.). Главный документный репозиторий — `D:\СТАРТАП\docs\`.
+**Ruslan, Product Owner.** Не разработчик. Оркеструю параллельные Claude Code (CC) сессии — каждая CC-сессия работает свой PR в своём worktree (`D:\investment-tracker-<feature>`). Главный репозиторий — `D:\investment-tracker\` (docs в `D:\investment-tracker\docs\`).
 
-**Investment-tracker** — AI-native агрегатор инвест-портфеля. Стек: Next.js 15 (web), Go 1.25 (Core API), Python (AI Service), Postgres (Neon), Redis (Upstash), Clerk auth, Stripe billing, Fly.io deploy. MVP для EU retail investors.
+**Investment-tracker** — AI-native агрегатор инвест-портфеля. Стек: Next.js 15 (web), Go 1.25 (Core API), Python (AI Service), Postgres (Neon), Redis (Upstash), Clerk auth, Stripe billing, Fly.io deploy, Vercel (web hosting). MVP для EU retail investors.
 
-**Полный brief:** `D:\СТАРТАП\docs\00_PROJECT_BRIEF.md`.
+**Полный brief:** `D:\investment-tracker\docs\00_PROJECT_BRIEF.md`.
 
 ---
 
@@ -21,15 +21,22 @@
 ### Волна 1 — ✅ закрыта
 TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 
-### Волна 2 — ✅ code-complete (10/10 PRs merged; operational setup впереди)
-- **TASK_04 Core API (Go):** 10 of 10 PRs merged + CORS micro-slice (PR #54 + PR #55 hotfix, 2026-04-21).
-  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), **B3-i (write path mutations, 2026-04-19, SHA `11d6098`, PR #40)**, **B3-ii-a (AI foundation + 5 handlers, 2026-04-20, SHA `8c52a4d`, PR #42)**, **B3-ii-b (AI chat sync + SSE reverse-proxy + single-writer ai_usage, 2026-04-20, SHA `c2a2afe`, PR #44)**, **B3-iii (Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs, 2026-04-20, SHA `08e09f4`, PR #46)**, **PR C (deploy infrastructure — Dockerfile polish + fly.toml prod/staging + deploy-api.yml pipeline + k6 smoke + Doppler-first secrets + RUNBOOK_deploy, 2026-04-20, SHA `fa9c9dc`, PR #49)**, **CORS middleware (allowlist из `ALLOWED_ORIGINS`, scope-cut `X-*` + `X-RateLimit-*` в `ExposeHeaders`, 2026-04-21, SHA `adad1a1`, PR #54)** + **hotfix (golangci-lint bodyclose/noctx, SHA `f1b5799`, PR #55)**.
-  - ⏳ Post-merge operational: PO setup Doppler project + Fly apps + GitHub environments/secrets + DNS + первый staging deploy + 24-48h soak + prod cutover. Roadmap — `RUNBOOK_deploy.md § Prerequisites`. **Для CORS слайса:** PO добавляет `ALLOWED_ORIGINS` в Doppler stg/prd + `fly deploy -a investment-tracker-api-staging` + smoke `curl -i -X OPTIONS .../portfolio`.
-- **TASK_05 AI Service (Python):** ✅ merged (PR #34) + ✅ cleanup merged (PR #43, 2026-04-20, SHA `b6108a4`) — `record_ai_usage` dual-write удалён. Core API теперь single-writer для `ai_usage` ledger (см. PR #44 B3-ii-b для persist implementation). 404-swallow flip на strict propagation — после PR C prod soak (см. `RUNBOOK_ai_flip.md`).
+### Волна 2 — ✅ code-complete + staging deploy live
+- **TASK_04 Core API (Go):** 10 PRs + CORS micro-slice + staging deploy live.
+  - ✅ A (skeleton), B1, B2a, B2b, B2c (read path), B3-i (write mutations, PR #40), B3-ii-a (AI foundation, PR #42), B3-ii-b (AI chat sync + SSE reverse-proxy + single-writer `ai_usage`, PR #44), B3-iii (Clerk/Stripe webhooks + 14 scope-cut 501 stubs, PR #46), PR C (deploy infra — Dockerfile + fly.toml prod/staging + `deploy-api.yml` + k6 smoke + Doppler-first secrets + RUNBOOK, PR #49).
+  - ✅ CORS middleware (PR #54 `adad1a1` + hotfix PR #55 `f1b5799`, 2026-04-21) — allowlist из `ALLOWED_ORIGINS`, 10 scope-cut `X-*` + `X-RateLimit-*` в `ExposeHeaders`.
+  - ✅ Staging deploy live: `api-staging.investment-tracker.app` — CORS smoke 204 OK с `Access-Control-Allow-Origin: https://staging.investment-tracker.app` + все expose-headers. Web ↔ API cross-origin flow работает.
+  - ⏳ Prod cutover — ждёт 24-48h staging soak + PR D (workers deploy target, **TD-066 blocker**).
+- **TASK_05 AI Service (Python):** ✅ PR #34 merged + ✅ cleanup PR #43 `b6108a4` (`record_ai_usage` dual-write удалён — Core API single-writer per PR #44). 404-swallow → strict flip ждёт prod soak (см. `RUNBOOK_ai_flip.md`). **⚠ Staging deploy не сделан** — TD-070 blocker для Slice 6 Insights UI.
 
 ### Волна 3 — 🟢 в работе
-- **TASK_07 (Web Frontend):** **Slice 1 + Slice 2 + Slice 3 merged**. Slice 1 (PR #45, SHA `a622bd3`) — Clerk auth + `(app)/dashboard` + `PortfolioValueCardLive` + `usePortfolio`, 1 Vitest smoke, 551 LOC. Slice 2 (PR #48, SHA `366d12f`) — Positions list + detail read-only: toolbar + desktop/mobile table + Overview/Transactions tabs + Recharts price chart via `@investment-tracker/ui/charts` subpath + 4 TanStack hooks + 3 Vitest smoke + sidebar activation, 1443 LOC. **Slice 3 (PR #50, SHA `4881dfd`, 2026-04-20)** — AI Chat UI: `(app)/chat` + `(app)/chat/[id]` routes, SSE client over fetch+ReadableStream (EventSource не пропускает Bearer), chat reducer (state machine над translator-normalized frames), 6 TanStack hooks (conversations CRUD + `useChatStream` AbortController-scoped + `useRateLimit` Context), 9 UI components (StreamingMessageView pure-presentation split, ChatMessageItem 5-way discriminator, ImpactCardView §14.2, CalloutView §14.1/§14.3, ChatMessageList DESC→oldest-top reversal, ConversationsSidebar с delete, ChatInputBar с scoped Esc cancel, EmptyConversationState с 4 SuggestedPrompts), tier-limit toast MVP (`TIER_LIMIT_EXCEEDED` → «Daily AI limit reached. Upgrade to Plus…»), UsageIndicator via canonical `X-RateLimit-*` (`onRateLimitHeaders` extension в `@investment-tracker/api-client`), sidebar activation (href `/chat` + `activeSlugFor` case), 4 Vitest smoke (tests 15→38). **2316 LOC** (anchor 1500-2000, overshoot +16% — defensive TD-068 parsing + RateLimitProvider + ImpactCard/Callout + optimistic user echo, все одобренные Risk #1 decisions). Slice 4+ pending (Insights feed / FloatingAiFab / Accounts CRUD / Settings / Paywall + `/pricing` + Stripe Checkout / PWA / Vercel deploy / scope-cut header UI / mid-stream reconnect TD-049 / `ChatContext` deep-links).
-- **TASK_06 (Broker Integrations):** ⏳ starts после PR C close.
+- **TASK_07 (Web Frontend):** Slice 1 + Slice 2 + Slice 3 merged — Auth + Dashboard + Positions + AI Chat UI все работают на `staging.investment-tracker.app`.
+  - Slice 1 (PR #45 `a622bd3`) — Clerk auth + `(app)/dashboard` + `PortfolioValueCardLive` + `usePortfolio` + 1 Vitest.
+  - Slice 2 (PR #48 `366d12f`) — Positions list + detail read-only, toolbar, Recharts price chart через `@investment-tracker/ui/charts` subpath, 4 hooks + 3 Vitest.
+  - Slice 3 (PR #50 `4881dfd`) — AI Chat UI: `(app)/chat` + `(app)/chat/[id]`, SSE client over fetch+ReadableStream, chat reducer state machine, 6 TanStack hooks, 9 UI components, tier-limit toast, `UsageIndicator` через `onRateLimitHeaders` middleware. TD-068 opened (P3 schema drift).
+  - PR #53 (root-redirect) merged 2026-04-21 — `/` на `(app)/dashboard` для signed-in юзеров.
+  - **Slice 4+ — см. `UI_BACKLOG.md`** (canonical backlog для всей оставшейся UI-работы: Accounts CRUD, Transactions UI, Insights feed, Landing/Pricing/Paywall, Settings, Scope-cut banners, FloatingAiFab, Empty states, PWA, SEO, Observability). Критический путь к alpha: Slice 4a → 5a → 6a → 7a+7b → Slice 12.
+- **TASK_06 (Broker Integrations):** ⏳ starts после web Slice 4a (manual accounts) даёт alpha-ready flow. SnapTrade/Binance/Coinbase providers — TD-046.
 
 ### Волна 4 — 🧊 отложено
 TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
@@ -40,8 +47,9 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | (после post-merge docs pass PR #54 + #55 — обновится этим коммитом) | TBD | 2026-04-21 |
-| #55 | fix(api): golangci-lint hotfix for `cors_test.go` — cherry-pick `d3f674a` из feature/api-cors. `bodyclose` ×2 + `noctx` ×2 satisfied. Incident + 2 новые TD записаны в DECISIONS.md (pre-push golangci-lint gap + policy обязательного `gh pr checks --watch` перед merge). | `f1b5799` | 2026-04-21 |
+| **main tip** | docs cleanup pass (UI_BACKLOG.md создан, PO_HANDOFF revision, ROADMAP Doppler ✅, TECH_DEBT P-legend, README index refresh) | this commit | 2026-04-21 |
+| docs-only | post-CORS docs pass: merge-log + PO_HANDOFF + DECISIONS (PR #54 + #55) | `fc44782` | 2026-04-21 |
+| #55 | fix(api): golangci-lint hotfix for `cors_test.go` — cherry-pick `d3f674a` из feature/api-cors. `bodyclose` ×2 + `noctx` ×2 satisfied. Incident + 2 новые TD записаны в DECISIONS.md (TD-077 pre-push golangci-lint gap + TD-078 политика `gh pr checks --watch` перед merge — renumbered с TD-076/077 которые конфликтовали с existing TD-076 Contract sync). | `f1b5799` | 2026-04-21 |
 | #54 ⚠ | feat(api): CORS middleware with `ALLOWED_ORIGINS` allowlist — Fiber v3 `cors.New()` после RequestID/RequestLog. Exact-origin allowlist (credentials mode), 10 scope-cut `X-*` + `X-RateLimit-*` + `X-Request-ID` в `ExposeHeaders`, `MaxAge=86400`. 2 unit теста через `app.Test()`. `ops/secrets.keys.yaml` + `RUNBOOK_deploy.md` обновлены. **Admin-bypass** (TD-006): merged с fail'ящим golangci-lint, hotfixed в PR #55. | `adad1a1` | 2026-04-20 |
 | docs-only | CC owns merge+cleanup+docs post-approval (api-cors slice) | `19e72b8` | 2026-04-20 |
 | chore-only | gitignore local secrets backup files | `fb68193` | 2026-04-20 |
@@ -131,23 +139,18 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 ## 5. Active decisions quick-ref
 
-| Topic | Decision | Почему |
-|---|---|---|
-| Go version | 1.25+ | `go tool` pinned dev deps (sqlc, oapi-codegen) |
-| API framework | **oapi-codegen spec-first** (NOT huma v2) | фронт/iOS качают клиенты из той же spec — риск рассинхрона в code-first |
-| Money | shopspring/decimal | никогда float64 |
-| Encryption | AES-256-GCM envelope | BYTEA blob: `[kek_id(1) \|\| nonce_outer(12) \|\| encrypted_dek(32+16) \|\| nonce_inner(12) \|\| ciphertext \|\| tag(16)]`; KEK в env (`KEK_MASTER_V1` + `KEK_PRIMARY_ID`) |
-| Tiers | `tiers.Limits` struct + `RequireTier(flag func(l TierLimits) bool)` middleware | ❌ anti-pattern: `if user.Tier == "pro"`; ✅ `if tiers.For(user.Tier).TaxReports` |
-| Idempotency | SETNX lock: `SET idem:{key} pending NX EX 10` → 409 IDEMPOTENCY_IN_PROGRESS; payload cached 24h | TD-R011 closed |
-| Pagination | Cursor-based (base64), не offset | scale для transactions |
-| IDs | UUID v7 (не v4) | монотонные, лучше для индексов |
-| Auth | dual-mode: Clerk JWT OR `CORE_API_INTERNAL_TOKEN` + X-User-Id header | для AI Service / workers |
-| SSE | `httputil.ReverseProxy` + `FlushInterval: -1` | typing-эффект не буферизуется |
-| Clerk webhooks | svix SDK | идемпотентность через `webhook_events (source, event_id)` PK + ON CONFLICT DO NOTHING |
-| Stripe webhooks | stripe-go SDK | аналогично |
-| Queue | asynq (Redis-backed); queues: default/sync/prices/insights/exports/deletions | `asynqpub.Enabled()` в проде пока `false` (workers не задеплоены) |
+Highlights — для всего остального **читать `DECISIONS.md`** (single source of truth).
 
-Полный ADR лог: `DECISIONS.md`.
+- **Go 1.25+ + oapi-codegen spec-first** (НЕ huma) — клиенты web/iOS генерируются из той же openapi.yaml.
+- **Money = shopspring/decimal**; никогда float64.
+- **Encryption = AES-256-GCM envelope**; KEK в env (`KEK_MASTER_V1` + `KEK_PRIMARY_ID`).
+- **Tiers через `tiers.For(user.Tier).Flag` middleware** — никогда `if user.Tier == "pro"`.
+- **Idempotency = SETNX `SET idem:{key} pending NX EX 10`** → 409 IDEMPOTENCY_IN_PROGRESS, payload 24h cache.
+- **Auth = dual-mode**: Clerk JWT OR `CORE_API_INTERNAL_TOKEN` + `X-User-Id` (для AI/workers).
+- **SSE = `httputil.ReverseProxy` + `FlushInterval: -1`** в Core API; web client = `fetch()` + ReadableStream (НЕ EventSource — нужен Bearer header).
+- **CORS = exact-origin allowlist** из `ALLOWED_ORIGINS` env (CSV → `[]string` через envconfig). `AllowCredentials: true`. Никогда wildcard.
+- **Queue = asynq (Redis)**; `asynqpub.Enabled()` пока false на проде (workers ждут PR D, TD-066).
+- **Squash-only merge**, admin-bypass только под TD-006, mandatory `gh pr checks --watch` перед merge (TD-078).
 
 ---
 
@@ -172,22 +175,44 @@ Core API эмитит header когда фича частично недосту
 
 ## 7. File map
 
+**Core docs:**
+
 | Файл | Назначение |
 |---|---|
 | `README.md` | Индекс + wave status |
+| `PO_HANDOFF.md` | **ЭТОТ ФАЙЛ** — handoff между сессиями |
+| `UI_BACKLOG.md` | **NEW** — canonical Web UI backlog (Slice 4+, P1/P2/P3) |
 | `00_PROJECT_BRIEF.md` | Концепция, аудитория, USP |
 | `01_TECH_STACK.md` | Стек технологий |
 | `02_ARCHITECTURE.md` | Архитектура + модель данных + scope-cut headers + patterns |
 | `03_ROADMAP.md` | MVP план по месяцам |
 | `04_DESIGN_BRIEF.md` | Дизайн-система v1.1 |
 | `DECISIONS.md` | Engineering ADR log |
-| `TECH_DEBT.md` | Tech debt tracker |
+| `TECH_DEBT.md` | Tech debt tracker (P1/P2/P3 legend сверху) |
 | `merge-log.md` | Журнал merge-событий + policy |
-| `CLAUDE_CODE_PROMPTS.md` | Шаблоны для CC сессий |
-| `RUNBOOK_ai_flip.md` | AI Service 404-swallow → strict flip (после B3-iii) |
+
+**Tasks (по компонентам):**
+
+| Файл | Назначение |
+|---|---|
+| `TASK_01_monorepo_setup.md` | Wave 1 ✅ |
+| `TASK_02_design_system.md` | Wave 1 ✅ |
+| `TASK_03_api_contract.md` | Wave 1 ✅ |
+| `TASK_04_core_backend.md` | Wave 2 ✅ + CORS slice |
+| `TASK_05_ai_service.md` | Wave 2 ✅ (staging deploy pending TD-070) |
+| `TASK_06_broker_integrations.md` | Wave 3 ⏳ (TD-046) |
+| `TASK_07_web_frontend.md` | Wave 3 🟢 Slice 1+2+3 merged. Дальнейший scope — `UI_BACKLOG.md` |
+| `TASK_08_ios_app.md` | Wave 4 🧊 (out of MVP scope) |
+
+**Runbooks + kickoff templates:**
+
+| Файл | Назначение |
+|---|---|
+| `RUNBOOK_deploy.md` | Deploy/Doppler/Fly procedure |
+| `RUNBOOK_ai_flip.md` | AI Service 404-swallow → strict flip |
 | `PR_C_preflight.md` | GAP-анализ финального PR C (Fly.io deploy) |
-| `PO_HANDOFF.md` | **ЭТОТ ФАЙЛ** — handoff между сессиями |
-| `TASK_01..08_*.md` | Таски по компонентам |
+| `CLAUDE_CODE_PROMPTS.md` | Шаблоны для CC сессий |
+| `CC_KICKOFF_*.md` | Конкретные kickoff'ы (per-slice) — переиспользуемый шаблон в `CC_KICKOFF_api_cors.md` (содержит CC-owns-merge directive) |
 
 ---
 
@@ -203,22 +228,25 @@ Core API эмитит header когда фича частично недосту
 
 ## 9. Параллельные треки
 
-**Track 1 — Core API (TASK_04): CODE-COMPLETE** ✅
-10 of 10 PRs merged — PR C (deploy infrastructure) landed 2026-04-20
-as `fa9c9dc` (PR #49). Ship'нуто: migrate subcommand (atomic
-release_command), /metrics на prometheus client_golang default
-registry, `fly.toml` (prod) + `fly.staging.toml`, `deploy-api.yml`
-pipeline (verify-secrets → staging → k6 smoke → verify-secrets →
-prod с GitHub environment approval → k6 smoke-prod → tag release),
-Doppler-first secrets (`ops/secrets.keys.yaml` + `ops/scripts/
-verify-prod-secrets.sh`), 5 k6 scenarios, `RUNBOOK_deploy.md` (8
-headings + Prerequisites). Workers deploy dispatch target удалён
-защитно — см. **TD-066 (P1)** как PR D blocker.
+**Track 1 — Core API (TASK_04): CODE-COMPLETE + STAGING LIVE** ✅
+10 PRs merged + CORS micro-slice (PR #54+#55, 2026-04-21). PR C deploy
+infra (PR #49 `fa9c9dc`) — migrate subcommand, `/metrics`, `fly.toml`
+(prod + staging), `deploy-api.yml` pipeline, Doppler-first secrets, 5 k6
+scenarios, `RUNBOOK_deploy.md`. **Staging deployed:**
+`api-staging.investment-tracker.app` отвечает 204 на CORS preflight с
+полным набором expose-headers; web на `staging.investment-tracker.app`
+успешно ходит cross-origin.
 
-Следующий шаг по TASK_04 — **operational, не code**: PO выполняет
-prereq-list из `RUNBOOK_deploy.md § Prerequisites` (Doppler project +
-Fly apps + DNS + GitHub env/secrets + первый staging deploy → 24-48h
-soak → prod cutover).
+**Lesson learned (CORS slice, 2026-04-21):** PR #54 был merged с red
+golangci-lint (admin-bypass). Hotfix PR #55 cherry-pick. Две новые TD:
+TD-077 (lefthook pre-push gap — golangci-lint не запускается локально)
+и TD-078 (mandatory `gh pr checks --watch` перед merge). Renumbered с
+TD-076/077 которые конфликтовали с existing TD-076 (Contract sync).
+
+Дальше по TASK_04 (operational):
+- 24-48h staging soak до prod cutover.
+- PR D — workers deploy + asynq consumer (TD-066 blocker).
+- AI Service staging deploy (TD-070) — нужно для Slice 6 Insights UI.
 
 **Track 2 — Web Frontend (TASK_07): Wave 3 🟢 in flight**
 Slice 1 merged (PR #45, squash `a622bd3`) — Clerk auth + `(app)/dashboard`
@@ -262,180 +290,68 @@ opened (P3, docs-only)**: schema drift в
 unwrap (~15 LOC) — symptom, не блокер; shape stable.
 Main tip post-docs = этот docs-pass commit.
 
-### Next
+### Next (приоритеты, сверху = срочнее)
 
-- **Core API operational setup (PO solo, 8-12h).** Canonical roadmap
-  — `RUNBOOK_deploy.md § Prerequisites`. Порядок: Doppler project
-  `investment-tracker-api` с configs dev/stg/prd → populate 15
-  required secrets per `ops/secrets.keys.yaml` → GitHub repo secrets
-  (`FLY_API_TOKEN`, `DOPPLER_TOKEN_STG`, `DOPPLER_TOKEN_PRD`,
-  `STAGING_TEST_USER_TOKEN`, `PROD_TEST_USER_TOKEN`) + Environments
-  (`staging` no-gate, `production` 1 required reviewer) → `fly apps
-  create` обеих apps → dispatch `doppler-sync.yml target=api` →
-  `tools/k6/seed-user.sh` против staging Clerk → dispatch
-  `deploy-api.yml` → DNS pointing после первого успешного deploy →
-  24-48h staging soak → prod cutover.
-- **PR D — workers deploy + asynq consumer.** **Blocker: TD-066.**
-  Before PR D opens: restore `target=workers|both` options в
-  `.github/workflows/deploy-api.yml` dispatch inputs. PR C disabled
-  их защитно (placeholder workers binary would've shipped a no-op
-  heartbeat to prod by click-mistake). PR D CC kickoff должен читать
-  **TD-066 first** — re-enable + mirror staging→smoke→approve→prod
-  pipeline для workers (параллельно с api jobs в том же workflow).
-  Затем реальный asynq consumer (hard-delete worker TD-041/TD-045,
-  CSV export TD-039, broker sync через SnapTrade/Plaid — TASK_06).
-- **TASK_07 Slice 4+** — candidate scope:
-  - **Slice 4 (Insights + FloatingAiFab):** `(app)/insights` feed
-    page (pre-GA dashboard completeness), `InsightCard` domain component
-    already in `packages/ui`, endpoints `/ai/insights/*` live в main.
-    Plus `FloatingAiFab` context-aware mini-chat activation
-    (Dashboard/Positions `ChatContext` deep-links).
-  - **Slice 5 (Paywall + Pricing + Stripe Checkout):** `/pricing`
-    marketing page + `PaywallModal` wired (Slice 3 toast MVP upgrades
-    to modal), Stripe Checkout flow, tier upgrade roundtrip.
-  - **Slice 6 (Accounts CRUD + Settings):** `(app)/accounts` list +
-    SnapTrade/API-key connect flows, `(app)/settings/*` profile /
-    billing / notifications / data-export / delete-account.
-  - PO chooses after Slice 3 runtime smoke (docker compose + Go API +
-    real Clerk dev project + `/chat` end-to-end с живым SSE stream +
-    tier-limit flow).
-- **AI Service 404-swallow flip** — после prod soak PR C
-  (`RUNBOOK_ai_flip.md`).
+**Web UI критический путь к alpha** — см. `UI_BACKLOG.md` (canonical
+source). Коротко: Slice 4a (Manual Accounts CRUD) → Slice 5a
+(Transactions UI) → Slice 6a (Insights read-only) → Slice 7a + 7b
+(Landing + Pricing + Paywall без Stripe) → Slice 12 (Empty + Error
+states). Всё остальное (Settings, scope-cut banners, FloatingAiFab,
+PWA, SEO, Observability) — P2/P3, после alpha-сигнала.
 
-**Key reference points (предыдущие PRs):**
-- PR #50 (TASK_07 Slice 3) `4881dfd` — AI Chat UI streaming (см. merge-log entry наверху). TD-068 opened (P3 schema drift).
-- PR #49 (PR C) `fa9c9dc` — Core API deploy infrastructure. TD-060..064, TD-066 (PR D blocker), TD-067 opened.
-- PR #48 (TASK_07 Slice 2) `366d12f` — Positions list + Position Detail read-only. TD-065 opened.
-- PR #46 (B3-iii) `08e09f4` — Clerk/Stripe webhooks + webhook_events idempotency + 14 scope-cut 501 stubs. TD-056..059 opened.
-- PR #45 (TASK_07 Slice 1) `a622bd3` — web vertical slice.
-- PR #44 (B3-ii-b) `c2a2afe` — AI chat sync + SSE reverse-proxy + single-writer `ai_usage`. TD-055 opened.
-- PR #42 (B3-ii-a) `8c52a4d` — AI client foundation + rate-limit middleware + 5 handlers.
-- PR #43 (TASK_05 cleanup) `b6108a4` — Python `record_ai_usage` dual-write удалён.
+**Backend треки параллельно:**
+- **AI Service staging deploy (TD-070)** — блокер для Slice 6 Insights
+  UI. Отдельный CC kickoff — не UI-slice.
+- **PR D — workers deploy + asynq consumer (TD-066).** Restore
+  `target=workers|both` в `deploy-api.yml` + реальный asynq consumer
+  (hard-delete TD-041/045, CSV export TD-039, broker sync TASK_06).
+- **TASK_06 — broker providers (TD-046).** Разблокирует Slice 4b/4c
+  (SnapTrade/Binance/Coinbase OAuth+API-key flows).
+- **AI Service 404-swallow flip** после prod soak (`RUNBOOK_ai_flip.md`).
 
-**Worktree cleanup (на PO):**
-- `D:/investment-tracker-b3iii` — `git worktree remove --force D:/investment-tracker-b3iii && git worktree prune`.
-- `D:/investment-tracker-task07-s1` — `git worktree remove --force D:/investment-tracker-task07-s1 && git worktree prune` + локальную ветку `feature/task07-slice1` уже нет на remote, локально можно снести `git branch -D feature/task07-slice1 post-merge-task07-s1` из D:\СТАРТАП.
-- `D:/investment-tracker-task07-s2` — `git worktree remove --force D:/investment-tracker-task07-s2 && git worktree prune` + локальную ветку `feature/task07-slice2` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/task07-slice2` из `D:\СТАРТАП`.
-- `D:/investment-tracker-pr-c` — `git worktree remove --force D:/investment-tracker-pr-c && git worktree prune` + локальную ветку `feature/pr-c-deploy` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/pr-c-deploy` из `D:\СТАРТАП`.
-- `D:/investment-tracker-task07-s3` — `git worktree remove --force D:/investment-tracker-task07-s3 && git worktree prune` + локальную ветку `feature/task07-slice3` (уже удалена на remote через `--delete-branch`) можно снести локально `git branch -D feature/task07-slice3` из `D:\СТАРТАП`.
+**Key reference PRs:**
+- PR #54 + #55 (CORS middleware + lint hotfix) `fc44782` — staging live.
+- PR #53 (root-redirect) — `/` → dashboard для signed-in.
+- PR #50 (TASK_07 Slice 3, AI Chat UI) `4881dfd`.
+- PR #49 (PR C, deploy infra) `fa9c9dc`.
+- PR #48 (TASK_07 Slice 2, Positions) `366d12f`.
+- PR #46 (B3-iii, webhooks + 501 stubs) `08e09f4`.
+- PR #45 (TASK_07 Slice 1, Dashboard) `a622bd3`.
+- PR #44 (B3-ii-b, AI chat sync + SSE reverse-proxy) `c2a2afe`.
 
-**Ключевая архитектурная точка:** AI chat + persistence полностью в main; web vertical slice готов против `/portfolio`. Клиенты (web/iOS) строятся против стабильного OpenAPI контракта.
+**Worktrees (на PO / on CC post-merge):** CC теперь owns merge+cleanup
+post-approval — см. CC_KICKOFF_api_cors.md § Deliverables. Старые
+worktrees (`b3iii`, `task07-s1..3`, `pr-c`, `api-cors`) — CC удаляет
+сам через `git worktree remove --force && git worktree prune` в своей
+сессии. PO проверяет `git worktree list` если сомневается.
 
-### Что НЕ готово в UI (scope Slice 3+)
+### Открытые TDs высокого приоритета (P1/P2)
 
-- Chat UI (streaming) — Slice 3 candidate.
-- Insights feed, Accounts CRUD, Settings, Paywall, Pricing marketing — Slice 3+.
-- Visual disabled state для placeholder nav-слотов Sidebar — требует расширения `NavItem` API в `packages/ui` (добавить `disabled?: boolean` + render logic), отдельным micro-slice.
-- `usePortfolioHistory` + period toggle + sparkline на Dashboard — Slice 3+.
-- Scope-cut header UI (`X-Partial-Portfolio` / `X-FX-Unavailable`) на `/positions` и `/dashboard` — отдельный micro-slice.
-- `TransactionRow.kind` extension для split events (TD-065) — P3, post-user-feedback.
-- Real account-name lookup (broker label вместо `Account #<short-uuid>`) — требует `/accounts` endpoint wiring, Slice 5 Accounts.
-- Vercel preview на PR — отдельный setup PR.
-- Real Sentry/PostHog DSN wiring — после publishable DSN выданы.
-- Real Clerk dev project + runtime smoke на `/positions` + `/positions/[id]` — PO post-merge.
+- **TD-047 (P1 pre-GA)** — CSVExport tier flag.
+- **TD-045 ⇔ TD-041 (P1)** — hard-delete worker + undo re-check.
+- **TD-066 (P1)** — workers deploy target (PR D blocker).
+- **TD-070 (P1)** — AI Service staging deploy (Slice 6 blocker).
+- **TD-046 (P2)** — Aggregator providers (Slice 4b/4c blocker).
+- **TD-056 (P2)** — Clerk Backend SDK (Slice 8b 2FA blocker).
+- **TD-057 (P2)** — Billing CRUD + Stripe Checkout (Slice 7c + 9 blocker).
+- **TD-077/TD-078 (P2, CORS incident)** — lefthook pre-push golangci-lint gap + mandatory `gh pr checks --watch` policy.
 
-### Утром — опциональный docs polish pass
-
-Нестрого обязательно, но если есть 30 мин:
-1. PO_HANDOFF § 5 Decisions quick-ref → ужать до ссылки + highlights (сейчас дублирует DECISIONS.md).
-2. PO_HANDOFF § 7 File map → расширить до всех 21 файла (сейчас 14).
-3. TECH_DEBT → добавить legend сверху Active: «P1 = GA blocker, P2 = post-GA OK, P3 = polish».
-4. RUNBOOK_ai_flip → header-note: «Status 2026-04-20: PR #42/#43/#44 merged; flip trigger = after B3-iii».
-5. 03_ROADMAP → закрыть dangling Doppler TODO.
-6. Tier caps: в 00_PROJECT_BRIEF + TASK_04 note «code is source of truth (Free=5, Plus=50, Pro=∞)».
-
-### Открытые TDs (P1/P2)
-
-- **TD-047** — CSVExport tier flag (P1 pre-GA).
-- **TD-045 ⇔ TD-041** — hard-delete worker + undo re-check (P1). Часть B3-iii scope.
-- **TD-048..053** — SSE/rate-limit/insights-gate polish (low-medium priority).
-- **TD-054** — CC memory portability (low priority).
-- **TD-055** — AI stream OpenAPI spec drift (P2, Core/TASK_05 coord). Phase 1 ~60 LOC — contract fixture + test.
-- **TD-068** (P3 docs-only) — `AIChatStreamEvent` spec tightening для `content_delta.delta` + `AIStreamEventError.error` shape. ~30 LOC spec edits + reducer cleanup. Non-blocking.
+Полный список — `TECH_DEBT.md`.
 
 ---
 
-## 10. Draft response to CC in flight (последний ответ, который готовился)
+## 10. CC kickoff template (CC owns merge+cleanup post-approval)
 
-На случай если нужно отправить CC прямо сейчас — вот что было подготовлено как реакция на его «Жду отмашки» после мержа #40:
+См. `CC_KICKOFF_api_cors.md § Deliverables` — это reference template.
+Ключевая директива (CC self-merge after PO approval, не PO жмёт кнопки
+в GitHub): после approval CC выполняет `gh pr merge <N> --squash
+--delete-branch` → `git pull origin main` в main worktree → `git
+worktree remove` своего worktree → `git branch -D` локальной ветки →
+обновляет `merge-log.md` + `PO_HANDOFF.md` + `DECISIONS.md` (если
+ADR уместен) + commit/push docs-only directly to main → финальный ping
+PO «merged + cleaned + docs done, main tip now `<SHA>`».
 
-> Worktree cleanup моя забота (`git worktree remove --force D:/investment-tracker-b3 && git worktree prune` + `git pull --ff-only` в D:\СТАРТАП).
->
-> Docs pass закрыт полностью. Зелёный свет на B3-ii. Anchor 2000-2500 LOC.
->
-> Мой POV на pre-flight items (см. секцию 9 этого документа — детально расписаны все 9 пунктов).
->
-> Жду GAP REPORT.
-
----
-
-## 10.5 Промт для параллельной TASK_05 cleanup сессии
-
-Скопировать в новый CC чат. Scope — удалить `record_ai_usage` вызов из Python AI Service. Блокер для B3-ii-b merge.
-
-```
-Привет. Я Ruslan, Product Owner проекта investment-tracker
-(AI-инвест-трекер: Next.js web + Go Core API + Python AI Service).
-Главный док-репозиторий: D:\СТАРТАП.
-
-У нас параллельно идёт TASK_04 B3-ii-a в другом CC чате (Go Core API,
-свой worktree). Я прошу тебя сделать МАЛЕНЬКУЮ правку в TASK_05
-(Python AI Service, apps/ai/...).
-
-Контекст и все решения — в:
-  D:\СТАРТАП\docs\PO_HANDOFF.md (прочти целиком первым делом)
-
-Scope правки (ничего другого не трогать):
-
-В AI Service сейчас есть вызов core_api.record_ai_usage(...)
-после каждого Anthropic response (см. TASK_05 § 7 и код
-в apps/ai/src/ai_service/... — скорее всего в handlers chat/stream
-и insights/generate, и в клиенте core_api.py).
-
-Этот вызов нужно УДАЛИТЬ полностью. Причина: дубликат учёта.
-Core API теперь сам пишет ai_usage в своей DB transaction после
-SSE close (это делается в TASK_04 B3-ii-b). Если оба пишут —
-ledger дублируется, биллинг завышен x2.
-
-Что сделать:
-1. Найти все call sites `record_ai_usage` / `record_ai_usage_async`
-   и любые связанные с записью usage в Core API.
-2. Удалить вызовы. Удалить метод в core_api.py клиенте если он
-   больше нигде не используется.
-3. Удалить тесты которые mock'ают этот вызов (или обновить если
-   они проверяют полный flow — тогда просто убрать expectation
-   на usage call).
-4. Добавить короткий комментарий на месте удалённого вызова
-   (один раз, в главной точке flow):
-   # ai_usage tracking owned by Core API (TASK_04 B3-ii-b).
-   # See docs/PO_HANDOFF.md § 9 (ai_usage dual-write resolution).
-5. Запустить тесты локально, убедиться что всё зелёное.
-6. Открыть PR — название:
-   "TASK_05: remove Core API ai_usage call (dual-write fix)"
-   В описании сослаться на TASK_04 B3-ii-b dependency.
-
-Что НЕ делать:
-- Не трогать бизнес-логику chat/stream или insights/generate.
-- Не трогать SSE error events (TD-048 — отдельная работа позже).
-- Не менять ничего кроме удаления usage-вызовов.
-- Не переписывать core_api.py клиент — только удалить ненужный метод.
-- Не добавлять новые зависимости.
-
-Размер: ожидаю 50-150 LOC touched, очень маленький PR.
-
-Timing: нужно смерджить до того как основной CC дойдёт до
-B3-ii-b (через ~3 дня). Желательно за 1-2 дня.
-
-Мой стиль общения (из PO_HANDOFF):
-- Русский, коротко, без overformatting.
-- Decisions-first: сначала что делаешь, потом почему.
-- Видишь риск — говори сразу.
-- Верифицируй каждый Edit через Read (state loss бывал).
-
-Первым делом: прочти PO_HANDOFF.md, README.md, TASK_05_ai_service.md.
-Потом grep'ни по apps/ai/ все call sites record_ai_usage. Потом дай
-мне короткий план-дельту (что удалить, где, размер) до write-phase.
-```
+PO в GitHub UI не заходит — squash-only, никаких manual rebase'ей.
 
 ---
 
@@ -447,10 +363,13 @@ B3-ii-b (через ~3 дня). Желательно за 1-2 дня.
 - **Видишь риск — говори сразу**, не жди вопроса.
 - **Автономен в scope**: «как считаешь нужное» — значит доверяю решать самому.
 - **Pushback welcome** — если вижу что ты ошибся или CC ошибся, скажу; жду того же.
-- **Файлы создавать в `D:\СТАРТАП\docs\`**, scratch в outputs.
+- **2-section ответы**: «Для тебя / Для CC» — чёткое разделение где PO читает vs где CC читает.
+- **Файлы создавать в `D:\investment-tracker\docs\`**, scratch в outputs.
 - **Links через `computer://`** когда расшариваю файл.
+- **LOC не трекаем** как scope metric — только по признакам завершённости (acceptance criteria + CI green).
 - **TodoList** использовать активно для многошаговой работы.
 - **Всегда верифицировать через Read** перед confirm обновления — state loss уже был.
+- **CC запускается через `claude --dangerously-skip-permissions`** в worktree — флаг обязателен.
 
 ---
 
@@ -460,36 +379,42 @@ B3-ii-b (через ~3 дня). Желательно за 1-2 дня.
 Привет. Я Ruslan, Product Owner проекта investment-tracker
 (AI-инвест-трекер: Next.js web + Go API + Python AI Service).
 Оркеструю параллельные Claude Code сессии — каждая CC работает
-свой PR в отдельном worktree. Главный проект: D:\СТАРТАП.
+свой PR в отдельном worktree. Главный проект: D:\investment-tracker.
 
 Предыдущая сессия забагала (context window). Полный контекст
 и handoff — в файле:
 
-  D:\СТАРТАП\docs\PO_HANDOFF.md
+  D:\investment-tracker\docs\PO_HANDOFF.md
 
 Прочти его ПЕРВЫМ ДЕЛОМ. Для фона также пробежись по:
 
-  D:\СТАРТАП\docs\README.md
-  D:\СТАРТАП\docs\02_ARCHITECTURE.md
-  D:\СТАРТАП\docs\TECH_DEBT.md
-  D:\СТАРТАП\docs\merge-log.md
+  D:\investment-tracker\docs\README.md
+  D:\investment-tracker\docs\UI_BACKLOG.md
+  D:\investment-tracker\docs\02_ARCHITECTURE.md
+  D:\investment-tracker\docs\TECH_DEBT.md
+  D:\investment-tracker\docs\merge-log.md
+  D:\investment-tracker\docs\DECISIONS.md
 
 Текущий статус в двух словах:
-- main tip = b6108a4 (PR #43 TASK_05 cleanup squash, 2026-04-20)
-- PR #42 (B3-ii-a, SHA 8c52a4d) смержен 2026-04-20 — AI client
-  foundation + rate-limit middleware + 5 handlers
-- PR #43 (TASK_05 cleanup, SHA b6108a4) смержен 2026-04-20 —
-  record_ai_usage dual-write удалён, Core API = single writer
-- Следующий PR — B3-ii-b (POST /ai/chat sync + POST /ai/chat/stream
-  SSE reverse-proxy + tee-parser + ai_usage INSERT в DB tx). Anchor
-  1500 LOC. Все зависимости сняты. Acceptance criteria — в § 9.
+- main tip = fc44782 + текущий docs cleanup pass (2026-04-21)
+- TASK_04 Core API code-complete + staging deploy live
+  (api-staging.investment-tracker.app, CORS allowlist работает)
+- TASK_07 Web Slice 1+2+3 merged (auth + dashboard + positions +
+  AI chat); web на staging.investment-tracker.app
+- Slice 4+ scope — UI_BACKLOG.md (canonical). Критический путь:
+  Slice 4a (manual Accounts CRUD) → 5a (Tx UI) → 6a (Insights) →
+  7a+7b (Landing/Pricing/Paywall) → 12 (Empty/Error states)
+- Backend параллельно: TD-070 (AI Service staging deploy),
+  PR D (workers + asynq, TD-066), TASK_06 broker providers (TD-046)
 
 Стиль:
 - Отвечай по-русски, коротко, без over-formatting
 - Decisions-first (что делать → почему)
+- 2-section ответы: «Для тебя» (PO action) / «Для CC» (что CC делает)
 - Видишь риск — говори сразу
-- Файлы создавай в D:\СТАРТАП\docs\
+- Файлы создавай в D:\investment-tracker\docs\
 - Верифицируй через Read перед confirm (state loss уже был)
+- LOC не трекаем как scope metric
 
 Начни с того, что прочитал PO_HANDOFF.md и скажи готов.
 Потом ждём GAP REPORT от CC или мои новые вводные.

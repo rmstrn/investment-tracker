@@ -237,7 +237,9 @@ build + test` check. 4 golangci-lint issue: два `bodyclose` (missing
 Повторное использование нормализует policy violation, поэтому ниже
 две TD-записи для предотвращения.
 
-### TD-076 (high) — lefthook pre-push gap: golangci-lint not run locally
+### TD-077 (high) — lefthook pre-push gap: golangci-lint not run locally
+
+> Renumbered 2026-04-21: original draft использовал TD-076, но этот ID уже занят «Contract sync test» (PR C, 2026-04-20). Сохраняем policy в TECH_DEBT.md под TD-077.
 
 `lefthook.yml` pre-push hook сегодня: `typecheck` + `go-vet` +
 `py-mypy`. Этого мало: категории `bodyclose`, `noctx`, `errcheck`,
@@ -248,14 +250,11 @@ build + test` check. 4 golangci-lint issue: два `bodyclose` (missing
 **Owner:** backend lead. **Revisit:** after next Go-touching PR —
 подтвердить что incident не повторяется.
 
-### TD-077 (high) — policy: `gh pr checks <N> --watch` обязателен перед `gh pr merge`
+### TD-078 (high) — policy: `gh pr checks <N> --watch` обязателен перед `gh pr merge`
+
+> Renumbered 2026-04-21: см. note в TD-077 выше — оригинальный draft TD-077 → TD-078 для консистентности с TECH_DEBT.md.
 
 Сейчас CC и PO в разных сессиях могут одновременно одобрить merge без
 синхронизации с CI. Admin-bypass должен быть **явным** решением
 (`--admin` flag + inline comment с reason), не молчаливым default'ом
 когда кто-то торопится. Политика: перед `gh pr merge` обязательный
-`gh pr checks <N> --watch` до получения all-green; если checks red —
-остановиться, запустить hotfix flow (см. CORS slice PR #55 как
-reference). Document'ить это в `PO_HANDOFF.md § 3 Cycle per PR`.
-**Owner:** PO. **Revisit:** 2 PR merge'а подряд без violation →
-считаем абсорбированным.

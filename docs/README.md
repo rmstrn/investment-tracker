@@ -7,29 +7,35 @@
 ```
 docs/
 ├── README.md                    ← вы тут
+├── PO_HANDOFF.md                ← handoff между PO-сессиями (читать первым)
+├── UI_BACKLOG.md                ← canonical Web UI backlog (Slice 4+, P1/P2/P3)
 ├── 00_PROJECT_BRIEF.md          ← концепция, аудитория, USP
 ├── 01_TECH_STACK.md             ← весь стек технологий
 ├── 02_ARCHITECTURE.md           ← архитектура + модель данных
 ├── 03_ROADMAP.md                ← план MVP по месяцам + статус волн
 ├── 04_DESIGN_BRIEF.md           ← дизайн-система v1.1 (source of truth)
-├── DECISIONS.md                 ← engineering decisions log
-├── TECH_DEBT.md                 ← накопленный и принятый tech debt
+├── DECISIONS.md                 ← engineering decisions log (ADR)
+├── TECH_DEBT.md                 ← tech debt tracker (P1/P2/P3 legend)
 ├── merge-log.md                 ← журнал merge-событий + admin-bypass policy
-├── CLAUDE_CODE_PROMPTS.md       ← шаблоны для параллельных CC сессий
-├── RUNBOOK_ai_flip.md           ← runbook: AI Service 404-swallow → strict (после B3-iii)
-├── PR_C_preflight.md            ← pre-flight GAP-анализ финального PR C (Fly.io deploy)
-├── CC_KICKOFF_pr_c.md           ← PR C kickoff (wrapper вокруг PR_C_preflight)
+├── RUNBOOK_deploy.md            ← Doppler / Fly / DNS deploy procedure
+├── RUNBOOK_ai_flip.md           ← AI Service 404-swallow → strict (после prod soak)
+├── PR_C_preflight.md            ← pre-flight GAP-анализ PR C (Fly.io deploy)
+├── CLAUDE_CODE_PROMPTS.md       ← общие шаблоны для CC сессий
+├── CC_KICKOFF_api_cors.md       ← reference template (CC owns merge+cleanup)
+├── CC_KICKOFF_b3iii.md          ← ✅ merged PR #46
+├── CC_KICKOFF_pr_c.md           ← ✅ merged PR #49
+├── CC_KICKOFF_web_root_redirect.md ← ✅ merged PR #53
 ├── CC_KICKOFF_task07_slice1.md  ← ✅ merged PR #45
 ├── CC_KICKOFF_task07_slice2.md  ← ✅ merged PR #48
 ├── CC_KICKOFF_task07_slice3.md  ← ✅ merged PR #50
-├── TASK_01_monorepo_setup.md    ← ✅ wave 1, инфраструктура
-├── TASK_02_design_system.md     ← ✅ wave 1, Figma + UI kit
-├── TASK_03_api_contract.md      ← ✅ wave 1, OpenAPI + миграции
-├── TASK_04_core_backend.md      ← ✅ wave 2 closed (9/9 merged: A/B1/B2a/B2b/B2c/B3-i/B3-ii-a/B3-ii-b/B3-iii; PR C Fly.io deploy in flight separately)
-├── TASK_05_ai_service.md        ← ✅ wave 2, Python AI-сервис (PR #34 initial + PR #43 ai_usage dual-write cleanup 2026-04-20)
-├── TASK_06_broker_integrations.md  ← wave 3 (стартует после закрытия TASK_04)
-├── TASK_07_web_frontend.md      ← 🟢 wave 3 in flight (Slice 1 PR #45 + Slice 2 PR #48 + Slice 3 PR #50 merged; Slice 4+ pending)
-└── TASK_08_ios_app.md           ← wave 4 (deferred — нужен Mac)
+├── TASK_01_monorepo_setup.md    ← ✅ wave 1
+├── TASK_02_design_system.md     ← ✅ wave 1
+├── TASK_03_api_contract.md      ← ✅ wave 1
+├── TASK_04_core_backend.md      ← ✅ wave 2 + CORS slice + staging deploy live
+├── TASK_05_ai_service.md        ← ✅ wave 2 (staging deploy pending TD-070)
+├── TASK_06_broker_integrations.md ← ⏳ wave 3 (TD-046)
+├── TASK_07_web_frontend.md      ← 🟢 wave 3 (Slice 1+2+3 merged; Slice 4+ → UI_BACKLOG.md)
+└── TASK_08_ios_app.md           ← 🧊 wave 4 (out of MVP scope)
 ```
 
 ## Как пользоваться — параллельная работа в нескольких чатах
@@ -70,27 +76,27 @@ docs/
 | **TASK_02** | Дизайн-система в Figma | ✅ merged |
 | **TASK_03** | API-контракт + схема БД | ✅ merged |
 
-### Волна 2 — ✅ code-complete
+### Волна 2 — ✅ code-complete + staging deploy live
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 | ✅ 10/10 PRs merged (PR C deploy infra merged 2026-04-20, PR #49 `fa9c9dc`; operational setup — Doppler/Fly/DNS/soak — на PO per `RUNBOOK_deploy.md § Prerequisites`) |
-| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 initial + PR #43 cleanup `b6108a4` 2026-04-20). 404-swallow flip после PR C prod soak (`RUNBOOK_ai_flip.md`) |
+| **TASK_04** (Go API) | TASK_01, TASK_03 | ✅ 10 PRs + CORS micro-slice (PR #54+#55 `fc44782`, 2026-04-21). Staging live: `api-staging.investment-tracker.app`, CORS allowlist работает. Prod cutover после 24-48h soak + PR D (TD-066). |
+| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 + PR #43 cleanup). **⚠ Staging deploy pending — TD-070** (блокер для UI Slice 6 Insights). 404-swallow flip — после prod soak. |
 
 ### Волна 3 — 🟢 in flight
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ waiting (после PR C prod soak + PR D workers deploy) |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 (PR #45 `a622bd3`) + Slice 2 (PR #48 `366d12f`) + Slice 3 (PR #50 `4881dfd`, AI Chat UI, 2026-04-20) merged; Slice 4+ pending |
+| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ TD-046 — SnapTrade / Binance / Coinbase providers. Разблокирует Slice 4b/4c. Slice 4a (manual accounts) можно делать без. |
+| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 (PR #45) + Slice 2 (PR #48) + Slice 3 (PR #50) + root-redirect (PR #53) merged. Web на `staging.investment-tracker.app`. **Slice 4+ scope — `UI_BACKLOG.md`** (canonical). |
 
 ### Волна 4 — отложено
 
 | Таск | Статус |
 |---|---|
-| **TASK_08** (iOS) | 🧊 deferred — нужен Mac + Xcode, отдельный репо |
+| **TASK_08** (iOS) | 🧊 out of MVP scope — нужен Mac + Xcode, отдельный репо |
 
-**Важно:** TASK_04 (Go API) code-complete. PR D — workers deploy + asynq consumer (**blocker: TD-066** — restore workers deploy target в deploy-api.yml dispatch). TASK_06 разблокируется после PR D.
+**Критический путь к alpha (см. UI_BACKLOG.md):** Slice 4a (Manual Accounts CRUD) → Slice 5a (Transactions UI) → Slice 6a (Insights read-only, ждёт TD-070) → Slice 7a + 7b (Landing + Pricing + Paywall без Stripe) → Slice 12 (Empty + Error states). Параллельно бэк: TD-070 (AI Service deploy), PR D workers (TD-066), TASK_06 (TD-046).
 
 ## Советы по параллельным чатам
 
@@ -110,4 +116,4 @@ docs/
 
 ---
 
-**Следующий шаг:** открыть PO_HANDOFF.md (актуальный handoff между сессиями), потом 00_PROJECT_BRIEF.md для концепции. Текущий фронт работ — PO operational setup (Doppler/Fly/DNS/первый staging deploy per `RUNBOOK_deploy.md § Prerequisites`), затем AI Service 404-swallow flip (`RUNBOOK_ai_flip.md`). Параллельно — TASK_07 Slice 4 (Insights feed + FloatingAiFab) либо Slice 5 (Paywall + Pricing + Stripe Checkout), PR D workers (TD-066 blocker), TASK_06 broker integrations.
+**Следующий шаг:** открыть `PO_HANDOFF.md` (актуальный handoff между сессиями), затем `UI_BACKLOG.md` для приоритетов веба. Текущий фронт работ — Slice 4a (Manual Accounts CRUD) разблокирует MVP-flow; параллельно бэк: TD-070 (AI Service staging deploy), PR D workers (TD-066), TASK_06 broker integrations (TD-046). Концепция продукта — `00_PROJECT_BRIEF.md`.

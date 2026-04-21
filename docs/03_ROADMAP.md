@@ -6,7 +6,13 @@
 
 Параллельные таски TASK_01 (monorepo), TASK_02 (design system), TASK_03 (API contract + DB schema) смержены в main. Детали и merge commits — в `merge-log.md`. Design brief v1.1 — `04_DESIGN_BRIEF.md`. Накопленные tech-debt items — `TECH_DEBT.md`.
 
-**Wave 2: starting** — TASK_04 (Go backend) + TASK_05 (Python AI service) в параллельных worktrees. TASK_06/07/08 — после готовности TASK_04.
+**Wave 2: ✅ code-complete + staging deploy live** (2026-04-21)
+
+TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; staging deploy pending — TD-070).
+
+**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3 merged (auth + dashboard + positions + AI chat); web на `staging.investment-tracker.app`. Slice 4+ scope — см. `UI_BACKLOG.md` (canonical source). TASK_06 broker integrations — после Slice 4a (manual accounts).
+
+**Wave 4: 🧊 deferred** — TASK_08 iOS (out of MVP scope, отдельный репо).
 
 ---
 
@@ -16,8 +22,8 @@
 - [x] Турборепо с apps/web, apps/api, apps/ai, apps/ios, packages/shared — TASK_01
 - [x] GitHub репозиторий + Actions CI/CD — TASK_01
 - [x] Docker Compose для локальной разработки — TASK_01
-- [ ] Secrets management (Doppler) — отложено до wave 2/3
-- [ ] Sentry + PostHog интеграция — TASK_07
+- [x] Secrets management (Doppler) — закрыто PR C (`fa9c9dc`, 2026-04-20). Project `investment-tracker-api` с configs dev/stg/prd, secrets bootstrap через `ops/secrets.keys.yaml`, `doppler-sync.yml` workflow. ALLOWED_ORIGINS добавлен 2026-04-21 в stg.
+- [ ] Sentry + PostHog интеграция — UI_BACKLOG Slice 17 (P3 polish)
 
 ### Backend Core
 - [ ] Go проект с Fiber
