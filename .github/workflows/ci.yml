@@ -172,7 +172,14 @@ jobs:
       - name: Build apps/ai Dockerfile
         uses: docker/build-push-action@v6
         with:
-          context: .
+          # Context matches the Dockerfile's expectations — its COPY
+          # paths (pyproject.toml, uv.lock*, src, README.md) are
+          # relative to apps/ai, not repo root. Matches the comment
+          # on line 3 of the Dockerfile (`docker build ... apps/ai`).
+          # flyctl in deploy-ai.yml auto-derives the same context
+          # from --dockerfile apps/ai/Dockerfile; this job mirrors
+          # that to catch Dockerfile regressions pre-merge.
+          context: apps/ai
           file: apps/ai/Dockerfile
           target: runtime
           push: false
