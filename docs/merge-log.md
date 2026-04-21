@@ -15,6 +15,48 @@ Newest entries at the top.
 
 ---
 
+## sprint-c — Deep backend refactor: handlers, middleware, cross-service hygiene
+
+**Window:** 2026-04-21 (three CC sessions, chronological SHAs below).
+**Scope in one line:** final pre-alpha pass to turn the feature-complete backend from "works" into "maintainable" — closes 8 concrete code smells from `docs/BACKEND_HEALTH_2026-04-21.md § 5` plus the TD-052 airatelimit overcount bug that Sprint B pinned with a test.
+**Base:** prior main tip after `46ceb57` (Sprint B — test foundations).
+
+**Cluster 1 — handler plumbing (session 1):**
+- `750959c refactor(api): bindAndValidate helper + migrate 5 handlers` — new `internal/handlers/httputil` with generic `BindAndValidate[T]` + `BindJSON[T]` + `BindJSONOptional[T]`; validator/v10 tag enforcement; JSON field name preserved in errors via `RegisterTagNameFunc`. 7 handlers migrated: `CreateAccount`, `UpdateAccount`, `CreateTransaction`, `UpdateTransaction`, `CreateAIConversation`, `UpdateMe`, `GenerateInsightsHandler`. Closes smell #1.
+- `60aa650 refactor(api): decompose accounts_mutations + ai_chat_shared` — 379-line `accounts_mutations.go` split into CRUD (203 lines) + `accounts_actions.go` (205 lines) for sync/reconnect/pause/resume; 379-line `ai_chat_shared.go` replaced by `ai_chat_request.go` (~150) + `ai_chat_history.go` (~95) + `ai_chat_persist.go` (~200). Closes smells #3, #4. Adds cross-reference comments linking Go `historyCap=40` ↔ Python `max_length=40` (partial fix for #7 — full collapse needs cluster 3a scope).
+
+**Cluster 2 — middleware + infra (session 2):**
+- `d5f6dee refactor(api): extract webhook package — shared verify/claim/dispatch` — new `internal/handlers/webhook/` package with `Provider` interface, `Handle` orchestrator, `ClerkProvider` + `StripeProvider` impls. Adding a third webhook provider (SnapTrade TD-046, future Plaid) drops from "copy-paste 250 lines of verify/claim/dispatch preamble" to "register with `webhook.Handle`". Provider-neutral orchestrator tests added for signature-tampering, idempotency-replay, unknown-event, claim-error paths. Closes smell #2.
+- `7e6ea94 fix(airatelimit): reserve-then-commit — refund rejected + failed attempts (TD-052)` — the one semantic bug-fix in Sprint C. Counter now refunds rejected 429s and failed `c.Next()` attempts; 2xx response is the commit signal. Sprint B test pinning `counter=6` renamed + flipped to assert counter=0 after 6 × 502. New helper `cache.Client.Decr` for the refund path. Closes TD-052 (now TD-R052).
+- `f27fd0d refactor(server): middleware chain registry + golden-list ordering test` — `internal/server/middleware_chain.go` hosts the ordered `GlobalChain []ChainEntry` slice; `server.go` shrinks 35 lines (inline CORS config + "don't reorder" comments consolidated). New `TestGlobalChain_OrderMatchesGoldenList` catches accidental reordering. Closes smell #6.
+- `14a2b92 test: drop unused calledWith field on fakeProvider (lint fix)` — post-merge cleanup.
+
+**Cluster 3 — cross-service hygiene (session 3):**
+- `6920ccf refactor(api,ai): shared HTTP header constants + CI drift check (3a)` — new `apps/api/internal/httpheader/httpheader.go` + `apps/ai/src/ai_service/http_headers.py`. Cross-service subset (`UserID/USER_ID`, `RequestID/REQUEST_ID`, `Authorization/AUTHORIZATION`) pinned on both sides. New CI job `contract-header-symmetry` runs `tools/scripts/check-header-symmetry.py` which parses both files and asserts identical values via a pair list (Go CamelCase ↔ Python UPPER_SNAKE_CASE). Canonicalized `X-Request-ID` (was drifted `X-Request-Id` on Python side — HTTP case-insensitive lookup masked it but logs + tracing showed the drift). Migrated every call site across `middleware/{auth,requestlog,idempotency}.go`, `server/middleware_chain.go` (CORS headers), `clients/aiservice/client.go`, AI service `api/{middleware,auth}.py`, `clients/core_api.py`. Closes smell #12.
+- `3455e67 docs(env): canonical env-var registry + close INTERNAL_API_TOKEN drift (3b)` — new `docs/ENV.md` authoritative registry documents every env var with its Go field + Python field mapping (making the PascalCase / UPPER_SNAKE / lower_snake triple-casing explicit-not-drift). Fixes the one real drift: Python `internal_api_token` now reads canonical `AI_SERVICE_TOKEN` (matches `ops/secrets.keys.yaml`) with `INTERNAL_API_TOKEN` accepted as legacy alias via `AliasChoices(...)`. Adds missing `AI_SERVICE_TOKEN` line to `apps/ai/.env.example`. Closes smell #11 (partial — three casings documented, drift bug closed).
+- `9d5c871 refactor(handlers): extract RunStreamingProxy helper (3c — TD-051 foundation)` — extracts the TD-R091 async-callback pattern (SSE headers + `SendStreamWriter` + `sseproxy.Run` + message-stop-or-dropped branch) into reusable `RunStreamingProxy(c, upstream, cfg)` in `streaming_proxy.go`. `ai_chat_stream.go` shrinks from 115 to ~80 lines; insights streaming when Slice 6a lands will reuse the helper instead of re-deriving the TD-R091 invariant. Full TD-051 (cross-service SSE contract codegen) remains open as a post-alpha ticket. Closes smell #10 (foundation).
+
+**Closed smells per BACKEND_HEALTH §5:** 1, 2, 3, 4, 6, 10, 11 (partial), 12. See `docs/BACKEND_HEALTH_2026-04-21.md` for updated status.
+**Remaining smells (deferred post-alpha):** 5 (auth middleware split), 7 (tier limits Go/Python single-source — cluster 3a foundation enables but does not do this), 8 (LLM pricing parity), 9 (users.Repo upsert), 13 (full SSE contract codegen / TD-051).
+**Closed TDs:** TD-052 moved to TD-R052 in `docs/TECH_DEBT.md`.
+**Opened TDs:** None — the `INTERNAL_API_TOKEN` → `AI_SERVICE_TOKEN` alias window is documented inline in `docs/ENV.md § Deprecated names` without a standalone TD (scope is "remove the AliasChoices fallback once Doppler rotates"; single-line future edit).
+
+**Tests / CI status:**
+- Every Sprint C commit's CI run green.
+- Coverage gates preserved across the whole sprint: `internal/server` ≥85% (94.1→94.5), `internal/middleware` ≥80% (86.7→86.7), `internal/sseproxy` ≥85% (87.3→87.3), `internal/middleware/airatelimit` ≥85% (88.9→88.4; above gate).
+- New coverage: `internal/handlers/httputil` 65.5% (unit-level), `internal/handlers/webhook` 26.1% (orchestrator ~100%; per-event handlers covered by the 12 integration tests that run green under `//go:build integration`).
+- Sprint B's 12 `ai_chat_stream_integration_test.go` regression tests continue to pass unchanged across every cluster — the TD-R091 persist-race is still guarded, now from inside `RunStreamingProxy` instead of the inlined closure.
+- New CI job: `contract-header-symmetry` (stdlib Python, <10s).
+
+**Admin-bypass:** N/A (hotfix-free direct-to-main per post-TD-091 convention).
+**Migrations:** None.
+
+**LoC delta across Sprint C:** roughly `+2400 / −1200` = net `+1200`. Not the kickoff's predicted net-negative — structural test + doc additions (new webhook orchestrator tests, `docs/ENV.md`, package-level doc blocks on the three new packages) outweigh the raw handler dedup. The goal was compositional clarity, not line reduction; per-file readability is the axis this moved.
+
+**Worktree cleanup:** N/A — all commits landed directly on main.
+
+---
+
 ## close-td-091 — Fiber v3 SendStreamWriter async persist race (P1) + k6 deploy-unblock chain
 
 **Product fix SHA:** `f64bc41 fix(api): persist AI chat turn inside SendStreamWriter callback (TD-091)`

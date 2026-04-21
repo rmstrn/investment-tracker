@@ -417,18 +417,6 @@ Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `
 
 ---
 
-### TD-052 — AIRateLimit pre-increment overcount (P2)
-
-**Added:** 2026-04-20 (PR B3-ii-a)
-**Source:** `airatelimit` middleware INCRementit Redis counter ДО handler вызова. Если post-INCR n > cap → 429 + counter сидит на n (over). Если handler 5xx (AI Service down) — counter уже инкрементирован, юзер «потерял» попытку.
-**Risk:** низкий — overcount-by-1 на 429 = ноль разница для юзера (он уже отгеймлен). Counter-inflate-on-5xx = плохой DX (юзер «потратил quota» на upstream сбой).
-**Fix:** «reserve + commit» паттерн. Lua script: SETNX reservation (TTL 60s), handler runs, on success — INCR daily counter + DEL reservation; on failure — DEL reservation; на 429 — никаких inserts. Атомарно, точно.
-**Trigger to revisit:** complaint «я не делал столько запросов» или audit показывает >5% overcount drift против ai_usage ledger.
-**Owner:** backend
-**Scope:** ~50 LOC + tests — 1.5 часа
-
----
-
 ### TD-051 — SSE parser в Core API дублирует AI Service знание о frame format
 
 **Added:** 2026-04-20 (PR B3-ii-a planning, lands in B3-ii-b)
@@ -655,6 +643,27 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R052 — AIRateLimit pre-increment overcount
+
+**Resolved:** 2026-04-21 by `7e6ea94 fix(airatelimit): reserve-then-commit — refund rejected + failed attempts (TD-052)` (Sprint C session 2 cluster 2b).
+**Was:** `airatelimit` middleware pre-incremented the Redis daily counter BEFORE the cap check, so every rejected 6th attempt left the counter stuck at `cap+1` (counter=6 with free cap=5 and 5 allowed + 1 rejected). Handler 5xx responses (AI Service outage) also inflated the counter permanently — the user "spent" quota on upstream failures they never actually completed.
+**Fix applied:** `airatelimit.New` now implements reserve-then-commit:
+1. INCR reserves a slot (still atomic against concurrent racers).
+2. If post-INCR count > cap → DECR refund + 429 (rejected attempt does not stick).
+3. Run `c.Next()`.
+4. If the handler returned an error OR the response status is outside [200, 300) → DECR refund (failed attempt does not stick).
+5. Otherwise: keep the INCR (2xx is the commit signal).
+
+Streaming 2xx responses commit at the handler's write — once the client receives the 200 + first SSE bytes the AI Service has already spent tokens and the billing ledger in `persistTurn` is the authoritative record (TD-R091 guarantee preserved unchanged).
+
+**Test flip:** Sprint B pinned `counter=6` in `TestTD052_PreIncrementOvercountOnDownstreamFailure`. Sprint C session 2 renamed it to `TestTD052_UpstreamFailureRefundsCounter` and flipped the expectation — with the fix, 6 × 502 leaves the counter at **0** (every attempt refunded) because no AI work actually completed. A separate new test `TestReserveCommit_RejectedAttemptRefundsBucket` isolates the narrower "5 success + 1 reject → counter=5" case.
+
+**New helper:** `apps/api/internal/cache.Client.Decr` — thin `rdb.Decr` wrapper so the refund path stays symmetrical with `IncrWithTTL` and future rate-limit middlewares reuse the pair without reaching through `cache.Client.Redis()`.
+
+**Coverage:** `internal/middleware/airatelimit` 80.6% → 88.4% across Sprint B + C. Uncovered is the DECR-fails warn log; above the ≥85% gate.
+
+**Links:** Sprint C merge-log block (see merge-log.md); `apps/api/internal/middleware/airatelimit/airatelimit.go` (fix); `apps/api/internal/middleware/airatelimit/airatelimit_test.go` (flipped test); `apps/api/internal/cache/redis.go:Decr` (new helper).
 
 ### TD-R091 — Fiber v3 `c.SendStreamWriter` is async — persist branch race
 
