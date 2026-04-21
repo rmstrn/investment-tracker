@@ -14,6 +14,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/webhookidem"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/webhook"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware/airatelimit"
 )
@@ -97,18 +98,17 @@ func New(deps *app.Deps) (*fiber.App, error) {
 	// user-facing group would be counter-productive here — we do not
 	// issue Idempotency-Keys to providers, and the Clerk JWT
 	// verifier does not recognise webhook payloads.
+	//
+	// Every provider plugs into the same webhook.Handle orchestrator
+	// which owns verify → claim → dispatch. Adding a third provider
+	// (e.g. SnapTrade under TD-046) is three lines here plus the
+	// Provider impl in internal/handlers/webhook/.
 	claimer := webhookidem.NewPool(deps.Pool)
-	clerkWebhook := handlers.ClerkWebhookDeps{
-		Claimer:  claimer,
-		Verifier: handlers.NewClerkWebhookVerifier(deps.Cfg.ClerkWebhookSecret),
-	}
-	stripeWebhook := handlers.StripeWebhookDeps{
-		Claimer:     claimer,
-		Verifier:    handlers.NewStripeWebhookVerifier(deps.Cfg.StripeWebhookSecret),
-		PriceToTier: handlers.BuildPriceToTier(deps.Cfg.StripePricePlus, deps.Cfg.StripePricePro),
-	}
-	a.Post("/auth/webhook", handlers.ClerkWebhook(deps, clerkWebhook))
-	a.Post("/billing/webhook", handlers.StripeWebhook(deps, stripeWebhook))
+	clerkProv := webhook.NewClerkProvider(deps, deps.Cfg.ClerkWebhookSecret)
+	stripeProv := webhook.NewStripeProvider(deps, deps.Cfg.StripeWebhookSecret,
+		webhook.BuildPriceToTier(deps.Cfg.StripePricePlus, deps.Cfg.StripePricePro))
+	a.Post("/auth/webhook", webhook.Handle(&deps.Log, claimer, clerkProv))
+	a.Post("/billing/webhook", webhook.Handle(&deps.Log, claimer, stripeProv))
 
 	// Authenticated API surface. Routes are registered per PR:
 	//   PR B1: /internal/ai/usage (internal-only)

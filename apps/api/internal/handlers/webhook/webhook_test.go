@@ -1,4 +1,11 @@
-package handlers
+package webhook
+
+// Unit-level coverage for the webhook helpers that do not touch the
+// database or network. Integration coverage of the full request
+// path lives in apps/api/internal/handlers/webhook_*_integration_test.go
+// (behind the `integration` build tag, docker-gated) — those hit the
+// route via HTTP and therefore keep working unchanged across this
+// Sprint C refactor.
 
 import (
 	"encoding/json"
@@ -6,11 +13,6 @@ import (
 
 	stripe "github.com/stripe/stripe-go/v82"
 )
-
-// Unit-level coverage for the webhook helpers that do not touch the
-// database or network. Integration coverage of the full request path
-// lives in webhook_*_integration_test.go (behind the `integration`
-// build tag, docker-gated).
 
 func TestBuildPriceToTier_BothSet(t *testing.T) {
 	m := BuildPriceToTier("price_plus", "price_pro")
@@ -123,7 +125,7 @@ func TestClerkUserEventDataPrimaryEmail(t *testing.T) {
 }
 
 func TestRejectAllVerifier_AlwaysErrors(t *testing.T) {
-	v := NewClerkWebhookVerifier("")
+	v := NewClerkVerifier("")
 	if err := v.Verify([]byte("anything"), nil); err == nil {
 		t.Fatalf("reject-all verifier accepted empty input")
 	}
