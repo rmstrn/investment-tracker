@@ -170,6 +170,14 @@ jobs:
   security-trivy:
     name: Security — filesystem scan (trivy)
     runs-on: ubuntu-latest
+    # security-events:write is required by github/codeql-action/upload-sarif.
+    # Without it the upload step fails with "Resource not accessible by
+    # integration", which has been marking the whole CI run red on every
+    # push since the trivy job was added. contents:read is the default
+    # read-only token required by actions/checkout.
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v6
 
