@@ -258,3 +258,48 @@ build + test` check. 4 golangci-lint issue: два `bodyclose` (missing
 синхронизации с CI. Admin-bypass должен быть **явным** решением
 (`--admin` flag + inline comment с reason), не молчаливым default'ом
 когда кто-то торопится. Политика: перед `gh pr merge` обязательный
+`gh pr checks <N> --watch` до all-green; если красный — hotfix flow.
+
+## 2026-04-21 — Accounts soft-delete pattern + FK mismatch deferred (TD-079)
+
+**Context:** TASK_07 Slice 4a (Manual Accounts CRUD) wires the Web UI to
+`DELETE /accounts/{id}`, which is soft-delete by contract (handler sets
+`deleted_at`, OpenAPI spec: "Historical transactions remain for accurate
+snapshot reconstruction"). Pre-flight surfaced that the schema-level FK
+`transactions.account_id REFERENCES accounts(id) ON DELETE CASCADE`
+contradicts that contract if a hard DELETE ever hits `accounts`.
+
+**Decision:** Slice 4a consumes the handler's soft-delete contract as-is.
+The Delete confirm copy — "Remove «{name}» from portfolio? Trades stay
+historical, portfolio recalculates without this account." — is accurate
+under current behavior. FK hardening (RESTRICT or BEFORE-DELETE trigger)
+is defense-in-depth against future misuse, not an immediate exploit;
+filed as **TD-079 (P3)**.
+
+**Why not fix now:** out of Slice 4a scope (web-only slice), and a schema
+change needs a backend slice + migration review. Noted here so the next
+engineer touching account lifecycle sees the constraint and does not
+silently rely on CASCADE.
+
+**Related:** TD-079 in TECH_DEBT.md; `apps/api/internal/handlers/accounts_mutations.go:183`; `apps/api/db/migrations/20260418120001_initial_schema.sql:72`.
+
+## 2026-04-21 — AccountConnectCard not reused for manual accounts list (Slice 4a)
+
+**Context:** `packages/ui/src/domain/AccountConnectCard.tsx` exists and was
+considered for the `/accounts` list row. Inspection showed it is an OAuth
+"connect broker" card (Connect / Disconnect buttons, provider logos,
+statuses `connected / not_connected / syncing / error`) — semantics built
+around live broker connection flows (SnapTrade, Binance, Coinbase) that
+Slice 4a explicitly does **not** cover (those are blocked on TD-046 and
+scheduled for Slice 4b / 4c).
+
+**Decision:** Slice 4a ships a local `AccountListItem` component in
+`apps/web/src/components/accounts/`. Forcing the manual flow into
+`AccountConnectCard` would have required stretching its prop surface
+(hiding Connect/Disconnect, adding Rename/Delete kebab, adding "Manual"
+status) and leaving a misleading name for Slice 4b when real broker
+cards land beside manual rows.
+
+**Follow-up:** when Slice 4b introduces broker accounts in the same list,
+consider a unified `AccountListItem` that branches on `connection_type`
+rather than reusing the domain card. Re-evaluate at that point.
