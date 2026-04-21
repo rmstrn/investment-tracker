@@ -68,8 +68,13 @@ type Config struct {
 	CoinGeckoAPIKey string `envconfig:"COINGECKO_API_KEY"` // optional — free tier works without
 
 	// ── Broker aggregation ──────────────────────────────────────────
-	SnapTradeClientID    string `envconfig:"SNAPTRADE_CLIENT_ID" required:"true"`
-	SnapTradeConsumerKey string `envconfig:"SNAPTRADE_CONSUMER_KEY" required:"true"`
+	// TODO(TD-046): re-require when SnapTrade client lands. Today no
+	// provider client consumes these; handler accounts_mutations.go
+	// rejects aggregator/api account types at request time with a
+	// 400. Marking required:"true" here boot-fails prod on empty
+	// secrets for a feature that is not yet wired — silent bomb.
+	SnapTradeClientID    string `envconfig:"SNAPTRADE_CLIENT_ID" default:""`
+	SnapTradeConsumerKey string `envconfig:"SNAPTRADE_CONSUMER_KEY" default:""`
 
 	// ── Encryption ──────────────────────────────────────────────────
 	// 32-byte AES-256 key, base64-encoded. See internal/crypto/envelope.go.
