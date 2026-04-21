@@ -17,7 +17,7 @@ Newest entries at the top.
 
 ## docs: close td-070 + post-deploy ledger (ops fixes for 5 latent Dockerfile/CI bugs caught during first deploy)
 
-**Squash SHA:** `<this commit>`
+**Squash SHA:** `2b81fd2`
 **Merged:** 2026-04-21
 **Base:** prior main tip after `b079d30` ops-fix.
 **Scope:** TD-070 closure docs pass. AI Service staging deploy CLOSED 2026-04-21 — `https://investment-tracker-ai-staging.fly.dev/healthz` returns 200; bridge invariant `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` verified via round-trip smoke. Slice 6a Insights UNBLOCKED.
