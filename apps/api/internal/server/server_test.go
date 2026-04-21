@@ -217,6 +217,27 @@ func TestCORSPreflight_ShortCircuitsBeforeAuth(t *testing.T) {
 // if a future change removes one of these, the test shows exactly
 // which path disappeared. Methods + params are not asserted here —
 // that granularity lives in per-handler integration tests.
+// TestGlobalChain_OrderMatchesGoldenList is the golden-list
+// ordering assertion promised by Sprint C cluster 2a. If a future
+// change reorders GlobalChain in middleware_chain.go — or adds /
+// removes an entry — this test fails with a clear diff. The
+// behavioral tests above (RequestIDMiddleware_FirstInChain,
+// CORSPreflight_ShortCircuitsBeforeAuth) are the semantic guards
+// for *why* this order matters; this test catches accidental
+// reorderings before they reach a staging deploy.
+func TestGlobalChain_OrderMatchesGoldenList(t *testing.T) {
+	want := []string{"RequestID", "RequestLog", "CORS"}
+	got := server.ChainNames()
+	if len(got) != len(want) {
+		t.Fatalf("chain length = %d (%v), want %d (%v)", len(got), got, len(want), want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Errorf("chain[%d] = %q, want %q (full got: %v)", i, got[i], want[i], got)
+		}
+	}
+}
+
 func TestRoutesRegistered_CanonicalSet(t *testing.T) {
 	a := buildApp(t)
 	routes := a.GetRoutes()
