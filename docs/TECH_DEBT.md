@@ -465,19 +465,6 @@ Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `
 
 ---
 
-### TD-047 — CSVExport tier flag heuristic (P1 pre-GA)
-
-**Added:** 2026-04-19 (PR #40 / B3-i)
-**Priority:** P1 — **must fix before public GA**
-**Source:** экспорт-tier gate в `/exports` handler'е сейчас эвристика: «если у юзера жёсткий AIMessagesDaily cap → значит free → значит нет экспорта». Рабочая корреляция сегодня, хрупкая архитектура.
-**Risk:** если мы захотим дать Free попробовать AI (поднять `AIMessagesDaily` с 3-5 до 10-20 для trial-эксперимента) — экспорт автоматом откроется free-юзерам без явного intent.
-**Fix:** добавить `CSVExport bool` в `internal/domain/tiers/limits.go` TierLimits struct. Заменить эвристику на explicit gate: `RequireTier(func(l TierLimits) bool { return l.CSVExport })`. Прописать в tier matrix: Free=false, Plus=true, Pro=true.
-**Trigger to revisit:** перед public GA, жёсткий blocker.
-**Owner:** backend lead
-**Scope:** ~30 LOC + test — 1 час
-
----
-
 ### TD-046 — Aggregator provider clients (SnapTrade / Plaid / broker APIs)
 
 **Added:** 2026-04-19 (PR #40 / B3-i)
@@ -643,6 +630,25 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R047 — CSVExport tier flag heuristic (P1 pre-GA)
+
+**Resolved:** 2026-04-22 by `4ad38fc fix(tiers): replace CSVExport heuristic with explicit tier flag (TD-047)`.
+**Was:** The `/exports` handler (`apps/api/internal/handlers/exports.go:41-49`) gated Free vs Plus+ by inferring "not-free" from `AIMessagesDaily <= 5`. Correct today but fragile — any future tuning of the Free-tier AI budget (trial experiments bumping the cap to 10-20) would silently flip the CSV-export gate for free users.
+**Fix applied:** explicit `CSVExport bool` flag on `tiers.Limit`, set to `true` on Plus + Pro, matching the existing flag pattern used for `AdvancedAnalytics` (Pro-only) and `TaxReports` (Pro-only). Handler replaced with:
+```go
+if !tiers.For(user.SubscriptionTier).CSVExport {
+    return errs.Respond(c, reqID,
+        errs.New(http.StatusForbidden, "FEATURE_LOCKED", "CSV export requires Plus or higher"))
+}
+```
+No wire-contract change — response envelope, status code, `X-Export-Pending` header all byte-equivalent for every tier.
+
+**Tests:**
+- `internal/domain/tiers/limits_test.go` (new) — table-driven matrix asserting every (tier × counter) and (tier × flag) pair + the unknown-tier fail-closed fallback. Coverage: `internal/domain/tiers` 20.0% → 100.0%.
+- `exports_integration_test.go` — strengthened `TestCreateExport_FreeTier_403` to assert `error.code == "FEATURE_LOCKED"` (not a generic forbidden); added `TestCreateExport_HappyPath_Pro` so the flag matrix is observed end-to-end from both Plus and Pro upgrade paths.
+
+**Links:** `apps/api/internal/domain/tiers/limits.go` (flag + matrix); `apps/api/internal/handlers/exports.go` (handler gate); `apps/api/internal/domain/tiers/limits_test.go` (matrix unit tests); `apps/api/internal/handlers/exports_integration_test.go` (strengthened + new integration tests).
 
 ### TD-R052 — AIRateLimit pre-increment overcount
 

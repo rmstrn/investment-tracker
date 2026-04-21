@@ -103,6 +103,7 @@ Two separate bearer tokens, one per direction:
 | `AI_SERVICE_TOKEN` **[secret]** | Core → AI bearer | `AIServiceToken` | `internal_api_token` | Python accepts legacy `INTERNAL_API_TOKEN` alias too — see § deprecated. |
 | `CORE_API_URL` | AI → Core base URL | — | `core_api_url` | |
 | `CORE_API_INTERNAL_TOKEN` **[secret]** | AI → Core bearer (reverse channel) | `CoreAPIInternalToken` | `core_api_internal_token` | Both sides agree on env name + meaning since day one. |
+| `CORE_API_TIMEOUT_SECONDS` | AI → Core HTTP client timeout | — | `core_api_timeout_seconds` | Default `30.0`. Tool-call round trips (AI fetches /portfolio, /positions) fail fast rather than hang if Core API stalls. |
 
 ### Market data
 

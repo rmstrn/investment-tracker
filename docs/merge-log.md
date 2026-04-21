@@ -15,6 +15,31 @@ Newest entries at the top.
 
 ---
 
+## close-td-047 + M1 — CSVExport explicit flag + ENV.md doc backfill
+
+**Window:** 2026-04-22 (post-Sprint-C small-debt bundle, one CC session).
+**Scope in one line:** close the single P1 pre-GA backend debt (TD-047 tier flag heuristic) plus the one doc-only minor finding surfaced by the `docs/BACKEND_AUDIT_2026-04-22.md` audit.
+**Base:** prior main tip after `3a489d9` (post-Sprint-C audit).
+
+**Commits:**
+- `4ad38fc fix(tiers): replace CSVExport heuristic with explicit tier flag (TD-047)` — adds `CSVExport bool` to `tiers.Limit`, sets `true` on Plus + Pro, replaces the `AIMessagesDaily <= 5` heuristic in `exports.go` with the canonical flag pattern. Strengthens the Free-tier integration test to assert `error.code == "FEATURE_LOCKED"` (not just status 403). Adds Pro-tier happy-path integration test. New table-driven unit tests in `tiers/limits_test.go` cover every (tier × counter) and (tier × flag) pair + the unknown-tier fail-closed fallback; `internal/domain/tiers` coverage 20% → 100%.
+- `<this commit>` — moves TD-047 to TD-R047 in TECH_DEBT.md; adds the `CORE_API_TIMEOUT_SECONDS` row the audit flagged as missing in `docs/ENV.md`; this merge-log entry.
+
+**Closed TDs:** TD-047 (Active P1 count drops from 2 → 1; TD-066 workers deploy target remains the sole Active P1).
+
+**Tests / CI status:**
+- Go `go test ./...` — every package `ok`.
+- `internal/domain/tiers` coverage: 20.0% → **100.0%**.
+- All Sprint B coverage gates preserved.
+- Integration test binary still builds under `//go:build integration` tag.
+
+**No API surface change:** `POST /exports` response envelope, status code (202 on success, 403 FEATURE_LOCKED on free), and `X-Export-Pending` header are byte-equivalent before/after for every tier.
+
+**Admin-bypass / migrations:** none.
+**Worktree cleanup:** N/A — direct to main.
+
+---
+
 ## sprint-c — Deep backend refactor: handlers, middleware, cross-service hygiene
 
 **Window:** 2026-04-21 (three CC sessions, chronological SHAs below).
