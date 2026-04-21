@@ -38,7 +38,15 @@ export function PositionDetailLive({
           </div>
         </TabsContent>
         <TabsContent value="transactions">
-          <PositionTransactionsTab positionId={id} initialPage={initialTransactions} />
+          <PositionTransactionsTab
+            positionId={id}
+            position={{
+              symbol: position.symbol,
+              asset_type: position.asset_type,
+              currency: position.currency,
+            }}
+            initialPage={initialTransactions}
+          />
         </TabsContent>
       </Tabs>
     </div>
