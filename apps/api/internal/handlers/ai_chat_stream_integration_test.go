@@ -516,6 +516,87 @@ func TestChatStream_AirateLimitGate_FreeTier(t *testing.T) {
 	}
 }
 
+// TestChatStream_BadJSONInFrame_GracefulPartialPersist is the
+// integration-level sibling of sseproxy's
+// Contract_BadJSONInFrame_GracefulSkip: when the upstream emits a
+// content_delta with broken JSON, the proxy drops it, the stream
+// keeps flowing, and if message_stop arrives the assistant turn is
+// persisted *with the surviving content only*. This pins a
+// behavior that TD-R091 made visible — once persist is inside the
+// SendStreamWriter callback, every test here is also a regression
+// guard against someone moving it back out.
+func TestChatStream_BadJSONInFrame_GracefulPartialPersist(t *testing.T) {
+	resetDB(t)
+	script := strings.Join([]string{
+		"event: message_start",
+		`data: {"type":"message_start","message_id":"m-bad"}`,
+		"",
+		"event: content_block_start",
+		`data: {"type":"content_block_start","index":0,"block_type":"text"}`,
+		"",
+		"event: content_delta",
+		`data: {"type":"content_delta","text":"good "}`,
+		"",
+		"event: content_delta",
+		// Deliberately broken JSON — parser should log + skip, not abort.
+		`data: {this is definitely not json`,
+		"",
+		"event: content_delta",
+		`data: {"type":"content_delta","text":"recovery"}`,
+		"",
+		"event: content_block_stop",
+		`data: {"type":"content_block_stop","index":0}`,
+		"",
+		"event: message_stop",
+		`data: {"type":"message_stop","stop_reason":"end_turn","usage":{"model":"claude","input_tokens":3,"output_tokens":7,"cost_usd":0.0002}}`,
+		"",
+		"",
+	}, "\n")
+
+	fake := newFakeAIStream(t, http.StatusOK, script, 0)
+	a := newTestAppWithAI(t, fake.URL, "tok")
+	uid := seedUser(t, "plus")
+	convID := seedChatConversation(t, uid)
+
+	resp, _ := doJSON(t, a, fiber.MethodPost, "/ai/chat/stream",
+		uid.String(), testSharedInternalToken, map[string]any{
+			"conversation_id": convID.String(),
+			"message":         map[string]any{"content": []map[string]any{{"type": "text", "text": "hi"}}},
+		})
+	if resp.StatusCode != fiber.StatusOK {
+		t.Fatalf("status = %d (bad-JSON in one frame should not fail the stream)", resp.StatusCode)
+	}
+
+	// Persist ran — message_stop was honored.
+	waitForAssistantMessage(t, convID, 2*time.Second)
+
+	// Assistant content includes the surviving deltas, not the
+	// broken one. We don't assert exact concatenation — the point
+	// is that persist happened AND the content is not empty.
+	var content string
+	err := testPool.QueryRow(context.Background(),
+		`SELECT content::text FROM ai_messages WHERE conversation_id=$1 AND role='assistant'`,
+		convID).Scan(&content)
+	if err != nil {
+		t.Fatalf("read assistant row: %v", err)
+	}
+	if !strings.Contains(content, "good ") || !strings.Contains(content, "recovery") {
+		t.Errorf("assistant content missing surviving deltas: %s", content)
+	}
+
+	// ai_usage row still landed — the upstream spent tokens even
+	// though one frame was corrupt, so the ledger must reflect it.
+	var in, out int
+	err = testPool.QueryRow(context.Background(),
+		`SELECT input_tokens, output_tokens FROM ai_usage WHERE user_id = $1`, uid).Scan(&in, &out)
+	if err != nil {
+		t.Fatalf("ai_usage row missing after bad-JSON partial persist: %v", err)
+	}
+	if in != 3 || out != 7 {
+		t.Errorf("usage: in=%d out=%d, want 3/7", in, out)
+	}
+}
+
 // TestChatSync_CostClampOnOverflow ensures the NUMERIC(10,6) cap is
 // respected — if the upstream reports an absurd cost_usd the handler
 // writes the clamp value, not a check-violation error.
