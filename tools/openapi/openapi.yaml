@@ -2971,8 +2971,17 @@ components:
         index: { type: integer }
         delta:
           type: object
-          description: Partial text or partial tool input.
-          additionalProperties: true
+          description: |
+            Partial text for the active content block. The translator
+            (apps/api/internal/sseproxy/translator.go) always emits
+            `{text: string}` — no discriminator, no `input_json_delta`
+            variant post-translation. TD-R068 tightened this from the
+            previous `additionalProperties: true` shape to match
+            wire reality.
+          required: [text]
+          properties:
+            text: { type: string }
+          additionalProperties: false
 
     AIStreamEventContentBlockStop:
       type: object
@@ -3017,7 +3026,29 @@ components:
       required: [type, error]
       properties:
         type: { type: string, const: error }
-        error: { $ref: '#/components/schemas/ErrorEnvelope' }
+        error:
+          type: object
+          description: |
+            Flat error payload emitted by the translator
+            (apps/api/internal/sseproxy/translator.go:errorFrame).
+            Not the wrapped ErrorEnvelope shape — TD-R068 corrected
+            the spec to match wire reality. request_id is populated
+            when the mid-stream error corresponds to an in-flight
+            traced request (TD-R048).
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            request_id:
+              type: string
+              description: |
+                The X-Request-ID the client sent on the originating
+                /ai/chat/stream call, propagated so mid-stream
+                errors correlate to the same trace id as pre-stream
+                errors in the JSON envelope. Absent only when the
+                inbound request had no X-Request-ID header (local
+                dev without middleware.RequestID upstream).
+          additionalProperties: false
 
     # ── AI: insights ──────────────────────────────────────────
     Insight:

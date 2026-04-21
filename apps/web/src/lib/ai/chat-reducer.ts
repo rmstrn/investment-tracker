@@ -177,10 +177,16 @@ export function reduce(state: StreamState, event: AIChatStreamEvent): StreamStat
 
     case 'error': {
       const msg = state.phase === 'streaming' ? state.message : null;
-      // OpenAPI schema types `event.error` as full `ErrorEnvelope` (wrapped:
-      // `{error: {code, message, request_id}}`), but `translator.go`
-      // emits flat inner: `event.error = {code, message, request_id?}`.
-      // Accept both shapes — tracked as part of TD-068 schema drift.
+      // TD-R068: the OpenAPI spec was tightened to declare
+      // `event.error` as the flat `{code, message, request_id?}`
+      // that `translator.go` actually emits (previously the spec
+      // said full `ErrorEnvelope`, making this a drift). The
+      // `unwrapEnvelope` branch below is kept as a 30-day compat
+      // shim — once a stream on a client-cached old bundle can't
+      // still be in-flight after a deploy rollover (call it
+      // 2026-05-22 for the 2026-04-22 spec cutover), drop the
+      // wrapped-shape branch and read `event.error` directly as
+      // the flat inner object.
       const raw = event.error as unknown;
       const inner = unwrapEnvelope(raw);
       return {

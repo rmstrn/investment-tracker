@@ -49,3 +49,22 @@ def test_format_sse_event_error() -> None:
     payload = json.loads(frame.split("data: ", 1)[1].rstrip("\n"))
     assert payload["message"] == "boom"
     assert payload["code"] == "TestError"
+    # request_id defaults to None on the model; Pydantic emits it
+    # so cross-service consumers see a stable shape regardless of
+    # whether Core API stamped an X-Request-ID on the inbound call.
+    assert "request_id" in payload
+    assert payload["request_id"] is None
+
+
+def test_format_sse_event_error_with_request_id() -> None:
+    """TD-R048: propagated request_id lands in the error payload."""
+    frame = format_sse_event(
+        ErrorEvent(
+            message="boom",
+            code="TestError",
+            request_id="req_abc123",
+        )
+    )
+    assert "event: error" in frame
+    payload = json.loads(frame.split("data: ", 1)[1].rstrip("\n"))
+    assert payload["request_id"] == "req_abc123"

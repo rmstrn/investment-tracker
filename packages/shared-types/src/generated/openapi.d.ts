@@ -1380,7 +1380,7 @@ export interface components {
                  *       the upgrade/blur-preview treatment from design brief §13.5.
                  * @enum {string}
                  */
-                code: "VALIDATION_ERROR" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "TIER_LIMIT_EXCEEDED" | "FEATURE_LOCKED" | "NOT_FOUND" | "CONFLICT" | "DUPLICATE_TRANSACTION" | "RATE_LIMIT_EXCEEDED" | "EXTERNAL_SERVICE_ERROR" | "INTERNAL_ERROR";
+                code: "VALIDATION_ERROR" | "INVALID_REQUEST" | "UNAUTHENTICATED" | "FORBIDDEN" | "TIER_LIMIT_EXCEEDED" | "FEATURE_LOCKED" | "NOT_FOUND" | "CONFLICT" | "DUPLICATE_TRANSACTION" | "IDEMPOTENCY_KEY_CONFLICT" | "IDEMPOTENCY_IN_PROGRESS" | "JURISDICTION_NOT_SUPPORTED" | "QUOTE_NOT_AVAILABLE" | "RATE_LIMIT_EXCEEDED" | "EXTERNAL_SERVICE_ERROR" | "NOT_IMPLEMENTED" | "INTERNAL_ERROR";
                 /** @description Human-readable message. Do not parse this. */
                 message: string;
                 /** @description Structured details for the error (e.g. failing field). */
@@ -1675,13 +1675,16 @@ export interface components {
             benchmark: "SPX" | "QQQ" | "ACWI" | "BTC";
             /** Format: float */
             portfolio_return_percent: number;
-            /** Format: float */
-            benchmark_return_percent: number;
             /**
              * Format: float
-             * @description portfolio_return - benchmark_return.
+             * @description Return of the benchmark over the same period. Null when benchmark data is unavailable — callers that need a hard fail can key on the `X-Benchmark-Unavailable` response header (TD-020 tracks populating this with real data).
              */
-            alpha_percent?: number;
+            benchmark_return_percent: number | null;
+            /**
+             * Format: float
+             * @description portfolio_return - benchmark_return. Null whenever benchmark_return_percent is null.
+             */
+            alpha_percent?: number | null;
             stats?: components["schemas"]["PortfolioPerformanceStats"];
             series?: {
                 /** Format: date */
@@ -1723,10 +1726,16 @@ export interface components {
         PortfolioPerformanceBenchmark: {
             /** @enum {string} */
             benchmark: "SPX" | "QQQ" | "ACWI" | "BTC";
-            /** Format: float */
-            benchmark_return_percent: number;
-            /** Format: float */
-            alpha_percent: number;
+            /**
+             * Format: float
+             * @description Same nullability rule as PortfolioPerformance. Null when benchmark_prices is unavailable; X-Benchmark-Unavailable response header signals the gap (TD-020).
+             */
+            benchmark_return_percent: number | null;
+            /**
+             * Format: float
+             * @description Null whenever benchmark_return_percent is null.
+             */
+            alpha_percent: number | null;
             series?: {
                 /** Format: date */
                 date: string;
@@ -2012,9 +2021,16 @@ export interface components {
              */
             type: "content_delta";
             index: number;
-            /** @description Partial text or partial tool input. */
+            /**
+             * @description Partial text for the active content block. The translator
+             *     (apps/api/internal/sseproxy/translator.go) always emits
+             *     `{text: string}` — no discriminator, no `input_json_delta`
+             *     variant post-translation. TD-R068 tightened this from the
+             *     previous `additionalProperties: true` shape to match
+             *     wire reality.
+             */
             delta: {
-                [key: string]: unknown;
+                text: string;
             };
         };
         AIStreamEventContentBlockStop: {
@@ -2065,7 +2081,27 @@ export interface components {
              * @enum {string}
              */
             type: "error";
-            error: components["schemas"]["ErrorEnvelope"];
+            /**
+             * @description Flat error payload emitted by the translator
+             *     (apps/api/internal/sseproxy/translator.go:errorFrame).
+             *     Not the wrapped ErrorEnvelope shape — TD-R068 corrected
+             *     the spec to match wire reality. request_id is populated
+             *     when the mid-stream error corresponds to an in-flight
+             *     traced request (TD-R048).
+             */
+            error: {
+                code: string;
+                message: string;
+                /**
+                 * @description The X-Request-ID the client sent on the originating
+                 *     /ai/chat/stream call, propagated so mid-stream
+                 *     errors correlate to the same trace id as pre-stream
+                 *     errors in the JSON envelope. Absent only when the
+                 *     inbound request had no X-Request-ID header (local
+                 *     dev without middleware.RequestID upstream).
+                 */
+                request_id?: string;
+            };
         };
         Insight: {
             /** Format: uuid */
@@ -2356,6 +2392,7 @@ export interface components {
             /** Format: date-time */
             completed_at?: string | null;
         };
+        /** @description factor_exposure, style_box and correlation_matrix are nullable until the factor-model / classification feeds land (TD-032/033). The X-Analytics-Partial response header signals when any of them are null so clients that need a hard fail can key on it. */
         PortfolioAnalytics: {
             /** @enum {string} */
             period: "3m" | "6m" | "1y" | "3y" | "all";
@@ -2379,6 +2416,7 @@ export interface components {
                 /** Format: float */
                 drawdown_percent: number;
             }[];
+            /** @description Null when the factor-model feed is unavailable (TD-032). */
             factor_exposure: {
                 /** Format: float */
                 value: number;
@@ -2390,18 +2428,15 @@ export interface components {
                 quality: number;
                 /** Format: float */
                 size: number;
-            };
-            /**
-             * @description 3×3 grid (growth/core/value × small/mid/large). Row-major:
-             *     `[[small-growth, small-core, small-value], [mid-...], [large-...]]`.
-             *     Values are fractions summing to ~1.0.
-             */
-            style_box: number[][];
+            } | null;
+            /** @description Null when the style-classification feed is unavailable (TD-032). */
+            style_box: number[][] | null;
+            /** @description Null when the per-symbol price series is too sparse to compute a reliable matrix (TD-033). */
             correlation_matrix: {
                 symbols: string[];
                 /** @description Square matrix, same ordering as `symbols`. */
                 values: number[][];
-            };
+            } | null;
         };
         TaxReport: {
             /** @enum {string} */
@@ -2410,7 +2445,8 @@ export interface components {
             realized_gains: components["schemas"]["Money"];
             realized_losses: components["schemas"]["Money"];
             dividends_received: components["schemas"]["Money"];
-            withholding_tax: components["schemas"]["Money"];
+            /** @description Null when per-transaction withholding is not captured in the schema yet (TD-031). The X-Withholding-Unavailable response header signals the scope-cut to callers that need to fail closed. */
+            withholding_tax: components["schemas"]["Money"] | null;
             estimated_taxable_income: components["schemas"]["Money"];
             transactions: components["schemas"]["TaxTransaction"][];
             meta?: components["schemas"]["PaginationMeta"];

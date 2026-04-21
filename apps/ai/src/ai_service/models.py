@@ -105,6 +105,12 @@ class ErrorEvent(BaseModel):
     type: Literal["error"] = "error"
     message: str
     code: str | None = None
+    # request_id propagates the inbound X-Request-ID so mid-stream
+    # errors correlate to the same trace id the pre-stream envelope
+    # carries (TD-R048). Populated by the chat handler from
+    # request.headers[httpheader.REQUEST_ID]; absent when the
+    # inbound request had no trace header (direct curl / local dev).
+    request_id: str | None = None
 
 
 ChatStreamEvent = Annotated[

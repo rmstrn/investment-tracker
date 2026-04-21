@@ -103,8 +103,14 @@ class ChatAgent:
         conversation_id: UUID,
         message: str,
         history: list[ChatMessage] | None = None,
+        request_id: str | None = None,
     ) -> AsyncIterator[ChatStreamEvent]:
-        """Yield wire-format stream events for a single chat turn."""
+        """Yield wire-format stream events for a single chat turn.
+
+        ``request_id`` is stamped onto any ErrorEvent emitted by the
+        exception fallback so mid-stream failures correlate with the
+        same trace id the HTTP envelope uses (TD-R048).
+        """
         model = self._settings.anthropic_model_sonnet
         messages: list[dict[str, Any]] = [
             *_history_to_anthropic(history or []),
@@ -201,7 +207,11 @@ class ChatAgent:
                 user_id=str(user_id),
                 conversation_id=str(conversation_id),
             )
-            yield ErrorEvent(message=str(exc)[:500], code=type(exc).__name__)
+            yield ErrorEvent(
+                message=str(exc)[:500],
+                code=type(exc).__name__,
+                request_id=request_id,
+            )
 
     # ------------------------------------------------------------------
     # Event translation
