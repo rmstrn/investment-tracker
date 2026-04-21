@@ -1,0 +1,27 @@
+event: message_start
+data: {"type":"message_start","message_id":"msg_upstream_7"}
+
+event: content_block_start
+data: {"type":"content_block_start","index":0,"block_type":"text"}
+
+event: content_delta
+data: {"type":"content_delta","text":"The portfolio "}
+
+event: content_delta
+data: {"type":"content_delta","text":"is up "}
+
+event: content_delta
+data: {"type":"content_delta","text":"2.3%"}
+
+event: content_block_stop
+data: {"type":"content_block_stop","index":0}
+
+event: tool_use
+data: {"type":"tool_use","tool_use_id":"toolu_01abc","name":"get_portfolio","input":{"period":"30d"}}
+
+event: tool_result
+data: {"type":"tool_result","tool_use_id":"toolu_01abc","is_error":false,"content":"total_value=42000"}
+
+event: message_stop
+data: {"type":"message_stop","stop_reason":"end_turn","usage":{"model":"claude-3-5-sonnet","input_tokens":420,"output_tokens":87,"cost_usd":0.002565}}
+
