@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
-from pydantic import Field, SecretStr
+from pydantic import AliasChoices, Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,9 +30,17 @@ class Settings(BaseSettings):
 
     # -- Incoming auth (Core API → AI Service) ------------------------------
     # Bearer token that Core API uses to authenticate its requests to us.
+    # ops/secrets.keys.yaml declares this as AI_SERVICE_TOKEN (the name
+    # Core API emits); INTERNAL_API_TOKEN is the historical alias the
+    # Python config used before Sprint C 3b normalized on the ops name.
+    # Both are accepted; AI_SERVICE_TOKEN wins when both are set, which
+    # lets ops rotate to the canonical name without a flag-day deploy.
     internal_api_token: SecretStr = Field(
         default=SecretStr("dev-internal-token"),
-        alias="INTERNAL_API_TOKEN",
+        validation_alias=AliasChoices(
+            "AI_SERVICE_TOKEN",
+            "INTERNAL_API_TOKEN",
+        ),
     )
 
     # -- Anthropic ----------------------------------------------------------
