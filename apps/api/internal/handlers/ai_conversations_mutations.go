@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 	"strings"
 	"time"
@@ -12,6 +11,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/httputil"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
@@ -27,22 +27,21 @@ const conversationTitleMaxChars = 200
 // Returns 201 Created + AIConversation summary shape (matches the
 // list endpoint's per-row projection from B2b for client cache
 // consistency). message_count is always 0 on a fresh row.
+// createConversationRequest is the openapi shape for POST
+// /ai/conversations. Empty body is valid — all fields are optional.
+type createConversationRequest struct {
+	Title string `json:"title"`
+}
+
 func CreateAIConversation(deps *app.Deps) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		reqID := requestIDFromLocals(c)
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		var req struct {
-			Title string `json:"title"`
-		}
-		// Empty body is valid (title is optional). Only fail on
-		// genuinely malformed JSON; an empty body decodes cleanly.
-		if body := c.Body(); len(body) > 0 {
-			if err := json.Unmarshal(body, &req); err != nil {
-				return errs.Respond(c, reqID,
-					errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
-			}
+		req, coded := httputil.BindJSONOptional[createConversationRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 		req.Title = strings.TrimSpace(req.Title)
 		if len(req.Title) > conversationTitleMaxChars {

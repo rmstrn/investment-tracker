@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -14,8 +13,15 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/aiservice"
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/httputil"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
+
+// generateInsightsRequest is the openapi shape for POST
+// /ai/insights/generate. All fields optional.
+type generateInsightsRequest struct {
+	InsightType string `json:"insight_type"`
+}
 
 // validInsightTypes mirrors the InsightType enum on the openapi
 // side; full enum is much longer (loose strings) but the
@@ -55,14 +61,11 @@ func GenerateInsightsHandler(deps *app.Deps) fiber.Handler {
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		var req struct {
-			InsightType string `json:"insight_type"`
-		}
-		if body := c.Body(); len(body) > 0 {
-			if err := json.Unmarshal(body, &req); err != nil {
-				return errs.Respond(c, reqID,
-					errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
-			}
+		// Optional body — insight_type is a hint. Empty body means
+		// "let the AI service pick".
+		req, coded := httputil.BindJSONOptional[generateInsightsRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 		req.InsightType = strings.TrimSpace(req.InsightType)
 		if req.InsightType != "" {

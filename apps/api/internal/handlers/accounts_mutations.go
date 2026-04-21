@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -14,20 +13,24 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/httputil"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
-// ---------- validation tables ----------
-
-var validAccountTypes = map[string]struct{}{
-	"broker": {}, "crypto": {}, "manual": {},
-}
-
-var validConnectionTypes = map[string]struct{}{
-	"api": {}, "aggregator": {}, "import": {}, "manual": {},
-}
-
 // ---------- POST /accounts ----------
+
+// createAccountRequest is the openapi AccountCreateRequest shape
+// with validator tags driving shape-level checks. Domain-specific
+// normalization (TrimSpace, case-folding, defaulting) still happens
+// in the handler body — validator only enforces the wire contract.
+type createAccountRequest struct {
+	ConnectionType string  `json:"connection_type" validate:"required,oneof=api aggregator import manual"`
+	BrokerName     string  `json:"broker_name"`
+	DisplayName    string  `json:"display_name"    validate:"required"`
+	BaseCurrency   string  `json:"base_currency"`
+	AccountType    string  `json:"account_type"    validate:"omitempty,oneof=broker crypto manual"`
+	RedirectURL    *string `json:"redirect_url"`
+}
 
 // CreateAccount opens an account row per openapi AccountCreateRequest.
 // Two paths per the design:
@@ -46,31 +49,19 @@ func CreateAccount(deps *app.Deps) fiber.Handler {
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		var req struct {
-			ConnectionType string  `json:"connection_type"`
-			BrokerName     string  `json:"broker_name"`
-			DisplayName    string  `json:"display_name"`
-			BaseCurrency   string  `json:"base_currency"`
-			AccountType    string  `json:"account_type"`
-			RedirectURL    *string `json:"redirect_url"`
-		}
-		if err := json.Unmarshal(c.Body(), &req); err != nil {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
+		req, coded := httputil.BindAndValidate[createAccountRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 
 		req.DisplayName = strings.TrimSpace(req.DisplayName)
 		req.BaseCurrency = strings.ToUpper(strings.TrimSpace(req.BaseCurrency))
-		req.AccountType = strings.ToLower(strings.TrimSpace(req.AccountType))
-		req.ConnectionType = strings.ToLower(strings.TrimSpace(req.ConnectionType))
 
+		// Validator passed required/oneof but whitespace-only
+		// display_name slipped through — trim-then-check.
 		if req.DisplayName == "" {
 			return errs.Respond(c, reqID,
 				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "display_name is required"))
-		}
-		if _, ok := validConnectionTypes[req.ConnectionType]; !ok {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "connection_type must be one of api, aggregator, import, manual"))
 		}
 		if req.ConnectionType != "manual" && req.BrokerName == "" {
 			return errs.Respond(c, reqID,
@@ -78,10 +69,6 @@ func CreateAccount(deps *app.Deps) fiber.Handler {
 		}
 		if req.AccountType == "" {
 			req.AccountType = "manual"
-		}
-		if _, ok := validAccountTypes[req.AccountType]; !ok {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "account_type must be one of broker, crypto, manual"))
 		}
 		if req.BaseCurrency == "" {
 			req.BaseCurrency = "USD"
@@ -127,6 +114,15 @@ func CreateAccount(deps *app.Deps) fiber.Handler {
 
 // ---------- PATCH /accounts/{id} ----------
 
+// updateAccountRequest is the openapi AccountUpdateRequest shape.
+// Both fields are pointer/nullable so the handler can distinguish
+// "not supplied" (COALESCE keeps the current value) from "set to
+// zero" (e.g. is_included_in_portfolio = false).
+type updateAccountRequest struct {
+	DisplayName           *string `json:"display_name"`
+	IsIncludedInPortfolio *bool   `json:"is_included_in_portfolio"`
+}
+
 // UpdateAccount handles display_name + is_included_in_portfolio edits.
 // Both fields are optional per AccountUpdateRequest; the sqlc COALESCE
 // keeps the column when the caller omits it.
@@ -142,13 +138,12 @@ func UpdateAccount(deps *app.Deps) fiber.Handler {
 				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid account id"))
 		}
 
-		var req struct {
-			DisplayName           *string `json:"display_name"`
-			IsIncludedInPortfolio *bool   `json:"is_included_in_portfolio"`
-		}
-		if err := json.Unmarshal(c.Body(), &req); err != nil {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
+		// Optional body — both fields are pointer/nullable and either
+		// can be absent. BindJSONOptional keeps the empty-body path
+		// honoured (no-op PATCH is valid).
+		req, coded := httputil.BindJSONOptional[updateAccountRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 		if req.DisplayName != nil {
 			trimmed := strings.TrimSpace(*req.DisplayName)

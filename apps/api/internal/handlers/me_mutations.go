@@ -18,6 +18,7 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/clients/asynqpub"
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/httputil"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
@@ -36,19 +37,24 @@ var quietHoursPattern = regexp.MustCompile(`^[0-2][0-9]:[0-5][0-9]$`)
 // UpdateMe partially updates the authenticated user's profile
 // (display_currency + locale per openapi UserUpdateRequest). Uses
 // the existing UpdateUserProfile sqlc query with narg passthroughs.
+// updateMeRequest is the openapi UserUpdateRequest shape. Both
+// fields are pointer/nullable so PATCH semantics distinguish
+// "omitted" (keep current) from "cleared" — though display_currency
+// should never be cleared, validation below rejects empty strings.
+type updateMeRequest struct {
+	DisplayCurrency *string `json:"display_currency"`
+	Locale          *string `json:"locale"`
+}
+
 func UpdateMe(deps *app.Deps) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		reqID := requestIDFromLocals(c)
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		var req struct {
-			DisplayCurrency *string `json:"display_currency"`
-			Locale          *string `json:"locale"`
-		}
-		if err := json.Unmarshal(c.Body(), &req); err != nil {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
+		req, coded := httputil.BindJSONOptional[updateMeRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 
 		if req.DisplayCurrency != nil {

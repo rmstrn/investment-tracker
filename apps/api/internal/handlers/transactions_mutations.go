@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -17,6 +16,7 @@ import (
 	dbgen "github.com/rmstrn/investment-tracker/apps/api/internal/db/generated"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/transactions"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/handlers/httputil"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
@@ -30,27 +30,32 @@ import (
 //
 // source is hardcoded to 'manual' — POSTs from clients never stand
 // in for API-synced rows (the sync worker writes those directly).
+// createTransactionRequest mirrors the openapi TransactionCreate-
+// Request shape. Validator tags carry the shape contract (required +
+// enum lists); the handler body handles domain parsing (UUID,
+// decimal, RFC3339 timestamp) that struct tags can't express.
+type createTransactionRequest struct {
+	AccountID       string           `json:"account_id"       validate:"required"`
+	Symbol          string           `json:"symbol"           validate:"required"`
+	AssetType       string           `json:"asset_type"       validate:"required,oneof=stock etf crypto"`
+	TransactionType string           `json:"transaction_type" validate:"required,oneof=buy sell dividend split transfer_in transfer_out fee"`
+	Quantity        decimal.Decimal  `json:"quantity"`
+	Price           *decimal.Decimal `json:"price"`
+	Currency        string           `json:"currency"         validate:"required"`
+	Fee             *decimal.Decimal `json:"fee"`
+	ExecutedAt      string           `json:"executed_at"      validate:"required"`
+	Notes           *string          `json:"notes"`
+}
+
 func CreateTransaction(deps *app.Deps) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		reqID := requestIDFromLocals(c)
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		var req struct {
-			AccountID       string           `json:"account_id"`
-			Symbol          string           `json:"symbol"`
-			AssetType       string           `json:"asset_type"`
-			TransactionType string           `json:"transaction_type"`
-			Quantity        decimal.Decimal  `json:"quantity"`
-			Price           *decimal.Decimal `json:"price"`
-			Currency        string           `json:"currency"`
-			Fee             *decimal.Decimal `json:"fee"`
-			ExecutedAt      string           `json:"executed_at"`
-			Notes           *string          `json:"notes"`
-		}
-		if err := json.Unmarshal(c.Body(), &req); err != nil {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
+		req, coded := httputil.BindAndValidate[createTransactionRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 
 		accountID, perr := uuid.Parse(strings.TrimSpace(req.AccountID))
@@ -62,18 +67,6 @@ func CreateTransaction(deps *app.Deps) fiber.Handler {
 		if sym == "" {
 			return errs.Respond(c, reqID,
 				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "symbol is required"))
-		}
-		if _, ok := validAssetTypes[req.AssetType]; !ok {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "asset_type must be one of stock, etf, crypto"))
-		}
-		if _, ok := validTransactionTypes[req.TransactionType]; !ok {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "transaction_type must be one of buy, sell, dividend, split, transfer_in, transfer_out, fee"))
-		}
-		if req.Currency == "" {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "currency is required"))
 		}
 		executedAt, tErr := time.Parse(time.RFC3339, req.ExecutedAt)
 		if tErr != nil {
@@ -138,6 +131,17 @@ func CreateTransaction(deps *app.Deps) fiber.Handler {
 
 // ---------- PATCH /transactions/{id} ----------
 
+// updateTransactionRequest is the openapi TransactionUpdateRequest
+// shape. Every field is optional (manual-row edits only; typical
+// call patches just one or two fields), handled via BindJSONOptional.
+type updateTransactionRequest struct {
+	Quantity   *decimal.Decimal `json:"quantity"`
+	Price      *decimal.Decimal `json:"price"`
+	Fee        *decimal.Decimal `json:"fee"`
+	ExecutedAt *string          `json:"executed_at"`
+	Notes      *string          `json:"notes"`
+}
+
 // UpdateTransaction edits a manual transaction. Non-manual rows are
 // immutable (§15.5) — the handler pre-checks source and returns 403
 // so clients get a clear signal instead of a silent no-op.
@@ -168,16 +172,9 @@ func UpdateTransaction(deps *app.Deps) fiber.Handler {
 					"only manual transactions can be edited"))
 		}
 
-		var req struct {
-			Quantity   *decimal.Decimal `json:"quantity"`
-			Price      *decimal.Decimal `json:"price"`
-			Fee        *decimal.Decimal `json:"fee"`
-			ExecutedAt *string          `json:"executed_at"`
-			Notes      *string          `json:"notes"`
-		}
-		if err := json.Unmarshal(c.Body(), &req); err != nil {
-			return errs.Respond(c, reqID,
-				errs.New(http.StatusBadRequest, "VALIDATION_ERROR", "invalid JSON body"))
+		req, coded := httputil.BindJSONOptional[updateTransactionRequest](c)
+		if coded != nil {
+			return errs.Respond(c, reqID, coded)
 		}
 
 		var executedAt pgtype.Timestamptz
