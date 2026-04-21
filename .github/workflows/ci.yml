@@ -220,6 +220,48 @@ jobs:
         # this step. Sprint C 3a; no deps, stdlib only.
         run: python tools/scripts/check-header-symmetry.py
 
+  contract-k6-spec-sync:
+    name: Contract — k6 smoke ↔ OpenAPI schema sync
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pnpm deps (tools/openapi + redocly)
+        run: pnpm install --frozen-lockfile
+
+      - name: Bundle openapi.yaml → openapi.bundled.json
+        # The validator reads JSON, not YAML — stdlib-only on the
+        # Python side. pnpm bundle expands internal $ref to a
+        # single file in tools/openapi/generated/openapi.bundled.json.
+        run: pnpm --dir tools/openapi bundle
+
+      - name: Validate tools/k6/smoke/*.js ↔ spec
+        # TD-R076 — catches the exact drift class that bit
+        # TD-R075 (4 k6 scripts referencing response fields that
+        # had been renamed in a schema tighten). Fails the PR if
+        # any body.X key in a smoke script is absent from the
+        # corresponding 2xx response schema.
+        run: python tools/scripts/check-k6-contract.py
+
+      - name: Unit-test the validator itself
+        # Green + drift cases for the validator's own regex +
+        # schema walk. Stdlib unittest — no pytest needed.
+        run: python tools/scripts/check_k6_contract_test.py
+
   # ------------------------------------------------------------
   # Security
   # ------------------------------------------------------------
