@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"bufio"
 	"net/http"
 
 	"github.com/gofiber/fiber/v3"
@@ -19,15 +18,14 @@ import (
 // assistant message, ai_usage ledger row, conversation touch — in a
 // single DB transaction on a detached background context.
 //
-// The handler finishes writing the SSE stream to the client inside
-// SendStreamWriter; the persist step runs in a goroutine so a client
-// disconnect after the upstream already spent tokens does not roll
-// back the billing insert (AC #9, per DECISIONS 2026-04-20 + R3 in
-// the B3-ii-b risk list).
-//
 // Pre-stream errors (ownership 404, upstream 401/403/5xx) produce a
 // JSON error envelope — we only commit to text/event-stream once the
 // upstream response is 2xx and flowing.
+//
+// Streaming work after the upstream is in hand delegates to
+// RunStreamingProxy (streaming_proxy.go) — that helper owns the
+// TD-R091 async-callback invariants, so the handler body here is
+// the "pre-flight validation + happy path kickoff" only.
 func AIChatStream(deps *app.Deps) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		reqID := requestIDFromLocals(c)
@@ -59,57 +57,30 @@ func AIChatStream(deps *app.Deps) fiber.Handler {
 			return errs.Respond(c, reqID, mapUpstreamStreamErr(err, &deps.Log, reqID))
 		}
 
-		// Commit to SSE response only after we have a 2xx upstream.
-		c.Set(fiber.HeaderContentType, "text/event-stream")
-		c.Set(fiber.HeaderCacheControl, "no-cache")
-		c.Set("Connection", "keep-alive")
-		c.Set("X-Accel-Buffering", "no")
-		c.Status(http.StatusOK)
-
 		userBlocks := req.Message.Content
 
-		// NOTE: Fiber v3's c.SendStreamWriter is async — it hands the
-		// callback to fasthttp which runs it *after* this handler
-		// returns (see TD-091). So we can't read the sseproxy Result
-		// back out of the callback scope and branch on it in the
-		// outer function — by the time the outer function runs, the
-		// callback hasn't executed yet. Persist + error-log decisions
-		// must happen *inside* the callback, at the one moment when
-		// `res` is actually populated.
-		streamErr := c.SendStreamWriter(func(w *bufio.Writer) {
-			res, runErr := sseproxy.Run(ctx, sseproxy.StreamOpts{
-				Upstream:       upstream.Body,
-				Writer:         w,
-				Flush:          w.Flush,
-				ConversationID: req.ConversationID,
-				RequestID:      reqID,
-				Logger:         &deps.Log,
-			})
-			if runErr != nil {
-				deps.Log.Warn().Err(runErr).
-					Str("request_id", reqID).
-					Str("conversation_id", req.ConversationID.String()).
-					Bool("got_message_stop", res != nil && res.GotMessageStop).
-					Msg("ai chat stream: proxy run ended with error")
-			}
-
-			// Persist iff the upstream delivered a message_stop (AC #3
-			// revised: insert regardless of stop_reason as long as
-			// message_stop arrived). A mid-stream drop yields
-			// GotMessageStop=false + log + skip.
-			if res != nil && res.GotMessageStop {
+		RunStreamingProxy(c, upstream.Body, StreamingProxyConfig{
+			Log:            &deps.Log,
+			RequestID:      reqID,
+			ConversationID: req.ConversationID,
+			OnSuccess: func(res *sseproxy.Result) {
+				// Detached-context persist — a client disconnect
+				// after the upstream already spent tokens must not
+				// roll back the billing insert (AC #9). Runs in a
+				// fresh goroutine; see persistTurnBackground.
 				persistTurnBackground(&deps.Log, deps.Pool, user.ID, req.ConversationID, userBlocks, res)
-			} else {
+			},
+			OnDropped: func() {
+				// Stream closed without message_stop → upstream cut
+				// or parser error. Log + no persist; the user saw
+				// partial text but the assistant turn is considered
+				// "never completed" for billing + history purposes.
 				deps.Log.Error().
 					Str("request_id", reqID).
 					Str("conversation_id", req.ConversationID.String()).
 					Msg("ai chat stream: message_stop not received — skipping persist; assistant turn dropped")
-			}
+			},
 		})
-		if streamErr != nil {
-			deps.Log.Warn().Err(streamErr).Str("request_id", reqID).
-				Msg("ai chat stream: SendStreamWriter error")
-		}
 		return nil
 	}
 }
