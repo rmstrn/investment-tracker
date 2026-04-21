@@ -25,6 +25,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+
+	"github.com/rmstrn/investment-tracker/apps/api/internal/httpheader"
 )
 
 // ErrUpstreamAuth indicates a 401/403 response from the AI Service.
@@ -203,13 +205,15 @@ func (c *Client) GenerateInsights(ctx context.Context, userID uuid.UUID, request
 }
 
 // stampHeaders sets the three internal-auth headers every outbound
-// call carries. Extracted so future per-method wrappers (Chat,
-// ChatStream in B3-ii-b) re-use one canonical implementation.
+// call carries. Header names come from the shared httpheader
+// package so Go + Python agree on casing ("X-Request-ID" — Sprint
+// C 3a canonicalized the previous "X-Request-Id" Title-case drift
+// on this exact call site).
 func (c *Client) stampHeaders(req *http.Request, userID uuid.UUID, requestID string) {
-	req.Header.Set("Authorization", "Bearer "+c.token)
-	req.Header.Set("X-User-Id", userID.String())
+	req.Header.Set(httpheader.Authorization, "Bearer "+c.token)
+	req.Header.Set(httpheader.UserID, userID.String())
 	if requestID != "" {
-		req.Header.Set("X-Request-Id", requestID)
+		req.Header.Set(httpheader.RequestID, requestID)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")

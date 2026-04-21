@@ -152,6 +152,26 @@ jobs:
         run: uv run pytest
 
   # ------------------------------------------------------------
+  # Cross-service contract checks
+  # ------------------------------------------------------------
+  contract-header-symmetry:
+    name: Contract — shared HTTP header symmetry
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      - name: Check Go ↔ Python shared header constants
+        # Parses apps/api/internal/httpheader/httpheader.go and
+        # apps/ai/src/ai_service/http_headers.py and asserts the
+        # cross-service subset (UserID, RequestID, Authorization)
+        # has identical string values on both sides. Edits to one
+        # file without the matching edit on the other side fail
+        # this step. Sprint C 3a; no deps, stdlib only.
+        run: python tools/scripts/check-header-symmetry.py
+
+  # ------------------------------------------------------------
   # Security
   # ------------------------------------------------------------
   security-secrets:

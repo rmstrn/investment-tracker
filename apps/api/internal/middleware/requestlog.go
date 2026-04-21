@@ -8,11 +8,14 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/httpheader"
 )
 
-// requestIDHeader is the canonical header for propagating a request id
-// in and out. Matches conventional gateway / proxy naming.
-const requestIDHeader = "X-Request-ID"
+// requestIDHeader aliases the cross-service header constant from
+// package httpheader. Python's AI Service reads + echoes the same
+// canonical spelling ("X-Request-ID") so trace-id propagates
+// across both services without casing translation.
+const requestIDHeader = httpheader.RequestID
 
 // RequestID returns a middleware that attaches a request id to the
 // context (c.Locals(LocalsRequestID)) and echoes it as a response

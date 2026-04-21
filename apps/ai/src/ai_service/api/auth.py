@@ -6,6 +6,12 @@ Core API after it has validated the end-user's Clerk JWT:
 - ``Authorization: Bearer {INTERNAL_API_TOKEN}`` — proves the caller is Core API.
 - ``X-User-Id: {uuid}`` — identifies the end-user on whose behalf the call is made.
 
+The header names are pinned in ``ai_service.http_headers``. FastAPI's
+``Header(alias=...)`` requires a literal string so we assert at import
+time that the alias matches the shared constant; the
+``tools/scripts/check-header-symmetry.py`` CI step is the
+authoritative cross-language drift guard.
+
 The AI service never faces the public internet, but we still compare tokens
 with ``secrets.compare_digest`` to stop leaking length via timing.
 """
@@ -19,6 +25,20 @@ from uuid import UUID
 from fastapi import Depends, Header, HTTPException, status
 
 from ai_service.config import Settings, get_settings
+from ai_service.http_headers import AUTHORIZATION as _AUTHORIZATION_HEADER
+from ai_service.http_headers import USER_ID as _USER_ID_HEADER
+
+# FastAPI Header(alias=...) must be a literal string (validated at
+# decorator time, not runtime). Assert the literal stays wired to
+# the shared constants so a rename in ``ai_service.http_headers``
+# without a matching edit here fails at import time rather than at
+# first request.
+assert _USER_ID_HEADER == "X-User-Id", (
+    "ai_service.http_headers.UserID drifted; update Header alias below"
+)
+assert _AUTHORIZATION_HEADER == "Authorization", (
+    "ai_service.http_headers.Authorization drifted; update Header alias below"
+)
 
 
 def _verify_bearer(

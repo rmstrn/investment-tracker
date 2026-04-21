@@ -17,6 +17,7 @@ import (
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/httpheader"
 )
 
 // Locals keys. Using typed string aliases rather than bare strings so
@@ -38,11 +39,12 @@ const (
 	AuthModeInternal = "internal"
 )
 
-// internalUserIDHeader identifies the end-user when the caller is
-// authenticating via the internal shared-secret bearer. Canonical spelling
-// follows Fiber's ByteBufferPool-backed header store, which normalises
-// case to "X-User-Id".
-const internalUserIDHeader = "X-User-Id"
+// internalUserIDHeader aliases the cross-service header constant
+// defined in package httpheader. Kept as a local name so existing
+// call sites in this file (and tests that reach into them) keep
+// reading with no rename churn; the canonical value now lives in
+// one place across Go + Python.
+const internalUserIDHeader = httpheader.UserID
 
 // ClerkClaims is the subset of Clerk's ID-token claims we rely on. Clerk's
 // JWT template can be configured to include additional fields; we only

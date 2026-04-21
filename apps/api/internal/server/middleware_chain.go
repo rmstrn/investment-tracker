@@ -36,6 +36,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/cors"
 
 	"github.com/rmstrn/investment-tracker/apps/api/internal/app"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/httpheader"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/middleware"
 )
 
@@ -103,15 +104,15 @@ func buildCORS(deps *app.Deps) fiber.Handler {
 		},
 		AllowHeaders: []string{
 			fiber.HeaderAuthorization, fiber.HeaderContentType,
-			"X-User-Id", "Idempotency-Key", "X-Request-ID",
+			httpheader.UserID, httpheader.IdempotencyKey, httpheader.RequestID,
 		},
 		ExposeHeaders: []string{
-			"X-Request-ID",
-			"X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset",
-			"X-Async-Unavailable",
-			"X-Partial-Portfolio", "X-FX-Unavailable", "X-Clerk-Unavailable",
-			"X-Search-Provider", "X-Benchmark-Unavailable", "X-Analytics-Partial",
-			"X-Withholding-Unavailable", "X-Tax-Advisory", "X-Export-Pending",
+			httpheader.RequestID,
+			httpheader.RateLimitLimit, httpheader.RateLimitRemaining, httpheader.RateLimitReset,
+			httpheader.AsyncUnavailable,
+			httpheader.PartialPortfolio, httpheader.FXUnavailable, httpheader.ClerkUnavailable,
+			httpheader.SearchProvider, httpheader.BenchmarkUnavailable, httpheader.AnalyticsPartial,
+			httpheader.WithholdingUnavailable, httpheader.TaxAdvisory, httpheader.ExportPending,
 		},
 		AllowCredentials: true,
 		MaxAge:           int((24 * time.Hour).Seconds()),

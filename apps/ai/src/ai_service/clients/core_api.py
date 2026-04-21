@@ -20,6 +20,8 @@ import httpx
 import structlog
 
 from ai_service.config import Settings
+from ai_service.http_headers import AUTHORIZATION as _AUTHORIZATION_HEADER
+from ai_service.http_headers import USER_ID as _USER_ID_HEADER
 
 log = structlog.get_logger(__name__)
 
@@ -52,8 +54,8 @@ class CoreAPIClient:
 
     def _headers(self, user_id: UUID) -> dict[str, str]:
         return {
-            "Authorization": f"Bearer {self._token}",
-            "X-User-Id": str(user_id),
+            _AUTHORIZATION_HEADER: f"Bearer {self._token}",
+            _USER_ID_HEADER: str(user_id),
             "Accept": "application/json",
         }
 

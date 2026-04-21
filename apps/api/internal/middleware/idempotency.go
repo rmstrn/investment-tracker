@@ -13,10 +13,12 @@ import (
 	"github.com/rmstrn/investment-tracker/apps/api/internal/cache"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/domain/users"
 	"github.com/rmstrn/investment-tracker/apps/api/internal/errs"
+	"github.com/rmstrn/investment-tracker/apps/api/internal/httpheader"
 )
 
-// idempotencyHeader is the canonical name clients send per openapi.yaml.
-const idempotencyHeader = "Idempotency-Key"
+// idempotencyHeader aliases the cross-service header constant —
+// Idempotency-Key is the canonical name openapi.yaml declares.
+const idempotencyHeader = httpheader.IdempotencyKey
 
 // lockTTL bounds the request-collapsing SETNX window. A real handler
 // that takes longer than this shouldn't be idempotency-locked anyway;
