@@ -109,13 +109,14 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 1. CC анонсирует pre-flight audit на слайс.
 2. CC присылает GAP REPORT: scope, CI status (ожидаем 8/8 green), LOC count, closed/opened TDs, scope-adjacent changes, контракт подтверждён.
 3. Я (PO-Claude) оцениваю: есть ли риск? что докинуть? дать ли отмашку?
-4. Ruslan мержит (squash-only политика; admin-bypass только по TD-006).
-5. PO-Claude делает post-merge docs pass: merge-log + TECH_DEBT + TASK файл + README.
-6. Ruslan ack'ит → CC стартует следующий PR.
+4. **BEFORE `gh pr merge`: run `gh pr checks <N> --watch` until it returns all-green (TD-R078).** Если какой-то check red — stop, диагностировать, hotfix flow (см. PR #55 как reference). Admin-bypass в этой точке означает: `gh pr merge --admin` ТОЛЬКО с inline-комментом в PR body объясняющим почему CI-outage / P1 hotfix оправдывает bypass (см. DECISIONS.md § CORS incident для прецедента). Любой другой admin-bypass — violation cycle-discipline.
+5. Ruslan мержит (squash-only политика; admin-bypass только по TD-006 + шагу 4 выше).
+6. PO-Claude делает post-merge docs pass: merge-log + TECH_DEBT + TASK файл + README.
+7. Ruslan ack'ит → CC стартует следующий PR.
 
 **Squash-only policy.** История на main — только squash-коммиты. Rebase-merge и merge-commits запрещены.
 
-**Admin-bypass policy (TD-006):** только при CI-outage или hotfix после P1 incident declaration. Логируется в `merge-log.md` с причиной.
+**Admin-bypass policy (TD-006 + TD-R078):** только при CI-outage или hotfix после P1 incident declaration. `--admin` flag + inline PR comment с rationale — не молчаливое решение. Логируется в `merge-log.md`. PR #54 (CORS slice) — прецедент: CC + PO в разных сессиях одновременно одобрили merge с red CI; TD-R078 policy update с `--watch` step существует чтобы это больше не повторилось.
 
 **State hygiene:** каждая новая сессия **ВЕРИФИЦИРУЕТ через Read** что файл реально на диске, прежде чем подтверждать обновление. Прецедент был: предыдущая сессия «обновила» 10+ файлов, но большинство не сохранилось — пришлось восстанавливать.
 
@@ -516,6 +517,18 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
 - Верифицируй через Read перед confirm (state loss уже был)
 - LOC не трекаем как scope metric
 
-Начни с того, что прочитал PO_HANDOFF.md и скажи готов.
+**Cross-session invariants (TD-R054 — CC memory ephemeral):**
+- Также прочти `docs/DECISIONS.md` на старте — там cross-session
+  architectural invariants которые новая CC сессия НЕ увидит через
+  local memory (`.claude/projects/...` вне репо). Любой non-trivial
+  invariant который ты выводишь в этой сессии (policy, API contract,
+  schema constraint, service-boundary rule) → зеркалится в
+  DECISIONS.md **до** завершения сессии, иначе следующая CC его не
+  найдёт и будет переизобретать.
+- Rule of thumb: если ответ на "почему мы делаем так а не иначе"
+  потребует read-through текущего кода — это invariant, пиши в
+  DECISIONS.md.
+
+Начни с того, что прочитал PO_HANDOFF.md + DECISIONS.md и скажи готов.
 Потом ждём GAP REPORT от CC или мои новые вводные.
 ```
