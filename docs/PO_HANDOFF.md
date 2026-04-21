@@ -276,6 +276,9 @@ Core API эмитит header когда фича частично недосту
 6. **Kickoff/runbook НЕ на `origin/main` до `git worktree add`** (CC блокируется). Два прецедента 2026-04-21 — Slice 4a kickoff + Slice 7ab kickoff + AI runbook. Фикс закреплён в § 3.1 (MANDATORY checklist). Assistant пишет через Write, PO коммитит+пушит в PowerShell, **только потом** `git worktree add`.
 7. **`.git/index.lock` drift в sandbox.** PO-Claude в Cowork mode работает в Linux sandbox, mapped на `D:\investment-tracker`. Windows mount + race при `git add` → lock-файл создаётся, но sandbox не может удалить (permission issue). Третий раз попадаемся. Фикс (PO, PowerShell): `Remove-Item .git\index.lock`. Закреплено в § 3.1 шаг 1.
 8. **Assistant commit из sandbox = запрещено.** Следствие gotcha #7. Assistant пишет файлы через Write/Edit; финальный `git commit` + `git push` делает PO в PowerShell. Если assistant пытается `git add` из `mcp__workspace__bash` — это bug в процессе, не «просто ошибка».
+9. **CC stuck on post-merge docs pass — needs path A pre-approval.** Pattern (Slice 4a + Slice 7a+7b, 2026-04-21): после `gh pr merge --squash --delete-branch` CC's worktree оказывается в неопределённом состоянии (`git checkout main` падает потому что main worktree D:\investment-tracker уже занят), CC stops asking permission for "scope escalation" (detached HEAD docs flow / remote branch delete). Оба слайса подряд — несколько round-trips к PO. Фикс: post-merge actions list ВКЛЮЧЕНЫ в kickoff approval (см. § 10 codified flow); assistant даёт CC explicit go на весь chain в одном сообщении.
+10. **Cross-session contamination в main worktree.** Когда CC пытается сделать docs pass IN main worktree `D:\investment-tracker` (вместо detached HEAD в собственном worktree), он оставляет staged/unstaged изменения которые блокируют параллельный CC. Прецедент 2026-04-21: Slice 7a+7b CC #2 docs остался staged-but-uncommitted в main worktree, заблокировал Slice 4a CC #1's docs flow до ручного PO unblock. Фикс — § 11: CC docs commits ВСЕГДА из собственного worktree в detached HEAD на `origin/main`; main worktree `D:\investment-tracker` = PO-only territory.
+11. **Plan mode keyboard gate adds round-trips.** CC в plan mode (`Ready to code? ❯ 1. Yes, auto mode`) — это keyboard selector, не текстовый промпт. PO's text approval не продвигает gate, CC re-shows план → loop. Прецедент 2026-04-21: 4 round-trips на тот же план Slice 7a+7b. Фикс: launch CC через `claude --dangerously-skip-permissions --permission-mode acceptEdits` (skips plan gate) ИЛИ PO жмёт `1` сразу + execution notes отправляет отдельным сообщением after start. Codified в § 11.
 
 ---
 
@@ -393,16 +396,38 @@ worktrees (`b3iii`, `task07-s1..3`, `pr-c`, `api-cors`) — CC удаляет
 
 ---
 
-## 10. CC kickoff template (CC owns merge+cleanup post-approval)
+## 10. CC kickoff template (CC owns merge+cleanup+docs post-approval)
 
 См. `CC_KICKOFF_api_cors.md § Deliverables` — это reference template.
-Ключевая директива (CC self-merge after PO approval, не PO жмёт кнопки
-в GitHub): после approval CC выполняет `gh pr merge <N> --squash
---delete-branch` → `git pull origin main` в main worktree → `git
-worktree remove` своего worktree → `git branch -D` локальной ветки →
-обновляет `merge-log.md` + `PO_HANDOFF.md` + `DECISIONS.md` (если
-ADR уместен) + commit/push docs-only directly to main → финальный ping
-PO «merged + cleaned + docs done, main tip now `<SHA>`».
+**Codified post-merge flow** (after PO approval = green light на весь
+chain, CC НЕ переспрашивает на каждом шаге; gotchas #9, #10):
+
+1. `gh pr merge <N> --squash --delete-branch` — squash на main, remote
+   feature branch удаляется автоматически.
+2. `git fetch origin && git checkout origin/main` — **detached HEAD в
+   СВОЁМ worktree** (`D:\investment-tracker-<feature>`). НЕ трогать
+   main worktree `D:\investment-tracker` — PO-only territory
+   (gotcha #10, § 11).
+3. Edit docs append-only / expand placeholder rows: `merge-log.md`
+   (канонический), `PO_HANDOFF.md` (§ 1 status + § 2 PR row),
+   `UI_BACKLOG.md` (slice ✅ + critical-path update), `03_ROADMAP.md`
+   (wave status), `TECH_DEBT.md` (TD add/close), `DECISIONS.md`
+   (ADR если уместно), `TASK_<NN>_*.md` (status row).
+4. `git add docs/ && git commit -m "docs: <slice> post-merge pass" &&
+   git push origin HEAD:main`.
+5. Non-fast-forward → `git pull --rebase origin main`, append-only
+   conflict resolve (оба ADR / оба TD сохраняются — никогда drop),
+   `git push origin HEAD:main`. **Никогда force-push.**
+6. Cleanup: `cd D:\investment-tracker && git worktree remove
+   D:\investment-tracker-<feature> && git branch -D
+   feature/<name>`. Если remote branch остался из-за race:
+   `gh api -X DELETE repos/<owner>/<repo>/git/refs/heads/feature/<name>`.
+7. Ping PO: «merged + cleaned + docs done, main tip now `<SHA>`».
+
+**Pre-approved actions** (CC не просит добро отдельно): detached HEAD
+docs workflow, remote branch force-delete если `--delete-branch` не
+отработал, rebase+append conflict resolve. Всё что НЕ в этом списке —
+CC останавливается и спрашивает.
 
 PO в GitHub UI не заходит — squash-only, никаких manual rebase'ей.
 
@@ -422,9 +447,12 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
 - **LOC не трекаем** как scope metric — только по признакам завершённости (acceptance criteria + CI green).
 - **TodoList** использовать активно для многошаговой работы.
 - **Всегда верифицировать через Read** перед confirm обновления — state loss уже был.
-- **CC запускается через `claude --dangerously-skip-permissions`** в worktree — флаг обязателен.
+- **CC запускается через `claude --dangerously-skip-permissions --permission-mode acceptEdits`** в worktree — оба флага обязательны. `acceptEdits` пропускает plan-mode keyboard gate (gotcha #11); без него CC re-shows план после text-approval → 3-4 round-trips на один и тот же план.
 - **Assistant НЕ коммитит из sandbox** (gotcha #7-8, § 3.1). Assistant пишет файлы через Write/Edit; финальный `git commit` + `git push` ВСЕГДА делает PO в PowerShell. Никаких `git add` / `git commit` через `mcp__workspace__bash` — это ломается на Windows mount + index.lock.
 - **Перед каждым `git worktree add` — § 3.1 pre-CC checklist** (три шага, MANDATORY). Игнорировали дважды — оба раза CC заблокировался на pre-flight.
+- **CC docs pass — ВСЕГДА в собственном worktree** (detached HEAD на `origin/main`). Main worktree `D:\investment-tracker` = PO-only territory; любой CC touch там оставляет staged changes которые блокируют параллельный CC (gotcha #10). Codified flow — § 10.
+- **Post-merge actions pre-approved всем слайсом** (gotcha #9). Kickoff approval = зелёный свет на весь chain: merge → detached HEAD docs → push+rebase → cleanup → ping. CC не переспрашивает на каждом шаге. Если CC выходит за pre-approved list (§ 10) — тогда стоп + вопрос.
+- **TD ID reservation при параллельных CC**: PO выдаёт явный TD-<NN> каждому CC в kickoff (`TD-079 — CC #1, TD-080 — CC #2`). Два CC подряд брали один и тот же ID → rebase conflict на `TECH_DEBT.md`.
 
 ---
 
