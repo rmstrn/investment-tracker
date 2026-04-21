@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-21 (PO-Claude lessons-learned codification on top of CC #1's Slice 4a docs pass `ece1b49` (which was on top of CC #2's Slice 7a+7b docs `87a0706`). This docs commit adds: gotchas #9-11 в § 8 (CC stuck post-merge / cross-session contamination в main worktree / plan-mode keyboard gate), § 10 rewrite (codified 7-step post-merge flow с pre-approved actions list), § 11 additions (CC docs pass только в собственном worktree + `--permission-mode acceptEdits` flag + TD ID reservation), and new `CC_KICKOFF_task07_slice5a.md` (Transactions UI Add/Edit/Delete, TD-081 reserved). Main tip = this docs commit. Slice 4a shipped `(app)/accounts` route (manual flow only; broker OAuth 4b/4c still blocked on TD-046), opened TD-079 (P3, FK CASCADE vs handler soft-delete mismatch). `/accounts` на `staging.investment-tracker.app` готов к manual smoke. Prior context: CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`; ALLOWED_ORIGINS добавлен в Doppler stg, fly staging передеплоен; web ↔ API cross-origin flow работает. Остаётся P1 critical path: Slice 5a (Transactions UI) + Slice 6a (Insights, unblocked after TD-070) + Slice 12 (Empty/Error states).)
+**Last updated:** 2026-04-21 (Slice 5a post-merge docs pass from CC: PR #60 `5e556a9` merged — Transactions UI add/edit/delete для `buy/sell/dividend` на Position Detail. Single `TransactionFormDialog` + row-level kebab gated на `source === 'manual'`. 64/64 Vitest, 10/10 CI green, no admin-bypass. TD-081 reservation не использован (genuine debt не обнаружен) — ID остаётся свободным. 2 новых ADR в DECISIONS.md. `/positions/[id]` на `staging.investment-tracker.app` готов к manual CRUD smoke. Critical path до alpha сокращается: остаются **Slice 6a (Insights read-only, ждёт TD-070)** + **Slice 12 (Empty/Error states)**. Prior main tip `37b2d6c` (PO-Claude lessons-learned codification + slice-5a kickoff); before that — Slice 4a `c5590f5` (PR #59) и Slice 7a+7b `528333b` (PR #58). CORS end-to-end live с PR #54/#55; Doppler stg + fly staging настроены; web ↔ API cross-origin flow работает.)
 
 ---
 
@@ -30,15 +30,16 @@ TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 - **TASK_05 AI Service (Python):** ✅ PR #34 merged + ✅ cleanup PR #43 `b6108a4` (`record_ai_usage` dual-write удалён — Core API single-writer per PR #44). 404-swallow → strict flip ждёт prod soak (см. `RUNBOOK_ai_flip.md`). **⚠ Staging deploy не сделан** — TD-070 blocker для Slice 6 Insights UI.
 
 ### Волна 3 — 🟢 в работе
-- **TASK_07 (Web Frontend):** Slice 1 + 2 + 3 + 7a + 7b + 4a merged — Auth + Dashboard + Positions + AI Chat + Landing + Pricing + Manual Accounts CRUD работают на `staging.investment-tracker.app`.
+- **TASK_07 (Web Frontend):** Slice 1 + 2 + 3 + 7a + 7b + 4a + 5a merged — Auth + Dashboard + Positions + AI Chat + Landing + Pricing + Manual Accounts CRUD + Transactions CRUD работают на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.**
   - Slice 1 (PR #45 `a622bd3`) — Clerk auth + `(app)/dashboard` + `PortfolioValueCardLive` + `usePortfolio` + 1 Vitest.
   - Slice 2 (PR #48 `366d12f`) — Positions list + detail read-only, toolbar, Recharts price chart через `@investment-tracker/ui/charts` subpath, 4 hooks + 3 Vitest.
   - Slice 3 (PR #50 `4881dfd`) — AI Chat UI: `(app)/chat` + `(app)/chat/[id]`, SSE client over fetch+ReadableStream, chat reducer state machine, 6 TanStack hooks, 9 UI components, tier-limit toast, `UsageIndicator` через `onRateLimitHeaders` middleware. TD-068 opened (P3 schema drift).
   - PR #53 (root-redirect) merged 2026-04-21 — `/` на `(app)/dashboard` для signed-in юзеров.
   - Slice 7a+7b (PR #58 `528333b`) — Landing + `/pricing` (Free/Plus/Pro) + `(marketing)/` route group; subscribe CTAs stubbed (Stripe → Slice 7c). TD-080 opened (paywall trigger wiring deferred).
   - Slice 4a (PR #59 `c5590f5`) — Manual Accounts CRUD — `(app)/accounts` route + Add/Rename/Delete для `connection_type=manual`, sidebar activation, 4 TanStack hooks, `SyncStatusBadge` 'manual' variant. TD-079 opened (P3 FK CASCADE vs handler soft-delete mismatch, defense-in-depth).
-  - **Slice 4+ — см. `UI_BACKLOG.md`** (canonical backlog для всей оставшейся UI-работы: Transactions UI, Insights feed, 4b/4c broker flows, Settings, Scope-cut banners, FloatingAiFab, Empty states, PWA, SEO, Observability). Остаётся critical path: Slice 5a → 6a → Slice 12.
-- **TASK_06 (Broker Integrations):** ⏳ Slice 4a (manual accounts) merged — alpha-ready flow разблокирован. SnapTrade/Binance/Coinbase providers — TD-046.
+  - Slice 5a (PR #60 `5e556a9`) — Transactions UI — `buy/sell/dividend` add/edit/delete на Position Detail. Single `TransactionFormDialog` с mode create|edit, row-level kebab только для `source === 'manual'`, 3 TanStack mutation hooks, `mapTransactionMutationError` (409 dup / 403 non-manual), 8 Vitest smoke. Split/transfer/fee типы — Slice 5b (disabled с "Coming soon" в type select). TD-081 reservation не использован — ID остаётся свободным.
+  - **Slice 5+ — см. `UI_BACKLOG.md`** (canonical backlog для всей оставшейся UI-работы: Insights feed, 4b/4c broker flows, 5b split/transfer/fee, Settings, Scope-cut banners, FloatingAiFab, Empty states, PWA, SEO, Observability). Остаётся critical path: Slice 6a → Slice 12.
+- **TASK_06 (Broker Integrations):** ⏳ Slice 4a (manual accounts) + Slice 5a (manual transactions) merged — alpha-ready manual flow разблокирован end-to-end. SnapTrade/Binance/Coinbase providers — TD-046.
 
 ### Волна 4 — 🧊 отложено
 TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
@@ -49,7 +50,9 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | this commit (PO-Claude lessons-learned codification: PO_HANDOFF § 8 gotchas #9-11 + § 10 codified 7-step post-merge flow + § 11 CC docs workflow / `--permission-mode acceptEdits` / TD ID reservation + new `CC_KICKOFF_task07_slice5a.md` scaffold). No code changes. | this commit | 2026-04-21 |
+| **main tip** | post-slice-5a docs pass from CC (merge-log PR #60 entry + PO_HANDOFF § 1 / § 2 / Wave 3 status + UI_BACKLOG Slice 5a ✅ + critical-path update + TASK_07 status row + ROADMAP Wave 3 note + TECH_DEBT note про TD-081 reservation unused + DECISIONS.md 2 новых ADR). No code changes. | this commit | 2026-04-21 |
+| #60 | TASK_07 Slice 5a: Transactions UI (add/edit/delete) для `buy/sell/dividend` на Position Detail. Single `TransactionFormDialog` с mode create|edit, diff-only PATCH, row-level kebab gated на `source === 'manual'` (API-sourced rows immutable per OpenAPI contract). 3 TanStack mutation hooks (`useCreateTransaction` / `useUpdateTransaction` / `useDeleteTransaction`) с invalidation `['position-transactions', id]` + `['portfolio']` + `['positions']` + toast. `mapTransactionMutationError` (409 `DUPLICATE_TRANSACTION` / 403 `FORBIDDEN` tailored copy). DateTime picker = `<input type="datetime-local">` (no shadcn Calendar). 8 новых Vitest smoke (64/64 total). TD-081 reservation не использован (genuine debt не обнаружен) — ID остаётся свободным. Docs in-commit (этот commit): 2 DECISIONS ADRs (form-dialog pattern + Idempotency-Key auto-inject rationale). | `5e556a9` | 2026-04-21 |
+| prev main tip | PO-Claude lessons-learned codification: PO_HANDOFF § 8 gotchas #9-11 + § 10 codified 7-step post-merge flow + § 11 CC docs workflow / `--permission-mode acceptEdits` / TD ID reservation + new `CC_KICKOFF_task07_slice5a.md` scaffold. No code changes. | `37b2d6c` | 2026-04-21 |
 | prev main tip | post-slice-4a docs pass from CC #1 (UI_BACKLOG Slice 4a ✅ + critical-path update + TASK_07 status row + Wave 3 updates in PO_HANDOFF / ROADMAP / README). TD-079 + DECISIONS ADRs landed in-PR via #59. | `ece1b49` | 2026-04-21 |
 | prev main tip | post-slice-7ab docs pass from CC #2 (UI_BACKLOG Slice 7a+7b ✅ + ROADMAP Paywall UI [x] + TECH_DEBT TD-080 + DECISIONS ADR + merge-log PR #58 entry). | `87a0706` | 2026-04-21 |
 | #59 | TASK_07 Slice 4a: Manual Accounts CRUD — `(app)/accounts` route + list + Add/Rename/Delete for `connection_type=manual`, sidebar activation, TanStack Query hooks, packages/ui `SyncStatusBadge` 'manual' variant. Broker OAuth (Slice 4b/4c) remains blocked on TD-046. Docs in-PR: **TD-079** (accounts→transactions FK = CASCADE vs soft-delete handler, P3) + 2 DECISIONS ADRs (Accounts soft-delete pattern; AccountConnectCard not reused). | `c5590f5` | 2026-04-21 |
@@ -480,17 +483,18 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
   D:\investment-tracker\docs\DECISIONS.md
 
 Текущий статус в двух словах:
-- main tip = 528333b (#58 Slice 7a+7b) + c5590f5 (#59 Slice 4a)
-  + docs pass (2026-04-21)
+- main tip = 5e556a9 (#60 Slice 5a Transactions UI) + post-merge
+  docs pass (2026-04-21)
 - TASK_04 Core API code-complete + staging deploy live
   (api-staging.investment-tracker.app, CORS allowlist работает)
-- TASK_07 Web Slice 1+2+3+4a+7a+7b merged (auth + dashboard + positions +
-  AI chat + manual accounts + landing/pricing); web на
-  staging.investment-tracker.app
-- Slice 4+ scope — UI_BACKLOG.md (canonical). Критический путь:
-  Slice 4a (manual Accounts CRUD) → 5a (Tx UI) → 6a (Insights) →
-  7a+7b (Landing/Pricing/Paywall) → 12 (Empty/Error states)
-- Backend параллельно: TD-070 (AI Service staging deploy),
+- TASK_07 Web Slice 1+2+3+4a+5a+7a+7b merged (auth + dashboard + positions +
+  AI chat + manual accounts CRUD + transactions CRUD + landing/pricing);
+  manual MVP end-to-end flow замкнут на staging.investment-tracker.app
+- Slice 5b+ scope — UI_BACKLOG.md (canonical). Критический путь до alpha:
+  Slice 6a (Insights read-only, ждёт TD-070) → Slice 12 (Empty/Error states).
+  Остальное (Slice 5b split/transfer/fee, 4b/4c broker flows, Settings,
+  Scope-cut banners, FloatingAiFab, PWA, SEO, Observability) — после alpha.
+- Backend параллельно: TD-070 (AI Service staging deploy — блокер 6a),
   PR D (workers + asynq, TD-066), TASK_06 broker providers (TD-046)
 
 Стиль:

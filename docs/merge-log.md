@@ -15,6 +15,36 @@ Newest entries at the top.
 
 ---
 
+## PR #60 — feat(web): TASK_07 Slice 5a — Transactions UI (add/edit/delete buy/sell/dividend)
+
+**Squash SHA:** `5e556a9`
+**Merged:** 2026-04-21
+**Base:** `37b2d6c` (PO_HANDOFF lessons-learned codification + slice-5a kickoff).
+**Scope:** Manual CRUD для transactions на Position Detail. "Add transaction" CTA в Transactions tab header открывает single `TransactionFormDialog` (mode create|edit) для `buy / sell / dividend`. Row-level kebab menu — Edit / Delete — рендерится только для `source === 'manual'` rows (API-sourced rows immutable per OpenAPI contract). Edit-mode locks fields которые API не accept'ит на PATCH (`account_id` / `transaction_type` / `symbol` / `asset_type` / `currency`) и PATCHes только diff. Split / transfer_in / transfer_out / fee — deferred к Slice 5b; select их показывает с "Coming soon" suffix (disabled options).
+- New web: `apps/web/src/lib/api/transactions.ts` (typed wrappers), `apps/web/src/hooks/{useCreateTransaction,useUpdateTransaction,useDeleteTransaction}.ts` (TanStack Query mutations с `['position-transactions', id]` + `['portfolio']` + `['positions']` invalidation + toast feedback), `apps/web/src/components/positions/{transaction-form-dialog,delete-transaction-confirm}.tsx`.
+- Extended `apps/web/src/lib/api/errors.ts` — `mapTransactionMutationError` (409 `DUPLICATE_TRANSACTION` → "looks like a duplicate", 403 `FORBIDDEN` → "synced from a broker and can't be changed", плюс общие VALIDATION / IDEMPOTENCY / RATE_LIMITED).
+- Extended `position-transactions-tab.tsx` — toolbar CTA, kebab gate, dialog state. Existing split filter + `hiddenSplits` counter + infinite pagination — не тронуты.
+- Минимальный edit `position-detail-live.tsx` — pass locked `{symbol, asset_type, currency}` через новый `position` prop (был только `positionId`).
+- 8 новых Vitest smoke (3 файла): create payload shape + default currency из position + submit blocked на zero qty, edit diff-only PATCH (only changed `quantity` ends up в body), kebab visibility (manual → shown / aggregator → hidden), delete confirm calls mutation с правильным id.
+
+**Form UX decisions:**
+- Datetime picker = `<input type="datetime-local">` wrapped в `Input` styling (no shadcn Calendar). Value в local wall-clock → `toISOString()` at submit для RFC3339 UTC.
+- AlertDialog = reuse `Dialog` primitive (same pattern как `DeleteConfirmDialog` в accounts).
+- 0-accounts edge case: dialog renders warning banner + link на `/accounts`, submit disabled.
+- Account select shows ALL accounts (не фильтруется по `connection_type=manual`) — legitimate use case: юзер с broker account добавляет manual entry для дивиденда который sync пропустил.
+- Account default = newest по `created_at`.
+- `Idempotency-Key` auto-injected middleware'ом `createBrowserApiClient` (новый per submit). Backend fingerprint dedup + `isPending` button-disable = защита от accidental double-tap. Per-dialog fixed-key lifecycle — overkill для MVP; если поймаем network-lost edge case в alpha → open new TD.
+
+**Tests / CI:** 64/64 Vitest (16 test files; +8 tests в 3 новых файлах). Все 10 CI checks green (Node lint+typecheck+build, Node unit, Go, Python, 3× security scanners, Vercel, Trivy, Vercel Preview Comments). `gh pr checks 60 --watch` подтвердил до merge (TD-078 policy). Local gates — `pnpm test / lint / typecheck / build` green в `apps/web`.
+
+**No admin-bypass.** `gh pr merge --squash --delete-branch` с local-worktree error в конце (main checked out в `D:\investment-tracker`); GitHub-side merge прошёл чисто; remote feature branch удалён через `gh api -X DELETE /git/refs/heads/feature/task07-slice5a` (§ 10 pre-approved action).
+
+**TD ledger:** TD-081 был зарезервирован под этот slice, genuine debt не обнаружен — ID остаётся свободным для следующего slice'а.
+
+**Docs pass (this commit):** merge-log PR #60 entry (эта запись), PO_HANDOFF § 1 status + § 2 row + § 12 continuation prompt, UI_BACKLOG Slice 5a ✅ + critical-path update, TASK_07 status row, 03_ROADMAP Wave 3 update, TECH_DEBT note про TD-081 reservation, DECISIONS.md 2 новых ADR (single TransactionFormDialog + datetime-local fallback; Idempotency-Key auto-inject rationale).
+
+---
+
 ## PR #59 — feat(web): TASK_07 Slice 4a — Manual Accounts CRUD
 
 **Squash SHA:** `c5590f5`

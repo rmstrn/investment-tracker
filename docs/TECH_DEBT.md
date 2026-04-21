@@ -14,6 +14,13 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-081 — reserved, unused
+
+**Status:** reserved for TASK_07 Slice 5a (Transactions UI, PR #60), genuine debt не обнаружен во время slice'а — ID остаётся свободным для следующего slice'а, которому понадобится новый TD.
+**Added:** 2026-04-21 (Slice 5a post-merge docs pass).
+**Reason not filled:** pre-flight GAP REPORT обозначил potential edge case с Idempotency-Key lifecycle (network-lost response → new key → duplicate row), но решение с auto-inject + fingerprint dedup + `isPending` button-disable покрыло MVP acceptable — формализация не требовалась. Если edge case поймаем в alpha, откроется новый TD под следующим свободным ID (не TD-081 — этот уже не точка входа).
+**Links:** DECISIONS.md § "Transactions UI: Idempotency-Key auto-inject + fingerprint safety-net (Slice 5a)" — rationale почему fixed-key lifecycle overkill для MVP.
+
 ### TD-080 — Paywall gate wiring: real feature trigger points in `(app)` routes
 
 **Added:** 2026-04-21 (Slice 7a+7b merge — paywall demo trigger на `/dashboard` вырезан из scope, kickoff §3 Step 3).

@@ -10,7 +10,7 @@
 
 TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; staging deploy pending — TD-070).
 
-**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD); web на `staging.investment-tracker.app`. Slice 4b/4c/5/6 scope — см. `UI_BACKLOG.md` (canonical source). TASK_06 broker integrations разблокированы для old alpha путь — manual-only flow готов, OAuth-providers ждут TD-046.
+**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a+5a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD + transactions CRUD для buy/sell/dividend); web на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.** Slice 5b (split/transfer/fee) / 4b/4c / 6 scope — см. `UI_BACKLOG.md` (canonical source). Critical path до alpha: Slice 6a (Insights, ждёт TD-070) + Slice 12 (Empty/Error states). TASK_06 broker integrations разблокированы — manual-only flow готов end-to-end, OAuth-providers ждут TD-046.
 
 **Wave 4: 🧊 deferred** — TASK_08 iOS (out of MVP scope, отдельный репо).
 
@@ -35,10 +35,10 @@ TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.invest
 
 ### Web
 - [x] Next.js 15 проект, Tailwind v4, shadcn/ui — TASK_01 + TASK_02
-- [ ] Интеграция Clerk (регистрация, логин, email verification) — TASK_07
-- [ ] Эмпти дашборд — TASK_07
-- [ ] UI для ручного добавления сделок — TASK_07
-- [ ] Список позиций (мок-данные) — TASK_07
+- [x] Интеграция Clerk (регистрация, логин, email verification) — TASK_07 Slice 1 (PR #45 `a622bd3`)
+- [x] Эмпти дашборд — TASK_07 Slice 1 (`PortfolioValueCardLive`)
+- [x] UI для ручного добавления сделок — TASK_07 Slice 5a (PR #60 `5e556a9`, 2026-04-21) — add/edit/delete для buy/sell/dividend на Position Detail; split/transfer/fee в Slice 5b
+- [x] Список позиций (мок-данные) — TASK_07 Slice 2 (PR #48 `366d12f`, с реальными данными вместо mock)
 
 ### Design System — ✅ wave 1 completed (TASK_02, PRs #29/#31/#32)
 - [x] Дизайн-токены (цвета, типографика, spacing) в `packages/design-tokens`

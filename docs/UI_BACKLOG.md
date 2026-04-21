@@ -1,7 +1,7 @@
 # UI Backlog — Web Frontend (post-Slice 3)
 
 **Scope:** всё что осталось сделать в `apps/web` до MVP-launch. iOS / native mobile — **out of scope** (см. TASK_08, отдельная волна).
-**Status anchor:** 2026-04-21, main tip = this docs commit. TASK_07 Slice 1/2/3 + 7a/7b + 4a merged (PR #45, #48, #50, #58, #59). CORS + staging deploy работают (PR #54+#55).
+**Status anchor:** 2026-04-21, main tip = this docs commit (post-Slice-5a). TASK_07 Slice 1/2/3 + 7a/7b + 4a + 5a merged (PR #45, #48, #50, #58, #59, #60). CORS + staging deploy работают (PR #54+#55). Manual MVP end-to-end flow замкнут.
 **Owner:** PO (приоритизация) + CC (реализация по micro-slices).
 **Cadence:** один slice = один kickoff + один PR. Нет multi-slice PR.
 
@@ -76,10 +76,10 @@ Backend dependencies указаны inline. TD-ссылки — на `docs/TECH_
 **Backend dep:** TD-057 (Billing CRUD) — частично пересекается по тарификации лимитов на manual entries, но не блокирует P1. TD-065 (split events) — опционально, можно оставить split на Slice 6.
 
 **Split:**
-- 5a — Add + Edit + Delete для buy/sell/dividend. ~600 LOC.
+- 5a — Add + Edit + Delete для buy/sell/dividend. ✅ merged PR #60 (`5e556a9`, 2026-04-21) — single `TransactionFormDialog` с mode create|edit (diff-only PATCH), row-level kebab gated на `source === 'manual'` (API-sourced rows immutable per OpenAPI), 3 TanStack mutation hooks с invalidation `['position-transactions', id]` + `['portfolio']` + `['positions']`, `mapTransactionMutationError` (409 `DUPLICATE_TRANSACTION` / 403 `FORBIDDEN` tailored copy), 8 Vitest smoke (64/64 total). DateTime picker = `<input type="datetime-local">` fallback (no shadcn Calendar). Split/transfer/fee types disabled в select с "Coming soon" suffix. TD-081 reservation не использован. Decisions — DECISIONS.md § "Transactions UI: single form-dialog + datetime-local fallback (Slice 5a)" + § "Transactions UI: Idempotency-Key auto-inject + fingerprint safety-net (Slice 5a)".
 - 5b — Split / transfer support. ~300 LOC. Зависит от TD-065.
 
-**Acceptance:** юзер добавляет trade через UI, видит обновлённую позицию в list + detail + dashboard.
+**Acceptance:** юзер добавляет trade через UI, видит обновлённую позицию в list + detail + dashboard. — ✅ для 5a (buy/sell/dividend); split/transfer/fee остаются 5b scope.
 
 ---
 
@@ -258,7 +258,7 @@ Slice 10 (scope-cut banners) — independent
 Slice 13 (sidebar) — bundled into next layout-touching slice
 ```
 
-**Critical path to alpha launch:** ~~Slice 4a~~ ✅ → Slice 5a → Slice 6a (ждёт TD-070) → ~~Slice 7a + 7b~~ ✅ → Slice 12. Всё остальное — follow-ups. **Остался MVP critical:** Slice 5a (Transactions UI) + Slice 6a (Insights read, unblocked после TD-070) + Slice 12 (Empty/Error states).
+**Critical path to alpha launch:** ~~Slice 4a~~ ✅ → ~~Slice 5a~~ ✅ → Slice 6a (ждёт TD-070) → ~~Slice 7a + 7b~~ ✅ → Slice 12. Всё остальное — follow-ups. **Остался MVP critical:** Slice 6a (Insights read, unblocked после TD-070) + Slice 12 (Empty/Error states). Manual MVP flow (add account → add trade → dashboard value updates) замкнут после Slice 5a.
 
 ---
 
