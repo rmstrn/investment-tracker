@@ -14,83 +14,6 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
-### TD-090 — `turbo.json` env list drift — Vercel env vars фильтруются из runtime
-
-**Added:** 2026-04-21 (staging chat debug — **настоящий** root cause после TD-088 + TD-089).
-**Priority:** P1 (ломает production chat на staging; любой новый env var без turbo.json entry молча пропадёт в runtime).
-**Source:** `turbo.json` задаёт allowlist env vars через `globalEnv` + `tasks.build.env`. Turbo v2 гарантирует reproducibility билдов тем что **вырезает** env vars which не в allowlist — они недоступны в build process **и наследуются в runtime serverless function environment только для var'ов которые в allowlist**. `API_URL` + `APP_URL` были set на Vercel Production (даже после ре-add через interactive CLI), но отсутствовали в `turbo.json`. Vercel build log показывал warning:
-```
-Warning - the following environment variables are set on your Vercel project,
-but missing from "turbo.json". These variables WILL NOT be available to your application
-[warn] @investment-tracker/web#build
-[warn]   - API_URL
-[warn]   - APP_URL
-```
-Результат: Next.js Server Component `page.tsx` (`/chat/[id]`) вызывал `process.env.API_URL` в serverless function → `undefined` (а не `""`!) → `createApiClient({ baseUrl: undefined })` → openapi-fetch internal exception при построении URL для `client.GET('/ai/conversations/{id}')` → `catch` в `fetchInitialDetail` swallow'ил → UI показывал "Unable to load this conversation right now. Try again in a moment."
-**Fix applied:** `API_URL` + `APP_URL` добавлены в `tasks.build.env` в `turbo.json`:
-```json
-"env": [
-  "NEXT_PUBLIC_*",
-  "API_URL",
-  "APP_URL",
-  "DATABASE_URL",
-  ...
-]
-```
-**Why TD-088 (`?? → ||`) was needed anyway:** defensive — если кто-то set'нет empty string на Vercel (мисконфиг), fallback сработает и local dev всё равно будет работать. Но настоящий симптом fix'ит TD-090.
-**Why TD-089 (prepare guard) was needed anyway:** первый `vercel --prod` без build cache фейлил на `pnpm install` → lefthook. Git-push-triggered deploys использовали warm cache и не хитали prepare. Guard нужен для всех clean-slate CI builds.
-**Owner:** infra + web maintainer.
-**Trigger to revisit:**
-- Каждый раз когда добавляется новая env var в Vercel project — *обязательно* добавить её в `turbo.json` (либо `globalEnv` если используется всеми pkg'ами, либо `tasks.build.env` если только билдом). Turbo warning в Vercel build log — leading indicator, но его легко пропустить.
-- Долговременный fix: либо CI gate который fail'ит PR если Vercel env vars не совпадают с `turbo.json` (требует API integration), либо periodic audit.
-- Также пройтись через весь `apps/web/` grep'ом `process\.env\.\w+` и убедиться что каждая переменная declared.
-**Links:** merge-log entry for `turbo.json` fix; TD-088 (defensive fallback same arc); TD-089 (prepare guard same arc); DECISIONS.md (TBD — "turbo.json env var allowlist policy").
-
-### TD-089 — Root `prepare` hook падает в CI build env без `.git`
-
-**Added:** 2026-04-21 (staging chat debug — Vercel build failed first, blocking chat fix deploy).
-**Priority:** P2 (breaks any Vercel / CI environment that does `pnpm install` in a build context без `.git`; обнаружен только потому что chat debug потребовал production redeploy).
-**Source:** `package.json` root содержал `"prepare": "lefthook install"`. npm/pnpm запускают `prepare` script автоматически после `install`. В Vercel build environment `.git` директория отсутствует (CI checkout делается без git metadata), `lefthook install` внутри делает `git rev-parse --show-toplevel` → exit 128 → `pnpm install` падает с exit 1, build валится до того как дойдёт до `apps/web/` компиляции.
-**Fix applied:** `"prepare"` обернут в inline node guard:
-```json
-"prepare": "node -e \"if(require('fs').existsSync('.git'))require('child_process').execSync('lefthook install',{stdio:'inherit'})\""
-```
-Локально `.git` есть → hooks ставятся как прежде. В Vercel/CI `.git` нет → prepare тихо выходит 0. Поведение dev setup не изменилось.
-**Owner:** infra + web maintainer.
-**Trigger to revisit:** если monorepo будет делить prepare-логику с другими apps (e.g. `apps/web/package.json` own prepare) — проверить что guard одинаково работает везде. Если добавится `lefthook` replacement или будет удалён lefthook — guard можно упростить до прямого `lefthook install`.
-**Links:** merge-log close-td-088 entry (same commit); TD-088 (chat fix который потребовал redeploy и обнаружил TD-089).
-
-### TD-088 — `apps/web/src/lib/api/server.ts` fallback use `??` вместо `||` для API_URL
-
-**Added:** 2026-04-21 (staging chat broken — root cause: `API_URL=""` на Vercel + `??` не fallback'ит на empty string).
-**Priority:** P2 (already fixed; tracked для audit всех other `process.env.X ?? '<default>'` patterns в monorepo).
-**Source:** `apps/web/src/lib/api/server.ts` line 7 содержал:
-```ts
-const SERVER_BASE_URL = process.env.API_URL ?? 'http://localhost:8080';
-```
-`??` fallback'ит только на `null`/`undefined`. На Vercel Production env переменная `API_URL` была создана интерактивно с пустым значением (misconfigured через `vercel env add` pipe с CRLF, потом ещё раз с sensitive flag) → `process.env.API_URL === ""` → `??` не срабатывает → `createApiClient({ baseUrl: "" })` → openapi-fetch кидает exception при построении URL → `page.tsx` catch блок возвращает `{ kind: 'error' }` → user видит "Unable to load this conversation right now". Симптом: все chat conversations падают на staging с generic error fallback; нет server-side error log потому что catch swallow'ит exception.
-**Fix applied:** `??` → `||` + комментарий. Пустая строка — falsy, теперь triggers fallback:
-```ts
-// NOTE: `||` (not `??`) on purpose — empty-string is a common misconfigured
-// value (see TD-088), and it must trigger the fallback the same way that
-// `undefined` does. A falsy URL base is never useful anyway.
-const SERVER_BASE_URL = process.env.API_URL || 'http://localhost:8080';
-```
-Defensive guard: если Vercel env опять окажется пустой (например кто-то удалит, но deploy cache сохранит ключ) — web пытается hit localhost, staging показывает очевидный connection refused вместо мистического "Unable to load".
-**Owner:** web maintainer.
-**Trigger to revisit:** аудит остальных `process.env.X ?? '...'` в monorepo — где env var это URL / hostname / port / feature-flag-name, предпочитать `||`. Где env var это arbitrary string which may legitimately be empty (rare — maybe `LOG_PREFIX`), `??` остаётся правильным. Пройтись grep'ом `rg 'process\.env\.\w+ \?\?' apps/ packages/` и документировать intentional vs defensive choices.
-**Links:** merge-log close-td-088 entry; DECISIONS.md (TBD — добавить решение про `?? vs ||` policy для env var defaults); TD-089 (раскрылся только потому что TD-088 потребовал redeploy).
-
-### TD-087 — `uv sync` в multi-stage Dockerfile должен использовать `--no-editable`
-
-**Added:** 2026-04-21 (TD-070 first deploy — caught + fixed inline `4357739`).
-**Priority:** P3 (already fixed; tracked для rationale + следующего multi-stage Python image).
-**Source:** `apps/ai/Dockerfile` builder stage делал `uv sync --frozen --no-dev` без `--no-editable`. По умолчанию uv устанавливает проект как **editable install** — ставит `.pth` файл в site-packages указывающий на `/src/src/ai_service`. В multi-stage build сcopy `/opt/venv` в runtime stage без исходников `/src` ломает import: `ModuleNotFoundError: No module named 'ai_service'`. Container боотится, но `python -m ai_service.main` падает.
-**Fix applied:** `--no-editable` добавлен в `uv sync` (commit `4357739`). Ставит проект как обычный package в `/opt/venv/lib/python3.13/site-packages/ai_service` — переносится с venv'ом.
-**Owner:** AI Service maintainer.
-**Trigger to revisit:** при создании новой Python service с multi-stage Dockerfile — закрепить паттерн в shared base image или Dockerfile template. Если будет добавлен `apps/worker/` или другой Python app, проверить что unit тесты в Docker (TD-086) поймают если забудут `--no-editable`.
-**Links:** merge-log entry для `4357739`; DECISIONS.md § "AI Service staging deploy topology (TD-070)" — gotchas list.
-
 ### TD-086 — Нет CI gate для AI Service Docker build
 
 **Added:** 2026-04-21 (TD-070 first deploy — TD-087 + TD-085 могли быть пойманы CI'ем).
@@ -114,16 +37,6 @@ docker-build:
 **Owner:** infra + AI maintainer.
 **Trigger to revisit:** перед следующим Dockerfile-touching PR на `apps/ai/` или `apps/api/`; или при добавлении новой Python service.
 **Links:** TD-087, TD-085 (would-have-caught), merge-log entry close-td-070.
-
-### TD-085 — `apps/ai/.dockerignore` исключал `README.md` который требует `pyproject.toml`
-
-**Added:** 2026-04-21 (TD-070 first deploy — caught + fixed inline `b079d30`).
-**Priority:** P3 (already fixed; tracked для general .dockerignore audit pattern).
-**Source:** `apps/ai/.dockerignore` содержал `README.md` в списке excludes (default scaffold). `apps/ai/pyproject.toml` объявляет `readme = "README.md"` — Hatchling build-backend требует README.md в build context. Результат: `uv sync` в Docker builder падал с `FileNotFoundError: README.md`.
-**Fix applied:** удалена строка `README.md` из `.dockerignore` (commit `b079d30`).
-**Owner:** AI Service maintainer.
-**Trigger to revisit:** аудит `.dockerignore` в любом Python app с `pyproject.toml` declaring `readme` или `license` (требуется в build context). Закрыть как часть TD-086 (CI Docker build поймал бы).
-**Links:** TD-086, TD-087, merge-log entry для `b079d30`.
 
 ### TD-084 — flyctl ловит build context из CWD, не из location of `--config` toml
 
@@ -775,6 +688,46 @@ Inventory (9 ignores, each with reason):
 - TD-070 смоук-тест 503-tolerance теперь pre-obsolete (AI Service deployed 2026-04-21) — оставлен в коде как безопасная fallback, уберётся вместе с TD-070 prod cutover.
 
 **Links:** `apps/api/internal/handlers/ai_chat_stream.go` (product fix); `apps/api/internal/sseproxy/proxy.go` (unaffected — Run itself is synchronous); `tools/k6/smoke/ai_chat_stream.js` (smoke fix chain); merge-log entry ниже.
+
+### TD-R090 — `turbo.json` env list drift — Vercel env vars filtered out of runtime
+
+**Resolved:** 2026-04-21 by `05f43d3 fix(turbo): allowlist API_URL + APP_URL so Vercel env reaches runtime`.
+**Was:** Turbo v2 cuts any env var not in the `globalEnv` / `tasks.build.env` allowlist from the build process AND from the serverless function runtime environment. `API_URL` + `APP_URL` were set on Vercel Production but missing from `turbo.json` → `process.env.API_URL` was `undefined` in Next.js Server Component `page.tsx` for `/chat/[id]` → `createApiClient({ baseUrl: undefined })` → openapi-fetch internal exception → UI rendered "Unable to load this conversation right now."
+**Fix applied:** Added `API_URL` + `APP_URL` to `tasks.build.env` array in `turbo.json`. Vercel build log's `Warning - the following environment variables are set on your Vercel project, but missing from "turbo.json"` was the leading indicator that got missed.
+**Trigger to revisit (open follow-up):** every new Vercel env var must be added to `turbo.json`. Longer-term fix: CI gate that fails a PR if Vercel env vars diverge from `turbo.json` (requires Vercel API integration), or periodic audit. Also grep `apps/web/` for all `process.env.\w+` usages and confirm each is declared.
+**Links:** TD-R088 + TD-R089 (same staging-chat-debug arc); merge-log `turbo.json` fix entry.
+
+### TD-R089 — Root `prepare` hook fails in CI build envs missing `.git`
+
+**Resolved:** 2026-04-21 by `bcd1b34 fix(web): defensive API_URL fallback + guard lefthook prepare in CI`.
+**Was:** `package.json` root `"prepare": "lefthook install"` — npm/pnpm run `prepare` automatically after `install`. Vercel build env has no `.git` directory (CI checkout without git metadata), so `lefthook install` → `git rev-parse --show-toplevel` → exit 128 → `pnpm install` failed → build died before `apps/web/` compile. Found only because TD-088 redeploy forced a cold-cache Vercel build.
+**Fix applied:** `prepare` wrapped in inline node guard: `node -e "if(require('fs').existsSync('.git'))require('child_process').execSync('lefthook install',{stdio:'inherit'})"`. Local `.git` present → hooks install as before. CI / Vercel without `.git` → prepare exits 0 silently.
+**Trigger to revisit (open follow-up):** if any `apps/*/package.json` adds its own `prepare`, replicate the guard. If `lefthook` is replaced or removed, guard simplifies back to direct install.
+**Links:** TD-R088 (same commit); merge-log close-td-088 entry.
+
+### TD-R088 — `apps/web/src/lib/api/server.ts` should use `||` not `??` for `API_URL` fallback
+
+**Resolved:** 2026-04-21 by `bcd1b34 fix(web): defensive API_URL fallback + guard lefthook prepare in CI`.
+**Was:** `const SERVER_BASE_URL = process.env.API_URL ?? 'http://localhost:8080';` — `??` only falls back on `null`/`undefined`. On Vercel Production `API_URL` got created interactively with an empty value (misconfigured `vercel env add` pipe with CRLF) → `process.env.API_URL === ""` → `??` didn't trigger → `createApiClient({ baseUrl: "" })` → openapi-fetch exception → all chat conversations hit generic error fallback silently.
+**Fix applied:** `??` → `||` with a comment explaining empty-string is a common misconfigured value and must trigger fallback. Defensive guard — if Vercel env is empty again, web now hits localhost and staging shows obvious connection-refused instead of mystery "Unable to load".
+**Trigger to revisit (open follow-up):** audit remaining `process.env.X ?? '...'` across the monorepo. URL / hostname / port / feature-flag vars prefer `||`. Arbitrary string vars that may legitimately be empty (rare — e.g. `LOG_PREFIX`) keep `??`. One `rg 'process\.env\.\w+ \?\?' apps/ packages/` sweep closes it.
+**Links:** TD-R089 (same commit); TD-R090 (real root cause — the `turbo.json` drift — that TD-R088 defensively hedges against); DECISIONS.md (TBD entry: `?? vs ||` policy for env var defaults).
+
+### TD-R087 — `uv sync` in multi-stage Dockerfile must use `--no-editable`
+
+**Resolved:** 2026-04-21 by `4357739 fix(ai): install project non-editable in Dockerfile (fix multi-stage ModuleNotFoundError)`.
+**Was:** `apps/ai/Dockerfile` builder stage ran `uv sync --frozen --no-dev` without `--no-editable`. uv defaults to editable install — drops a `.pth` file in site-packages pointing at `/src/src/ai_service`. Copying `/opt/venv` to runtime stage without `/src` broke imports: `ModuleNotFoundError: No module named 'ai_service'`. Container booted but `python -m ai_service.main` crashed.
+**Fix applied:** `--no-editable` added to `uv sync`. Project lands as a normal package in `/opt/venv/lib/python3.13/site-packages/ai_service` and travels with the venv copy.
+**Trigger to revisit (open follow-up):** next Python service with multi-stage Dockerfile — cement pattern in a shared base image or Dockerfile template. TD-086 CI gate would catch regressions.
+**Links:** TD-086 (CI gate would have caught); DECISIONS.md § "AI Service staging deploy topology (TD-070)" gotchas list; merge-log entry for `4357739`.
+
+### TD-R085 — `apps/ai/.dockerignore` excluded `README.md` which `pyproject.toml` requires
+
+**Resolved:** 2026-04-21 by `b079d30 fix(ai): remove README.md from dockerignore (Dockerfile COPY requires it)`.
+**Was:** Default scaffold `.dockerignore` had `README.md` in the exclude list. `apps/ai/pyproject.toml` declares `readme = "README.md"` — Hatchling build-backend requires README.md in the build context. `uv sync` in Docker builder died with `FileNotFoundError: README.md`.
+**Fix applied:** removed `README.md` line from `apps/ai/.dockerignore`.
+**Trigger to revisit (open follow-up):** audit `.dockerignore` in any Python app with `pyproject.toml` declaring `readme` or `license`. Closes fully once TD-086 lands a CI Docker build gate.
+**Links:** TD-086 (CI gate would have caught); TD-R087 (same first-deploy debug session); merge-log entry for `b079d30`.
 
 ### TD-R070 — AI Service staging deploy
 
