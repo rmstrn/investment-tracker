@@ -41,7 +41,7 @@ export function fractionToPercent(fraction: number): number {
 }
 
 /**
- * Short account label used until `/accounts` lookup lands (TASK_07 Slice 5).
+ * Short account label used when full account lookup is not wired.
  * `Account #1a2b3c4d` — last 8 hex chars of the uuid.
  */
 export function formatShortAccountId(accountId: string): string {
