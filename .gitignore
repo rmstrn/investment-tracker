@@ -83,5 +83,14 @@ logs/
 tmp/
 .tmp/
 
+# ---------- OpenAPI generated artifacts ----------
+# tools/openapi/generated/ holds committed language-specific outputs
+# (swift/) alongside an intermediate bundle file that `pnpm bundle`
+# regenerates on demand. Ignore the bundle + any future non-tracked
+# output types; keep swift/ tracked via the un-ignore rule below.
+tools/openapi/generated/*
+!tools/openapi/generated/swift/
+!tools/openapi/generated/swift/**
+
 .vercel
 .env*.local
