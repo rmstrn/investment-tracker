@@ -8,7 +8,7 @@
 
 **Wave 2: ✅ code-complete + staging deploy live** (2026-04-21)
 
-TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; staging deploy pending — TD-070).
+TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; **staging deploy config shipped PR #61 `8ff5abf`**, runtime deploy pending PO per `RUNBOOK_ai_staging_deploy.md` § 2-7 — TD-070 still open до smoke green).
 
 **Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a+5a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD + transactions CRUD для buy/sell/dividend); web на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.** Slice 5b (split/transfer/fee) / 4b/4c / 6 scope — см. `UI_BACKLOG.md` (canonical source). Critical path до alpha: Slice 6a (Insights, ждёт TD-070) + Slice 12 (Empty/Error states). TASK_06 broker integrations разблокированы — manual-only flow готов end-to-end, OAuth-providers ждут TD-046.
 

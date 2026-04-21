@@ -15,6 +15,44 @@ Newest entries at the top.
 
 ---
 
+## PR #61 — ci(ai): TD-070 — staging deploy config (fly.staging.toml, secrets manifest, verify shim, workflow)
+
+**Squash SHA:** `8ff5abf`
+**Merged:** 2026-04-21
+**Base:** `f08627b` (kickoff TD-070).
+**Scope:** Config-as-code для AI Service staging deploy. **No runtime ops** — все flyctl / doppler / curl PO выполняет вручную после merge по `docs/RUNBOOK_ai_staging_deploy.md` § 2-7. Staging Fly app `investment-tracker-ai-staging`, Doppler project `investment-tracker-ai` config `stg`, bridge via `INTERNAL_API_TOKEN` ≡ `AI_SERVICE_TOKEN` в Core API staging Doppler. После PO runtime deploy + smoke → TD-070 closes, UI Slice 6a (Insights read-only) разблокируется.
+
+- **New:** `apps/ai/fly.staging.toml` (region `fra`, `min_machines_running=1`, `LOG_LEVEL=INFO`; 3 Anthropic model IDs pinned в `[env]` — не через Doppler, чтобы Fly secrets не могли silently override explicit pin).
+- **New:** `apps/ai/secrets.keys.yaml` (manifest: 4 required — `INTERNAL_API_TOKEN`, `ANTHROPIC_API_KEY`, `CORE_API_URL`, `CORE_API_INTERNAL_TOKEN`; + 8 optional для Sentry/PostHog/Anthropic+Core tuning; `ENCRYPTION_KEK` намеренно НЕ required — AI Service = pure proxy к Anthropic, envelope encryption живёт только в Core API).
+- **New:** `ops/scripts/verify-ai-secrets.sh` (thin shim — exports `KEYS_FILE=apps/ai/secrets.keys.yaml` и `exec`'ает `verify-prod-secrets.sh`; zero parse-logic duplication).
+- **Mod (scope-adjacent):** `ops/scripts/verify-prod-secrets.sh` — 1-line generalization `KEYS_FILE="${KEYS_FILE:-<default>}"` для поддержки per-service shim'ов. Backward-compat ✅ (существующий Core API callsite env-var не передаёт → fallback branch → идентичное поведение).
+- **Mod:** `.github/workflows/deploy-ai.yml` — переписан с single-job-on-prod на `workflow_dispatch` с `environment: staging|production` input (default=staging) + pre-deploy verify-ai-secrets step; app + config автоматически выбираются из environment. Alternative к manual `flyctl deploy` в runbook § 6 — **не** заменяет § 2 (apps create) / § 4 (Doppler provisioning) / § 5 (bridge update).
+- **Mod:** `docs/DECISIONS.md` — 2 ADRs: «AI Service staging deploy topology (TD-070)» (топология, bridge invariant, alternatives rejected) + «`verify-prod-secrets.sh` generalized via KEYS_FILE env override» (refactor rationale).
+- **Mod:** `docs/TECH_DEBT.md` — TD-070 status → 🟡 «config shipped, awaiting PO runtime deploy» + landed/still-open split; TD-082 reserved (automated bridge drift check, opens real при prod flip prep); TD-081 остался reserved от Slice 5a.
+- **Mod:** `docs/RUNBOOK_ai_staging_deploy.md` — 4 точечные правки: § 3 landed-file note, § 4.2 модели убраны из Doppler таблицы (+ verify-ai-secrets.sh sanity snippet), § 6 GH Actions alt path, § 9 obsolete optional-manifest line removed.
+
+**Decisions (all pre-approved per kickoff GAP REPORT):**
+1. Models в `[env]` hardcode, не Doppler — explicit pin в diff, Fly secrets override-safe.
+2. `verify-ai-secrets.sh` через shim (variant B), не full copy — DRY.
+3. `deploy-ai.yml` single-job + env input, не two-jobs mirror deploy-api.yml — AI pipeline легче (нет k6 / release_command migrations / approval gate).
+4. `LOG_LEVEL=INFO` на staging.
+5. `ENCRYPTION_KEK` не добавлять в AI manifest.
+6. `doppler-sync.yml` generalization — defer (TD-069 уже owner).
+
+**Local smoke performed pre-PR:** `bash -n` syntax on both verify scripts ✅; reuse `verify-prod-secrets.sh` YAML parser on AI manifest → exactly 4 expected keys, regression check на Core manifest → 16 required keys without change; `tomllib` parse `fly.staging.toml` — all invariants (app/env/LOG_LEVEL/model pins/min_machines) hold; YAML parse `deploy-ai.yml` — default=staging, options correct, «Verify secrets» step present.
+
+**Tests / CI:** 10/10 CI checks green (Go lint+vet+build+test, Node lint+typecheck+build, Node unit, Python lint+typecheck+test, Trivy, govulncheck, gitleaks, Vercel preview + comments). `gh pr checks 61 --watch` до полного resolve (TD-078 mandatory).
+
+**No admin-bypass.** Subject adjusted from kickoff-recommended `ops(ai):` to `ci(ai):` — `commitlint.config.mjs` type-enum allows only `feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert`; `ci` fits deploy workflow as primary code mass. Header shrunk to 100 chars (limit).
+
+**Pre-commit gotcha (TD-083 opened):** `tools/scripts/hook-commitlint.sh` с `set -e` валит скрипт на `pnpm exec commitlint` non-zero до того как fallback branches (`[ -x node_modules/.bin/commitlint ]`, `npx --no-install`) получают control. На fresh worktree без `pnpm install` первый commit падает моментально; fix = `pnpm install` в worktree root (~10 сек). Третий раз подряд CC натыкается — P3 TD открыт. `gh pr merge --squash --delete-branch` завершился с local-worktree error (gotcha #2 — main checked out в `D:\investment-tracker`), remote merge ✅ прошёл; cleanup в этом docs pass.
+
+**TD ledger:** TD-070 → 🟡 awaiting PO runtime deploy (closes по runbook § 11); TD-082 → reserved (prod flip prep); **TD-083 → opened** (hook-commitlint.sh fallback dead under set -e). Scope-adjacent `verify-prod-secrets.sh` change flagged в PR description и ADR.
+
+**Docs pass (this commit):** merge-log PR #61 entry (эта запись) + TD-083 append в TECH_DEBT + optional ROADMAP pending-note на AI Service row. PO_HANDOFF / UI_BACKLOG / TASK_07 / README — PO обновит сам после ping'а (scope ограничен per PO correction 2026-04-21).
+
+---
+
 ## PR #60 — feat(web): TASK_07 Slice 5a — Transactions UI (add/edit/delete buy/sell/dividend)
 
 **Squash SHA:** `5e556a9`

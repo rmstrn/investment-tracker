@@ -14,6 +14,31 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-083 — `tools/scripts/hook-commitlint.sh` fallback branches dead under `set -e`
+
+**Added:** 2026-04-21 (caught during TD-070 merge flow, third CC encounter).
+**Priority:** P3.
+**Source:** Hook tries 3 runners in order — `pnpm exec commitlint` → `[ -x node_modules/.bin/commitlint ]` → `npx --no-install commitlint`. All three are wrapped in a single `set -e` script. On a fresh CC worktree (no `node_modules/` yet because `pnpm install` wasn't run), `pnpm` IS on PATH but `pnpm exec commitlint` fails with `ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL` (non-zero). `set -e` immediately kills the shell — control never reaches the `elif` branches. Net: commit blocked with `Command "commitlint" not found` and the "skips with warning" fallback is unreachable.
+**Impact.** ~10-30 sec lost per fresh CC worktree bootstrapping (diagnose → `pnpm install` → retry commit). Three CC sessions in a row hit this (per PO memory), so recurrence is confirmed.
+**Fix sketch.**
+```sh
+if command -v pnpm >/dev/null 2>&1 && pnpm exec commitlint --edit "$msg_file" 2>/dev/null; then
+  exit 0
+fi
+if [ -x node_modules/.bin/commitlint ]; then
+  exec node_modules/.bin/commitlint --edit "$msg_file"
+fi
+if command -v npx >/dev/null 2>&1; then
+  exec npx --no-install commitlint --edit "$msg_file"
+fi
+echo "hook-commitlint: no commitlint runner available — skipping"
+exit 0
+```
+Wrap the primary attempt in an `if … ; then` so `set -e` doesn't fire, and `exec` the eventual runner for clean exit propagation. Apply the same shape to `hook-biome.sh` / `hook-ruff.sh` / `hook-gofmt.sh` if they share the pattern.
+**Owner:** unassigned.
+**Trigger to revisit:** any fresh worktree bootstrap; or when a new hook gets added and would inherit the same shape.
+**Links:** DECISIONS.md (PR #61 merge-log entry has the incident trace; no standalone ADR).
+
 ### TD-082 — reserved: automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity
 
 **Status:** reserved for the AI Service prod flip (owner = infra). Not opened as
