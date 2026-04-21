@@ -10,7 +10,7 @@
 
 TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; staging deploy pending — TD-070).
 
-**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3 merged (auth + dashboard + positions + AI chat); web на `staging.investment-tracker.app`. Slice 4+ scope — см. `UI_BACKLOG.md` (canonical source). TASK_06 broker integrations — после Slice 4a (manual accounts).
+**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD); web на `staging.investment-tracker.app`. Slice 4b/4c/5/6 scope — см. `UI_BACKLOG.md` (canonical source). TASK_06 broker integrations разблокированы для old alpha путь — manual-only flow готов, OAuth-providers ждут TD-046.
 
 **Wave 4: 🧊 deferred** — TASK_08 iOS (out of MVP scope, отдельный репо).
 

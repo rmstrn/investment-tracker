@@ -34,7 +34,7 @@ docs/
 ├── TASK_04_core_backend.md      ← ✅ wave 2 + CORS slice + staging deploy live
 ├── TASK_05_ai_service.md        ← ✅ wave 2 (staging deploy pending TD-070)
 ├── TASK_06_broker_integrations.md ← ⏳ wave 3 (TD-046)
-├── TASK_07_web_frontend.md      ← 🟢 wave 3 (Slice 1+2+3 merged; Slice 4+ → UI_BACKLOG.md)
+├── TASK_07_web_frontend.md      ← 🟢 wave 3 (Slice 1+2+3+7a+7b+4a merged; Slice 4b/4c/5/6 → UI_BACKLOG.md)
 └── TASK_08_ios_app.md           ← 🧊 wave 4 (out of MVP scope)
 ```
 
@@ -87,8 +87,8 @@ docs/
 
 | Таск | Зависит от | Статус |
 |---|---|---|
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ TD-046 — SnapTrade / Binance / Coinbase providers. Разблокирует Slice 4b/4c. Slice 4a (manual accounts) можно делать без. |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 (PR #45) + Slice 2 (PR #48) + Slice 3 (PR #50) + root-redirect (PR #53) merged. Web на `staging.investment-tracker.app`. **Slice 4+ scope — `UI_BACKLOG.md`** (canonical). |
+| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ TD-046 — SnapTrade / Binance / Coinbase providers. Разблокирует Slice 4b/4c. Slice 4a (manual accounts) merged ✅. |
+| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 (PR #45) + Slice 2 (PR #48) + Slice 3 (PR #50) + root-redirect (PR #53) + Slice 7a+7b (PR #58) + Slice 4a (PR #59) merged. Web на `staging.investment-tracker.app` включая `/accounts` manual CRUD + `/pricing`. **Остальной Slice scope — `UI_BACKLOG.md`** (canonical). |
 
 ### Волна 4 — отложено
 
@@ -96,7 +96,7 @@ docs/
 |---|---|
 | **TASK_08** (iOS) | 🧊 out of MVP scope — нужен Mac + Xcode, отдельный репо |
 
-**Критический путь к alpha (см. UI_BACKLOG.md):** Slice 4a (Manual Accounts CRUD) → Slice 5a (Transactions UI) → Slice 6a (Insights read-only, ждёт TD-070) → Slice 7a + 7b (Landing + Pricing + Paywall без Stripe) → Slice 12 (Empty + Error states). Параллельно бэк: TD-070 (AI Service deploy), PR D workers (TD-066), TASK_06 (TD-046).
+**Критический путь к alpha (см. UI_BACKLOG.md):** ~~Slice 4a (Manual Accounts CRUD)~~ ✅ PR #59 → Slice 5a (Transactions UI) → Slice 6a (Insights read-only, ждёт TD-070) → ~~Slice 7a + 7b (Landing + Pricing)~~ ✅ PR #58 → Slice 12 (Empty + Error states). Параллельно бэк: TD-070 (AI Service deploy), PR D workers (TD-066), TASK_06 (TD-046).
 
 ## Советы по параллельным чатам
 
@@ -116,4 +116,4 @@ docs/
 
 ---
 
-**Следующий шаг:** открыть `PO_HANDOFF.md` (актуальный handoff между сессиями), затем `UI_BACKLOG.md` для приоритетов веба. Текущий фронт работ — Slice 4a (Manual Accounts CRUD) разблокирует MVP-flow; параллельно бэк: TD-070 (AI Service staging deploy), PR D workers (TD-066), TASK_06 broker integrations (TD-046). Концепция продукта — `00_PROJECT_BRIEF.md`.
+**Следующий шаг:** открыть `PO_HANDOFF.md` (актуальный handoff между сессиями), затем `UI_BACKLOG.md` для приоритетов веба. Slice 4a merged — MVP flow разблокирован. Текущий фронт работ — **Slice 5a** (Transactions UI) завершает manual-account путь; параллельно бэк: TD-070 (AI Service staging deploy, разблокирует Slice 6a), PR D workers (TD-066), TASK_06 broker integrations (TD-046, для 4b/4c). Концепция продукта — `00_PROJECT_BRIEF.md`.

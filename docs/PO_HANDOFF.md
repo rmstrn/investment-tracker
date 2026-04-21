@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-21 (CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`. Main tip = `fc44782`. `ALLOWED_ORIGINS` добавлен в Doppler stg, fly staging передеплоен, smoke `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio` вернул 204 + все CORS headers. Web `staging.investment-tracker.app` ходит в API без preflight-блокировок. Следующий фокус — Web UI backlog (Slice 4+): см. новый файл `UI_BACKLOG.md`. **Added § 3.1 Pre-CC start checklist** после повторных прецедентов «kickoff не на origin/main до `git worktree add`» (CC блокировался, ждал re-push) и `.git/index.lock` drift при sandbox commit'ах.)
+**Last updated:** 2026-04-21 (Slice 4a post-merge docs pass from CC #1 — PR #59 `c5590f5` merged + this docs commit on top of CC #2's Slice 7a+7b docs (`87a0706`). Main tip = this docs commit. Slice 4a shipped `(app)/accounts` route (manual flow only; broker OAuth 4b/4c still blocked on TD-046), opened TD-079 (P3, FK CASCADE vs handler soft-delete mismatch). `/accounts` на `staging.investment-tracker.app` готов к manual smoke. Prior context: CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`; ALLOWED_ORIGINS добавлен в Doppler stg, fly staging передеплоен; web ↔ API cross-origin flow работает. Остаётся P1 critical path: Slice 5a (Transactions UI) + Slice 6a (Insights, unblocked after TD-070) + Slice 12 (Empty/Error states).)
 
 ---
 
@@ -30,13 +30,15 @@ TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
 - **TASK_05 AI Service (Python):** ✅ PR #34 merged + ✅ cleanup PR #43 `b6108a4` (`record_ai_usage` dual-write удалён — Core API single-writer per PR #44). 404-swallow → strict flip ждёт prod soak (см. `RUNBOOK_ai_flip.md`). **⚠ Staging deploy не сделан** — TD-070 blocker для Slice 6 Insights UI.
 
 ### Волна 3 — 🟢 в работе
-- **TASK_07 (Web Frontend):** Slice 1 + Slice 2 + Slice 3 merged — Auth + Dashboard + Positions + AI Chat UI все работают на `staging.investment-tracker.app`.
+- **TASK_07 (Web Frontend):** Slice 1 + 2 + 3 + 7a + 7b + 4a merged — Auth + Dashboard + Positions + AI Chat + Landing + Pricing + Manual Accounts CRUD работают на `staging.investment-tracker.app`.
   - Slice 1 (PR #45 `a622bd3`) — Clerk auth + `(app)/dashboard` + `PortfolioValueCardLive` + `usePortfolio` + 1 Vitest.
   - Slice 2 (PR #48 `366d12f`) — Positions list + detail read-only, toolbar, Recharts price chart через `@investment-tracker/ui/charts` subpath, 4 hooks + 3 Vitest.
   - Slice 3 (PR #50 `4881dfd`) — AI Chat UI: `(app)/chat` + `(app)/chat/[id]`, SSE client over fetch+ReadableStream, chat reducer state machine, 6 TanStack hooks, 9 UI components, tier-limit toast, `UsageIndicator` через `onRateLimitHeaders` middleware. TD-068 opened (P3 schema drift).
   - PR #53 (root-redirect) merged 2026-04-21 — `/` на `(app)/dashboard` для signed-in юзеров.
-  - **Slice 4+ — см. `UI_BACKLOG.md`** (canonical backlog для всей оставшейся UI-работы: Accounts CRUD, Transactions UI, Insights feed, Landing/Pricing/Paywall, Settings, Scope-cut banners, FloatingAiFab, Empty states, PWA, SEO, Observability). Критический путь к alpha: Slice 4a → 5a → 6a → 7a+7b → Slice 12.
-- **TASK_06 (Broker Integrations):** ⏳ starts после web Slice 4a (manual accounts) даёт alpha-ready flow. SnapTrade/Binance/Coinbase providers — TD-046.
+  - Slice 7a+7b (PR #58 `528333b`) — Landing + `/pricing` (Free/Plus/Pro) + `(marketing)/` route group; subscribe CTAs stubbed (Stripe → Slice 7c). TD-080 opened (paywall trigger wiring deferred).
+  - Slice 4a (PR #59 `c5590f5`) — Manual Accounts CRUD — `(app)/accounts` route + Add/Rename/Delete для `connection_type=manual`, sidebar activation, 4 TanStack hooks, `SyncStatusBadge` 'manual' variant. TD-079 opened (P3 FK CASCADE vs handler soft-delete mismatch, defense-in-depth).
+  - **Slice 4+ — см. `UI_BACKLOG.md`** (canonical backlog для всей оставшейся UI-работы: Transactions UI, Insights feed, 4b/4c broker flows, Settings, Scope-cut banners, FloatingAiFab, Empty states, PWA, SEO, Observability). Остаётся critical path: Slice 5a → 6a → Slice 12.
+- **TASK_06 (Broker Integrations):** ⏳ Slice 4a (manual accounts) merged — alpha-ready flow разблокирован. SnapTrade/Binance/Coinbase providers — TD-046.
 
 ### Волна 4 — 🧊 отложено
 TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
@@ -47,7 +49,8 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | this commit (post-slice-7ab docs pass from CC #2: UI_BACKLOG Slice 7a+7b ✅ + ROADMAP Paywall UI [x] + TECH_DEBT TD-080 + DECISIONS ADR + merge-log PR #58 entry). CC #1's own docs pass for PR #59 (Slice 4a) may still land separately. | this commit | 2026-04-21 |
+| **main tip** | this commit (post-slice-4a docs pass from CC #1: UI_BACKLOG Slice 4a ✅ + critical-path update + TASK_07 status row + Wave 3 updates in PO_HANDOFF / ROADMAP / README). TD-079 + DECISIONS ADRs landed in-PR via #59. | this commit | 2026-04-21 |
+| prev main tip | post-slice-7ab docs pass from CC #2 (UI_BACKLOG Slice 7a+7b ✅ + ROADMAP Paywall UI [x] + TECH_DEBT TD-080 + DECISIONS ADR + merge-log PR #58 entry). | `87a0706` | 2026-04-21 |
 | #59 | TASK_07 Slice 4a: Manual Accounts CRUD — `(app)/accounts` route + list + Add/Rename/Delete for `connection_type=manual`, sidebar activation, TanStack Query hooks, packages/ui `SyncStatusBadge` 'manual' variant. Broker OAuth (Slice 4b/4c) remains blocked on TD-046. Docs in-PR: **TD-079** (accounts→transactions FK = CASCADE vs soft-delete handler, P3) + 2 DECISIONS ADRs (Accounts soft-delete pattern; AccountConnectCard not reused). | `c5590f5` | 2026-04-21 |
 | #58 | TASK_07 Slice 7a+7b: Landing + Pricing + Paywall UI — `(marketing)/` route group, `/` landing (hero + 3 pillars + trust strip, anon render / authed redirect), `/pricing` (3 tiers aligned to `04_DESIGN_BRIEF §13.1`: Free $0 / Plus $8 / Pro $20, feature matrix with accounts/AI-msgs-per-day/insights/tax/API), Subscribe CTAs stubbed (Stripe in 7c / TD-057), MarketingHeader + MarketingFooter without legal placeholders, middleware `/pricing` public, 8 new Vitest specs (46/46 green). Paywall demo trigger на `/dashboard` deferred → TD-080. | `528333b` | 2026-04-21 |
 | docs-only | kickoffs (slice 4a + 7ab) + AI staging runbook + PO_HANDOFF § 3.1 pre-CC checklist | `a407d7d` | 2026-04-21 |

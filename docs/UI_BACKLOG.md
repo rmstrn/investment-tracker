@@ -1,7 +1,7 @@
 # UI Backlog — Web Frontend (post-Slice 3)
 
 **Scope:** всё что осталось сделать в `apps/web` до MVP-launch. iOS / native mobile — **out of scope** (см. TASK_08, отдельная волна).
-**Status anchor:** 2026-04-21, main tip `fc44782`. TASK_07 Slice 1/2/3 merged (PR #45, #48, #50). CORS + staging deploy работают (PR #54+#55).
+**Status anchor:** 2026-04-21, main tip = this docs commit. TASK_07 Slice 1/2/3 + 7a/7b + 4a merged (PR #45, #48, #50, #58, #59). CORS + staging deploy работают (PR #54+#55).
 **Owner:** PO (приоритизация) + CC (реализация по micro-slices).
 **Cadence:** один slice = один kickoff + один PR. Нет multi-slice PR.
 
@@ -56,11 +56,11 @@ Backend dependencies указаны inline. TD-ссылки — на `docs/TECH_
 **Backend dep:** TASK_06 aggregator providers (TD-046) — SnapTrade + Binance + Coinbase. **Блокер для real-broker flow.** Manual-only variant можно стартовать уже сейчас через `POST /accounts` + `POST /transactions` (уже в OpenAPI).
 
 **Recommended split:**
-- 4a — Manual account CRUD (list + create modal + rename + disconnect), без OAuth. ~500 LOC.
+- 4a — Manual account CRUD (list + create modal + rename + delete), без OAuth. ~500 LOC. ✅ merged PR #59 (`c5590f5`, 2026-04-21) — `(app)/accounts` route + Add/Rename/Delete для `connection_type=manual`, sidebar activation, 4 TanStack hooks, `SyncStatusBadge` 'manual' variant. Soft-delete подтверждён (handler + OpenAPI). Opened TD-079 (FK CASCADE vs handler soft-delete mismatch, P3, defense-in-depth).
 - 4b — SnapTrade OAuth flow (OAuth init + callback handler). Ждёт TD-046. ~400 LOC.
 - 4c — Binance / Coinbase API-key flow. Ждёт TD-046. ~300 LOC.
 
-**Acceptance:** юзер может создать manual account, увидеть его в списке, удалить. Dashboard начинает показывать non-empty portfolio после добавления transactions (даже если через curl).
+**Acceptance:** юзер может создать manual account, увидеть его в списке, удалить. Dashboard начинает показывать non-empty portfolio после добавления transactions (даже если через curl). — ✅ для 4a; sync-status / "Sync now" остаются 4b/4c scope.
 
 **Risks:**
 - SnapTrade OAuth flow требует production webhook URL → нужен staging webhook tunnel (ngrok / Cloudflare tunnel) или skip до TD-046 закрытия.
@@ -258,7 +258,7 @@ Slice 10 (scope-cut banners) — independent
 Slice 13 (sidebar) — bundled into next layout-touching slice
 ```
 
-**Critical path to alpha launch:** Slice 4a → Slice 5a → Slice 6a → Slice 7a + 7b → Slice 12. Всё остальное — follow-ups.
+**Critical path to alpha launch:** ~~Slice 4a~~ ✅ → Slice 5a → Slice 6a (ждёт TD-070) → ~~Slice 7a + 7b~~ ✅ → Slice 12. Всё остальное — follow-ups. **Остался MVP critical:** Slice 5a (Transactions UI) + Slice 6a (Insights read, unblocked после TD-070) + Slice 12 (Empty/Error states).
 
 ---
 
