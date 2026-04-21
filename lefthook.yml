@@ -33,5 +33,11 @@ pre-push:
       run: sh tools/scripts/hook-typecheck.sh
     go-vet:
       run: sh tools/scripts/hook-go-vet.sh
+    go-lint:
+      # golangci-lint on `--new-from-rev=origin/main` so the linter
+      # catches bodyclose / noctx / errcheck / gocritic / revive
+      # BEFORE they reach CI (TD-R077). Self-skips when Go or the
+      # linter binary or origin/main isn't available.
+      run: sh tools/scripts/hook-golangci-lint.sh
     py-mypy:
       run: sh tools/scripts/hook-py-mypy.sh

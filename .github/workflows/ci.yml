@@ -152,6 +152,55 @@ jobs:
         run: uv run pytest
 
   # ------------------------------------------------------------
+  # AI Service Docker build gate (TD-R086)
+  # ------------------------------------------------------------
+  # deploy-ai.yml is workflow_dispatch-only, so the AI Service
+  # Dockerfile never gets verified on a PR before a manual deploy.
+  # TD-087 + TD-085 were both latent Dockerfile bugs caught only
+  # during PO's first `flyctl deploy` — this job catches that
+  # class of bug pre-merge. Runs in parallel with the Python
+  # lint+test job; no `needs:` so a green PR Docker build does
+  # not block host-Python diagnostics.
+  docker-build-ai:
+    name: AI — Docker build + smoke import
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build apps/ai Dockerfile
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/ai/Dockerfile
+          target: runtime
+          push: false
+          load: true
+          tags: ai-service:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Smoke import inside runtime image
+        # Proves the built image can `import ai_service.main` — the
+        # exact TD-087 failure mode (multi-stage venv without
+        # --no-editable shipped a .pth file pointing at a missing
+        # /src path). Also a cheap guard against future
+        # dockerignore typos (TD-085) — if pyproject.toml or
+        # README.md is missing from the runtime layer, Hatchling
+        # fails at import.
+        run: |
+          docker run --rm --entrypoint python ai-service:ci \
+            -c "import ai_service.main; print('import OK')"
+
+  # NOTE: No matching Core API Docker-build job here — apps/api is
+  # already built + deployed on every push to main via
+  # .github/workflows/deploy-api.yml (the `flyctl deploy` step in
+  # Deploy — staging), so Dockerfile regressions surface there
+  # without a separate CI job. If a future PR-gated check is
+  # desired, the pattern above clones cleanly.
+
+  # ------------------------------------------------------------
   # Cross-service contract checks
   # ------------------------------------------------------------
   contract-header-symmetry:
