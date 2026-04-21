@@ -44,3 +44,32 @@ export function mapAccountMutationError(err: unknown, verb: MutationVerb): strin
   }
   return `Couldn't ${verb} account. Please try again.`;
 }
+
+export type TransactionMutationVerb = 'add' | 'update' | 'delete';
+
+/**
+ * Map a transactions mutation error to short user-facing copy.
+ *
+ * - 409 `DUPLICATE_TRANSACTION` — backend fingerprint match (account/symbol/qty/
+ *   price/type/minute). Catches accidental double-submits.
+ * - 403 `FORBIDDEN` — only manual rows can be edited/deleted; UI gates this
+ *   too (no kebab on non-manual), but covers race / inconsistent state.
+ */
+export function mapTransactionMutationError(err: unknown, verb: TransactionMutationVerb): string {
+  const parsed = parseApiError(err);
+  if (parsed) {
+    switch (parsed.code) {
+      case 'DUPLICATE_TRANSACTION':
+        return 'This transaction looks like a duplicate of an existing one.';
+      case 'FORBIDDEN':
+        return "This transaction is synced from a broker and can't be changed.";
+      case 'VALIDATION_ERROR':
+        return parsed.message;
+      case 'IDEMPOTENCY_IN_PROGRESS':
+        return 'Still processing your last request — try again in a moment.';
+      case 'RATE_LIMITED':
+        return 'Rate limit reached. Try again in a minute.';
+    }
+  }
+  return `Couldn't ${verb} transaction. Please try again.`;
+}
