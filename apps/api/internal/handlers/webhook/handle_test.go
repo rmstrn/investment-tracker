@@ -48,14 +48,13 @@ func (f *fakeClaimer) Claim(_ context.Context, source, id string) (bool, error) 
 }
 
 // fakeProvider lets each test configure Verify behavior and the
-// dispatch table. The event handlers record which one fired so
-// tests can assert routing.
+// dispatch table. Individual tests close over their own
+// invocation counters inside the handler funcs in `handlers`.
 type fakeProvider struct {
-	source     string
-	verifyErr  error
-	ev         *webhook.VerifiedEvent
-	calledWith []string // names of handler keys that fired
-	handlers   map[string]webhook.EventHandler
+	source    string
+	verifyErr error
+	ev        *webhook.VerifiedEvent
+	handlers  map[string]webhook.EventHandler
 }
 
 func (p *fakeProvider) Source() string { return p.source }
