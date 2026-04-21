@@ -423,3 +423,105 @@ fallback на auto-random. Это аккуратно без breaking existing Sl
 **Owner.** Web lead. **Revisit.** Если получим alpha incident с duplicate row от network-lost
 edge case, либо если добавится critical mutation где idempotency критична (e.g. Stripe Checkout
 в 7c — там уже cost-benefit flip'нется в favor of fixed key).
+
+## 2026-04-21 — AI Service staging deploy topology (TD-070)
+
+**Context.** UI Slice 6a (Insights read-only) и последующий prod soak перед
+404-swallow flip (`RUNBOOK_ai_flip.md`) требуют long-lived staging AI Service.
+Core API staging уже живёт на `api-staging.investment-tracker.app` (PR C + CORS
+slice). AI Service Dockerfile + production `apps/ai/fly.toml` есть с TASK_05, но
+staging-аналога не было — `AI_SERVICE_URL` в Core API staging Doppler указывал
+на `http://investment-tracker-ai-staging.internal:8000`, где нет listener'а,
+результат — 503 на `/ai/chat/*` и `/ai/insights/*` (agreed degrade, TD-070).
+
+**Decision.** Отдельный Fly app `investment-tracker-ai-staging`, отдельная
+Doppler config `stg` в project `investment-tracker-ai`. Ключевые параметры
+`apps/ai/fly.staging.toml`:
+
+- `app = "investment-tracker-ai-staging"`, `primary_region = "fra"`.
+- `ENVIRONMENT = "staging"`, `LOG_LEVEL = "INFO"` в `[env]`.
+- `min_machines_running = 1` (не 0 как в prod) — UI smoke / демо не должны ловить
+  cold-start; staging traffic всё-равно bursty, `auto_stop_machines = "suspend"`
+  держит idle cost низким (~$2-3/мес на 1 suspended machine).
+- Anthropic model IDs (`ANTHROPIC_MODEL_SONNET|HAIKU|OPUS`) захардкожены в `[env]`,
+  **не** в Doppler. Причина: Fly secrets override `[env]` — если модели живут в
+  Doppler и кто-то случайно зальёт туда устаревший ID, он silently вытеснит
+  explicit pin в toml. Explicit in diff > silently overridable.
+- 4 required secrets в Doppler stg (manifest: `apps/ai/secrets.keys.yaml`):
+  `INTERNAL_API_TOKEN`, `ANTHROPIC_API_KEY`, `CORE_API_URL`,
+  `CORE_API_INTERNAL_TOKEN`. `ENCRYPTION_KEK` — не нужен (AI Service — proxy к
+  Anthropic, не envelope-шифрует; KEK живёт только в Core API).
+
+**Bridge invariant.** `AI_SERVICE_TOKEN` в Core API staging Doppler ≡
+`INTERNAL_API_TOKEN` в AI Service staging Doppler (одно и то же значение, две
+стороны bearer-пары). Сейчас охраняется руками PO в runbook § 5; automated drift
+check зарезервирован как **TD-082** (open'ится как реальный TD когда AI Service
+будет готовиться к prod flip).
+
+**Manifest path asymmetry.** Core API manifest лежит в `ops/secrets.keys.yaml`
+(legacy shared-ops путь), AI — в `apps/ai/secrets.keys.yaml` (per-service).
+Future uniformity question (перенести Core API manifest в `apps/api/` тоже) —
+out of scope. `ops/scripts/verify-prod-secrets.sh` генерализован через
+`KEYS_FILE="${KEYS_FILE:-<default>}"` fallback (1-line patch) — backward-compat
+для существующего Core API callsite ✅. Новый `ops/scripts/verify-ai-secrets.sh`
+— thin shim: экспортит `KEYS_FILE=apps/ai/secrets.keys.yaml` и `exec`'ает
+generic script. Zero duplication.
+
+**Deploy workflow.** `.github/workflows/deploy-ai.yml` переработан из single-job
+на prod в `workflow_dispatch` с input `environment: staging|production`
+(default = staging). Job вычисляет `FLY_APP` + `FLY_CONFIG` из input,
+pre-deploy runs `verify-ai-secrets.sh`, затем `flyctl deploy --remote-only`.
+Две-jobs отдельные staging/prod отклонены как DRY violation — AI pipeline
+не имеет k6, release_command миграций или approval gate (в отличие от
+`deploy-api.yml`). Workflow — alternative к ручному `flyctl deploy` в runbook
+§ 6, **не** заменяет § 2 (`flyctl apps create`) + § 4 (Doppler provisioning) +
+§ 5 (Core API bridge update); если PO запустит workflow до их выполнения,
+verify-secrets упадёт на пустом Fly app — нормальная защита.
+
+**Consequences.**
+- Staging idle cost ~$2-3/мес (1 suspended machine, `min_machines_running=1`).
+- Anthropic API key shared между dev/stg/prd на старте — low staging traffic
+  делает rotation overhead нецелесообразным; rotate'ить к staging-specific
+  key если abuse/cost pattern появится.
+- Sentry/PostHog на staging optional — не блокируют deploy.
+- Slice 6a разблокируется после PO runtime deploy + smoke (runbook § 2-7).
+
+**Alternatives considered.**
+1. `[deploy.env.staging]` в том же `fly.toml` — Fly не поддерживает
+   multi-environment в одном конфиге, отклонено.
+2. `min_machines_running = 0` + cold-start terpeть — отклонено из-за UX удара
+   на демо: первый hit после idle = +5-15 сек задержки, frontend insights
+   list выглядит broken.
+3. Staging-specific Anthropic key — deferred; нет инцидентов с shared key,
+   low traffic не оправдывает provisioning overhead.
+4. Модели в Doppler как secrets — отклонено (см. выше про Fly override).
+
+**Scope-adjacent change.** `ops/scripts/verify-prod-secrets.sh` получил 1-line
+generalization (`KEYS_FILE="${KEYS_FILE:-<default>}"`) чтобы AI shim мог
+override'ить путь без дублирования парсера. Regression risk = near-zero
+(существующий Core API callsite не передаёт env → default branch, поведение
+идентично). Flag'нуто в PR description отдельным bullet'ом.
+
+**Owner.** Infra + PO (runtime ops). **Revisit.** Когда TD-082 opened для
+prod flip — formalize bridge drift check в CI.
+
+## 2026-04-21 — `verify-prod-secrets.sh` generalized via KEYS_FILE env override
+
+Minor refactor: `ops/scripts/verify-prod-secrets.sh` теперь читает манифест из
+`KEYS_FILE` env-var с fallback на исторический путь
+(`${SCRIPT_DIR}/../secrets.keys.yaml`). Backward-compat для существующего
+Core API caller — он env-var не передаёт, fallback → тот же путь → то же поведение.
+
+**Why.** Позволяет per-service shim'ам (первый — `verify-ai-secrets.sh`) выбрать
+собственный манифест без дублирования 50 строк YAML-парсинга + flyctl diff
+logic. Когда/если добавятся web-client secrets или worker-specific secrets —
+та же shim-модель.
+
+**Not done (intentional).** Не переписываю `verify-prod-secrets.sh` в generic
+`verify-secrets.sh` с required `KEYS_FILE` — лишний touch на прод-критичный
+Core API deploy path ради cosmetic rename. Fallback-путь работает, имя
+`verify-prod-secrets.sh` не врёт (когда вызывается без env — это именно Core API
+prod secrets). Future cleanup = low-priority P3.
+
+**Owner.** Infra. **Revisit.** Если per-service shims умножатся > 3 — rename
+в `verify-secrets.sh` + update всех callers.

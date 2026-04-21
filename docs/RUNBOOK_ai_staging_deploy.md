@@ -55,9 +55,15 @@ flyctl apps list | grep investment-tracker-ai
 
 ---
 
-## 3. Создать `apps/ai/fly.staging.toml`
+## 3. `apps/ai/fly.staging.toml`
 
-Скопируй блок ниже в новый файл `apps/ai/fly.staging.toml`. Это staging-аналог `apps/ai/fly.toml` со staging-специфичным app name + ENVIRONMENT = staging + min_machines_running = 1 (как у API staging).
+> **2026-04-21 update (TD-070 config-as-code slice).** Файл теперь в репо —
+> шаг = проверить что актуален (`git log apps/ai/fly.staging.toml`), не создавать
+> заново. Anthropic model IDs (`ANTHROPIC_MODEL_SONNET|HAIKU|OPUS`) захардкожены в
+> `[env]` блоке, **не** через Doppler (§ 4.2 ниже обновлён соответственно).
+> Manifest требуемых secrets — `apps/ai/secrets.keys.yaml`; verify CI —
+> `ops/scripts/verify-ai-secrets.sh`. Оригинальный шаблон ниже для справки, если
+> понадобится пересоздать:
 
 ```toml
 # Fly.io deployment config — AI Service (staging).
@@ -130,7 +136,8 @@ doppler configs create prd --project investment-tracker-ai
 ```
 
 ### 4.2 Secrets для config `stg`
-Минимально-обязательные ключи (из `apps/ai/src/ai_service/config.py`):
+Минимально-обязательные ключи (manifest: `apps/ai/secrets.keys.yaml`, source:
+`apps/ai/src/ai_service/config.py`):
 
 | Key | Value | Где взять |
 |---|---|---|
@@ -138,13 +145,20 @@ doppler configs create prd --project investment-tracker-ai
 | `ANTHROPIC_API_KEY` | `sk-ant-…` | твой Anthropic console |
 | `CORE_API_URL` | `https://api-staging.investment-tracker.app` | hardcoded |
 | `CORE_API_INTERNAL_TOKEN` | `<существующее значение из investment-tracker-api/stg>` | `doppler secrets get CORE_API_INTERNAL_TOKEN --project investment-tracker-api --config stg --plain` |
-| `ANTHROPIC_MODEL_SONNET` | `claude-sonnet-4-6` | hardcoded (default) |
-| `ANTHROPIC_MODEL_HAIKU` | `claude-haiku-4-5-20251001` | hardcoded |
-| `ANTHROPIC_MODEL_OPUS` | `claude-opus-4-6` | hardcoded |
 
-Опциональные (можно отложить):
-- `SENTRY_DSN` — если хочешь error-tracking на staging
-- `POSTHOG_API_KEY` — analytics
+> **Anthropic model IDs (`ANTHROPIC_MODEL_SONNET|HAIKU|OPUS`) — НЕ заливать в
+> Doppler.** Они захардкожены в `apps/ai/fly.staging.toml [env]` блоке
+> (commit SHA — см. `git log apps/ai/fly.staging.toml`). Fly secrets
+> override `[env]` — если модели окажутся в Doppler, они silently вытеснят
+> explicit pin в toml. Если при rollout'е появится нужда per-env pin —
+> правь toml, не Doppler.
+
+Опциональные (можно отложить; `verify-ai-secrets.sh` их **не** проверяет):
+- `SENTRY_DSN`, `SENTRY_TRACES_SAMPLE_RATE` — error-tracking.
+- `POSTHOG_API_KEY`, `POSTHOG_HOST` — analytics.
+- `ANTHROPIC_MAX_CONCURRENT`, `ANTHROPIC_TIMEOUT_SECONDS`, `ANTHROPIC_MAX_RETRIES` —
+  tuning (config.py defaults ОК для старта).
+- `CORE_API_TIMEOUT_SECONDS` — тоже tuning (default 30.0).
 
 Залить в Doppler (быстрый способ — UI; CLI вариант):
 
@@ -174,7 +188,18 @@ doppler secrets download --project investment-tracker-ai --config stg --no-file 
 После этого:
 ```bash
 flyctl secrets list --app investment-tracker-ai-staging
-# → должен видеть все 7 ключей (Anthropic models считаются env, не secrets — они в fly.staging.toml [env] можно вынести если хочешь, но и так ОК)
+# → должен видеть 4 required ключа (модели живут в fly.staging.toml [env], не
+#   secrets, поэтому в `secrets list` не появятся — это by design).
+```
+
+Sanity-check manifest'ом (читает ключи с Fly, сравнивает с
+`apps/ai/secrets.keys.yaml`):
+
+```bash
+export FLY_APP=investment-tracker-ai-staging
+export FLY_API_TOKEN=$(flyctl auth token)
+bash ops/scripts/verify-ai-secrets.sh
+# → exit 0 + "4 required keys present"
 ```
 
 ---
@@ -196,7 +221,7 @@ doppler secrets download --project investment-tracker-api --config stg --no-file
   flyctl secrets import --app investment-tracker-api-staging
 ```
 
-⚠ **Важно:** `AI_SERVICE_TOKEN` в Core API должен быть равен `INTERNAL_API_TOKEN` в AI Service. Эту инвариантность охраняет твоя голова — automated drift check пока не написан (новый TD-кандидат: «verify AI_SERVICE_TOKEN ↔ INTERNAL_API_TOKEN parity in deploy CI»).
+⚠ **Важно:** `AI_SERVICE_TOKEN` в Core API должен быть равен `INTERNAL_API_TOKEN` в AI Service. Инвариантность охраняет PO — automated drift check зарезервирован как **TD-082** (open'ится когда AI Service готовится к prod flip; сейчас staging-only).
 
 После `secrets import` Fly сделает rolling restart Core API staging (~30 сек). Это OK.
 
@@ -218,6 +243,14 @@ Watch the build. Deploy ожидаемо ~3-5 минут (uv install + image pus
 
 Если что-то падает на build → проблема в Dockerfile / pyproject. Фикси, коммить, перезапускай.
 Если падает на healthcheck → проверь логи: `flyctl logs --app investment-tracker-ai-staging`. Чаще всего — secret missing (Anthropic key не залит, например).
+
+> **Alternative — GitHub Actions (после bootstrap).** Когда § 2 (apps create) +
+> § 4 (Doppler provisioning + Fly secrets sync) + § 5 (Core API bridge update)
+> выполнены **и** `FLY_API_TOKEN` лежит в repo secrets — можно катить через
+> `Actions → Deploy — ai (Fly.io) → Run workflow → environment: staging`.
+> Workflow запустит `verify-ai-secrets.sh` pre-deploy check, затем `flyctl
+> deploy --remote-only`. **Не** заменяет § 2-5 bootstrap; если запустить
+> раньше — verify-secrets упадёт потому что Fly app пустой.
 
 ---
 
@@ -291,7 +324,6 @@ DNS — НЕ блокер для закрытия TD-070. `*.fly.dev` URL вал
 3. **`docs/PO_HANDOFF.md`** — § 9 (AI Service deploy pending) убрать или зачеркнуть; main tip обновить.
 4. **`docs/README.md`** — Wave 2 TASK_05 строка: убрать «(staging deploy pending TD-070)».
 5. **`docs/RUNBOOK_ai_flip.md`** — добавить заметку «staging up на `…fly.dev`/`ai-staging.it.app` since YYYY-MM-DD; prod flip pending».
-6. (Опционально) добавить `apps/ai/secrets.keys.yaml` по образцу `ops/secrets.keys.yaml` — чтобы CI verify-secrets stage у тебя был для AI тоже. Не блокер, новый TD-кандидат.
 
 Один docs-only commit прямо в main (`--no-verify` если lefthook не подцепился).
 

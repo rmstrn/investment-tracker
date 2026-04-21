@@ -34,7 +34,10 @@ else
 fi
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-KEYS_FILE="${SCRIPT_DIR}/../secrets.keys.yaml"
+# KEYS_FILE is overridable so per-service shims (e.g. verify-ai-secrets.sh)
+# can point at their own manifest without duplicating the parse logic.
+# Existing callers that don't set it get the Core API manifest as before.
+KEYS_FILE="${KEYS_FILE:-${SCRIPT_DIR}/../secrets.keys.yaml}"
 
 if [ ! -f "$KEYS_FILE" ]; then
   echo "verify-prod-secrets: manifest not found at $KEYS_FILE" >&2
