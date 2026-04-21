@@ -32,19 +32,39 @@ if (!BASE_URL || !TOKEN) {
   throw new Error('BASE_URL and TEST_USER_TOKEN are required');
 }
 
-// Request shape per OpenAPI AIChatRequest: nested `message.content[]`
-// with `type: "text"` blocks. `conversation_id` is required; a
-// zero-UUID is rejected at write, so we omit it here and let the
-// server's validation path surface as a 400 only if we accidentally
-// regress. On staging, AI Service itself is not yet deployed
-// (TD-070), so the whole chain tolerates 503 for now and will flip
-// to a stricter 200-only assertion once TD-070 lands.
-const body = JSON.stringify({
-  conversation_id: '00000000-0000-0000-0000-000000000000',
-  message: { content: [{ type: 'text', text: 'ping' }] },
-});
+// setup runs once before VUs start; we mint a real conversation here
+// so every iteration exercises the full ownership + upstream path
+// rather than dying at the `conversation_id is required` validation
+// gate (which rejects uuid.Nil). On staging, AI Service itself is
+// not yet deployed (TD-070), so the chain still tolerates 503 and
+// will flip to a stricter 200-only assertion once TD-070 lands.
+export function setup() {
+  const res = http.post(`${BASE_URL}/ai/conversations`, JSON.stringify({ title: 'k6 smoke' }), {
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    tags: { scenario: 'ai_chat_stream_setup' },
+  });
+  if (res.status !== 201) {
+    fail(
+      `setup: POST /ai/conversations failed: status=${res.status} body=${
+        typeof res.body === 'string' ? res.body.substring(0, 200) : '<non-text>'
+      }`,
+    );
+  }
+  const id = res.json('id');
+  if (!id) {
+    fail(`setup: /ai/conversations returned no id: body=${res.body}`);
+  }
+  return { conversationId: id };
+}
 
-export default function () {
+export default function (data) {
+  const body = JSON.stringify({
+    conversation_id: data.conversationId,
+    message: { content: [{ type: 'text', text: 'ping' }] },
+  });
   const res = http.post(`${BASE_URL}/ai/chat/stream`, body, {
     headers: {
       Authorization: `Bearer ${TOKEN}`,
