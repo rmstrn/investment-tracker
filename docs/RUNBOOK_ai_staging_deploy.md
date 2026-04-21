@@ -7,6 +7,25 @@
 
 ---
 
+## ✅ STATUS: CLOSED 2026-04-21
+
+Runbook успешно выполнен — staging живёт на `https://investment-tracker-ai-staging.fly.dev/healthz` (200). TD-070 закрыта (см. `TECH_DEBT.md` § Resolved / TD-R070).
+
+**Latent bugs caught during first deploy (4 TDs opened):**
+- **TD-084** (P2) — flyctl build context CWD vs `--config` toml location (Dockerfile COPY paths должны быть repo-root-relative).
+- **TD-085** (P3, fixed inline `b079d30`) — `apps/ai/.dockerignore` исключал `README.md` который `pyproject.toml` readme-ref требует в build context.
+- **TD-086** (P2) — нет CI Docker build gate на `apps/ai/` (TD-087 + TD-085 должны были быть пойманы CI'ем, а не PO во время runtime ops).
+- **TD-087** (P3, fixed inline `4357739`) — `uv sync` в multi-stage Dockerfile должен использовать `--no-editable` (иначе `ModuleNotFoundError` в runtime stage).
+
+**Gotchas caught (не TDs — process notes):**
+- Doppler export на Windows в PowerShell добавляет UTF-8 BOM при пайпе `doppler secrets download --format env | flyctl secrets import`. Workaround: JSON-формат + PowerShell `ConvertFrom-Json` + spread в `flyctl secrets set`. Закреплено в § 4.3 ниже.
+- `openssl` отсутствует в default PowerShell; token generation через `[System.Security.Cryptography.RandomNumberGenerator]` работает как замена.
+- `GET /v1/chat/health` возвращает 404 на staging (prod-only endpoint в routing). Не блокер для smoke — `/healthz` + `/v1/health` дают достаточно.
+
+Runbook оставлен для reference + следующих Python service deploys (worker, analytics и т. д.).
+
+---
+
 ## 0. Что мы делаем
 
 Поднимаем staging-инстанс AI Service (FastAPI) на Fly.io по той же модели, что и Core API: отдельное Fly app `investment-tracker-ai-staging`, secrets через Doppler config `stg`, deploy через `flyctl deploy --config apps/ai/fly.staging.toml`.

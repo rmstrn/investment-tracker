@@ -15,6 +15,60 @@ Newest entries at the top.
 
 ---
 
+## docs: close td-070 + post-deploy ledger (ops fixes for 5 latent Dockerfile/CI bugs caught during first deploy)
+
+**Squash SHA:** `<this commit>`
+**Merged:** 2026-04-21
+**Base:** prior main tip after `b079d30` ops-fix.
+**Scope:** TD-070 closure docs pass. AI Service staging deploy CLOSED 2026-04-21 — `https://investment-tracker-ai-staging.fly.dev/healthz` returns 200; bridge invariant `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` verified via round-trip smoke. Slice 6a Insights UNBLOCKED.
+
+**Files updated:**
+- `docs/TECH_DEBT.md` — TD-070 moved Active → Resolved as **TD-R070** (full deploy sequence, SHAs `8ff5abf`/`4357739`/`b079d30`, 4 latent TDs caught documented). Opened **TD-084** (P2 flyctl build context CWD vs `--config` toml location), **TD-085** (P3 fixed inline `b079d30` — `apps/ai/.dockerignore` excluded README.md required by `pyproject.toml` readme-ref), **TD-086** (P2 — нет CI Docker build gate на `apps/ai/`), **TD-087** (P3 fixed inline `4357739` — `uv sync --no-editable` обязательно для multi-stage venv handoff).
+- `docs/PO_HANDOFF.md` — main tip line rewritten; TASK_05 Wave 2 status changed (✅ Staging deploy live); § 7 file map TASK_05 row updated; § 9 Track 1 trailing list strikethrough TD-070; § 9 Backend tracks strikethrough TD-070 + добавлен AI Service prod app context; § 9.5 P1 priority list strikethrough TD-070 + новые TD-084/TD-086 P2 entries; § 12 continuation prompt rewritten для нового main tip + UNBLOCKED Slice 6a.
+- `docs/03_ROADMAP.md` — Wave 2 status: TASK_05 строка переписана (CLOSED 2026-04-21 + 4 caught TDs); Month 3 / AI Service / FastAPI item marked `[x]` с reference на TD-070 close.
+- `docs/README.md` — file tree TASK_05 entry updated; Wave 2 table TASK_05 row updated; "Критический путь к alpha" — Slice 6a больше не "ждёт TD-070" а UNBLOCKED; final "Следующий шаг" paragraph — AI Service staging live mention added.
+- `docs/RUNBOOK_ai_staging_deploy.md` — intro блок "✅ STATUS: CLOSED 2026-04-21" с listing 4 caught TDs + 3 process gotchas (Doppler PowerShell BOM, `openssl` отсутствует на Windows, `/v1/chat/health` 404 expected на staging).
+- `docs/RUNBOOK_ai_flip.md` — "Update 2026-04-21" note: staging live, prod flip pending (Core API prod cutover + AI Service prod app `investment-tracker-ai` blockers).
+
+**Process gotchas закреплены (не TDs — runbook notes):**
+- Windows PowerShell + Doppler `--format env` pipe → flyctl: добавляется UTF-8 BOM который flyctl парсит как часть значения первого secret. Workaround: JSON-формат + `ConvertFrom-Json` + spread `@setArgs` в `flyctl secrets set`.
+- `openssl rand -hex 32` отсутствует в default Windows PowerShell — use `[System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)` + `[BitConverter]::ToString($bytes).Replace('-', '')`.
+- `GET /v1/chat/health` returns 404 на staging (prod-only routing); `/healthz` + `/v1/health` достаточно для smoke.
+
+**Tests / CI status:** docs-only, no CI run.
+**Admin-bypass:** N/A (docs-only).
+**Migrations:** N/A.
+**Closed TDs:** TD-070.
+**Opened TDs:** TD-084, TD-085 (fixed inline), TD-086, TD-087 (fixed inline).
+
+**Worktree cleanup (на PO):** N/A — docs-only edits в main worktree.
+
+---
+
+## ops-fix `b079d30` — fix(ai): remove README.md from dockerignore (Dockerfile COPY requires it)
+
+**SHA:** `b079d30`
+**Merged direct to main:** 2026-04-21 (single-line fix, no PR)
+**Scope:** `apps/ai/.dockerignore` содержал `README.md` в excludes (default scaffold). `apps/ai/pyproject.toml` объявляет `readme = "README.md"` — Hatchling build-backend требует README в build context во время `uv sync`. Без этого fix Docker builder stage падал с `FileNotFoundError: README.md`. Поймано во второй итерации `flyctl deploy` (после TD-087 fix).
+
+**Tracked:** TD-085 (TECH_DEBT.md — already-fixed, kept for general .dockerignore audit pattern).
+**Tests / CI status:** local `docker build -f apps/ai/Dockerfile .` reproduced fail-then-pass before pushing; CI nothing (TD-086 — нет CI Docker build для `apps/ai/`).
+**Migrations:** N/A.
+
+---
+
+## ops-fix `4357739` — fix(ai): install project non-editable in Dockerfile (fix multi-stage ModuleNotFoundError)
+
+**SHA:** `4357739`
+**Merged direct to main:** 2026-04-21 (single-line fix, no PR)
+**Scope:** `apps/ai/Dockerfile` builder stage делал `uv sync --frozen --no-dev` без `--no-editable`. По default'у uv ставит проект как editable install — `.pth` файл в `/opt/venv/lib/python3.13/site-packages` указывает на `/src/src/ai_service`. Multi-stage `COPY --from=builder /opt/venv /opt/venv` в runtime stage без исходников `/src` ломает import: `ModuleNotFoundError: No module named 'ai_service'`. Container booted, `uvicorn` стартовал, `/healthz` 200 — но любой `python -m ai_service.<X>` failed. Fix: `--no-editable` ставит проект как обычный package в site-packages, переносится с venv.
+
+**Tracked:** TD-087 (TECH_DEBT.md — already-fixed, kept for next multi-stage Python image rationale).
+**Tests / CI status:** local `docker build` + `docker run --rm --entrypoint python ai-staging:local -c "import ai_service.main"` reproduced fail-then-pass; CI nothing (TD-086).
+**Migrations:** N/A.
+
+---
+
 ## PR #61 — ci(ai): TD-070 — staging deploy config (fly.staging.toml, secrets manifest, verify shim, workflow)
 
 **Squash SHA:** `8ff5abf`

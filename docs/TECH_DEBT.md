@@ -14,6 +14,63 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-087 — `uv sync` в multi-stage Dockerfile должен использовать `--no-editable`
+
+**Added:** 2026-04-21 (TD-070 first deploy — caught + fixed inline `4357739`).
+**Priority:** P3 (already fixed; tracked для rationale + следующего multi-stage Python image).
+**Source:** `apps/ai/Dockerfile` builder stage делал `uv sync --frozen --no-dev` без `--no-editable`. По умолчанию uv устанавливает проект как **editable install** — ставит `.pth` файл в site-packages указывающий на `/src/src/ai_service`. В multi-stage build сcopy `/opt/venv` в runtime stage без исходников `/src` ломает import: `ModuleNotFoundError: No module named 'ai_service'`. Container боотится, но `python -m ai_service.main` падает.
+**Fix applied:** `--no-editable` добавлен в `uv sync` (commit `4357739`). Ставит проект как обычный package в `/opt/venv/lib/python3.13/site-packages/ai_service` — переносится с venv'ом.
+**Owner:** AI Service maintainer.
+**Trigger to revisit:** при создании новой Python service с multi-stage Dockerfile — закрепить паттерн в shared base image или Dockerfile template. Если будет добавлен `apps/worker/` или другой Python app, проверить что unit тесты в Docker (TD-086) поймают если забудут `--no-editable`.
+**Links:** merge-log entry для `4357739`; DECISIONS.md § "AI Service staging deploy topology (TD-070)" — gotchas list.
+
+### TD-086 — Нет CI gate для AI Service Docker build
+
+**Added:** 2026-04-21 (TD-070 first deploy — TD-087 + TD-085 могли быть пойманы CI'ем).
+**Priority:** P2.
+**Source:** `.github/workflows/ai.yml` сейчас гоняет lint + typecheck + pytest на host Python — НЕ строит Docker image. PR #61 (`8ff5abf`) shipped `Dockerfile` + `fly.staging.toml` без CI-side build verification. Результат: TD-087 (uv editable) и TD-085 (dockerignore README) пойманы только PO во время первого `flyctl deploy` — два цикла «build → fail → fix → push → re-deploy» (~30 минут). Должен был быть один CI-side fail на PR, исправлен в том же worktree.
+**Fix sketch.** Добавить в `ai.yml` job `docker-build`:
+```yaml
+docker-build:
+  runs-on: ubuntu-latest
+  needs: [lint, test]
+  steps:
+    - uses: actions/checkout@v4
+    - uses: docker/setup-buildx-action@v3
+    - run: docker build -f apps/ai/Dockerfile --target runtime -t ai-service:ci .
+    - name: Smoke import
+      run: |
+        docker run --rm --entrypoint python ai-service:ci -c \
+          "import ai_service.main; print('import OK')"
+```
+Опция: `--platform linux/amd64` если хост-runner ARM (на Fly machines amd64). Параллельный паттерн — Core API uже строит Docker в `deploy-api.yml` через flyctl, но не в push-CI workflow `api.yml`. Если внедрять — внедрять единым подходом для api+ai.
+**Owner:** infra + AI maintainer.
+**Trigger to revisit:** перед следующим Dockerfile-touching PR на `apps/ai/` или `apps/api/`; или при добавлении новой Python service.
+**Links:** TD-087, TD-085 (would-have-caught), merge-log entry close-td-070.
+
+### TD-085 — `apps/ai/.dockerignore` исключал `README.md` который требует `pyproject.toml`
+
+**Added:** 2026-04-21 (TD-070 first deploy — caught + fixed inline `b079d30`).
+**Priority:** P3 (already fixed; tracked для general .dockerignore audit pattern).
+**Source:** `apps/ai/.dockerignore` содержал `README.md` в списке excludes (default scaffold). `apps/ai/pyproject.toml` объявляет `readme = "README.md"` — Hatchling build-backend требует README.md в build context. Результат: `uv sync` в Docker builder падал с `FileNotFoundError: README.md`.
+**Fix applied:** удалена строка `README.md` из `.dockerignore` (commit `b079d30`).
+**Owner:** AI Service maintainer.
+**Trigger to revisit:** аудит `.dockerignore` в любом Python app с `pyproject.toml` declaring `readme` или `license` (требуется в build context). Закрыть как часть TD-086 (CI Docker build поймал бы).
+**Links:** TD-086, TD-087, merge-log entry для `b079d30`.
+
+### TD-084 — flyctl ловит build context из CWD, не из location of `--config` toml
+
+**Added:** 2026-04-21 (TD-070 first deploy — gotcha поймана PO).
+**Priority:** P2.
+**Source:** `flyctl deploy --config apps/ai/fly.staging.toml --app investment-tracker-ai-staging` запущенный из `D:\investment-tracker` использует `D:\investment-tracker\` как Docker build context (а не `apps/ai/`). Dockerfile pathing должен быть relative к repo root, **не** к `apps/ai/`. Default scaffold Dockerfile содержал `COPY pyproject.toml uv.lock ./` который ожидал CWD = `apps/ai/` — fail в реальном flyctl deploy.
+**Two valid resolutions:**
+1. Дополнить Dockerfile `WORKDIR /src` + `COPY apps/ai/pyproject.toml apps/ai/uv.lock ./` (paths relative to repo root). **← применено для TD-070.**
+2. Run flyctl из `apps/ai/` директории (`cd apps/ai && flyctl deploy --config fly.staging.toml`). Простое для local но breaks CI (CI workflow не делает `cd`).
+**Decision:** repo-root-relative paths — единственный workable вариант для CI. Дополнительно должен быть закреплён в Dockerfile pattern для всех multi-stage Python apps (см. TD-086).
+**Owner:** AI Service maintainer + infra.
+**Trigger to revisit:** при добавлении нового Fly-deploy'd app с monorepo subpath — sanity-check что Dockerfile COPY paths repo-root-relative; or каждый раз при `flyctl deploy` из CI workflow.
+**Links:** TD-086 (CI Docker build поймал бы); merge-log close-td-070 entry.
+
 ### TD-083 — `tools/scripts/hook-commitlint.sh` fallback branches dead under `set -e`
 
 **Added:** 2026-04-21 (caught during TD-070 merge flow, third CC encounter).
@@ -115,34 +172,6 @@ run for prod). ID is pinned so the prod-flip slice has a known handle.
 **Trigger to revisit:** next silent drift OR when smoke scenario count crosses ~10 (today 5).
 **Owner:** backend + infra
 **Scope:** ~150 LOC Python or Node validator + 1 new workflow step — 1 day
-
----
-
-### TD-070 — AI Service staging deploy
-
-**Status:** 🟡 config shipped, awaiting PO runtime deploy + smoke.
-**Added:** 2026-04-20 (staging ops bootstrap). **Priority:** P2.
-
-**Config-as-code shipped (2026-04-21):**
-- `apps/ai/fly.staging.toml` — staging Fly config (app `investment-tracker-ai-staging`, region `fra`, `min_machines_running = 1`, `LOG_LEVEL = "INFO"`, Anthropic model IDs pinned in `[env]`).
-- `apps/ai/secrets.keys.yaml` — manifest: 4 required (`INTERNAL_API_TOKEN`, `ANTHROPIC_API_KEY`, `CORE_API_URL`, `CORE_API_INTERNAL_TOKEN`) + 8 optional (Sentry/PostHog/Anthropic tuning).
-- `ops/scripts/verify-ai-secrets.sh` — thin shim over `verify-prod-secrets.sh` via `KEYS_FILE` env override (1-line generalization in the shared script).
-- `.github/workflows/deploy-ai.yml` — rewritten to `workflow_dispatch` + `environment: staging|production` input (default = staging) + pre-deploy verify-secrets step.
-- `docs/DECISIONS.md` — ADR "AI Service staging deploy topology (TD-070)" explaining topology, bridge invariant, and alternatives rejected.
-- `docs/RUNBOOK_ai_staging_deploy.md` — точечные правки (§ 3 landed note, § 4.2 Doppler models убраны, § 6 GH Actions alt path, § 9 obsolete line removed).
-
-**Still open (PO runtime ops):**
-1. `flyctl apps create investment-tracker-ai-staging --org personal` (runbook § 2).
-2. Doppler project `investment-tracker-ai` + config `stg` + 4 secrets (runbook § 4).
-3. `doppler → flyctl secrets import` для AI app (§ 4.3).
-4. Core API staging Doppler: `AI_SERVICE_URL` + `AI_SERVICE_TOKEN` (bridge invariant — equal to AI's `INTERNAL_API_TOKEN`), sync → Fly (§ 5).
-5. First `flyctl deploy --config apps/ai/fly.staging.toml` + smoke (§ 6-7).
-
-**Reserved:** TD-082 (automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity) opens real when AI Service prod flip is scheduled.
-
-**Trigger to close:** PO confirms `/healthz` 200 + auth check + clean logs, then marks TD-070 ✅ per runbook § 11 checklist.
-
-**Owner:** PO (remaining runtime ops). **Unblocks:** UI Slice 6a (Insights read-only).
 
 ---
 
@@ -646,6 +675,36 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R070 — AI Service staging deploy
+
+**Resolved:** 2026-04-21 (this PR — `docs: close td-070 + post-deploy ledger`).
+**Was:** AI Service (`apps/ai`, Python 3.13 / FastAPI) был code-complete (PR #34 + PR #43 cleanup) но не deployed ни в один environment. Блокировал UI Slice 6a (Insights read-only) потому что `/v1/ai/insights` endpoint недоступен на staging → фронт не мог имплементировать real data fetch.
+
+**Resolution sequence:**
+1. **Config-as-code** — PR #61 (`8ff5abf`, merged 2026-04-21): `apps/ai/fly.staging.toml`, `apps/ai/secrets.keys.yaml`, `ops/scripts/verify-ai-secrets.sh` shim, `.github/workflows/deploy-ai.yml` rewrite к `workflow_dispatch` + `environment:` input, ADR в `DECISIONS.md`, точечные правки `RUNBOOK_ai_staging_deploy.md`.
+2. **First deploy + 2 ops-fixes** — PO runtime ops поймали 2 latent Dockerfile bugs которые CI не словил:
+   - `4357739 fix(ai): install project non-editable in Dockerfile (fix multi-stage ModuleNotFoundError)` — см. TD-087.
+   - `b079d30 fix(ai): remove README.md from dockerignore (Dockerfile COPY requires it)` — см. TD-085.
+3. **Smoke green** — `https://investment-tracker-ai-staging.fly.dev/healthz` 200 OK; bridge invariant `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` verified via round-trip smoke; no error events в Sentry post-deploy.
+
+**Latent bugs caught during first deploy (documented as separate TDs):**
+- **TD-084** (P2) — flyctl build context CWD vs `--config` location (Dockerfile COPY paths must be repo-root-relative).
+- **TD-085** (P3, fixed inline `b079d30`) — `apps/ai/.dockerignore` excluded `README.md` which `pyproject.toml` readme-ref requires.
+- **TD-086** (P2) — no CI Docker build gate на `apps/ai/` (TD-087 + TD-085 должны были быть пойманы CI).
+- **TD-087** (P3, fixed inline `4357739`) — `uv sync` должен использовать `--no-editable` в multi-stage Dockerfile.
+
+**Reserved for prod flip:** TD-082 (automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity) — opens real когда AI Service prod deploy scheduled.
+
+**Unblocked:** UI Slice 6a (Insights read-only) — фронт может имплементировать real data fetch против `https://investment-tracker-ai-staging.fly.dev/v1/ai/insights`.
+
+**Not yet done (пост-staging tracks):**
+- AI Service prod app (`investment-tracker-ai`, separate from staging) — отдельный runbook ops, блокер 404-swallow strict flip (`RUNBOOK_ai_flip.md`).
+- DNS CNAME `investment-tracker-ai-staging.fly.dev` → `ai-staging.investment-tracker.app` — cosmetic, не блокер.
+
+**Links:** `RUNBOOK_ai_staging_deploy.md`, `DECISIONS.md` § "AI Service staging deploy topology (TD-070)", `RUNBOOK_ai_flip.md` (prod flip pending), merge-log `close-td-070` entry.
+
+---
 
 ### TD-R075 — k6 smoke scripts drift vs actual API response shapes
 

@@ -8,9 +8,9 @@
 
 **Wave 2: ✅ code-complete + staging deploy live** (2026-04-21)
 
-TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; **staging deploy config shipped PR #61 `8ff5abf`**, runtime deploy pending PO per `RUNBOOK_ai_staging_deploy.md` § 2-7 — TD-070 still open до smoke green).
+TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.investment-tracker.app`). TASK_05 AI Service (PR #34 + PR #43 cleanup; **staging deploy CLOSED 2026-04-21** — PR #61 `8ff5abf` config-as-code + ops-fixes `4357739`/`b079d30`; app `investment-tracker-ai-staging.fly.dev` `/healthz` 200; bridge invariant OK; TD-070 resolved с 4 latent TDs caught — TD-084/085/086/087 per `TECH_DEBT.md`).
 
-**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a+5a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD + transactions CRUD для buy/sell/dividend); web на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.** Slice 5b (split/transfer/fee) / 4b/4c / 6 scope — см. `UI_BACKLOG.md` (canonical source). Critical path до alpha: Slice 6a (Insights, ждёт TD-070) + Slice 12 (Empty/Error states). TASK_06 broker integrations разблокированы — manual-only flow готов end-to-end, OAuth-providers ждут TD-046.
+**Wave 3: 🟢 in flight** — TASK_07 Web Frontend Slice 1+2+3+7a+7b+4a+5a merged (auth + dashboard + positions + AI chat + landing/pricing + manual accounts CRUD + transactions CRUD для buy/sell/dividend); web на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.** Slice 5b (split/transfer/fee) / 4b/4c / 6 scope — см. `UI_BACKLOG.md` (canonical source). Critical path до alpha: Slice 6a (Insights, UNBLOCKED TD-070) + Slice 12 (Empty/Error states). TASK_06 broker integrations разблокированы — manual-only flow готов end-to-end, OAuth-providers ждут TD-046.
 
 **Wave 4: 🧊 deferred** — TASK_08 iOS (out of MVP scope, отдельный репо).
 
@@ -84,7 +84,7 @@ TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.invest
 ## Месяц 3 — ИИ и iOS
 
 ### AI Service (параллельный трек)
-- [ ] FastAPI проект, Anthropic SDK
+- [x] FastAPI проект, Anthropic SDK (TASK_05 scaffold + staging deploy TD-070 ✅ 2026-04-21 — `investment-tracker-ai-staging.fly.dev`)
 - [ ] Tools для доступа к портфелю пользователя (REST к Core API)
 - [ ] AI Chat endpoint с SSE-стримингом
 - [ ] Session management для разговоров

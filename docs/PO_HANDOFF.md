@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-21 (Slice 5a post-merge docs pass from CC: PR #60 `5e556a9` merged — Transactions UI add/edit/delete для `buy/sell/dividend` на Position Detail. Single `TransactionFormDialog` + row-level kebab gated на `source === 'manual'`. 64/64 Vitest, 10/10 CI green, no admin-bypass. TD-081 reservation не использован (genuine debt не обнаружен) — ID остаётся свободным. 2 новых ADR в DECISIONS.md. `/positions/[id]` на `staging.investment-tracker.app` готов к manual CRUD smoke. Critical path до alpha сокращается: остаются **Slice 6a (Insights read-only, ждёт TD-070)** + **Slice 12 (Empty/Error states)**. Prior main tip `37b2d6c` (PO-Claude lessons-learned codification + slice-5a kickoff); before that — Slice 4a `c5590f5` (PR #59) и Slice 7a+7b `528333b` (PR #58). CORS end-to-end live с PR #54/#55; Doppler stg + fly staging настроены; web ↔ API cross-origin flow работает.)
+**Last updated:** 2026-04-21 (TD-070 closure — AI Service staging live. Sequence: PR #61 `8ff5abf` config-as-code (fly.staging.toml + secrets manifest + verify shim + workflow rewrite + ADR) → ops-fix `4357739` (`uv sync --no-editable` для multi-stage venv handoff) → ops-fix `b079d30` (`.dockerignore` лишал README.md который требует `pyproject.toml` readme-ref) → PO runtime ops (Doppler stg + fly app create + secrets sync + bridge invariant + first deploy) → smoke green на `https://investment-tracker-ai-staging.fly.dev/healthz`. 4 latent TDs caught + opened: TD-084 (P2 flyctl build context), TD-085 (P3 fixed inline), TD-086 (P2 no CI Docker build), TD-087 (P3 fixed inline). Slice 6a Insights UNBLOCKED. Prior main tip `5e556a9` (Slice 5a Transactions UI PR #60). CORS end-to-end live с PR #54/#55; Doppler stg + fly staging настроены; web ↔ API ↔ AI cross-origin flow работает end-to-end.)
 
 ---
 
@@ -27,7 +27,7 @@ TASK_01 (monorepo+CI), TASK_02 (design system), TASK_03 (API contract + schema).
   - ✅ CORS middleware (PR #54 `adad1a1` + hotfix PR #55 `f1b5799`, 2026-04-21) — allowlist из `ALLOWED_ORIGINS`, 10 scope-cut `X-*` + `X-RateLimit-*` в `ExposeHeaders`.
   - ✅ Staging deploy live: `api-staging.investment-tracker.app` — CORS smoke 204 OK с `Access-Control-Allow-Origin: https://staging.investment-tracker.app` + все expose-headers. Web ↔ API cross-origin flow работает.
   - ⏳ Prod cutover — ждёт 24-48h staging soak + PR D (workers deploy target, **TD-066 blocker**).
-- **TASK_05 AI Service (Python):** ✅ PR #34 merged + ✅ cleanup PR #43 `b6108a4` (`record_ai_usage` dual-write удалён — Core API single-writer per PR #44). 404-swallow → strict flip ждёт prod soak (см. `RUNBOOK_ai_flip.md`). **⚠ Staging deploy не сделан** — TD-070 blocker для Slice 6 Insights UI.
+- **TASK_05 AI Service (Python):** ✅ PR #34 merged + ✅ cleanup PR #43 `b6108a4` (`record_ai_usage` dual-write удалён — Core API single-writer per PR #44). 404-swallow → strict flip ждёт prod soak (см. `RUNBOOK_ai_flip.md`). **✅ Staging deploy live (TD-070 closed 2026-04-21)** — `https://investment-tracker-ai-staging.fly.dev` (Fra), bridge invariant `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` verified. Slice 6a Insights UNBLOCKED.
 
 ### Волна 3 — 🟢 в работе
 - **TASK_07 (Web Frontend):** Slice 1 + 2 + 3 + 7a + 7b + 4a + 5a merged — Auth + Dashboard + Positions + AI Chat + Landing + Pricing + Manual Accounts CRUD + Transactions CRUD работают на `staging.investment-tracker.app`. **Manual MVP end-to-end flow замкнут.**
@@ -50,7 +50,12 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | post-slice-5a docs pass from CC (merge-log PR #60 entry + PO_HANDOFF § 1 / § 2 / Wave 3 status + UI_BACKLOG Slice 5a ✅ + critical-path update + TASK_07 status row + ROADMAP Wave 3 note + TECH_DEBT note про TD-081 reservation unused + DECISIONS.md 2 новых ADR). No code changes. | this commit | 2026-04-21 |
+| **main tip** | TD-070 closure docs pass: TECH_DEBT (TD-070 → Resolved as TD-R070; opened TD-084/085/086/087 для caught Dockerfile/CI bugs) + PO_HANDOFF § 1 / § 2 TASK_05 status / § 7 file map / § 9 Track 1 / § 9.5 / § 12 continuation prompt + 03_ROADMAP Wave 2 + Month 3 [x] FastAPI + README TASK_05 row + critical path + RUNBOOK_ai_staging_deploy intro CLOSED note + RUNBOOK_ai_flip Update note + merge-log 4 new entries. No code changes. | this commit | 2026-04-21 |
+| ops-fix | `b079d30` `fix(ai): remove README.md from dockerignore (Dockerfile COPY requires it)` — TD-085 inline fix, поймано во второй итерации deploy: `pyproject.toml` объявляет `readme = "README.md"` → Hatchling требует README в build context. | `b079d30` | 2026-04-21 |
+| ops-fix | `4357739` `fix(ai): install project non-editable in Dockerfile (fix multi-stage ModuleNotFoundError)` — TD-087 inline fix, поймано в первой итерации deploy: editable install кладёт `.pth` в site-packages указывающий на `/src/src/ai_service`, multi-stage handoff `/opt/venv` → runtime ломает import. | `4357739` | 2026-04-21 |
+| #61 | TD-070 config-as-code: `apps/ai/fly.staging.toml` (region `fra`, `min_machines_running=1`, Anthropic model IDs pinned), `apps/ai/secrets.keys.yaml` manifest (4 required + 8 optional), `ops/scripts/verify-ai-secrets.sh` thin shim над `verify-prod-secrets.sh` через `KEYS_FILE`, `.github/workflows/deploy-ai.yml` rewrite к `workflow_dispatch` + `environment: staging|production` input + pre-deploy verify-secrets, ADR в DECISIONS.md, точечные правки `RUNBOOK_ai_staging_deploy.md`. | `8ff5abf` | 2026-04-21 |
+| docs-only | TD-070 kickoff (`CC_KICKOFF_ai_staging_deploy.md`) + ROADMAP TASK_05 pending TD-070 note + TECH_DEBT TD-070 entry + PO_HANDOFF § 9 Track 1 update + § 9.5 P1 priority. | `f08627b` | 2026-04-21 |
+| docs-only | post-slice-5a docs pass from CC (merge-log PR #60 entry + PO_HANDOFF § 1 / § 2 / Wave 3 status + UI_BACKLOG Slice 5a ✅ + critical-path update + TASK_07 status row + ROADMAP Wave 3 note + TECH_DEBT note про TD-081 reservation unused + DECISIONS.md 2 новых ADR). No code changes. | `6aec268` | 2026-04-21 |
 | #60 | TASK_07 Slice 5a: Transactions UI (add/edit/delete) для `buy/sell/dividend` на Position Detail. Single `TransactionFormDialog` с mode create|edit, diff-only PATCH, row-level kebab gated на `source === 'manual'` (API-sourced rows immutable per OpenAPI contract). 3 TanStack mutation hooks (`useCreateTransaction` / `useUpdateTransaction` / `useDeleteTransaction`) с invalidation `['position-transactions', id]` + `['portfolio']` + `['positions']` + toast. `mapTransactionMutationError` (409 `DUPLICATE_TRANSACTION` / 403 `FORBIDDEN` tailored copy). DateTime picker = `<input type="datetime-local">` (no shadcn Calendar). 8 новых Vitest smoke (64/64 total). TD-081 reservation не использован (genuine debt не обнаружен) — ID остаётся свободным. Docs in-commit (этот commit): 2 DECISIONS ADRs (form-dialog pattern + Idempotency-Key auto-inject rationale). | `5e556a9` | 2026-04-21 |
 | prev main tip | PO-Claude lessons-learned codification: PO_HANDOFF § 8 gotchas #9-11 + § 10 codified 7-step post-merge flow + § 11 CC docs workflow / `--permission-mode acceptEdits` / TD ID reservation + new `CC_KICKOFF_task07_slice5a.md` scaffold. No code changes. | `37b2d6c` | 2026-04-21 |
 | prev main tip | post-slice-4a docs pass from CC #1 (UI_BACKLOG Slice 4a ✅ + critical-path update + TASK_07 status row + Wave 3 updates in PO_HANDOFF / ROADMAP / README). TD-079 + DECISIONS ADRs landed in-PR via #59. | `ece1b49` | 2026-04-21 |
@@ -253,7 +258,7 @@ Core API эмитит header когда фича частично недосту
 | `TASK_02_design_system.md` | Wave 1 ✅ |
 | `TASK_03_api_contract.md` | Wave 1 ✅ |
 | `TASK_04_core_backend.md` | Wave 2 ✅ + CORS slice |
-| `TASK_05_ai_service.md` | Wave 2 ✅ (staging deploy pending TD-070) |
+| `TASK_05_ai_service.md` | Wave 2 ✅ + staging deploy live (TD-070 closed 2026-04-21) |
 | `TASK_06_broker_integrations.md` | Wave 3 ⏳ (TD-046) |
 | `TASK_07_web_frontend.md` | Wave 3 🟢 Slice 1+2+3 merged. Дальнейший scope — `UI_BACKLOG.md` |
 | `TASK_08_ios_app.md` | Wave 4 🧊 (out of MVP scope) |
@@ -306,7 +311,7 @@ TD-076/077 которые конфликтовали с existing TD-076 (Contrac
 Дальше по TASK_04 (operational):
 - 24-48h staging soak до prod cutover.
 - PR D — workers deploy + asynq consumer (TD-066 blocker).
-- AI Service staging deploy (TD-070) — нужно для Slice 6 Insights UI.
+- ~~AI Service staging deploy (TD-070) — нужно для Slice 6 Insights UI.~~ ✅ Closed 2026-04-21 (`investment-tracker-ai-staging.fly.dev`).
 
 **Track 2 — Web Frontend (TASK_07): Wave 3 🟢 in flight**
 Slice 1 merged (PR #45, squash `a622bd3`) — Clerk auth + `(app)/dashboard`
@@ -360,14 +365,13 @@ states). Всё остальное (Settings, scope-cut banners, FloatingAiFab,
 PWA, SEO, Observability) — P2/P3, после alpha-сигнала.
 
 **Backend треки параллельно:**
-- **AI Service staging deploy (TD-070)** — блокер для Slice 6 Insights
-  UI. Отдельный CC kickoff — не UI-slice.
+- ~~**AI Service staging deploy (TD-070)** — блокер для Slice 6 Insights UI.~~ ✅ Closed 2026-04-21 — `investment-tracker-ai-staging.fly.dev` live. Slice 6a Insights UNBLOCKED.
 - **PR D — workers deploy + asynq consumer (TD-066).** Restore
   `target=workers|both` в `deploy-api.yml` + реальный asynq consumer
   (hard-delete TD-041/045, CSV export TD-039, broker sync TASK_06).
 - **TASK_06 — broker providers (TD-046).** Разблокирует Slice 4b/4c
   (SnapTrade/Binance/Coinbase OAuth+API-key flows).
-- **AI Service 404-swallow flip** после prod soak (`RUNBOOK_ai_flip.md`).
+- **AI Service 404-swallow flip** после prod soak (`RUNBOOK_ai_flip.md`). Prod app `investment-tracker-ai` — отдельный deploy после Core API prod cutover.
 
 **Key reference PRs:**
 - PR #54 + #55 (CORS middleware + lint hotfix) `fc44782` — staging live.
@@ -390,11 +394,13 @@ worktrees (`b3iii`, `task07-s1..3`, `pr-c`, `api-cors`) — CC удаляет
 - **TD-047 (P1 pre-GA)** — CSVExport tier flag.
 - **TD-045 ⇔ TD-041 (P1)** — hard-delete worker + undo re-check.
 - **TD-066 (P1)** — workers deploy target (PR D blocker).
-- **TD-070 (P1)** — AI Service staging deploy (Slice 6 blocker).
+- ~~**TD-070 (P1)** — AI Service staging deploy (Slice 6 blocker).~~ ✅ Closed 2026-04-21 (см. TECH_DEBT.md / TD-R070).
 - **TD-046 (P2)** — Aggregator providers (Slice 4b/4c blocker).
 - **TD-056 (P2)** — Clerk Backend SDK (Slice 8b 2FA blocker).
 - **TD-057 (P2)** — Billing CRUD + Stripe Checkout (Slice 7c + 9 blocker).
 - **TD-077/TD-078 (P2, CORS incident)** — lefthook pre-push golangci-lint gap + mandatory `gh pr checks --watch` policy.
+- **TD-084 (P2, new)** — flyctl build context CWD vs `--config` toml location (Dockerfile COPY paths repo-root-relative).
+- **TD-086 (P2, new)** — нет CI Docker build gate на `apps/ai/` (TD-087 + TD-085 могли бы быть пойманы CI'ем).
 
 Полный список — `TECH_DEBT.md`.
 
@@ -483,19 +489,23 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
   D:\investment-tracker\docs\DECISIONS.md
 
 Текущий статус в двух словах:
-- main tip = 5e556a9 (#60 Slice 5a Transactions UI) + post-merge
-  docs pass (2026-04-21)
+- main tip = TD-070 closure docs pass (2026-04-21) — TECH_DEBT
+  TD-070 → TD-R070 + 4 new TDs (TD-084/085/086/087 для latent
+  Dockerfile/CI bugs caught during first deploy).
 - TASK_04 Core API code-complete + staging deploy live
   (api-staging.investment-tracker.app, CORS allowlist работает)
+- TASK_05 AI Service staging deploy **closed 2026-04-21** —
+  investment-tracker-ai-staging.fly.dev. Bridge invariant verified.
 - TASK_07 Web Slice 1+2+3+4a+5a+7a+7b merged (auth + dashboard + positions +
   AI chat + manual accounts CRUD + transactions CRUD + landing/pricing);
   manual MVP end-to-end flow замкнут на staging.investment-tracker.app
 - Slice 5b+ scope — UI_BACKLOG.md (canonical). Критический путь до alpha:
-  Slice 6a (Insights read-only, ждёт TD-070) → Slice 12 (Empty/Error states).
+  **Slice 6a (Insights read-only — UNBLOCKED)** → Slice 12 (Empty/Error states).
   Остальное (Slice 5b split/transfer/fee, 4b/4c broker flows, Settings,
   Scope-cut banners, FloatingAiFab, PWA, SEO, Observability) — после alpha.
-- Backend параллельно: TD-070 (AI Service staging deploy — блокер 6a),
-  PR D (workers + asynq, TD-066), TASK_06 broker providers (TD-046)
+- Backend параллельно: PR D (workers + asynq, TD-066), TASK_06
+  broker providers (TD-046). AI Service prod app + 404-swallow flip
+  после Core API prod cutover (RUNBOOK_ai_flip.md).
 
 Стиль:
 - Отвечай по-русски, коротко, без over-formatting

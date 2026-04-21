@@ -1,6 +1,9 @@
 # Runbook — AI Service 404-swallow flip
 
 **Status:** DRAFT — pre-flight prepared while CC works on TASK_04 B3-i. Flip execution blocked until PR B3-iii merges (Core API write path closed).
+
+**Update 2026-04-21:** AI Service staging is now live at `https://investment-tracker-ai-staging.fly.dev` (TD-070 closed). Prod flip remains pending — gating factor is Core API prod cutover (24-48h staging soak + PR D workers) + AI Service prod app (`investment-tracker-ai`, separate from staging). Bridge invariant `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` verified на staging; same invariant will be re-verified for prod (see TD-082 reserved — automated parity check opens real with prod flip).
+
 **Owner:** TBD (AI Service maintainer at flip time)
 **Est. duration:** 30-60 min flip + 24h monitoring window
 **Blast radius:** AI Chat endpoints (`POST /v1/ai/chat`, `POST /v1/ai/chat/stream`), Insights generation. No data path impact.
