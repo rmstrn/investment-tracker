@@ -2,7 +2,7 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-21 (CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`. Main tip = `fc44782`. `ALLOWED_ORIGINS` добавлен в Doppler stg, fly staging передеплоен, smoke `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio` вернул 204 + все CORS headers. Web `staging.investment-tracker.app` ходит в API без preflight-блокировок. Следующий фокус — Web UI backlog (Slice 4+): см. новый файл `UI_BACKLOG.md`.)
+**Last updated:** 2026-04-21 (CORS middleware shipped end-to-end — PR #54 `adad1a1` (⚠ admin-bypass) + PR #55 `f1b5799` golangci-lint hotfix + docs pass `fc44782`. Main tip = `fc44782`. `ALLOWED_ORIGINS` добавлен в Doppler stg, fly staging передеплоен, smoke `curl -i -X OPTIONS https://api-staging.investment-tracker.app/portfolio` вернул 204 + все CORS headers. Web `staging.investment-tracker.app` ходит в API без preflight-блокировок. Следующий фокус — Web UI backlog (Slice 4+): см. новый файл `UI_BACKLOG.md`. **Added § 3.1 Pre-CC start checklist** после повторных прецедентов «kickoff не на origin/main до `git worktree add`» (CC блокировался, ждал re-push) и `.git/index.lock` drift при sandbox commit'ах.)
 
 ---
 
@@ -101,6 +101,48 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 **Admin-bypass policy (TD-006):** только при CI-outage или hotfix после P1 incident declaration. Логируется в `merge-log.md` с причиной.
 
 **State hygiene:** каждая новая сессия **ВЕРИФИЦИРУЕТ через Read** что файл реально на диске, прежде чем подтверждать обновление. Прецедент был: предыдущая сессия «обновила» 10+ файлов, но большинство не сохранилось — пришлось восстанавливать.
+
+---
+
+## 3.1 Pre-CC start checklist (MANDATORY — два прецедента)
+
+**Прежде чем PO запускает CC в worktree — ВЫПОЛНИТЬ ВСЕ ТРИ ШАГА в PowerShell на хост-машине (`D:\investment-tracker`). Без этого CC блокируется и теряем 10-30 минут на re-push + перечитывание брифа.**
+
+```powershell
+cd D:\investment-tracker
+
+# ШАГ 1 — убить index.lock если sandbox оставил (assistant НЕ может удалить
+# его сам из-за Windows mount permissions; см. § 8 gotcha #7).
+if (Test-Path .git\index.lock) { Remove-Item .git\index.lock }
+
+# ШАГ 2 — убедиться что docs/kickoff/runbook ВСЕ закоммичены и на origin/main.
+git status --short                    # MUST: пустой output
+git fetch origin
+git log origin/main --oneline -1      # MUST: совпадает с локальным main tip
+
+# Если git status показал untracked docs/kickoff/* (типичный кейс — assistant
+# написал файл через Write, но не закоммитил):
+git add docs/
+git commit --no-verify -m "docs: <описание kickoff/runbook>"
+git push origin main
+
+# ШАГ 3 — теперь worktree от СВЕЖЕГО origin/main:
+git worktree add D:/investment-tracker-<feature> -b feature/<branch-name> origin/main
+
+# Проверить что worktree чистый:
+cd D:\investment-tracker-<feature>
+git status                            # MUST: clean, on feature/<branch-name>
+ls docs\CC_KICKOFF_<task>.md          # MUST: файл существует
+```
+
+**Только после всех ✅ — `claude --dangerously-skip-permissions` в worktree.**
+
+**Почему это обязательно:**
+1. **Прецедент №1 (Slice 4a, 2026-04-21).** Assistant написал `docs/CC_KICKOFF_task07_slice4a.md` через Write, не закоммитил. PO сделал `git worktree add ... origin/main` → worktree чистый, kickoff отсутствует → CC #1 заблокирован, попросил re-push.
+2. **Прецедент №2 (Slice 7ab + AI runbook, 2026-04-21).** Та же ошибка — три файла untracked (`CC_KICKOFF_task07_slice4a.md`, `CC_KICKOFF_task07_slice7ab.md`, `RUNBOOK_ai_staging_deploy.md`). CC #1 поймал на pre-flight `git status`, дал structured отказ.
+3. **`.git/index.lock` recurring.** Третий раз: assistant пытается `git add` из sandbox, Windows mount permissions не дают удалить lock после крэша. PO fix — `Remove-Item` в PowerShell.
+
+**Корень проблемы:** assistant (PO-Claude в Cowork mode) **не может надёжно `git commit` из Linux sandbox на Windows mount**. Финальный commit+push **всегда** делает PO в PowerShell. Assistant пишет файлы через Write/Edit; PO коммитит. Этот invariant теперь жёсткий — см. § 11.
 
 ---
 
@@ -223,6 +265,9 @@ Core API эмитит header когда фича частично недосту
 3. **X-Async-Unavailable «implied» vs emitted.** В GAP REPORT PR #40 CC сначала написал что header «implied», при probing выяснилось — не эмитился. Фикс: pre-merge commit 61d6c08. Урок: на scope-cut header'ы требовать явной демонстрации, не подразумеваний.
 4. **Ghost files в README.** `merge-log.md`, `RUNBOOK_ai_flip.md`, `PR_C_preflight.md` были проиндексированы, но на диске отсутствовали. Фикс: все созданы 2026-04-20.
 5. **TASK_08 был Волна 2** — устаревшая метка, поправлено на Волна 4 (deferred) для консистентности с README.
+6. **Kickoff/runbook НЕ на `origin/main` до `git worktree add`** (CC блокируется). Два прецедента 2026-04-21 — Slice 4a kickoff + Slice 7ab kickoff + AI runbook. Фикс закреплён в § 3.1 (MANDATORY checklist). Assistant пишет через Write, PO коммитит+пушит в PowerShell, **только потом** `git worktree add`.
+7. **`.git/index.lock` drift в sandbox.** PO-Claude в Cowork mode работает в Linux sandbox, mapped на `D:\investment-tracker`. Windows mount + race при `git add` → lock-файл создаётся, но sandbox не может удалить (permission issue). Третий раз попадаемся. Фикс (PO, PowerShell): `Remove-Item .git\index.lock`. Закреплено в § 3.1 шаг 1.
+8. **Assistant commit из sandbox = запрещено.** Следствие gotcha #7. Assistant пишет файлы через Write/Edit; финальный `git commit` + `git push` делает PO в PowerShell. Если assistant пытается `git add` из `mcp__workspace__bash` — это bug в процессе, не «просто ошибка».
 
 ---
 
@@ -370,6 +415,8 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
 - **TodoList** использовать активно для многошаговой работы.
 - **Всегда верифицировать через Read** перед confirm обновления — state loss уже был.
 - **CC запускается через `claude --dangerously-skip-permissions`** в worktree — флаг обязателен.
+- **Assistant НЕ коммитит из sandbox** (gotcha #7-8, § 3.1). Assistant пишет файлы через Write/Edit; финальный `git commit` + `git push` ВСЕГДА делает PO в PowerShell. Никаких `git add` / `git commit` через `mcp__workspace__bash` — это ломается на Windows mount + index.lock.
+- **Перед каждым `git worktree add` — § 3.1 pre-CC checklist** (три шага, MANDATORY). Игнорировали дважды — оба раза CC заблокировался на pre-flight.
 
 ---
 
