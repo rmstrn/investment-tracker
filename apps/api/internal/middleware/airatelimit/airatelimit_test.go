@@ -3,12 +3,14 @@ package airatelimit_test
 import (
 	"encoding/json"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/alicebob/miniredis/v2"
 	"github.com/gofiber/fiber/v3"
@@ -161,6 +163,172 @@ func TestProTier_NeverGated(t *testing.T) {
 	if keys := mr.Keys(); len(keys) != 0 {
 		t.Fatalf("redis keys = %v, want none for Pro", keys)
 	}
+}
+
+// buildAppWithDownstream is buildApp but the /try handler always
+// returns the supplied status + body, letting us simulate an
+// upstream failure *after* the rate-limit INCR has fired. Used to
+// document the pre-increment overcount behavior (TD-052).
+func buildAppWithDownstream(t *testing.T, tier string, handlerStatus int) (*fiber.App, *miniredis.Miniredis, *int64) {
+	t.Helper()
+	mr := miniredis.RunT(t)
+	rdb := redis.NewClient(&redis.Options{Addr: mr.Addr()})
+	ch := cache.NewFromRDB(rdb)
+
+	deps := &app.Deps{Cache: ch, Log: zerolog.New(io.Discard)}
+	uid := uuid.Must(uuid.NewV7())
+	a := fiber.New()
+	a.Use(func(c fiber.Ctx) error {
+		c.Locals(middleware.LocalsUser, &dbgen.User{ID: uid, SubscriptionTier: tier})
+		return c.Next()
+	})
+	a.Use(airatelimit.New(deps))
+
+	var attempts int64
+	a.Post("/try", func(c fiber.Ctx) error {
+		atomic.AddInt64(&attempts, 1)
+		return c.SendStatus(handlerStatus)
+	})
+	return a, mr, &attempts
+}
+
+// TestTD052_PreIncrementOvercountOnDownstreamFailure pins down the
+// known overcount bug so Sprint C has a starting-point test rather
+// than a floating bug report. The middleware INCRs the counter
+// *before* calling c.Next() — if the handler returns an upstream
+// failure (502/503 from AI Service, timeouts, etc.) the counter
+// stays bumped even though no AI work actually happened. Five
+// failing attempts consume the whole daily free-tier cap.
+//
+// When TD-052 is fixed ("reserve + commit" pattern), this test's
+// expectations will need flipping to "counter stays at 0". Until
+// then the test documents the status quo.
+func TestTD052_PreIncrementOvercountOnDownstreamFailure(t *testing.T) {
+	a, mr, attempts := buildAppWithDownstream(t, "free", fiber.StatusBadGateway)
+
+	// 5 failing attempts — every one returns 502 from the
+	// handler, but the middleware INCR already fired so the daily
+	// counter bumps 5 times.
+	for i := 1; i <= 5; i++ {
+		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
+		if resp.StatusCode != fiber.StatusBadGateway {
+			t.Fatalf("attempt %d: status = %d, want 502", i, resp.StatusCode)
+		}
+	}
+	if got := atomic.LoadInt64(attempts); got != 5 {
+		t.Fatalf("handler attempts = %d, want 5", got)
+	}
+
+	// 6th attempt — now rate-limited even though zero real AI
+	// calls succeeded. This is the overcount symptom: user gets
+	// charged daily quota for upstream outages.
+	resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
+	if resp.StatusCode != fiber.StatusTooManyRequests {
+		t.Fatalf("6th status = %d, want 429 (overcount gates user after 5 502s)", resp.StatusCode)
+	}
+
+	// Counter in Redis reflects the 5 bumps (miniredis exposes it
+	// under the airl:ai_messages_daily:<uid> key). We don't assert
+	// the exact key format — that's internal — but assert some
+	// ai_messages_daily-scoped key exists and reads "5".
+	var counterKey string
+	for _, k := range mr.Keys() {
+		if strings.Contains(k, "ai_messages_daily") {
+			counterKey = k
+			break
+		}
+	}
+	if counterKey == "" {
+		t.Fatal("no ai_messages_daily key in miniredis after 5 attempts")
+	}
+	// The counter reads "6" (not 5) because the 6th attempt's
+	// INCR runs *before* the cap check — that attempt is rejected
+	// at the middleware but the bucket still bumped. So the
+	// overcount drift against actual successful work is:
+	//   5 INCRs from 502-returning attempts + 1 INCR from the
+	//   rejected attempt = 6, while real AI work done = 0.
+	// Sprint C's "reserve + commit" fix will make this "5" (and
+	// eventually "0" once the downstream-failure decrement is in).
+	if got, _ := mr.Get(counterKey); got != "6" {
+		t.Errorf("counter = %q, want \"6\" (confirms pre-increment overcount on both failing + rejected paths)", got)
+	}
+}
+
+// TestRedisDown_FailsOpen asserts that when the cache backend is
+// unreachable the middleware lets the request through with a warn
+// log — we would rather under-gate than 503 the whole AI surface on
+// a Redis hiccup. The AI Service has its own budget enforcement
+// in the record_ai_usage path that catches real-money leaks.
+//
+// We point the redis client at a closed port from the start (rather
+// than closing a live miniredis mid-test) so the Dial attempt fails
+// fast and the middleware reaches its fail-open branch within the
+// normal test-timeout budget. `DialTimeout: 100ms` short-circuits
+// go-redis's default 5s dial retry which would otherwise exhaust
+// the fiber test timeout.
+func TestRedisDown_FailsOpen(t *testing.T) {
+	// Grab a port, then close the listener so Dial to it fails.
+	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("net.Listen: %v", err)
+	}
+	closedAddr := ln.Addr().String()
+	_ = ln.Close()
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:        closedAddr,
+		DialTimeout: 100 * time.Millisecond,
+		MaxRetries:  -1, // don't retry — we want the first Dial error to surface immediately
+	})
+	ch := cache.NewFromRDB(rdb)
+
+	deps := &app.Deps{Cache: ch, Log: zerolog.New(io.Discard)}
+	uid := uuid.Must(uuid.NewV7())
+	a := fiber.New()
+	a.Use(func(c fiber.Ctx) error {
+		c.Locals(middleware.LocalsUser, &dbgen.User{ID: uid, SubscriptionTier: "free"})
+		return c.Next()
+	})
+	a.Use(airatelimit.New(deps))
+	var passed int64
+	a.Post("/try", func(c fiber.Ctx) error {
+		atomic.AddInt64(&passed, 1)
+		return c.SendStatus(fiber.StatusOK)
+	})
+
+	// The request must still pass — free tier would normally cap
+	// at 5, but with Redis down the middleware can't consult the
+	// counter and intentionally fails-open.
+	req := httptest.NewRequestWithContext(t.Context(), fiber.MethodPost, "/try", strings.NewReader(""))
+	resp, testErr := a.Test(req, fiber.TestConfig{Timeout: 5})
+	if testErr != nil {
+		t.Fatalf("app.Test: %v", testErr)
+	}
+	defer func() { _ = resp.Body.Close() }()
+	if resp.StatusCode != fiber.StatusOK {
+		t.Fatalf("status = %d, want 200 (fail-open on Redis down)", resp.StatusCode)
+	}
+	if got := atomic.LoadInt64(&passed); got != 1 {
+		t.Errorf("handler ran %d times, want 1", got)
+	}
+}
+
+// TestNew_PanicsOnNilCache pins the constructor precondition.
+// Passing nil Cache is a programmer error — the middleware can't
+// function without Redis access, and silently degrading to "no
+// rate limit" would be worse than failing the boot loudly.
+func TestNew_PanicsOnNilCache(t *testing.T) {
+	defer func() {
+		r := recover()
+		if r == nil {
+			t.Fatal("airatelimit.New(nil Cache) did not panic")
+		}
+		msg, ok := r.(string)
+		if !ok || !strings.Contains(msg, "Cache") {
+			t.Errorf("panic = %v, want string mentioning Cache", r)
+		}
+	}()
+	_ = airatelimit.New(&app.Deps{Cache: nil, Log: zerolog.New(io.Discard)})
 }
 
 // AIChatEnabled = false → 403 TIER_LIMIT_EXCEEDED + Upgrade-To-Tier
