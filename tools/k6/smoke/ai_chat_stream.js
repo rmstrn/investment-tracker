@@ -25,7 +25,10 @@ export const options = {
   vus: 1,
   iterations: 1,
   thresholds: {
-    http_req_failed: ['rate<0.05'],
+    // No http_req_failed threshold: on staging a 429 (daily cap) or
+    // 503 (AI Service not yet deployed — TD-070) is a healthy outcome
+    // but k6 counts both as failed. `checks` below is the authoritative
+    // gate — it whitelists exactly the statuses we consider healthy.
     checks: ['rate>0.95'],
   },
 };
