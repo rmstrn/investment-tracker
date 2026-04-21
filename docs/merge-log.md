@@ -15,6 +15,52 @@ Newest entries at the top.
 
 ---
 
+## sprint-d — Polish sprint: 10 small-scoped TDs, 4 lanes
+
+**Window:** 2026-04-22 (single CC session, ~½ day).
+**Scope in one line:** polish sprint closing the tail of small-scoped debts before Slice 6a — CI / hook hygiene, contract-sync validator, SSE schema tighten + request-id, web tooling audit. 9 TDs closed, 1 (TD-004 biome-ignore audit) confirmed still-needed with refreshed revisit date.
+**Base:** prior main tip after `027417a` (post-TD-047 bundle).
+
+**Lane 1 — CI workflow + hook hardening** (`09d5af7 ci: close Sprint D lane 1 — workflow + hook hardening (TD-086, TD-077, TD-083)`)
+  - **TD-R086** — new `docker-build-ai` job in `ci.yml` using docker/setup-buildx + docker/build-push-action with GHA cache, runs `docker run --entrypoint python -c "import ai_service.main"` smoke. No api-docker job (redundant with `deploy-api.yml`'s flyctl staging build on every push).
+  - **TD-R077** — new `tools/scripts/hook-golangci-lint.sh` wired into lefthook pre-push; `--new-from-rev=origin/main` scoping, self-skips on missing toolchain / missing baseline / no-Go-changes push.
+  - **TD-R083** — rewrote `hook-commitlint.sh` + `hook-biome.sh` from `set -e` + `if/elif` cascade to "probe runner with `--version`, then `exec`" pattern so fallback chain is reachable on fresh CC worktrees (three CC sessions hit the old bug in a row).
+
+**Lane 2 — OpenAPI ↔ k6 contract validator** (`22cf906 test: close Sprint D lane 2 — OpenAPI ↔ k6 smoke contract validator (TD-076)`)
+  - **TD-R076** — new stdlib-only Python validator `tools/scripts/check-k6-contract.py` that reads the bundled OpenAPI JSON, scans each k6 smoke script for `http.METHOD(...)` + body-key refs, resolves the 2xx response schema (with one-level `$ref` walk + oneOf/anyOf/allOf support), and asserts every `body.X` chain exists. Skips scripts without `body = X.json()`. Unit-tested in `check_k6_contract_test.py` (14 cases — regex, schema walk, happy/drift/skip). New CI job `contract-k6-spec-sync` alongside the existing header-symmetry check.
+
+**Lane 3 — SSE schema tighten + request_id propagation** (`2e4cd82 feat(spec): close Sprint D lane 3 — SSE schema tighten + request_id propagation (TD-048, TD-068)`)
+  - **TD-R068** — two schema edits in `tools/openapi/openapi.yaml` matching wire reality: `AIStreamEventContentDelta.delta` tightened to explicit `{text: string}`; `AIStreamEventError.error` changed from `$ref: ErrorEnvelope` to inline flat `{code, message, request_id?}`. Codegen regenerated (TS + Go via preprocess → oapi-codegen). Web reducer `unwrapEnvelope` kept as a 30-day compat shim with refreshed drop target (2026-05-22).
+  - **TD-R048** — AI Service `ErrorEvent` gained optional `request_id`; `ChatAgent.stream(...)` accepts a `request_id` kwarg and stamps it on exception-fallback errors; `stream_chat` handler reads `X-Request-ID` via FastAPI `Header(alias=...)` + import-time assert against drift in `http_headers`. Core API side already emitted `request_id` in the outbound error frame, with test coverage in `sseproxy/contract_test.go` — no Go changes needed.
+
+**Lane 4 — Web tooling audit + doc hygiene** (`cb66a2a chore: close Sprint D lane 4 — web tooling audit + doc hygiene (TD-001, TD-004, TD-054, TD-078)`)
+  - **TD-R001** — audit-only close. `--turbopack` flag already present in `apps/web/package.json` dev script + `next.config.ts` has `typedRoutes: true`; installed Next.js is 15.5.15 (above the 15.3.0 threshold TD-001 named). Typecheck passes with both enabled. Re-enable happened silently during a routine Next bump; Sprint D catches the ledger up.
+  - **TD-004 (NOT resolved, refreshed)** — audit of 8 `biome-ignore` comments in `packages/ui` (inventory was 9; 1 drifted). Per-ignore review in the commit body; all 8 keep — justifications tied to React conventions (useExhaustiveDependencies), type-system invariants (noNonNullAssertion), or positional-array semantics (noArrayIndexKey). Revisit date refreshed to 2026-07-22.
+  - **TD-R054** — `docs/PO_HANDOFF.md § 12 continuation prompt` instructs incoming CC to read `docs/DECISIONS.md` AND mirror any cross-session invariant back to DECISIONS.md before ending. Rule-of-thumb added. Cheapest option (b) from the original TD — no `CC_MEMORY/` commit-noise.
+  - **TD-R078** — `docs/PO_HANDOFF.md § 3 "Cycle per PR"` new step 4: `gh pr checks <N> --watch` mandatory before `gh pr merge`. `--admin` merge requires an inline PR comment with CI-outage / P1-hotfix rationale. Prior art: PR #54 CORS incident where CC + PO both approved a red-CI merge.
+
+**Lane 5 — ledger + merge-log + health snapshot** (this commit)
+  - Moves 9 TDs from Active to TD-R* in `docs/TECH_DEBT.md`: 086, 083, 077, 076, 078, 068, 048, 001, 054.
+  - Restores TD-002..008 (sibling entries accidentally bundled with TD-001 removal during scripted ledger surgery; restored verbatim from prior tip).
+  - Refreshes TD-004's revisit-date annotation (stays Active with Sprint D audit note).
+  - This merge-log Sprint D block.
+  - `docs/BACKEND_HEALTH_2026-04-21.md` §1 debt-count snapshot updated: Active 43 → 34 (9 closed, 0 new).
+
+**Closed TDs:** TD-001, TD-048, TD-054, TD-068, TD-076, TD-077, TD-078, TD-083, TD-086 (9 total).
+**Refreshed-not-closed:** TD-004 (audit held, revisit date refreshed).
+
+**Tests / CI status:**
+  - Go `go test ./...` — all packages ok.
+  - `go test -tags=integration -c ./internal/handlers/` — clean build.
+  - Python pytest 41/41 (1 new).
+  - mypy + ruff clean.
+  - pnpm -r typecheck clean.
+  - Every Sprint B coverage gate still preserved.
+
+**Admin-bypass / migrations:** none.
+
+---
+
 ## close-td-047 + M1 — CSVExport explicit flag + ENV.md doc backfill
 
 **Window:** 2026-04-22 (post-Sprint-C small-debt bundle, one CC session).

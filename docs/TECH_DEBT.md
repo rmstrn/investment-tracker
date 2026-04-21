@@ -14,30 +14,6 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
-### TD-086 — Нет CI gate для AI Service Docker build
-
-**Added:** 2026-04-21 (TD-070 first deploy — TD-087 + TD-085 могли быть пойманы CI'ем).
-**Priority:** P2.
-**Source:** `.github/workflows/ai.yml` сейчас гоняет lint + typecheck + pytest на host Python — НЕ строит Docker image. PR #61 (`8ff5abf`) shipped `Dockerfile` + `fly.staging.toml` без CI-side build verification. Результат: TD-087 (uv editable) и TD-085 (dockerignore README) пойманы только PO во время первого `flyctl deploy` — два цикла «build → fail → fix → push → re-deploy» (~30 минут). Должен был быть один CI-side fail на PR, исправлен в том же worktree.
-**Fix sketch.** Добавить в `ai.yml` job `docker-build`:
-```yaml
-docker-build:
-  runs-on: ubuntu-latest
-  needs: [lint, test]
-  steps:
-    - uses: actions/checkout@v4
-    - uses: docker/setup-buildx-action@v3
-    - run: docker build -f apps/ai/Dockerfile --target runtime -t ai-service:ci .
-    - name: Smoke import
-      run: |
-        docker run --rm --entrypoint python ai-service:ci -c \
-          "import ai_service.main; print('import OK')"
-```
-Опция: `--platform linux/amd64` если хост-runner ARM (на Fly machines amd64). Параллельный паттерн — Core API uже строит Docker в `deploy-api.yml` через flyctl, но не в push-CI workflow `api.yml`. Если внедрять — внедрять единым подходом для api+ai.
-**Owner:** infra + AI maintainer.
-**Trigger to revisit:** перед следующим Dockerfile-touching PR на `apps/ai/` или `apps/api/`; или при добавлении новой Python service.
-**Links:** TD-087, TD-085 (would-have-caught), merge-log entry close-td-070.
-
 ### TD-084 — flyctl ловит build context из CWD, не из location of `--config` toml
 
 **Added:** 2026-04-21 (TD-070 first deploy — gotcha поймана PO).
@@ -50,31 +26,6 @@ docker-build:
 **Owner:** AI Service maintainer + infra.
 **Trigger to revisit:** при добавлении нового Fly-deploy'd app с monorepo subpath — sanity-check что Dockerfile COPY paths repo-root-relative; or каждый раз при `flyctl deploy` из CI workflow.
 **Links:** TD-086 (CI Docker build поймал бы); merge-log close-td-070 entry.
-
-### TD-083 — `tools/scripts/hook-commitlint.sh` fallback branches dead under `set -e`
-
-**Added:** 2026-04-21 (caught during TD-070 merge flow, third CC encounter).
-**Priority:** P3.
-**Source:** Hook tries 3 runners in order — `pnpm exec commitlint` → `[ -x node_modules/.bin/commitlint ]` → `npx --no-install commitlint`. All three are wrapped in a single `set -e` script. On a fresh CC worktree (no `node_modules/` yet because `pnpm install` wasn't run), `pnpm` IS on PATH but `pnpm exec commitlint` fails with `ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL` (non-zero). `set -e` immediately kills the shell — control never reaches the `elif` branches. Net: commit blocked with `Command "commitlint" not found` and the "skips with warning" fallback is unreachable.
-**Impact.** ~10-30 sec lost per fresh CC worktree bootstrapping (diagnose → `pnpm install` → retry commit). Three CC sessions in a row hit this (per PO memory), so recurrence is confirmed.
-**Fix sketch.**
-```sh
-if command -v pnpm >/dev/null 2>&1 && pnpm exec commitlint --edit "$msg_file" 2>/dev/null; then
-  exit 0
-fi
-if [ -x node_modules/.bin/commitlint ]; then
-  exec node_modules/.bin/commitlint --edit "$msg_file"
-fi
-if command -v npx >/dev/null 2>&1; then
-  exec npx --no-install commitlint --edit "$msg_file"
-fi
-echo "hook-commitlint: no commitlint runner available — skipping"
-exit 0
-```
-Wrap the primary attempt in an `if … ; then` so `set -e` doesn't fire, and `exec` the eventual runner for clean exit propagation. Apply the same shape to `hook-biome.sh` / `hook-ruff.sh` / `hook-gofmt.sh` if they share the pattern.
-**Owner:** unassigned.
-**Trigger to revisit:** any fresh worktree bootstrap; or when a new hook gets added and would inherit the same shape.
-**Links:** DECISIONS.md (PR #61 merge-log entry has the incident trace; no standalone ADR).
 
 ### TD-082 — reserved: automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity
 
@@ -122,39 +73,6 @@ run for prod). ID is pinned so the prod-flip slice has a known handle.
 **Owner:** backend. **Blocks:** nothing today. **Revisit:** whenever a retention / archival story is scheduled, or when a future slice touches account lifecycle.
 **Links:** DECISIONS.md § "Accounts soft-delete pattern + FK mismatch deferred (TD-079)".
 
-### TD-078 — Mandatory `gh pr checks <N> --watch` before `gh pr merge`
-
-**Added:** 2026-04-21 (CORS slice incident — PR #54 admin-bypass merge with red CI; original ID TD-077 в DECISIONS.md, перенумерован чтобы не конфликтовать с existing TD-076).
-**Priority:** P2
-**Source:** PR #54 был мёрджен с failing `Go — lint + vet + build + test` check. CC и PO в разных сессиях одновременно одобрили merge без синхронизации с CI. Admin-bypass должен быть **явным** решением (`--admin` flag + inline comment с reason), а не молчаливым default'ом когда кто-то торопится.
-**Decision deferred:** policy update требует documenting в `PO_HANDOFF.md § 3 Cycle per PR`. Перед `gh pr merge` обязательный `gh pr checks <N> --watch` до получения all-green; если checks red — остановиться, запустить hotfix flow (см. PR #55 как reference).
-**Owner:** PO.
-**Revisit:** 2 PR merge'а подряд без violation → считаем абсорбированным.
-**Links:** DECISIONS.md § "CORS middleware: implicit → allowlist (PR #54 + #55)" — incident detail.
-
-### TD-077 — Lefthook pre-push gap: golangci-lint not run locally
-
-**Added:** 2026-04-21 (CORS slice incident; original ID TD-076 в DECISIONS.md, перенумерован).
-**Priority:** P2
-**Source:** `lefthook.yml` pre-push hook сегодня прогоняет `gofmt` + `go vet` + `typecheck` + `py-mypy`. Этого мало: категории `bodyclose`, `noctx`, `errcheck`, `gocritic`, `revive` ловятся ТОЛЬКО на CI. PR #54 пострадал именно от этого: 2 `bodyclose` (missing `defer resp.Body.Close()` после `app.Test()`) и 2 `noctx` (`httptest.NewRequest` вместо `NewRequestWithContext`) проскочили локально.
-**Decision deferred:** добавить `tools/scripts/hook-golangci-lint.sh` + entry в pre-push. Опция: запускать только на staged Go файлах через `{staged_files}` или `--new-from-rev=origin/main`, чтобы не гонять full lint каждый push.
-**Owner:** backend lead.
-**Revisit:** after next Go-touching PR — подтвердить что incident не повторяется.
-**Links:** DECISIONS.md § "CORS middleware: implicit → allowlist".
-
-### TD-076 — Contract sync test: OpenAPI schema → k6 smoke shape validation
-
-**Added:** 2026-04-20 (paired with TD-R075 — k6 scripts drifted silently against actual API shapes)
-**Priority:** P3
-**Source:** `tools/k6/smoke/*.js` scripts assert response shapes by ad-hoc key checks (`body.items`, `body.total_value`, …). Nothing enforces those keys match the generated OpenAPI types, so a backend rename or a shape rework breaks smoke only at runtime — and the only runtime we have is a deploy-blocking staging job. TD-R075 was exactly that failure mode (4 scripts drifted post-PR #30 schema tighten).
-**Risk:** low per-incident, but each drift blocks a deploy and requires a PR. Cost compounds as more scenarios land.
-**Fix sketch:** a pre-smoke validation step that loads `tools/openapi/openapi.yaml`, extracts the response schema for each hit endpoint, and asserts the k6 script's expected fields are declared in the spec. Alternatively, generate typed fixtures from the spec (JSON Schema / zod) that k6 scripts import. Former is simpler, latter is tighter.
-**Trigger to revisit:** next silent drift OR when smoke scenario count crosses ~10 (today 5).
-**Owner:** backend + infra
-**Scope:** ~150 LOC Python or Node validator + 1 new workflow step — 1 day
-
----
-
 ### TD-069 — `doppler-sync.yml` not env-aware (stg/prd dimension missing)
 
 **Added:** 2026-04-20 (staging ops bootstrap)
@@ -184,31 +102,6 @@ doppler secrets download --no-file --format=env --project investment-tracker-api
 **Owner:** backend + infra
 **Scope:** ~120 LOC workflow rewrite + 6 repo-secret provisions — 0.5 day
 **Links:** paired with TD-067 (pipeline consistency across web/ai deploy workflows).
-
----
-
-### TD-068 — Tighten `AIChatStreamEvent` schema to match translator reality
-
-**Added:** 2026-04-20 (PR #50 / TASK_07 Slice 3)
-**Priority:** P3 (docs-only, no runtime impact — shape stable)
-**Source:** `apps/api/internal/sseproxy/translator.go` normalises Python AI Service-native SSE frames into OpenAPI-compliant frames before forwarding to clients, but the spec for two events in `tools/openapi/openapi.yaml` is out of sync with what actually goes on the wire:
-
-- **`AIStreamEventContentDelta.delta`** is typed `type: object, additionalProperties: true` (line 2972-2975) — too loose. Translator always emits `{text: string}` (translator.go:59-64). No `text_delta` / `input_json_delta` Anthropic-native discriminator exists post-translation.
-- **`AIStreamEventError.error`** is typed as `$ref: ErrorEnvelope` (line 3020) — the full wrapped envelope `{error: {code, message, request_id}}`. Translator emits flat `{code, message, request_id?}` at top level of the event's `error` property (translator.go:148-157 via `errorFrame`).
-
-**Risk:** low — shape is stable today; TypeScript frontend (PR #50) carries `unwrapEnvelope` + `readDeltaText` helpers in `chat-reducer.ts` (~15 LOC) that accept both shapes defensively. Future schema evolution (e.g. adding `input_json_delta` for partial tool args) would widen the gap.
-
-**Fix:** two small schema edits in `tools/openapi/openapi.yaml`:
-1. `AIStreamEventContentDelta.delta` → explicit object with `required: [text]` + `properties: { text: { type: string } }` (or keep additionalProperties: true but make `text` a required named property).
-2. `AIStreamEventError.error` → replace `$ref: ErrorEnvelope` with inline `{code, message, request_id?}` — mirror the actual `errorFrame` output shape.
-
-Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `unwrapEnvelope` helper + `readDeltaText` defensive parse; `chat-reducer.ts` shrinks ~15 LOC.
-
-**Trigger to revisit:** OpenAPI spec housekeeping pass, OR any future expansion of `content_delta.delta` payload (e.g. tool-input deltas arriving for impact_card / callout blocks when server starts emitting them).
-
-**Owner:** backend (Core API spec + translator coord) + frontend (cleanup)
-**Scope:** ~30 LOC (spec edits + regeneration + reducer simplification) — 0.5 day
-**Links:** PR #50 commit `63ac3bf` (defensive parsing); PR #50 `chat-reducer.test.ts` «ignores unknown delta shapes gracefully» test demonstrates the resilience.
 
 ---
 
@@ -389,22 +282,6 @@ Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `
 
 ---
 
-### TD-054 — CC agent memory lives outside repo (shared invariants gap)
-
-**Added:** 2026-04-20 (flag from TASK_05 cleanup CC, post-PR #43)
-**Source:** каждая Claude Code сессия пишет свою memory в `C:\Users\<user>\.claude\projects\<project>\...` — вне репозитория. Новые CC сессии не видят выводы предыдущих (например TASK_05 CC записал invariant «ai_usage owner = Core API» в local memory note, но B3-ii-b CC этого файла не получит).
-**Current mitigation:** shared invariants дублируются в `docs/PO_HANDOFF.md` и `docs/DECISIONS.md` — новые CC читают их первым делом. Практически проблема не острая, пока PO поддерживает дисциплину записи decisions в DECISIONS.md.
-**Risk:** низкий — если PO забудет записать decision в doc, новый CC может переизобретать или расходиться. Единичная точка отказа = дисциплина PO.
-**Fix options:**
-  a. `docs/CC_MEMORY/` в репо — каждая CC сессия commit'ит свою memory note как artifact. Git-версионировано. Минус: шум в commits, memory меняется часто.
-  b. Convention: любой long-lived invariant из CC memory → зеркалится в DECISIONS.md автоматически (prompt update для CC).
-  c. Оставить как есть — PO owns invariants в DECISIONS/PO_HANDOFF, CC memory считается ephemeral cache.
-**Trigger to revisit:** первый incident drift между CC сессиями (один CC ведёт себя inconsistent с другим из-за missing invariant).
-**Owner:** PO + any CC
-**Scope:** (b) самый дешёвый — update continuation prompt template, ~5 LOC в PO_HANDOFF § 12.
-
----
-
 ### TD-053 — `/ai/insights/generate` per-week / per-day tier gate
 
 **Added:** 2026-04-20 (PR B3-ii-a)
@@ -450,18 +327,6 @@ Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `
 **Trigger to revisit:** mobile launch (TASK_08), или metrics показывают >5% chat sessions с reconnect events.
 **Owner:** backend
 **Scope:** ~200 LOC + Redis schema + integration tests — 1 день
-
----
-
-### TD-048 — SSE error event payload extension — request_id field
-
-**Added:** 2026-04-20 (PR B3-ii-a planning, lands in B3-ii-b)
-**Source:** AI Service SSE `event: error` payload (см. `ai_service/agents/chat_agent.py` ErrorEvent) carries `message` + `code`, но НЕ `request_id`. Sentry-correlation Core API ↔ AI Service сейчас работает только на HTTP-уровне (X-Request-Id header в request log) — для in-stream errors trace потеряется.
-**Risk:** debugging mid-stream errors потребует cross-correlate logs по timestamp + user_id вместо одной trace ID. Slower MTTR.
-**Fix:** AI Service ErrorEvent добавляет `request_id: str` field; Core API SSE proxy пропагирует его как полученный X-Request-Id в headers. Координация через TASK_05 CC.
-**Trigger to revisit:** первый mid-stream production incident требующий cross-service trace; OR routine TASK_05 update.
-**Owner:** backend lead + AI lead (TASK_05 coordination)
-**Scope:** ~10 LOC AI Service + ~5 LOC Core API + spec bump
 
 ---
 
@@ -521,20 +386,6 @@ Regenerate `packages/shared-types` after spec change. Frontend cleanup: remove `
 **Owner:** workers lead (TASK_06)
 **Scope:** ~150 LOC + test с test-R2 bucket
 
----
-
-### TD-001 — Next.js Turbopack incompatible with `experimental.typedRoutes`
-
-**Added:** 2026-04-19 (wave 1)
-**Source:** dev startup failure; Turbopack errors on typedRoutes config
-**Fix applied:** removed `--turbopack` flag from `apps/web` dev script; runs on webpack
-**Cost:** slower dev HMR (~2-3x on cold start)
-**Trigger to revisit:** Next.js 15.3+ (typedRoutes + Turbopack compatibility expected)
-**Owner:** web lead
-**Scope:** 1-line package.json change + smoke test
-
----
-
 ### TD-002 — `make` required for `apps/api` build, unavailable on Windows
 
 **Added:** 2026-04-19 (wave 1)
@@ -578,7 +429,7 @@ Inventory (9 ignores, each with reason):
 | `SegmentedControl.tsx:56` | `noNonNullAssertion` | options invariant: length ≥ 1 enforced by JSDoc/props contract |
 | `SegmentedControl.tsx:72` | `noNonNullAssertion` | same |
 
-**Trigger to revisit:** quarterly lint audit OR when any file is refactored substantially
+**Trigger to revisit:** quarterly lint audit OR when any file is refactored substantially (Sprint D audit 2026-04-22: 8/8 ignores still valid, each justification holds — re-audit 2026-07-22)
 **Owner:** web lead
 **Scope:** verify each ignore is still correct; migrate to proper types or `useCallback`/memoization where it improves code — 2-4 hours quarterly
 
@@ -630,6 +481,76 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R086 — CI gate for AI Service Docker build
+
+**Resolved:** 2026-04-22 by `09d5af7 ci: close Sprint D lane 1 — workflow + hook hardening (TD-086, TD-077, TD-083)`.
+**Was:** `.github/workflows/deploy-ai.yml` is `workflow_dispatch`-only, so apps/ai's Dockerfile never got verified on a PR before a manual deploy. TD-085 + TD-087 were both caught by PO only during the first `flyctl deploy` — 30 minutes of build→fail→fix cycles that should have been one CI-side fail on the PR.
+**Fix:** new `docker-build-ai` job in `ci.yml` uses `docker/setup-buildx-action@v3` + `docker/build-push-action@v6` with GHA cache, then runs `docker run --entrypoint python ai-service:ci -c "import ai_service.main"` inside the built image — the exact TD-087 failure mode (multi-stage venv shipping a `.pth` pointing at a missing `/src` path).
+**Why no matching apps/api job:** `deploy-api.yml` already builds the Dockerfile via `flyctl deploy` on every push to main, so Dockerfile regressions surface there. Pattern clones cleanly if we later want PR-gated API Docker verification.
+**Links:** Sprint D merge-log block.
+
+### TD-R083 — `hook-commitlint.sh` fallback branches dead under `set -e`
+
+**Resolved:** 2026-04-22 by `09d5af7 ci: close Sprint D lane 1 — workflow + hook hardening (TD-086, TD-077, TD-083)`.
+**Was:** `set -e` + `if command -v pnpm; then pnpm exec commitlint ...` — on a fresh CC worktree with pnpm installed but `node_modules/` missing, pnpm exits with `ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL`; set -e kills the shell BEFORE the `elif` fallback branches run. Three CC sessions hit this in a row. Same shape also broken in `hook-biome.sh`.
+**Fix:** rewrote both hooks to use the "probe runner with `--version` before delegating, then `exec` the real call" pattern. No `set -e`, no `2>/dev/null` masking. Lint/format exit codes propagate naturally; runner-unavailable paths skip cleanly.
+**hook-ruff.sh / hook-gofmt.sh:** verified they use single-runner shape — no fallback cascade, no broken pattern. Untouched.
+**Links:** Sprint D merge-log block.
+
+### TD-R077 — Lefthook pre-push gap: golangci-lint not run locally
+
+**Resolved:** 2026-04-22 by `09d5af7 ci: close Sprint D lane 1 — workflow + hook hardening (TD-086, TD-077, TD-083)`.
+**Was:** pre-push ran `gofmt` + `go vet` + `typecheck` + `py-mypy` but NOT `golangci-lint`. Categories `bodyclose`, `noctx`, `errcheck`, `gocritic`, `revive` surfaced only on CI. PR #54 (CORS slice) leaked 2 × `bodyclose` + 2 × `noctx` for exactly this reason.
+**Fix:** new `tools/scripts/hook-golangci-lint.sh` wired into `lefthook.yml` pre-push. Runs `golangci-lint run --new-from-rev=origin/main` on apps/api when the push actually touches Go files — same baseline CI uses, so local + CI agree on what's a "new" issue. Self-skips when Go toolchain absent (web-only workstations), apps/api missing, origin/main not fetched, or no .go changes vs origin/main.
+**Install instructions** inline in the script header (one-time per dev machine).
+**Links:** Sprint D merge-log block; DECISIONS.md § "CORS middleware: implicit → allowlist".
+
+### TD-R076 — Contract sync test: OpenAPI schema → k6 smoke shape validation
+
+**Resolved:** 2026-04-22 by `22cf906 test: close Sprint D lane 2 — OpenAPI ↔ k6 smoke contract validator (TD-076)`.
+**Was:** `tools/k6/smoke/*.js` scripts assert response shapes by ad-hoc key checks (`body.items`, `body.total_value`, …); nothing enforced those keys match the generated OpenAPI types. TD-R075 was exactly that drift class: 4 scripts referenced fields that had been renamed in a schema tighten, caught only at flyctl-deploy-blocking staging time.
+**Fix:** new `tools/scripts/check-k6-contract.py` — stdlib-only Python validator that reads the bundled OpenAPI JSON (from `pnpm --dir tools/openapi bundle`), scans each k6 script for `http.METHOD(...)` + body-key references, resolves the 2xx response schema, and asserts every `body.X` dotted key exists in the schema tree (transparent through arrays, resolves one-level `$ref`, tries each `oneOf/anyOf/allOf` branch). Only gates scripts that contain `body = X.json()` — request-payload + status-only smokes are correctly skipped.
+**Tests:** `tools/scripts/check_k6_contract_test.py` — 14 unit tests covering the regex, schema walk, and validate_script happy/drift/skip paths.
+**CI wiring:** new `contract-k6-spec-sync` job in `ci.yml` alongside `contract-header-symmetry`. Steps: pnpm install → pnpm bundle → run validator → run validator's own unit tests.
+**Links:** Sprint D merge-log block.
+
+### TD-R078 — Mandatory `gh pr checks <N> --watch` before `gh pr merge`
+
+**Resolved:** 2026-04-22 by `cb66a2a chore: close Sprint D lane 4 — web tooling audit + doc hygiene (TD-001, TD-004, TD-054, TD-078)`.
+**Was:** PR #54 was merged with failing `Go — lint + vet + build + test` check. CC + PO in different sessions both approved without sync to CI. Admin-bypass was an implicit default when someone rushed, not an explicit decision.
+**Fix:** `docs/PO_HANDOFF.md § 3 "Cycle per PR"` now makes `gh pr checks <N> --watch` mandatory before `gh pr merge` (new step 4). `gh pr merge --admin` requires an inline PR comment explaining the CI-outage / P1-hotfix rationale — silent admin-bypass is a cycle-discipline violation. Admin-bypass policy paragraph updated to cross-reference both TD-006 (original) and TD-R078 (CI-watch requirement).
+**Links:** Sprint D merge-log block; DECISIONS.md § "CORS middleware: implicit → allowlist (PR #54 + #55)".
+
+### TD-R068 — Tighten `AIChatStreamEvent` schema to match translator reality
+
+**Resolved:** 2026-04-22 by `2e4cd82 feat(spec): close Sprint D lane 3 — SSE schema tighten + request_id propagation (TD-048, TD-068)`.
+**Was:** Two schemas in `tools/openapi/openapi.yaml` were looser than what `apps/api/internal/sseproxy/translator.go` actually emits on the wire. `AIStreamEventContentDelta.delta` was `type: object, additionalProperties: true` (translator always emits `{text: string}` — no `input_json_delta` discriminator post-translation). `AIStreamEventError.error` was `$ref: ErrorEnvelope` (wrapped shape — but translator emits the flat `{code, message, request_id?}` at top level of `event.error`).
+**Fix:** explicit `required: [text]` + `properties: { text }` + `additionalProperties: false` on the delta; inline `{code, message, request_id?}` + `additionalProperties: false` on the error. Codegen regenerated via `generate-ts.sh` (shared-types) + `Makefile gen-api` (oapi-codegen via preprocess step for TD-007's 3.1-nullable workaround). Diff scoped to the two intended schema nodes + the auto-updated base64 swagger blob at the bottom of `openapi.gen.go`.
+**Web consumer** — `apps/web/src/lib/ai/chat-reducer.ts` `unwrapEnvelope` kept as a 30-day compat shim with refreshed comment (drop target: 2026-05-22 per 2026-04-22 spec cutover); null-safety fallbacks preserved.
+**Links:** Sprint D merge-log block.
+
+### TD-R048 — SSE error event payload — request_id field
+
+**Resolved:** 2026-04-22 by `2e4cd82 feat(spec): close Sprint D lane 3 — SSE schema tighten + request_id propagation (TD-048, TD-068)`.
+**Was:** `ErrorEvent` in `apps/ai/src/ai_service/models.py` carried `message` + `code` but NOT `request_id`. Mid-stream errors forced cross-correlation by timestamp + user_id — slower MTTR.
+**Fix:** `ErrorEvent.request_id: str | None = None` added; Pydantic always emits the field (None → null) for stable consumer shape. `ChatAgent.stream(...)` accepts an optional `request_id` kwarg and stamps it on the exception-fallback `ErrorEvent`. `stream_chat` FastAPI handler reads `X-Request-ID` via `Header(alias=...)` + an import-time assert against drift in `ai_service.http_headers.REQUEST_ID`, passes through to the agent. Core API side already emitted `request_id` in the outbound error frame (`sseproxy/translator.go:errorFrame`); `sseproxy/contract_test.go` asserts it — no Go changes needed.
+**Tests:** `apps/ai/tests/test_streaming.py::test_format_sse_event_error` extended; new `::test_format_sse_event_error_with_request_id`.
+**Links:** Sprint D merge-log block.
+
+### TD-R001 — Next.js Turbopack incompatible with `experimental.typedRoutes`
+
+**Resolved:** 2026-04-22 by `cb66a2a chore: close Sprint D lane 4 — web tooling audit + doc hygiene (TD-001, TD-004, TD-054, TD-078)` — audit-only close; no code change needed.
+**Was:** Wave 1 disabled Turbopack because `experimental.typedRoutes` was incompatible. Trigger: Next.js 15.3+ (where the combination is expected to work).
+**Audit:** Sprint D found `--turbopack` flag already present in `apps/web/package.json` dev script, `next.config.ts` has `typedRoutes: true`, installed Next.js is 15.5.15 (above the 15.3.0 threshold), web `typecheck` passes. Whoever re-enabled Turbopack (likely a routine Next bump sometime after the original TD) didn't close the debt. Sprint D catches the ledger up.
+**Links:** Sprint D merge-log block.
+
+### TD-R054 — CC agent memory lives outside repo (shared invariants gap)
+
+**Resolved:** 2026-04-22 by `cb66a2a chore: close Sprint D lane 4 — web tooling audit + doc hygiene (TD-001, TD-004, TD-054, TD-078)`.
+**Was:** CC memory lives in `C:\Users\<user>\.claude\projects\<project>\...`, outside the repo. New CC sessions didn't see previous sessions' invariants — single point of failure was PO discipline in writing decisions to DECISIONS.md.
+**Fix (option b per the original TD):** `docs/PO_HANDOFF.md § 12 continuation prompt` now instructs the incoming CC to also read `docs/DECISIONS.md` AND to mirror any cross-session invariant discovered in the current session back to DECISIONS.md BEFORE ending. Rule-of-thumb added: "if the answer to 'why do we do this?' requires a read-through of current code, it's an invariant — write it to DECISIONS.md". Cheapest fix — no new `docs/CC_MEMORY/` directory, no commit-noise.
+**Links:** Sprint D merge-log block.
 
 ### TD-R047 — CSVExport tier flag heuristic (P1 pre-GA)
 

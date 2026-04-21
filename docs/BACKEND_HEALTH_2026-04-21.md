@@ -10,6 +10,8 @@ Scope: `apps/api` (Go / Fiber v3), `apps/ai` (Python 3.13 / FastAPI), подде
 
 Все 43 unresolved TD из `docs/TECH_DEBT.md` (snapshot до migrations этого sprint'а). Severity mapping: **P1 = GA blocker, P2 = post-GA OK для alpha но до scale, P3 = polish**. Effort: S=<2h, M=0.5–2d, L=>2d. "Trigger" — copy-paste из TECH_DEBT с сокращением.
 
+> **Update 2026-04-22 (post-Sprint-D):** Active count 43 → **34**. Closed in Sprint D: TD-086, TD-083, TD-077, TD-076, TD-078, TD-068, TD-048, TD-001, TD-054 (9 total, all moved to TD-R* in Resolved). TD-004 stays Active — audit-refreshed revisit date only (8/8 biome-ignores still needed). Post-TD-047: Active P1 = 1 (TD-066 workers placeholder). P2 count: 14 → **11**. P3 count: 8 → **4**.
+
 ### P1 (GA blocker)
 
 | ID | Title | Effort | Trigger |
