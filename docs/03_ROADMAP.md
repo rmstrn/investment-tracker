@@ -121,7 +121,7 @@ TASK_04 Core API (10 PRs + CORS micro-slice + staging deploy `api-staging.invest
 - [ ] Billing portal
 - [ ] Webhooks (подписка создана / отменена / failed payment)
 - [ ] Feature gates по тарифам (middleware в API)
-- [ ] Paywall UI
+- [x] Paywall UI (PaywallModal primitive + `/pricing` + `(marketing)/` landing — PR #58 `528333b`, 2026-04-21; real feature-gate wiring tracked in TD-080 with Stripe slice 7c)
 
 ### Onboarding
 - [ ] Welcome-flow с 5-7 вопросами (цели, опыт)

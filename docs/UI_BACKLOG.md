@@ -108,11 +108,11 @@ Backend dependencies указаны inline. TD-ссылки — на `docs/TECH_
 **Backend dep:** Stripe Checkout handler (TD-057 частично). MVP без Stripe — кнопка "Upgrade" ведёт на "Coming soon" состояние.
 
 **Split:**
-- 7a — Landing hero + features + CTA. ~400 LOC.
-- 7b — `/pricing` + Paywall modal (без Stripe). ~300 LOC.
-- 7c — Stripe Checkout + Billing Portal integration. ~400 LOC. Ждёт TD-057.
+- 7a — Landing hero + features + CTA. ~400 LOC. ✅ merged PR #58 (`528333b`, 2026-04-21) — bundled with 7b.
+- 7b — `/pricing` + Paywall modal (без Stripe). ~300 LOC. ✅ merged PR #58 (`528333b`, 2026-04-21) — `(marketing)/` route group, 3 tier cards aligned with `04_DESIGN_BRIEF §13.1`, Subscribe CTAs stubbed. `PaywallModal` уже экспонируется в `/design/freemium`; paywall trigger wiring в `(app)` routes перенесён в TD-080 (ждёт real feature gates + Stripe).
+- 7c — Stripe Checkout + Billing Portal integration. ~400 LOC. Ждёт TD-057 + TD-080.
 
-**Acceptance:** anon-юзер на `/` видит нормальный лендинг, signed-in — редирект на dashboard; `/pricing` рендерит 3 тарифа; paywall modal появляется на gated actions.
+**Acceptance:** anon-юзер на `/` видит нормальный лендинг, signed-in — редирект на dashboard; `/pricing` рендерит 3 тарифа; paywall modal появляется на gated actions (последнее — в 7c).
 
 ---
 

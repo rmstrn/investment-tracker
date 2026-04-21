@@ -303,3 +303,42 @@ cards land beside manual rows.
 **Follow-up:** when Slice 4b introduces broker accounts in the same list,
 consider a unified `AccountListItem` that branches on `connection_type`
 rather than reusing the domain card. Re-evaluate at that point.
+
+## 2026-04-21 — Paywall demo triggers deferred to Slice 7c (PR #58)
+
+Slice 7a+7b kickoff (`docs/CC_KICKOFF_task07_slice7ab.md` § 3 Step 3)
+просил добавить в `(app)/dashboard` dev-only триггер для `PaywallModal`
+— чтобы "показать что paywall физически работает, не только в
+playground'e". В GAP REPORT PR #58 CC предложил резать этот шаг, PO
+одобрил.
+
+**Decision.** Paywall wiring в `(app)` routes (trigger points → modal
+→ `/pricing`) отложен до Slice 7c, где приходит Stripe checkout +
+реальные DB-backed usage counters.
+
+**Reason.**
+1. `PaywallModal` уже экспонируется в `/design/freemium` (Slice 3
+   merge) — ещё один demo-триггер в `(app)/dashboard` дублирует, а
+   не расширяет покрытие.
+2. Без реальных feature-gates это dev-only fake — триггер на кнопке
+   без backing-логики. Когда придёт 7c с реальной AI-rate-limit /
+   accounts-over-limit / CSV-export проверкой, этот fake всё равно
+   переписывается целиком.
+3. Scope 7a+7b уже жирный: `(marketing)` route group + landing + 3-tier
+   pricing + 8 Vitest specs + middleware update. Лишний wiring
+   размывал бы review и увеличивал blast radius PR.
+
+**Tracked as TD-080** в `TECH_DEBT.md`. Конкретные trigger-точки
+перечислены там. TD-080 depends TD-057 (Stripe catalog) + TD-053
+(per-day insight tier gate) + real DB-backed usage counters (будет
+заведён отдельно с 7c kickoff).
+
+**TD-ID note.** TD-079 в этот момент был зарезервирован параллельной
+CC #1 сессией (Slice 4a — accounts FK CASCADE / soft-delete mismatch);
+поэтому этот ADR и TECH_DEBT.md используют TD-080, а не TD-079. Когда
+CC #1 merge'нется раньше — их TD-079 уже живёт выше в файле; когда
+позже — они добавят TD-079 append'ом, оба coexist.
+
+**Revisit.** Когда 7c уходит в scope — проверить список triggers в
+TD-080: не устарел ли, не нужно ли добавить новые точки (например,
+alerts по new surface'ам из 8-й волны).

@@ -47,7 +47,12 @@ TASK_08 iOS (нужен Mac + Xcode, отдельный репо).
 
 | PR | Scope | SHA | Дата |
 |---|---|---|---|
-| **main tip** | docs cleanup pass (UI_BACKLOG.md создан, PO_HANDOFF revision, ROADMAP Doppler ✅, TECH_DEBT P-legend, README index refresh) | this commit | 2026-04-21 |
+| **main tip** | this commit (post-slice-7ab docs pass from CC #2: UI_BACKLOG Slice 7a+7b ✅ + ROADMAP Paywall UI [x] + TECH_DEBT TD-080 + DECISIONS ADR + merge-log PR #58 entry). CC #1's own docs pass for PR #59 (Slice 4a) may still land separately. | this commit | 2026-04-21 |
+| #59 | TASK_07 Slice 4a: Manual Accounts CRUD — `(app)/accounts` route + list + Add/Rename/Delete for `connection_type=manual`, sidebar activation, TanStack Query hooks, packages/ui `SyncStatusBadge` 'manual' variant. Broker OAuth (Slice 4b/4c) remains blocked on TD-046. Docs in-PR: **TD-079** (accounts→transactions FK = CASCADE vs soft-delete handler, P3) + 2 DECISIONS ADRs (Accounts soft-delete pattern; AccountConnectCard not reused). | `c5590f5` | 2026-04-21 |
+| #58 | TASK_07 Slice 7a+7b: Landing + Pricing + Paywall UI — `(marketing)/` route group, `/` landing (hero + 3 pillars + trust strip, anon render / authed redirect), `/pricing` (3 tiers aligned to `04_DESIGN_BRIEF §13.1`: Free $0 / Plus $8 / Pro $20, feature matrix with accounts/AI-msgs-per-day/insights/tax/API), Subscribe CTAs stubbed (Stripe in 7c / TD-057), MarketingHeader + MarketingFooter without legal placeholders, middleware `/pricing` public, 8 new Vitest specs (46/46 green). Paywall demo trigger на `/dashboard` deferred → TD-080. | `528333b` | 2026-04-21 |
+| docs-only | kickoffs (slice 4a + 7ab) + AI staging runbook + PO_HANDOFF § 3.1 pre-CC checklist | `a407d7d` | 2026-04-21 |
+| docs-only | kickoffs for slice 4a + slice 7ab + AI staging deploy runbook (TD-070) | `a70807d` | 2026-04-21 |
+| docs-only | cleanup pass (UI_BACKLOG.md создан, PO_HANDOFF revision, ROADMAP Doppler ✅, TECH_DEBT P-legend, README index refresh) | `0a0d437` | 2026-04-21 |
 | docs-only | post-CORS docs pass: merge-log + PO_HANDOFF + DECISIONS (PR #54 + #55) | `fc44782` | 2026-04-21 |
 | #55 | fix(api): golangci-lint hotfix for `cors_test.go` — cherry-pick `d3f674a` из feature/api-cors. `bodyclose` ×2 + `noctx` ×2 satisfied. Incident + 2 новые TD записаны в DECISIONS.md (TD-077 pre-push golangci-lint gap + TD-078 политика `gh pr checks --watch` перед merge — renumbered с TD-076/077 которые конфликтовали с existing TD-076 Contract sync). | `f1b5799` | 2026-04-21 |
 | #54 ⚠ | feat(api): CORS middleware with `ALLOWED_ORIGINS` allowlist — Fiber v3 `cors.New()` после RequestID/RequestLog. Exact-origin allowlist (credentials mode), 10 scope-cut `X-*` + `X-RateLimit-*` + `X-Request-ID` в `ExposeHeaders`, `MaxAge=86400`. 2 unit теста через `app.Test()`. `ops/secrets.keys.yaml` + `RUNBOOK_deploy.md` обновлены. **Admin-bypass** (TD-006): merged с fail'ящим golangci-lint, hotfixed в PR #55. | `adad1a1` | 2026-04-20 |
@@ -443,11 +448,13 @@ PO в GitHub UI не заходит — squash-only, никаких manual rebas
   D:\investment-tracker\docs\DECISIONS.md
 
 Текущий статус в двух словах:
-- main tip = fc44782 + текущий docs cleanup pass (2026-04-21)
+- main tip = 528333b (#58 Slice 7a+7b) + c5590f5 (#59 Slice 4a)
+  + docs pass (2026-04-21)
 - TASK_04 Core API code-complete + staging deploy live
   (api-staging.investment-tracker.app, CORS allowlist работает)
-- TASK_07 Web Slice 1+2+3 merged (auth + dashboard + positions +
-  AI chat); web на staging.investment-tracker.app
+- TASK_07 Web Slice 1+2+3+4a+7a+7b merged (auth + dashboard + positions +
+  AI chat + manual accounts + landing/pricing); web на
+  staging.investment-tracker.app
 - Slice 4+ scope — UI_BACKLOG.md (canonical). Критический путь:
   Slice 4a (manual Accounts CRUD) → 5a (Tx UI) → 6a (Insights) →
   7a+7b (Landing/Pricing/Paywall) → 12 (Empty/Error states)

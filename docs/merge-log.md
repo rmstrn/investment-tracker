@@ -15,6 +15,42 @@ Newest entries at the top.
 
 ---
 
+## PR #59 — feat(web): TASK_07 Slice 4a — Manual Accounts CRUD
+
+**Squash SHA:** `c5590f5`
+**Merged:** 2026-04-21
+**Base:** `528333b` (PR #58 main tip).
+**Scope (per commit message, CC #1 may expand in their own docs pass):** `/accounts` route + list + Add/Rename/Delete для `connection_type=manual`, plus sidebar activation. TanStack Query hooks против existing REST endpoints. Broker OAuth (Slice 4b/4c) всё ещё блокирован на TD-046.
+- New web: `apps/web/src/app/(app)/accounts/{page,accounts-page-client}`, `apps/web/src/components/accounts/{account-list-item, account-form-modal, delete-confirm-dialog, currencies}`, `apps/web/src/hooks/{useAccounts, useCreateAccount, useUpdateAccount, useDeleteAccount}`, `apps/web/src/lib/api/{accounts, errors}`.
+- Patched `packages/ui` `SyncStatusBadge` — 'manual' variant (no dot, neutral tone, tooltip "Manually entered — does not sync").
+- Patched `apps/web/src/components/app-shell-client.tsx` — accounts href `/dashboard` → `/accounts` + `activeSlugFor` case.
+- Docs (in-PR): `docs/TECH_DEBT.md` **TD-079** (accounts→transactions FK = CASCADE vs handler soft-delete mismatch, P3) + `docs/DECISIONS.md` 2 ADRs ("Accounts soft-delete pattern + FK mismatch deferred"; "AccountConnectCard not reused for manual accounts list").
+
+Delete confirm copy — "Remove «{name}» from portfolio? Trades stay historical, portfolio recalculates without this account." — aligned against handler + OpenAPI. Currency list choice: OpenAPI `Currency` open regex `^[A-Z]{3}$` (not enum); default = EUR (EU audience).
+
+**No admin-bypass.**
+
+---
+
+## PR #58 — feat(web): TASK_07 Slice 7a+7b — landing + pricing + paywall ui
+
+**Squash SHA:** `528333b`
+**Merged:** 2026-04-21
+**Base:** `a407d7d` (PO_HANDOFF § 3.1 pre-CC checklist + kickoffs slice 4a/7ab + AI staging runbook).
+**Scope:** Public face of the product. `(marketing)/` route group с собственным минимальным layout'ом (без `app-shell`). `/` — hero («What you actually own. Why it moved. What to do next.») + 3 pillars (Connect any broker / AI-explained moves / Honest insights) + read-only trust strip; authed → `redirect('/dashboard')`. `/pricing` — 3 tier cards (Free $0 / Plus $8/mo / Pro $20/mo) с feature matrix, выверенной по `04_DESIGN_BRIEF § 13.1` и `00_PROJECT_BRIEF`: accounts 2/10/Unlimited, AI 5/100/Unlimited **per day**, insights Weekly/Daily/Real-time, tax reports только Pro (US+DE), API access только Pro. `MarketingHeader` использует `<Logo variant="full" />` из `packages/ui`. Subscribe CTAs — noop stubs (`console.info('TODO: Stripe checkout', tier)`), реальный checkout ждёт Slice 7c / TD-057. `middleware.ts` — `/pricing` добавлен в `isPublic` matcher. Старый root redirect `apps/web/src/app/page.tsx` удалён, auth-redirect переехал в `(marketing)/page.tsx`. Tabular-nums на ценах (визуальное выравнивание `$8` / `$20`). Только semantic design-tokens, без raw hex. `export const metadata` на обеих страницах.
+
+**Kickoff corrections applied (PO-approved):**
+- Цены + feature matrix выровнены к `04_DESIGN_BRIEF § 13.1` (kickoff §3 Step 2 был ошибочен: Tax reports на Plus вместо Pro-only, AI limits в monthly units вместо daily, accounts 1/3/Unlimited вместо 2/10/Unlimited).
+- Kickoff §3 Step 3 (paywall demo trigger на `/dashboard`) вырезан — дублировал `/design/freemium`, реальное wiring ждёт Slice 7c. Tracked as **TD-080** в `TECH_DEBT.md` + ADR в `DECISIONS.md` («Paywall demo triggers deferred to Slice 7c, PR #58»).
+
+**Tests / CI:** 46/46 Vitest (добавлено 2 landing + 6 pricing specs). All 10 CI checks green (Node lint+typecheck+build, Node unit tests, Go full pipeline, Python, 3 × security scanners, Vercel preview). `gh pr checks 58 --watch` подтвердил до merge (TD-078 policy).
+
+**No admin-bypass.** `gh pr merge --squash --delete-branch` с local-worktree error в конце (main checked out в D:\investment-tracker) — GitHub-side merge прошёл чисто.
+
+**Docs pass (this commit):** UI_BACKLOG Slice 7a + 7b ✅ + SHA, ROADMAP Месяц 4 Paywall UI [x], PO_HANDOFF § 2 (main tip → `528333b`) + § 12 status line, TECH_DEBT.md +TD-080, DECISIONS.md + 2026-04-21 ADR.
+
+---
+
 ## PR #55 — fix(api): golangci-lint hotfix for cors_test.go
 
 **Squash SHA:** `f1b5799`

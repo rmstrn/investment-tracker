@@ -14,6 +14,17 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-080 — Paywall gate wiring: real feature trigger points in `(app)` routes
+
+**Added:** 2026-04-21 (Slice 7a+7b merge — paywall demo trigger на `/dashboard` вырезан из scope, kickoff §3 Step 3).
+**Priority:** P2
+**Source:** UI готов — `PaywallModal`, `LockedPreview`, `PlanBadge`, `UsageIndicator` уже живут в `packages/ui` и демонстрируются в `/design/freemium` (Slice 3 merge). `/pricing` (Slice 7b) — рабочая destination для upgrade flow. Но **в `(app)` routes** (dashboard, chat, positions) нет ни одного реального trigger'а: AI daily-limit hit, CSV export click, insights generate throttle, accounts-over-limit на connect — ни один сейчас не открывает paywall. Пихать dev-only триггер без настоящего gate = noise, который потом всё равно выкидывается (обсуждалось в GAP REPORT PR #58).
+**Decision deferred:** завести trigger'ы одновременно с Stripe checkout slice 7c — тогда gate принимает реальные usage counters из API и ведёт в работающий checkout, а не в `console.info` stub. Конкретные точки: `(app)/chat` (rate-limit → toast уже есть, добавить paywall путь для Free-хитов), `(app)/dashboard` (CSV export feature flag), `(app)/accounts` (Slice 4 — on "Add account" когда `count === limit`), AI insights generate endpoint (tier-check после TD-053).
+**Owner:** CC (слайс 7c или 4a follow-up, в зависимости от того что раньше merge'нется).
+**Revisit:** когда merged slice 7c.
+**Depends:** TD-057 (Stripe catalog), TD-053 (per-week/per-day insight tier gate), real DB-backed usage counters (нет отдельного TD — будет заведён с 7c kickoff).
+**Links:** DECISIONS.md § "Paywall demo triggers deferred to Slice 7c (PR #58)", merge-log PR #58 entry.
+
 ### TD-079 — accounts→transactions FK = CASCADE but handler uses soft-delete only
 
 **Added:** 2026-04-21 (found during TASK_07 Slice 4a pre-flight).
