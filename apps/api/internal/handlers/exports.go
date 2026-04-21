@@ -37,13 +37,10 @@ func CreateExport(deps *app.Deps) fiber.Handler {
 		user := middleware.UserFromCtx(c)
 		ctx := c.Context()
 
-		// Tier gate: Plus or Pro.
-		limit := tiers.For(user.SubscriptionTier)
-		if limit.AIMessagesDaily != nil && *limit.AIMessagesDaily <= 5 {
-			// Heuristic: free tier has tight AI cap. A dedicated
-			// CSVExport flag would be cleaner, but we already gate
-			// AdvancedAnalytics + TaxReports on Pro-only bools; Plus
-			// unlocks export, so treat "not-free" as the gate.
+		// Tier gate: Plus or Pro. Explicit CSVExport flag matches the
+		// AdvancedAnalytics / TaxReports pattern — no more AI-cap
+		// heuristic. Sprint C follow-up closed TD-047.
+		if !tiers.For(user.SubscriptionTier).CSVExport {
 			return errs.Respond(c, reqID,
 				errs.New(http.StatusForbidden, "FEATURE_LOCKED", "CSV export requires Plus or higher"))
 		}

@@ -48,6 +48,48 @@ func TestCreateExport_FreeTier_403(t *testing.T) {
 	if resp.StatusCode != fiber.StatusForbidden {
 		t.Fatalf("status = %d, body = %s", resp.StatusCode, raw)
 	}
+	// TD-R047: the error must be the canonical tier-upgrade code,
+	// not a generic forbidden. Client UIs key on FEATURE_LOCKED to
+	// render the upgrade CTA.
+	var env map[string]any
+	if err := json.Unmarshal(raw, &env); err != nil {
+		t.Fatalf("decode error envelope: %v", err)
+	}
+	errMap, ok := env["error"].(map[string]any)
+	if !ok {
+		t.Fatalf("missing error envelope: %s", raw)
+	}
+	if errMap["code"] != "FEATURE_LOCKED" {
+		t.Errorf("code = %v, want FEATURE_LOCKED (free-tier upgrade gate)", errMap["code"])
+	}
+}
+
+// TestCreateExport_HappyPath_Pro mirrors TestCreateExport_HappyPath_Plus
+// but on the Pro tier — proves the explicit CSVExport flag matrix
+// grants Pro the same access as Plus rather than accidentally
+// leaving Pro out when the heuristic was replaced (TD-R047).
+func TestCreateExport_HappyPath_Pro(t *testing.T) {
+	resetDB(t)
+	a := newTestApp(t)
+	uid := seedUser(t, "pro")
+
+	body := map[string]any{"resource": "snapshots", "format": "csv"}
+	resp, raw := doJSON(t, a, fiber.MethodPost, "/exports",
+		uid.String(), testSharedInternalToken, body)
+	if resp.StatusCode != fiber.StatusAccepted {
+		t.Fatalf("status = %d, body = %s", resp.StatusCode, raw)
+	}
+	if resp.Header.Get("X-Export-Pending") != "true" {
+		t.Fatalf("missing X-Export-Pending header")
+	}
+	var out map[string]any
+	_ = json.Unmarshal(raw, &out)
+	if out["resource"] != "snapshots" {
+		t.Fatalf("resource = %v", out["resource"])
+	}
+	if out["status"] != "queued" {
+		t.Fatalf("status = %v, want queued", out["status"])
+	}
 }
 
 func TestCreateExport_InvalidResource_400(t *testing.T) {

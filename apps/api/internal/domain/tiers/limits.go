@@ -26,6 +26,7 @@ type Limit struct {
 	AdvancedAnalytics bool // unlocks GET /portfolio/analytics
 	TaxReports        bool // unlocks GET /portfolio/tax (+ /tax/export in PR B3)
 	AIChatEnabled     bool // unlocks /ai/chat + /ai/chat/stream + /ai/insights/generate
+	CSVExport         bool // unlocks POST /exports (CSV download of transactions / positions / snapshots / dividends)
 }
 
 var (
@@ -40,6 +41,7 @@ var (
 		ConnectedAccounts: intp(5),
 		InsightsWeekly:    intp(20),
 		AIChatEnabled:     true,
+		CSVExport:         true,
 	}
 	proLimit = Limit{
 		AIMessagesDaily:   nil,
@@ -48,6 +50,7 @@ var (
 		AdvancedAnalytics: true,
 		TaxReports:        true,
 		AIChatEnabled:     true,
+		CSVExport:         true,
 	}
 )
 
