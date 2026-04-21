@@ -25,8 +25,8 @@ RUN uv sync --frozen --no-install-project --no-dev || \
 # Copy source and install the project
 COPY src ./src
 COPY README.md ./
-RUN uv sync --frozen --no-dev || \
-    uv sync --no-dev
+RUN uv sync --frozen --no-dev --no-editable || \
+    uv sync --no-dev --no-editable
 
 # -------- Stage 2: runtime --------
 FROM python:${PYTHON_VERSION}-slim AS runtime
