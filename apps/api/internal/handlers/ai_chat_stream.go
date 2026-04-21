@@ -48,7 +48,10 @@ func AIChatStream(deps *app.Deps) fiber.Handler {
 				errs.Wrap(err, http.StatusInternalServerError, "INTERNAL_ERROR", "failed to load history"))
 		}
 
-		upstream, err := deps.AI.StreamChat(ctx, user.ID, reqID, aiservice.ChatStreamRequest{
+		// Ownership of upstream.Body transfers into RunStreamingProxy
+		// → sseproxy.Run, which `defer`s Close. bodyclose can't follow
+		// the chain past the named helper call, hence the pragma.
+		upstream, err := deps.AI.StreamChat(ctx, user.ID, reqID, aiservice.ChatStreamRequest{ //nolint:bodyclose // closed inside RunStreamingProxy → sseproxy.Run
 			ConversationID: req.ConversationID,
 			Message:        flattenUserContent(req.Message.Content),
 			History:        history,
