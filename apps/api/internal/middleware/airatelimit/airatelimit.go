@@ -14,10 +14,24 @@
 //     daily-window contract.
 //  5. Sets X-RateLimit-* headers on every response (success or 429).
 //  6. Returns 429 RATE_LIMIT_EXCEEDED when post-INCR count > cap.
-//     Pre-increment by design — the counter overshoots by 1 on each
-//     blocked attempt; an upstream-failure decrement is out of scope
-//     for MVP per the B3-ii pre-flight (TD-052 logs the precise
-//     "reserve + commit" target).
+//
+// Reserve-then-commit (Sprint C 2b — TD-052 closure):
+//
+// The counter is "reserved" optimistically via INCR so concurrent
+// requests can't race past the cap, but a reservation that does not
+// lead to a committed AI message is refunded via DECR. Three refund
+// branches:
+//   - Rejected at the cap check (post-INCR count > cap) → DECR +
+//     429. Prevents the Sprint B overcount where a rejected 6th
+//     attempt stuck the counter at 6.
+//   - c.Next() returned a non-nil error (handler never wrote a
+//     response, most commonly upstream AI auth / 5xx) → DECR.
+//   - c.Next() wrote a non-2xx status (upstream failed after the
+//     handler took over, ownership 404, validation 400, …) → DECR.
+//   - Streaming 2xx responses are committed even if they drop
+//     mid-stream. Once the client received a 200 + first bytes the
+//     AI Service has already spent tokens; the billing ledger in
+//     persistTurn is the authoritative record there.
 package airatelimit
 
 import (
@@ -77,6 +91,10 @@ func New(deps *app.Deps) fiber.Handler {
 		ttl := secondsUntilNextUTCMidnight(now)
 		key := fmt.Sprintf("airl:%s:%s", CounterType, user.ID)
 
+		// Reserve: INCR first so concurrent requests can't both
+		// observe "under cap" and race past it. The commit decision
+		// happens after c.Next() — a rejected or failed attempt
+		// refunds the bump via DECR below.
 		count, err := deps.Cache.EvalIncrWithTTL(c.Context(), key, ttl)
 		if err != nil {
 			// Fail open on Redis flap — the AI Service has its own
@@ -96,6 +114,11 @@ func New(deps *app.Deps) fiber.Handler {
 		c.Set("X-RateLimit-Reset", strconv.FormatInt(now.Add(ttl).Unix(), 10))
 
 		if int(count) > cap {
+			// Rejected attempt — refund the INCR so a burst of 429s
+			// does not permanently stick the bucket past the cap.
+			// Best-effort: a Redis hiccup here leaves the counter
+			// high by 1, which is the pre-Sprint-C behavior.
+			refund(c, deps, key, user.ID.String(), "cap_exceeded")
 			return errs.Respond(c, reqID,
 				errs.ErrRateLimit.WithDetails(map[string]any{
 					"limit":      cap,
@@ -104,7 +127,30 @@ func New(deps *app.Deps) fiber.Handler {
 					"counter":    CounterType,
 				}))
 		}
-		return c.Next()
+		nextErr := c.Next()
+		// Commit or refund. A nil error + 2xx status is a committed
+		// AI turn and the bucket stays bumped. Anything else —
+		// handler returned an error, or handler wrote a 4xx/5xx —
+		// refunds the reservation.
+		status := c.Response().StatusCode()
+		if nextErr != nil || status < 200 || status >= 300 {
+			refund(c, deps, key, user.ID.String(), fmt.Sprintf("status=%d", status))
+		}
+		return nextErr
+	}
+}
+
+// refund decrements the daily counter to roll back a reservation
+// that did not lead to a committed AI message. Logs on failure but
+// never surfaces the DECR error — the client already got their
+// response (either 429 or the downstream 4xx/5xx) and we must not
+// mutate that outcome.
+func refund(c fiber.Ctx, deps *app.Deps, key, userID, reason string) {
+	if _, err := deps.Cache.Decr(c.Context(), key); err != nil {
+		deps.Log.Warn().Err(err).
+			Str("user_id", userID).
+			Str("reason", reason).
+			Msg("airatelimit: decr refund failed; counter may be over by 1")
 	}
 }
 

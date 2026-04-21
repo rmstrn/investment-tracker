@@ -192,45 +192,89 @@ func buildAppWithDownstream(t *testing.T, tier string, handlerStatus int) (*fibe
 	return a, mr, &attempts
 }
 
-// TestTD052_PreIncrementOvercountOnDownstreamFailure pins down the
-// known overcount bug so Sprint C has a starting-point test rather
-// than a floating bug report. The middleware INCRs the counter
-// *before* calling c.Next() — if the handler returns an upstream
-// failure (502/503 from AI Service, timeouts, etc.) the counter
-// stays bumped even though no AI work actually happened. Five
-// failing attempts consume the whole daily free-tier cap.
+// TestTD052_UpstreamFailureRefundsCounter is the flip side of the
+// bug Sprint B pinned at counter=6. With the Sprint C reserve-then-
+// commit fix in place (the current airatelimit.go), handler errors
+// and non-2xx responses refund the INCR. Five 502 attempts leave
+// the counter at 0 — the user hasn't actually consumed any AI work,
+// so the daily budget is preserved.
 //
-// When TD-052 is fixed ("reserve + commit" pattern), this test's
-// expectations will need flipping to "counter stays at 0". Until
-// then the test documents the status quo.
-func TestTD052_PreIncrementOvercountOnDownstreamFailure(t *testing.T) {
+// The kickoff asked for a flip from "expected=6" to "expected=5".
+// In practice the correct value after the fix is **0**: all five
+// handler 502s refund (counter stays 0), and the 6th attempt
+// succeeds (INCR→1, then c.Next() 502, DECR→0). All six attempts
+// refund. This is strictly better than both the pre-fix status quo
+// (6) and the interim "expected=5" story — no successful AI work =
+// no quota consumed.
+//
+// See commit message for the full reserve-then-commit rationale;
+// historical context lives in Sprint B's original test (before this
+// rewrite) which documented counter=6 as the overcount symptom.
+func TestTD052_UpstreamFailureRefundsCounter(t *testing.T) {
 	a, mr, attempts := buildAppWithDownstream(t, "free", fiber.StatusBadGateway)
 
-	// 5 failing attempts — every one returns 502 from the
-	// handler, but the middleware INCR already fired so the daily
-	// counter bumps 5 times.
-	for i := 1; i <= 5; i++ {
+	// 6 failing attempts. Under the old pre-increment algorithm
+	// this would 429 at the 6th (counter hit 5, reject). Under the
+	// new reserve-commit algorithm every 502 refunds the INCR —
+	// counter stays at 0, so the 6th attempt also reaches the
+	// handler and still 502s.
+	for i := 1; i <= 6; i++ {
 		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 		if resp.StatusCode != fiber.StatusBadGateway {
-			t.Fatalf("attempt %d: status = %d, want 502", i, resp.StatusCode)
+			t.Fatalf("attempt %d: status = %d, want 502 (reserve-commit should not 429 when every attempt fails)", i, resp.StatusCode)
 		}
 	}
-	if got := atomic.LoadInt64(attempts); got != 5 {
-		t.Fatalf("handler attempts = %d, want 5", got)
+	if got := atomic.LoadInt64(attempts); got != 6 {
+		t.Fatalf("handler attempts = %d, want 6 (all attempts should have been admitted)", got)
 	}
 
-	// 6th attempt — now rate-limited even though zero real AI
-	// calls succeeded. This is the overcount symptom: user gets
-	// charged daily quota for upstream outages.
+	// Counter in Redis. After 6 INCR + 6 DECR pairs miniredis may
+	// either show the key absent (if Redis deleted it at 0 via TTL
+	// or similar) or show "0". Either way: not greater than 0.
+	for _, k := range mr.Keys() {
+		if !strings.Contains(k, "ai_messages_daily") {
+			continue
+		}
+		val, _ := mr.Get(k)
+		if val != "" && val != "0" {
+			t.Errorf("counter key %s = %q, want \"\" or \"0\" (reserve-commit refunded every failing attempt)", k, val)
+		}
+	}
+}
+
+// TestReserveCommit_RejectedAttemptRefundsBucket asserts that a
+// rejected 429 attempt does not itself bump the counter. Sprint B
+// pinned counter=6 after 5 allowed + 1 rejected. Post-fix the
+// rejected attempt's INCR is undone by the cap-check refund
+// branch, so the counter reads exactly 5 — equal to the number of
+// committed (handler-success) turns.
+//
+// This is the narrow "counter=5 not 6" flip the kickoff called
+// for, isolated from the upstream-failure scenario in
+// TestTD052_UpstreamFailureRefundsCounter so the two behaviors are
+// independently guarded.
+func TestReserveCommit_RejectedAttemptRefundsBucket(t *testing.T) {
+	a, mr, passed := buildApp(t, "free")
+
+	// 5 successful attempts — every one is a plain 200 from the
+	// handler, counter climbs 1..5.
+	for i := 1; i <= 5; i++ {
+		resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
+		if resp.StatusCode != fiber.StatusOK {
+			t.Fatalf("attempt %d: status = %d, want 200", i, resp.StatusCode)
+		}
+	}
+	if got := atomic.LoadInt64(passed); got != 5 {
+		t.Fatalf("handler passed = %d, want 5", got)
+	}
+
+	// 6th attempt — rejected at the cap check. Pre-fix this bumped
+	// the counter to 6; post-fix the refund path lands it back at 5.
 	resp := doPost(t, a) //nolint:bodyclose // closed via t.Cleanup in helper
 	if resp.StatusCode != fiber.StatusTooManyRequests {
-		t.Fatalf("6th status = %d, want 429 (overcount gates user after 5 502s)", resp.StatusCode)
+		t.Fatalf("6th status = %d, want 429", resp.StatusCode)
 	}
 
-	// Counter in Redis reflects the 5 bumps (miniredis exposes it
-	// under the airl:ai_messages_daily:<uid> key). We don't assert
-	// the exact key format — that's internal — but assert some
-	// ai_messages_daily-scoped key exists and reads "5".
 	var counterKey string
 	for _, k := range mr.Keys() {
 		if strings.Contains(k, "ai_messages_daily") {
@@ -239,18 +283,10 @@ func TestTD052_PreIncrementOvercountOnDownstreamFailure(t *testing.T) {
 		}
 	}
 	if counterKey == "" {
-		t.Fatal("no ai_messages_daily key in miniredis after 5 attempts")
+		t.Fatal("no ai_messages_daily key in miniredis after 5 allowed attempts")
 	}
-	// The counter reads "6" (not 5) because the 6th attempt's
-	// INCR runs *before* the cap check — that attempt is rejected
-	// at the middleware but the bucket still bumped. So the
-	// overcount drift against actual successful work is:
-	//   5 INCRs from 502-returning attempts + 1 INCR from the
-	//   rejected attempt = 6, while real AI work done = 0.
-	// Sprint C's "reserve + commit" fix will make this "5" (and
-	// eventually "0" once the downstream-failure decrement is in).
-	if got, _ := mr.Get(counterKey); got != "6" {
-		t.Errorf("counter = %q, want \"6\" (confirms pre-increment overcount on both failing + rejected paths)", got)
+	if got, _ := mr.Get(counterKey); got != "5" {
+		t.Errorf("counter = %q, want \"5\" (rejected 6th attempt refunded its INCR)", got)
 	}
 }
 

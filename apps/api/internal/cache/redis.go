@@ -99,6 +99,18 @@ func (c *Client) IncrWithTTL(ctx context.Context, key string, ttl time.Duration)
 	return incr.Val(), nil
 }
 
+// Decr atomically decrements the counter at key. Used by the
+// airatelimit "reserve + commit" path to refund a rejected or
+// upstream-failed attempt (Sprint C 2b — TD-052). Returns the
+// post-DECR value. On a missing key Redis sets it to 0 and
+// decrements from there; the returned negative value is the
+// caller's cue that the refund landed on a bucket that had already
+// expired (daily counter flipped at UTC midnight). Callers treat
+// that as a no-op.
+func (c *Client) Decr(ctx context.Context, key string) (int64, error) {
+	return c.rdb.Decr(ctx, key).Result()
+}
+
 // EvalIncrWithTTL is the canonical "INCR + EXPIRE on first increment"
 // primitive — single Lua eval, single round-trip, atomic. Preferred
 // over IncrWithTTL on hot paths where the 2-call pipeline's race
