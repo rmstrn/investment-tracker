@@ -15,6 +15,36 @@ Newest entries at the top.
 
 ---
 
+## close-td-091 — Fiber v3 SendStreamWriter async persist race (P1) + k6 deploy-unblock chain
+
+**Product fix SHA:** `f64bc41 fix(api): persist AI chat turn inside SendStreamWriter callback (TD-091)`
+**Deploy unblock SHAs:** `040c70f` → `bdf6a0a` → `a913a7a` (three k6 smoke fixes — pre-existing `ai_chat_stream.js` bug was eating every `deploy-api.yml` run since `cdfca5d`; TD-091 was correct on push but couldn't actually land through CI).
+**Merged:** 2026-04-21
+**Base:** prior main tip after `8fcc0b6` (Vercel CLI ignore chore).
+
+**Scope:**
+- **Product** — `apps/api/internal/handlers/ai_chat_stream.go`: persist + error-log moved inside `c.SendStreamWriter(func(w *bufio.Writer) { ... })` callback. Fiber v3 dispatches that callback *after* the handler returns (fasthttp `SetBodyStreamWriter`), so the prior code read a still-nil `res` in outer scope and always took the "skipping persist" branch. One-file, 115-line final handler; structural comment at lines 71–78 documents async semantics for the next reader.
+- **CI unblock** — `tools/k6/smoke/ai_chat_stream.js`: (1) smoke was sending `conversation_id = uuid.Nil` which `parseChatRequestBody` rejects 400 before any ownership/upstream path runs → switched to `setup()` that `POST /ai/conversations` and threads the id through; (2) duration-based loop burned the user tier daily cap (AIMessagesDaily=5 for free) within seconds because `airatelimit` middleware increments *before* the upstream call → dropped to `iterations: 1` and tolerate 429 alongside 200/503; (3) k6 built-in `http_req_failed` counts 429/503 as failed and tripped `rate<0.05` on 1-of-2 requests → dropped the threshold, kept `checks` as authoritative gate.
+
+**Tests / CI status:**
+- `deploy-api.yml` run `24738505122`: ✓ Verify staging secrets, ✓ Deploy staging (34s), ✓ k6 smoke staging (1m19s). Overall run red only because of pre-existing `Verify prod secrets` job failing on JSON-decode of empty `flyctl secrets list` output (prod Fly app `investment-tracker-api` not yet provisioned, out of scope per TD-091 kickoff).
+- `flyctl status -a investment-tracker-api-staging`: 1 machine `started` in `fra`, checks passing, image labeled `GH_SHA=a913a7a` (which includes f64bc41).
+- Local `turbo run typecheck` + `py-mypy` + `go vet` all green (pre-push lefthook).
+
+**Admin-bypass:** N/A (direct pushes to main per repo convention for hotfixes / deploy-unblock).
+**Migrations:** None.
+**Closed TDs:** TD-091 (moved to Resolved as TD-R091).
+**Opened TDs:** None. Integration test for SendStreamWriter-async-vs-persist recorded as trigger-to-revisit inside TD-R091 (scheduled for post-alpha sprint; not a standalone TD yet).
+
+**PO follow-up (browser verification — not automated):**
+- Open staging web (`chat.investment-tracker.app` or Vercel preview for `main`), sign in, `/chat`, send a test message.
+- Expected: response streams live **and stays visible** after stream completion; `flyctl logs -a investment-tracker-api-staging --since 5m | grep persistTurnBackground` shows success; DB has new `ai_usage` + assistant `ai_messages` rows for today.
+- Fly log window has rolled since automated smoke requests (machine redeployed 3x during this session) so direct log verification of the earlier smoke-run messages is no longer possible — PO browser check is the confirmation path.
+
+**Worktree cleanup (на PO):** N/A — все коммиты landed прямо на main worktree.
+
+---
+
 ## docs: close td-070 + post-deploy ledger (ops fixes for 5 latent Dockerfile/CI bugs caught during first deploy)
 
 **Squash SHA:** `2b81fd2`
