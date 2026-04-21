@@ -14,6 +14,42 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-091 — Fiber v3 `c.SendStreamWriter` is async — persist branch race
+
+**Added:** 2026-04-21 (staging chat debug — assistant messages *никогда* не persisted на staging; user видит "думает и пропадает").
+**Priority:** P1 (каждый AI chat turn теряется; chat history на сервере состоит ТОЛЬКО из user messages; UI stream показывается live но исчезает при refetch потому что DB пустая; все ai_usage billing ledger inserts тоже skipped).
+**Source:** `apps/api/internal/handlers/ai_chat_stream.go` предполагал synchronous semantics от `c.SendStreamWriter(fn)` — ожидалось что callback отработает перед тем как SendStreamWriter вернёт управление, т.е. внешний код сможет прочитать `result` переменную set'нутую внутри callback'а. Комментарий в коде буквально гласил: *"The handler finishes writing the SSE stream to the client inside SendStreamWriter; the persist step runs in a goroutine..."*.
+
+Реальность: Fiber v3 использует fasthttp'овский `Response.SetBodyStreamWriter` под капотом. Тот принимает callback и запускает его **после** того как handler вернулся — во время response flush stage. Т.е. код вида
+```go
+var result *sseproxy.Result
+c.SendStreamWriter(func(w *bufio.Writer) {
+  res, _ := sseproxy.Run(...)
+  result = res        // runs AFTER handler returns
+})
+if result != nil && result.GotMessageStop { ... }  // result is ALWAYS nil here
+```
+— гарантированно видит `result == nil` и заходит в else-ветку ("message_stop not received — skipping persist"). Fly logs подтверждают: `POST /ai/chat/stream` duration = 57ms (handler exit immediate), при этом AI Service ещё **6 секунд** делает tool calls + Anthropic requests → полный stream *всё же* доезжает до браузера (fasthttp runs callback пост-фактум), но persist никогда не запускается.
+
+Симптом user'а: в UI видно что AI "думает" (stream live), потом ответ исчезает. Причина: `state.phase: 'done'` → React Query invalidate → refetch `/ai/conversations/{id}` → DB содержит только user message (assistant drop), stream-render unmount → пустота.
+
+Также сломан **billing ledger** — каждый turn AI расходует Anthropic tokens (AI Service platит), но `ai_usage` row никогда не insert'ится → cost tracking сломан → paywall gates которые смотрят на usage (если будут) будут поломаны.
+
+**Fix applied:** persist + error-log переехали **внутрь** SendStreamWriter callback'а, где `res` actually populated. Outer handler теперь только commit'ит headers и returns. Детали см. в `apps/api/internal/handlers/ai_chat_stream.go` после этого коммита.
+
+**Why tests didn't catch it:** `apps/api/internal/sseproxy/proxy_test.go` тестирует `sseproxy.Run` напрямую на `httptest.ResponseRecorder` / `bytes.Buffer` — **synchronous** invariant there. Handler wrapper через Fiber `SendStreamWriter` не покрыт integration тестами. Это значит:
+- Unit tests для `sseproxy` зелёные ✅
+- Integration test с реальным Fiber app + upstream SSE mock — отсутствует ❌
+- Только реальный staging end-to-end test (человек открывает чат) ловит.
+
+**Owner:** api maintainer.
+**Trigger to revisit:**
+- Написать integration test который поднимает Fiber app, даёт mock AI Service stream, отправляет POST /ai/chat/stream, ждёт `message_stop` на клиентской стороне, затем проверяет что ai_messages + ai_usage rows созданы в test DB. Должен включаться в `api` CI workflow.
+- Пройтись по всему `apps/api/internal/handlers/` grep'ом `SendStreamWriter` — это единственный handler его использующий (double-check), но любой будущий streaming endpoint должен помещать post-stream логику внутрь callback'а.
+- Fiber v3 upgrade notes при major bump'е — проверить не изменилась ли семантика.
+
+**Links:** `apps/api/internal/handlers/ai_chat_stream.go` (fixed in this commit); `apps/api/internal/sseproxy/proxy.go` (unaffected — Run itself is synchronous); merge-log close-td-091 entry; DECISIONS.md (TBD — "SSE handler pattern в Fiber v3 — persist должен быть внутри SendStreamWriter callback").
+
 ### TD-090 — `turbo.json` env list drift — Vercel env vars фильтруются из runtime
 
 **Added:** 2026-04-21 (staging chat debug — **настоящий** root cause после TD-088 + TD-089).

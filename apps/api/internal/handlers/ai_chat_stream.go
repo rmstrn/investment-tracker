@@ -67,8 +67,15 @@ func AIChatStream(deps *app.Deps) fiber.Handler {
 		c.Status(http.StatusOK)
 
 		userBlocks := req.Message.Content
-		var result *sseproxy.Result
 
+		// NOTE: Fiber v3's c.SendStreamWriter is async — it hands the
+		// callback to fasthttp which runs it *after* this handler
+		// returns (see TD-091). So we can't read the sseproxy Result
+		// back out of the callback scope and branch on it in the
+		// outer function — by the time the outer function runs, the
+		// callback hasn't executed yet. Persist + error-log decisions
+		// must happen *inside* the callback, at the one moment when
+		// `res` is actually populated.
 		streamErr := c.SendStreamWriter(func(w *bufio.Writer) {
 			res, runErr := sseproxy.Run(ctx, sseproxy.StreamOpts{
 				Upstream:       upstream.Body,
@@ -78,7 +85,6 @@ func AIChatStream(deps *app.Deps) fiber.Handler {
 				RequestID:      reqID,
 				Logger:         &deps.Log,
 			})
-			result = res
 			if runErr != nil {
 				deps.Log.Warn().Err(runErr).
 					Str("request_id", reqID).
@@ -86,23 +92,23 @@ func AIChatStream(deps *app.Deps) fiber.Handler {
 					Bool("got_message_stop", res != nil && res.GotMessageStop).
 					Msg("ai chat stream: proxy run ended with error")
 			}
+
+			// Persist iff the upstream delivered a message_stop (AC #3
+			// revised: insert regardless of stop_reason as long as
+			// message_stop arrived). A mid-stream drop yields
+			// GotMessageStop=false + log + skip.
+			if res != nil && res.GotMessageStop {
+				persistTurnBackground(&deps.Log, deps.Pool, user.ID, req.ConversationID, userBlocks, res)
+			} else {
+				deps.Log.Error().
+					Str("request_id", reqID).
+					Str("conversation_id", req.ConversationID.String()).
+					Msg("ai chat stream: message_stop not received — skipping persist; assistant turn dropped")
+			}
 		})
 		if streamErr != nil {
 			deps.Log.Warn().Err(streamErr).Str("request_id", reqID).
 				Msg("ai chat stream: SendStreamWriter error")
-		}
-
-		// Persist iff the upstream delivered a message_stop (AC #3
-		// revised: insert regardless of stop_reason as long as
-		// message_stop arrived). A mid-stream drop yields
-		// GotMessageStop=false + log + skip.
-		if result != nil && result.GotMessageStop {
-			persistTurnBackground(&deps.Log, deps.Pool, user.ID, req.ConversationID, userBlocks, result)
-		} else {
-			deps.Log.Error().
-				Str("request_id", reqID).
-				Str("conversation_id", req.ConversationID.String()).
-				Msg("ai chat stream: message_stop not received — skipping persist; assistant turn dropped")
 		}
 		return nil
 	}
