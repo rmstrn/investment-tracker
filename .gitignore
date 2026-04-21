@@ -82,3 +82,6 @@ logs/
 .git-broken/
 tmp/
 .tmp/
+
+.vercel
+.env*.local
