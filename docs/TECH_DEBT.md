@@ -14,6 +14,38 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-090 — `turbo.json` env list drift — Vercel env vars фильтруются из runtime
+
+**Added:** 2026-04-21 (staging chat debug — **настоящий** root cause после TD-088 + TD-089).
+**Priority:** P1 (ломает production chat на staging; любой новый env var без turbo.json entry молча пропадёт в runtime).
+**Source:** `turbo.json` задаёт allowlist env vars через `globalEnv` + `tasks.build.env`. Turbo v2 гарантирует reproducibility билдов тем что **вырезает** env vars which не в allowlist — они недоступны в build process **и наследуются в runtime serverless function environment только для var'ов которые в allowlist**. `API_URL` + `APP_URL` были set на Vercel Production (даже после ре-add через interactive CLI), но отсутствовали в `turbo.json`. Vercel build log показывал warning:
+```
+Warning - the following environment variables are set on your Vercel project,
+but missing from "turbo.json". These variables WILL NOT be available to your application
+[warn] @investment-tracker/web#build
+[warn]   - API_URL
+[warn]   - APP_URL
+```
+Результат: Next.js Server Component `page.tsx` (`/chat/[id]`) вызывал `process.env.API_URL` в serverless function → `undefined` (а не `""`!) → `createApiClient({ baseUrl: undefined })` → openapi-fetch internal exception при построении URL для `client.GET('/ai/conversations/{id}')` → `catch` в `fetchInitialDetail` swallow'ил → UI показывал "Unable to load this conversation right now. Try again in a moment."
+**Fix applied:** `API_URL` + `APP_URL` добавлены в `tasks.build.env` в `turbo.json`:
+```json
+"env": [
+  "NEXT_PUBLIC_*",
+  "API_URL",
+  "APP_URL",
+  "DATABASE_URL",
+  ...
+]
+```
+**Why TD-088 (`?? → ||`) was needed anyway:** defensive — если кто-то set'нет empty string на Vercel (мисконфиг), fallback сработает и local dev всё равно будет работать. Но настоящий симптом fix'ит TD-090.
+**Why TD-089 (prepare guard) was needed anyway:** первый `vercel --prod` без build cache фейлил на `pnpm install` → lefthook. Git-push-triggered deploys использовали warm cache и не хитали prepare. Guard нужен для всех clean-slate CI builds.
+**Owner:** infra + web maintainer.
+**Trigger to revisit:**
+- Каждый раз когда добавляется новая env var в Vercel project — *обязательно* добавить её в `turbo.json` (либо `globalEnv` если используется всеми pkg'ами, либо `tasks.build.env` если только билдом). Turbo warning в Vercel build log — leading indicator, но его легко пропустить.
+- Долговременный fix: либо CI gate который fail'ит PR если Vercel env vars не совпадают с `turbo.json` (требует API integration), либо periodic audit.
+- Также пройтись через весь `apps/web/` grep'ом `process\.env\.\w+` и убедиться что каждая переменная declared.
+**Links:** merge-log entry for `turbo.json` fix; TD-088 (defensive fallback same arc); TD-089 (prepare guard same arc); DECISIONS.md (TBD — "turbo.json env var allowlist policy").
+
 ### TD-089 — Root `prepare` hook падает в CI build env без `.git`
 
 **Added:** 2026-04-21 (staging chat debug — Vercel build failed first, blocking chat fix deploy).
