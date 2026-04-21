@@ -30,11 +30,11 @@ import (
 	"github.com/google/uuid"
 )
 
-func loadFixture(t *testing.T, name string) string {
+func loadCanonicalFixture(t *testing.T) string {
 	t.Helper()
-	b, err := os.ReadFile("testdata/" + name)
+	b, err := os.ReadFile("testdata/canonical_stream.txt")
 	if err != nil {
-		t.Fatalf("load fixture %s: %v", name, err)
+		t.Fatalf("load canonical fixture: %v", err)
 	}
 	return string(b)
 }
@@ -50,7 +50,7 @@ func TestContract_CanonicalStream_ResultFieldsExtracted(t *testing.T) {
 
 	out := &syncBuffer{}
 	res, err := Run(ctx, StreamOpts{
-		Upstream:       io.NopCloser(strings.NewReader(loadFixture(t, "canonical_stream.txt"))),
+		Upstream:       io.NopCloser(strings.NewReader(loadCanonicalFixture(t))),
 		Writer:         out,
 		ConversationID: uuid.New(),
 		RequestID:      "req-canonical-1",
@@ -130,7 +130,7 @@ func TestContract_CanonicalStream_OutboundFrames(t *testing.T) {
 
 	out := &syncBuffer{}
 	_, err := Run(ctx, StreamOpts{
-		Upstream:       io.NopCloser(strings.NewReader(loadFixture(t, "canonical_stream.txt"))),
+		Upstream:       io.NopCloser(strings.NewReader(loadCanonicalFixture(t))),
 		Writer:         out,
 		ConversationID: uuid.MustParse("00000000-0000-4000-8000-000000000001"),
 		RequestID:      "req-canonical-2",
@@ -365,7 +365,7 @@ func TestContract_WriterFailure_ReturnsError(t *testing.T) {
 	defer cancel()
 
 	_, err := Run(ctx, StreamOpts{
-		Upstream:       io.NopCloser(strings.NewReader(loadFixture(t, "canonical_stream.txt"))),
+		Upstream:       io.NopCloser(strings.NewReader(loadCanonicalFixture(t))),
 		Writer:         errorWriter{},
 		ConversationID: uuid.New(),
 		RequestID:      "req-writer-fail",
@@ -385,7 +385,7 @@ func TestContract_FlushFailure_ReturnsError(t *testing.T) {
 
 	out := &syncBuffer{}
 	_, err := Run(ctx, StreamOpts{
-		Upstream:       io.NopCloser(strings.NewReader(loadFixture(t, "canonical_stream.txt"))),
+		Upstream:       io.NopCloser(strings.NewReader(loadCanonicalFixture(t))),
 		Writer:         out,
 		Flush:          func() error { return io.ErrClosedPipe },
 		ConversationID: uuid.New(),

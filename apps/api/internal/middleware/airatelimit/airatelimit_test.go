@@ -268,7 +268,8 @@ func TestTD052_PreIncrementOvercountOnDownstreamFailure(t *testing.T) {
 // the fiber test timeout.
 func TestRedisDown_FailsOpen(t *testing.T) {
 	// Grab a port, then close the listener so Dial to it fails.
-	ln, err := net.Listen("tcp", "127.0.0.1:0")
+	lc := &net.ListenConfig{}
+	ln, err := lc.Listen(t.Context(), "tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("net.Listen: %v", err)
 	}
