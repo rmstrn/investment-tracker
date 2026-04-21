@@ -6,9 +6,9 @@ require (
 	github.com/MicahParks/jwkset v0.11.0
 	github.com/MicahParks/keyfunc/v3 v3.8.0
 	github.com/alicebob/miniredis/v2 v2.37.0
-	github.com/getkin/kin-openapi v0.127.0
+	github.com/getkin/kin-openapi v0.135.0
 	github.com/getsentry/sentry-go v0.46.0
-	github.com/go-playground/validator/v10 v10.20.0
+	github.com/go-playground/validator/v10 v10.30.2
 	github.com/gofiber/fiber/v3 v3.1.0
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
@@ -22,7 +22,7 @@ require (
 	github.com/rs/zerolog v1.35.1
 	github.com/shopspring/decimal v1.4.0
 	github.com/stripe/stripe-go/v82 v82.5.1
-	github.com/svix/svix-webhooks v1.90.0
+	github.com/svix/svix-webhooks v1.91.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.42.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -55,7 +55,7 @@ require (
 	github.com/ebitengine/purego v0.10.0 // indirect
 	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.13 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
@@ -68,7 +68,6 @@ require (
 	github.com/gofiber/utils/v2 v2.0.4 // indirect
 	github.com/google/cel-go v0.21.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
@@ -95,6 +94,8 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/oapi-codegen/oapi-codegen/v2 v2.4.1 // indirect
+	github.com/oasdiff/yaml v0.0.9 // indirect
+	github.com/oasdiff/yaml3 v0.0.9 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.1 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
@@ -132,6 +133,7 @@ require (
 	github.com/vmware-labs/yaml-jsonpath v0.3.2 // indirect
 	github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc // indirect
 	github.com/wasilibs/wazero-helpers v0.0.0-20240604052452-61d7981e9a38 // indirect
+	github.com/woodsbury/decimal128 v1.3.0 // indirect
 	github.com/yuin/gopher-lua v1.1.1 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect

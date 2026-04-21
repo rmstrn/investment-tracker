@@ -83,10 +83,10 @@ github.com/fsnotify/fsnotify v1.4.9 h1:hsms1Qyu0jgnwNXIxa+/V/PDsU6CfLf6CNO8H7IWo
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fxamacker/cbor/v2 v2.9.1 h1:2rWm8B193Ll4VdjsJY28jxs70IdDsHRWgQYAI80+rMQ=
 github.com/fxamacker/cbor/v2 v2.9.1/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/gabriel-vasile/mimetype v1.4.3 h1:in2uUcidCuFcDKtdcBxlR0rJ1+fsokWf+uqxgUFjbI0=
-github.com/gabriel-vasile/mimetype v1.4.3/go.mod h1:d8uq/6HKRL6CGdk+aubisF/M5GcPfT7nKyLpA0lbSSk=
-github.com/getkin/kin-openapi v0.127.0 h1:Mghqi3Dhryf3F8vR370nN67pAERW+3a95vomb3MAREY=
-github.com/getkin/kin-openapi v0.127.0/go.mod h1:OZrfXzUfGrNbsKj+xmFBx6E5c6yH3At/tAKSc2UszXM=
+github.com/gabriel-vasile/mimetype v1.4.13 h1:46nXokslUBsAJE/wMsp5gtO500a4F3Nkz9Ufpk2AcUM=
+github.com/gabriel-vasile/mimetype v1.4.13/go.mod h1:d+9Oxyo1wTzWdyVUPMmXFvp4F9tea18J8ufA774AB3s=
+github.com/getkin/kin-openapi v0.135.0 h1:751SjYfbiwqukYuVjwYEIKNfrSwS5YpA7DZnKSwQgtg=
+github.com/getkin/kin-openapi v0.135.0/go.mod h1:6dd5FJl6RdX4usBtFBaQhk9q62Yb2J0Mk5IhUO/QqFI=
 github.com/getsentry/sentry-go v0.46.0 h1:mbdDaarbUdOt9X+dx6kDdntkShLEX3/+KyOsVDTPDj0=
 github.com/getsentry/sentry-go v0.46.0/go.mod h1:evVbw2qotNUdYG8KxXbAdjOQWWvWIwKxpjdZZIvcIPw=
 github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxIA=
@@ -108,8 +108,8 @@ github.com/go-playground/locales v0.14.1 h1:EWaQ/wswjilfKLTECiXz7Rh+3BjFhfDFKv/o
 github.com/go-playground/locales v0.14.1/go.mod h1:hxrqLVvrK65+Rwrd5Fc6F2O76J/NuW9t0sjnWqG1slY=
 github.com/go-playground/universal-translator v0.18.1 h1:Bcnm0ZwsGyWbCzImXv+pAJnYK9S473LQFuzCbDbfSFY=
 github.com/go-playground/universal-translator v0.18.1/go.mod h1:xekY+UJKNuX9WP91TpwSH2VMlDf28Uj24BCp08ZFTUY=
-github.com/go-playground/validator/v10 v10.20.0 h1:K9ISHbSaI0lyB2eWMPJo+kOS/FBExVwjEviJTixqxL8=
-github.com/go-playground/validator/v10 v10.20.0/go.mod h1:dbuPbCMFw/DrkbEynArYaCwl3amGuJotoKCe95atGMM=
+github.com/go-playground/validator/v10 v10.30.2 h1:JiFIMtSSHb2/XBUbWM4i/MpeQm9ZK2xqPNk8vgvu5JQ=
+github.com/go-playground/validator/v10 v10.30.2/go.mod h1:mAf2pIOVXjTEBrwUMGKkCWKKPs9NheYGabeB04txQSc=
 github.com/go-sql-driver/mysql v1.9.3 h1:U/N249h2WzJ3Ukj8SowVFjdtZKfu9vlLZxjPXV1aweo=
 github.com/go-sql-driver/mysql v1.9.3/go.mod h1:qn46aNg1333BRMNU69Lq93t8du/dwxI64Gl8i5p1WMU=
 github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0/go.mod h1:fyg7847qk6SyHyPtNmDHnmrv/HOrqktSC+C9fM+CJOE=
@@ -156,8 +156,6 @@ github.com/hpcloud/tail v1.0.0/go.mod h1:ab1qPbhIpdTxEkNHXyeSf5vhxWSCs/tWer42PpO
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2s0bqwp9tc8=
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
-github.com/invopop/yaml v0.3.1 h1:f0+ZpmhfBSS4MhG+4HYseMdJhoeeopbSKbq5Rpeelso=
-github.com/invopop/yaml v0.3.1/go.mod h1:PMOp3nn4/12yEZUFfmOuNHJsZToEEOwoWsT+D81KkeA=
 github.com/jackc/pgpassfile v1.0.0 h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
 github.com/jackc/pgpassfile v1.0.0/go.mod h1:CEx0iS5ambNFdcRtxPj5JhEz+xB6uRky5eyVu/W2HEg=
 github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
@@ -237,6 +235,10 @@ github.com/oapi-codegen/oapi-codegen/v2 v2.4.1 h1:ykgG34472DWey7TSjd8vIfNykXgjOg
 github.com/oapi-codegen/oapi-codegen/v2 v2.4.1/go.mod h1:N5+lY1tiTDV3V1BeHtOxeWXHoPVeApvsvjJqegfoaz8=
 github.com/oapi-codegen/runtime v1.4.0 h1:KLOSFOp7UzkbS7Cs1ms6NBEKYr0WmH2wZG0KKbd2er4=
 github.com/oapi-codegen/runtime v1.4.0/go.mod h1:5sw5fxCDmnOzKNYmkVNF8d34kyUeejJEY8HNT2WaPec=
+github.com/oasdiff/yaml v0.0.9 h1:zQOvd2UKoozsSsAknnWoDJlSK4lC0mpmjfDsfqNwX48=
+github.com/oasdiff/yaml v0.0.9/go.mod h1:8lvhgJG4xiKPj3HN5lDow4jZHPlx1i7dIwzkdAo6oAM=
+github.com/oasdiff/yaml3 v0.0.9 h1:rWPrKccrdUm8J0F3sGuU+fuh9+1K/RdJlWF7O/9yw2g=
+github.com/oasdiff/yaml3 v0.0.9/go.mod h1:y5+oSEHCPT/DGrS++Wc/479ERge0zTFxaF8PbGKcg2o=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.10.2/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.12.1/go.mod h1:zj2OWP4+oCPe1qIXoGWkgMRwljMUYCdkwsT2108oapk=
@@ -336,8 +338,8 @@ github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/stripe/stripe-go/v82 v82.5.1 h1:05q6ZDKoe8PLMpQV072obF74HCgP4XJeJYoNuRSX2+8=
 github.com/stripe/stripe-go/v82 v82.5.1/go.mod h1:majCQX6AfObAvJiHraPi/5udwHi4ojRvJnnxckvHrX8=
-github.com/svix/svix-webhooks v1.90.0 h1:iV7zsDRfPGMTYz9S/dpHZbQSV7vmne2QXK6gLVzW9BA=
-github.com/svix/svix-webhooks v1.90.0/go.mod h1:BRbQWn/xdv6zSGULojHza0Yx+hDf+xUJ4s09t3HqJpI=
+github.com/svix/svix-webhooks v1.91.1 h1:rg6vxd8trlatUVgzO0fsLP+oQhU5erDveW3Lgx16Pb8=
+github.com/svix/svix-webhooks v1.91.1/go.mod h1:BRbQWn/xdv6zSGULojHza0Yx+hDf+xUJ4s09t3HqJpI=
 github.com/testcontainers/testcontainers-go v0.42.0 h1:He3IhTzTZOygSXLJPMX7n44XtK+qhjat1nI9cneBbUY=
 github.com/testcontainers/testcontainers-go v0.42.0/go.mod h1:vZjdY1YmUA1qEForxOIOazfsrdyORJAbhi0bp8plN30=
 github.com/testcontainers/testcontainers-go/modules/postgres v0.42.0 h1:GCbb1ndrF7OTDiIvxXyItaDab4qkzTFJ48LKFdM7EIo=
@@ -362,6 +364,8 @@ github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc h1:Hgim1Xgk1+v
 github.com/wasilibs/go-pgquery v0.0.0-20240606042535-c0843d6592cc/go.mod h1:ah6UfXIl/oA0K3SbourB/UHggVJOBXwPZ2XudDmmFac=
 github.com/wasilibs/wazero-helpers v0.0.0-20240604052452-61d7981e9a38 h1:RBu75fhabyxyGJ2zhkoNuRyObBMhVeMoXqmeaPTg2CQ=
 github.com/wasilibs/wazero-helpers v0.0.0-20240604052452-61d7981e9a38/go.mod h1:Z80JvMwvze8KUlVQIdw9L7OSskZJ1yxlpi4AQhoQe4s=
+github.com/woodsbury/decimal128 v1.3.0 h1:8pffMNWIlC0O5vbyHWFZAt5yWvWcrHA+3ovIIjVWss0=
+github.com/woodsbury/decimal128 v1.3.0/go.mod h1:C5UTmyTjW3JftjUFzOVhC20BEQa2a4ZKOB5I6Zjb+ds=
 github.com/x448/float16 v0.8.4 h1:qLwI1I70+NjRFUR3zs1JPUCgaCXSh3SW62uAKT1mSBM=
 github.com/x448/float16 v0.8.4/go.mod h1:14CWIYCyZA/cWjXOioeEpHeN/83MdbZDRQHoFcYsOfg=
 github.com/xyproto/randomstring v1.0.5 h1:YtlWPoRdgMu3NZtP45drfy1GKoojuR7hmRcnhZqKjWU=
