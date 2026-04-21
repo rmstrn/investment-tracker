@@ -34,7 +34,7 @@
     "generate:go": "pnpm --filter @investment-tracker/openapi generate:go",
     "generate:swift": "pnpm --filter @investment-tracker/openapi generate:swift",
     "clean": "turbo run clean && rm -rf node_modules .turbo",
-    "prepare": "lefthook install"
+    "prepare": "node -e \"if(require('fs').existsSync('.git'))require('child_process').execSync('lefthook install',{stdio:'inherit'})\""
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",

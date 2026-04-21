@@ -14,6 +14,41 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-089 — Root `prepare` hook падает в CI build env без `.git`
+
+**Added:** 2026-04-21 (staging chat debug — Vercel build failed first, blocking chat fix deploy).
+**Priority:** P2 (breaks any Vercel / CI environment that does `pnpm install` in a build context без `.git`; обнаружен только потому что chat debug потребовал production redeploy).
+**Source:** `package.json` root содержал `"prepare": "lefthook install"`. npm/pnpm запускают `prepare` script автоматически после `install`. В Vercel build environment `.git` директория отсутствует (CI checkout делается без git metadata), `lefthook install` внутри делает `git rev-parse --show-toplevel` → exit 128 → `pnpm install` падает с exit 1, build валится до того как дойдёт до `apps/web/` компиляции.
+**Fix applied:** `"prepare"` обернут в inline node guard:
+```json
+"prepare": "node -e \"if(require('fs').existsSync('.git'))require('child_process').execSync('lefthook install',{stdio:'inherit'})\""
+```
+Локально `.git` есть → hooks ставятся как прежде. В Vercel/CI `.git` нет → prepare тихо выходит 0. Поведение dev setup не изменилось.
+**Owner:** infra + web maintainer.
+**Trigger to revisit:** если monorepo будет делить prepare-логику с другими apps (e.g. `apps/web/package.json` own prepare) — проверить что guard одинаково работает везде. Если добавится `lefthook` replacement или будет удалён lefthook — guard можно упростить до прямого `lefthook install`.
+**Links:** merge-log close-td-088 entry (same commit); TD-088 (chat fix который потребовал redeploy и обнаружил TD-089).
+
+### TD-088 — `apps/web/src/lib/api/server.ts` fallback use `??` вместо `||` для API_URL
+
+**Added:** 2026-04-21 (staging chat broken — root cause: `API_URL=""` на Vercel + `??` не fallback'ит на empty string).
+**Priority:** P2 (already fixed; tracked для audit всех other `process.env.X ?? '<default>'` patterns в monorepo).
+**Source:** `apps/web/src/lib/api/server.ts` line 7 содержал:
+```ts
+const SERVER_BASE_URL = process.env.API_URL ?? 'http://localhost:8080';
+```
+`??` fallback'ит только на `null`/`undefined`. На Vercel Production env переменная `API_URL` была создана интерактивно с пустым значением (misconfigured через `vercel env add` pipe с CRLF, потом ещё раз с sensitive flag) → `process.env.API_URL === ""` → `??` не срабатывает → `createApiClient({ baseUrl: "" })` → openapi-fetch кидает exception при построении URL → `page.tsx` catch блок возвращает `{ kind: 'error' }` → user видит "Unable to load this conversation right now". Симптом: все chat conversations падают на staging с generic error fallback; нет server-side error log потому что catch swallow'ит exception.
+**Fix applied:** `??` → `||` + комментарий. Пустая строка — falsy, теперь triggers fallback:
+```ts
+// NOTE: `||` (not `??`) on purpose — empty-string is a common misconfigured
+// value (see TD-088), and it must trigger the fallback the same way that
+// `undefined` does. A falsy URL base is never useful anyway.
+const SERVER_BASE_URL = process.env.API_URL || 'http://localhost:8080';
+```
+Defensive guard: если Vercel env опять окажется пустой (например кто-то удалит, но deploy cache сохранит ключ) — web пытается hit localhost, staging показывает очевидный connection refused вместо мистического "Unable to load".
+**Owner:** web maintainer.
+**Trigger to revisit:** аудит остальных `process.env.X ?? '...'` в monorepo — где env var это URL / hostname / port / feature-flag-name, предпочитать `||`. Где env var это arbitrary string which may legitimately be empty (rare — maybe `LOG_PREFIX`), `??` остаётся правильным. Пройтись grep'ом `rg 'process\.env\.\w+ \?\?' apps/ packages/` и документировать intentional vs defensive choices.
+**Links:** merge-log close-td-088 entry; DECISIONS.md (TBD — добавить решение про `?? vs ||` policy для env var defaults); TD-089 (раскрылся только потому что TD-088 потребовал redeploy).
+
 ### TD-087 — `uv sync` в multi-stage Dockerfile должен использовать `--no-editable`
 
 **Added:** 2026-04-21 (TD-070 first deploy — caught + fixed inline `4357739`).

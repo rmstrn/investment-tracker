@@ -1,7 +1,10 @@
 import { auth } from '@clerk/nextjs/server';
 import { type InvestmentTrackerClient, createApiClient } from '@investment-tracker/api-client';
 
-const SERVER_BASE_URL = process.env.API_URL ?? 'http://localhost:8080';
+// NOTE: `||` (not `??`) on purpose — empty-string is a common misconfigured
+// value (see TD-088), and it must trigger the fallback the same way that
+// `undefined` does. A falsy URL base is never useful anyway.
+const SERVER_BASE_URL = process.env.API_URL || 'http://localhost:8080';
 
 /**
  * Build a typed API client for use inside Server Components / Route Handlers.
