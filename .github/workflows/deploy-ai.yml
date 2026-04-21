@@ -1,27 +1,64 @@
 name: Deploy — ai (Fly.io)
 
-# Disabled until FLY_API_TOKEN is set. Flip to `push: [main]` once the app is
-# provisioned and the secret is in the repo.
+# Manual deploy for AI Service. Single job dispatched with an `environment`
+# selector (staging | production); config + Fly app are derived from it.
+# Default = staging — safer to accidentally redeploy staging than prod.
+#
+# This workflow is an ALTERNATIVE to the manual `flyctl deploy` step in
+# docs/RUNBOOK_ai_staging_deploy.md § 6 — it does NOT replace the one-time
+# bootstrap steps (§ 2 flyctl apps create, § 4 Doppler provisioning, § 5
+# bridge update in Core API Doppler). First workflow run requires all three
+# to be complete, otherwise verify-secrets fails (Fly app has no secrets to
+# read) and the deploy step cannot authenticate to the Fly app.
+#
+# FLY_API_TOKEN must be set in repo secrets. For provisioning this can be
+# a personal token scoped to `--org personal`.
+
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "staging"
+        type: choice
+        options: ["staging", "production"]
 
 concurrency:
-  group: deploy-ai
+  group: deploy-ai-${{ github.event.inputs.environment }}
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: fly deploy — ai
+    name: fly deploy — ai (${{ github.event.inputs.environment }})
     runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.event.inputs.environment }}
+    env:
+      FLY_APP: >-
+        ${{ github.event.inputs.environment == 'production'
+            && 'investment-tracker-ai'
+            || 'investment-tracker-ai-staging' }}
+      FLY_CONFIG: >-
+        ${{ github.event.inputs.environment == 'production'
+            && 'apps/ai/fly.toml'
+            || 'apps/ai/fly.staging.toml' }}
     steps:
       - uses: actions/checkout@v6
       - uses: superfly/flyctl-actions/setup-flyctl@master
-      # TODO: set FLY_API_TOKEN in repo secrets (see README).
+
+      - name: Verify secrets
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: bash ops/scripts/verify-ai-secrets.sh
+
       - name: Deploy ai
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
           flyctl deploy \
-            --config apps/ai/fly.toml \
+            --config "$FLY_CONFIG" \
             --dockerfile apps/ai/Dockerfile \
-            --remote-only
+            --app "$FLY_APP" \
+            --remote-only \
+            --wait-timeout 600

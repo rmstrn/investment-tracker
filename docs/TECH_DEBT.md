@@ -14,6 +14,22 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-082 — reserved: automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity
+
+**Status:** reserved for the AI Service prod flip (owner = infra). Not opened as
+a real TD yet — today the invariant is guarded manually by PO (runbook § 5 sets
+both sides to the same value when provisioning staging; the same procedure will
+run for prod). ID is pinned so the prod-flip slice has a known handle.
+**Added:** 2026-04-21 (TD-070 config-as-code slice).
+**What's missing.** A CI step (likely inside `deploy-ai.yml` or a new
+`verify-bridge.yml`) that reads `AI_SERVICE_TOKEN` from the Core API Fly app and
+`INTERNAL_API_TOKEN` from the AI Service Fly app, compares hashes (not plaintext
+— values never leave Fly), and fails the deploy if they diverge. Staging failure
+= 401 from every AI call into Core; prod failure = same, but on real users.
+**Blocker to opening.** AI Service prod deploy is not yet scheduled (see
+`RUNBOOK_ai_flip.md`). Once prod flip lands in a sprint, this TD opens real.
+**Links:** DECISIONS.md § "AI Service staging deploy topology (TD-070)".
+
 ### TD-081 — reserved, unused
 
 **Status:** reserved for TASK_07 Slice 5a (Transactions UI, PR #60), genuine debt не обнаружен во время slice'а — ID остаётся свободным для следующего slice'а, которому понадобится новый TD.
@@ -77,23 +93,31 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ---
 
-### TD-070 — AI Service lacks `fly.staging.toml` + `deploy-ai.yml` staging job
+### TD-070 — AI Service staging deploy
 
-**Added:** 2026-04-20 (staging ops bootstrap)
-**Priority:** P2
-**Source:** PR C shipped `apps/api/fly.staging.toml` + staging pipeline stage inside `deploy-api.yml`. AI Service (apps/ai) was out of PR C scope and still only has `apps/ai/fly.toml` (prod). Staging bootstrap created the Fly app `investment-tracker-ai-staging` per the canonical naming but there is no toml to deploy to it.
+**Status:** 🟡 config shipped, awaiting PO runtime deploy + smoke.
+**Added:** 2026-04-20 (staging ops bootstrap). **Priority:** P2.
 
-**Consequence:** `/ai/chat/*` and `/ai/insights/*` return 503 on staging (Core API's `AIServiceURL` points at `http://investment-tracker-ai-staging.internal:8000` which has no listener). Agreed degrade for first bootstrap; unblocks Core API staging soak without AI integration.
+**Config-as-code shipped (2026-04-21):**
+- `apps/ai/fly.staging.toml` — staging Fly config (app `investment-tracker-ai-staging`, region `fra`, `min_machines_running = 1`, `LOG_LEVEL = "INFO"`, Anthropic model IDs pinned in `[env]`).
+- `apps/ai/secrets.keys.yaml` — manifest: 4 required (`INTERNAL_API_TOKEN`, `ANTHROPIC_API_KEY`, `CORE_API_URL`, `CORE_API_INTERNAL_TOKEN`) + 8 optional (Sentry/PostHog/Anthropic tuning).
+- `ops/scripts/verify-ai-secrets.sh` — thin shim over `verify-prod-secrets.sh` via `KEYS_FILE` env override (1-line generalization in the shared script).
+- `.github/workflows/deploy-ai.yml` — rewritten to `workflow_dispatch` + `environment: staging|production` input (default = staging) + pre-deploy verify-secrets step.
+- `docs/DECISIONS.md` — ADR "AI Service staging deploy topology (TD-070)" explaining topology, bridge invariant, and alternatives rejected.
+- `docs/RUNBOOK_ai_staging_deploy.md` — точечные правки (§ 3 landed note, § 4.2 Doppler models убраны, § 6 GH Actions alt path, § 9 obsolete line removed).
 
-**Fix:** mirror PR C pattern for AI Service:
-1. `apps/ai/fly.staging.toml` — clone `apps/api/fly.staging.toml` shape, swap app name, listen port 8000, `primary_region = "fra"`, `min_machines_running = 1`, `auto_stop_machines = "suspend"`.
-2. `.github/workflows/deploy-ai.yml` — add staging stage (verify-staging-secrets → deploy-staging) mirroring api pipeline. No k6 smoke for AI MVP (stream-scenario is still experimental) — start with `/healthz` probe only.
-3. Doppler config `investment-tracker-ai` stg must hold AI Service's own env set — likely `ANTHROPIC_API_KEY`, `CORE_API_INTERNAL_TOKEN` (inbound), `AI_SERVICE_TOKEN` (outbound), `SENTRY_DSN`. Manifest to be drafted alongside.
+**Still open (PO runtime ops):**
+1. `flyctl apps create investment-tracker-ai-staging --org personal` (runbook § 2).
+2. Doppler project `investment-tracker-ai` + config `stg` + 4 secrets (runbook § 4).
+3. `doppler → flyctl secrets import` для AI app (§ 4.3).
+4. Core API staging Doppler: `AI_SERVICE_URL` + `AI_SERVICE_TOKEN` (bridge invariant — equal to AI's `INTERNAL_API_TOKEN`), sync → Fly (§ 5).
+5. First `flyctl deploy --config apps/ai/fly.staging.toml` + smoke (§ 6-7).
 
-**Trigger to revisit:** full-stack staging smoke (Core API + AI chat streaming end-to-end) required, OR when `/ai/chat/*` 503s start hurting manual QA flow.
+**Reserved:** TD-082 (automated drift check for `AI_SERVICE_TOKEN` ≡ `INTERNAL_API_TOKEN` parity) opens real when AI Service prod flip is scheduled.
 
-**Owner:** AI lead (toml + deploy-ai.yml) + backend lead (AI-side secret manifest mirror)
-**Scope:** ~150 LOC (toml + workflow + secrets.keys.yaml) — 0.5 day + Doppler population
+**Trigger to close:** PO confirms `/healthz` 200 + auth check + clean logs, then marks TD-070 ✅ per runbook § 11 checklist.
+
+**Owner:** PO (remaining runtime ops). **Unblocks:** UI Slice 6a (Insights read-only).
 
 ---
 
