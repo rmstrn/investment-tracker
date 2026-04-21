@@ -34,7 +34,13 @@ class ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     conversation_id: UUID
+    # min_length/max_length MUST stay in sync with
+    # apps/api/internal/handlers/ai_chat_request.go userMessageMaxChars
+    # (Sprint C cluster 3a will collapse this duplication; until
+    # then any change here needs the same edit on the Go side).
     message: str = Field(min_length=1, max_length=8000)
+    # max_length MUST stay in sync with
+    # apps/api/internal/handlers/ai_chat_request.go historyCap (40).
     history: list[ChatMessage] = Field(default_factory=list, max_length=40)
 
 
