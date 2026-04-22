@@ -41,7 +41,7 @@ const NAV: ReadonlyArray<AppNavItem> = [
   { slug: 'dashboard', label: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
   { slug: 'positions', label: 'Positions', href: '/positions', icon: Briefcase },
   { slug: 'chat', label: 'Chat', href: '/chat', icon: MessageCircle },
-  { slug: 'insights', label: 'Insights', href: '/dashboard', icon: Sparkles },
+  { slug: 'insights', label: 'Insights', href: '/insights', icon: Sparkles },
   { slug: 'accounts', label: 'Accounts', href: '/accounts', icon: Wallet },
 ];
 
@@ -53,6 +53,7 @@ function activeSlugFor(pathname: string): string | undefined {
   if (pathname.startsWith('/chat')) return 'chat';
   if (pathname.startsWith('/positions')) return 'positions';
   if (pathname.startsWith('/accounts')) return 'accounts';
+  if (pathname.startsWith('/insights')) return 'insights';
   if (pathname.startsWith('/dashboard')) return 'dashboard';
   return undefined;
 }
