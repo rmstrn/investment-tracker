@@ -61,6 +61,12 @@ secrets.local.*
 .cursor/
 # Claude Code local settings — per-developer permissions/MCPs. Don't ship.
 .claude/
+
+# Ephemeral session-resume notes — regenerated per session, not shared.
+SESSION_RESUME_*.md
+
+# Local clone of the everything-claude-code plugin source — cached globally.
+everything-claude-code/
 *.swp
 *.swo
 .DS_Store

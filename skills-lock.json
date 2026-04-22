@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "openapi-spec-generation": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "computedHash": "21be7865a354c4d1ede71830d478ec5442bb60305ef4790b0c7de571e8fe182d"
+    }
+  }
+}
