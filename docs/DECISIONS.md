@@ -525,3 +525,15 @@ prod secrets). Future cleanup = low-priority P3.
 
 **Owner.** Infra. **Revisit.** Если per-service shims умножатся > 3 — rename
 в `verify-secrets.sh` + update всех callers.
+
+## 2026-04-22 — Slice 6a: local sessionStorage dismiss — rationale (PR #64)
+
+**Context.** Kickoff §Decomposition §3 + acceptance criteria уточняют: в Slice 6a dismiss карточек НЕ вызывает `POST /ai/insights/{id}/dismiss`. Вместо этого — `sessionStorage` только на клиентской стороне; на reload страницы dismiss сбрасывается.
+
+**Decision.** `useLocalDismissedInsights` хранит `Set<string>` в React state + mirrors в `sessionStorage` (key `insights.dismissed.v1`). sessionStorage (а не localStorage) — чтобы юзер при следующей сессии видел актуальный список инсайтов с бэка, и не путался что инсайт "есть" на бэке но "исчезает" в UI. Hydration-safe: read из sessionStorage только в `useEffect`, initial render = empty set.
+
+**Trade-off acknowledged.** Dismiss feedback временный — после reload карточка возвращается. Это явно коммуницируется UI copy (не показываем "Dismissed" label, dismiss просто убирает карточку). Слайс 6b заменит это на реальный `POST dismiss` + invalidate query + persistent `dismissed_at` на бэке.
+
+**TD-090.** `InsightData.action_url` читается через runtime cast (`as { action_url?: string }`). Typed oneOf — Slice 6b scope.
+
+**Owner.** Web lead. **Revisit.** Slice 6b — заменить на backend mutation + invalidate TanStack query cache.

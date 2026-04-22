@@ -14,6 +14,16 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-090 — typed action_url for insights (oneOf discriminated union)
+
+**Added:** 2026-04-22 (Slice 6a post-merge, PR #64).
+**Priority:** P3.
+**Source:** `InsightData.additionalProperties: true` в OpenAPI spec — shape не типизирован. В Slice 6a `action_url` читается через runtime cast `(insight.data as { action_url?: string })?.action_url` с guard `startsWith('/')`. Это работает для MVP, но теряет compile-time safety и не документирует намерение бэка.
+**Desired state:** `InsightData` в spec раскрывается как oneOf discriminated union по `insight_type` (или хотя бы выделяется `action_url?: string` как top-level optional property). Generated client тогда даёт точный тип, и apps/web cast убирается.
+**Owner:** CC (web) + Backend — требует backend spec change + `pnpm api:generate`.
+**Trigger:** start of Slice 6b OR after TASK_05 insight catalogue finalization — whichever comes first.
+**Links:** Slice 6a kickoff §Open questions #3; DECISIONS.md ADR below.
+
 ### TD-084 — flyctl ловит build context из CWD, не из location of `--config` toml
 
 **Added:** 2026-04-21 (TD-070 first deploy — gotcha поймана PO).

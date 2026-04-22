@@ -15,6 +15,22 @@ Newest entries at the top.
 
 ---
 
+## PR #64 — TASK_07 Slice 6a: Insights Feed UI (read-only + local dismiss)
+
+**PR:** https://github.com/rmstrn/investment-tracker/pull/64
+**Squash SHA:** `f752de3`
+**Date:** 2026-04-22
+**Branch:** `feature/task07-slice6a` from `d6e3441` (post-Sprint-D)
+**CI:** 11/11 pass (Node lint+typecheck+build, Node unit tests, Go, Python, AI Docker, Contract k6+header, Security secret+trivy+govulncheck, Vercel)
+**Admin-bypass:** none — green CI before merge.
+
+**Scope.** Новый route `(app)/insights` — лента AI-инсайтов с severity/type фильтрами и local dismiss. `useInsights` (useInfiniteQuery cursor pagination), `useLocalDismissedInsights` (sessionStorage-backed, сбрасывается на reload). Severity mapping `critical→negative` живёт в `apps/web`, `packages/ui/InsightCard` не тронут. Sidebar wired (href `/insights` + activeSlugFor case). 5 Vitest smoke tests; 69 total passing. Closes last P1 MVP-blocker до alpha (после Slice 12 polish).
+
+**TDs opened:** TD-090 (P3, trigger: Slice 6b — typed action_url oneOf discriminated union).
+**Migrations:** none.
+
+---
+
 ## sprint-d — Polish sprint: 10 small-scoped TDs, 4 lanes
 
 **Window:** 2026-04-22 (single CC session, ~½ day).
