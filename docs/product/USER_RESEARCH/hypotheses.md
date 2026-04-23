@@ -112,6 +112,34 @@ Interview scripts for ICP A and ICP B should include questions touching all of t
 
 ---
 
+## New hypotheses surfaced by Option 4 review (2026-04-23)
+
+Surfaced during independent user-researcher review of Option 4 «Second Brain for Your Portfolio» (see `docs/reviews/2026-04-23-user-researcher-option4.md`). All grounded in surrogate evidence (Product Hunt review corpus, App Store quotes, adjacent content analysis) — no live interviews yet.
+
+- **H-060** — ICP A prospects primed by Notion/Obsidian culture decode «second brain for your portfolio» as a research/notes tool before decoding it as a portfolio tracker — `untested` — 0 interviews — 2026-04-23.
+  Evidence: 4 out of 5 adjacent content sources (Jimmy's Journal «Building a Second Brain for Investing», Zen Finance AI, LinkedIn pulse by Anshul Mathur, The Investors Podcast / Tiago Forte episode) use «second brain» to mean a research/notes system, not a tracker. Notion user review #37 confirms «second brain» is PKM-native vocabulary. Test: pre-launch 5-second recall test on landing page.
+
+- **H-061** — Retail investor native vocabulary for portfolio tools clusters on tool/action/visual verbs (track, organize, see, aggregate, dashboard, one place), not cognitive verbs (remember, notice, think, brain, memory) — `partial-desk` — 0 interviews — 2026-04-23.
+  Evidence: 16 verbatim user quotes across Getquin / Kubera / Wealthfolio / Snowball / Empower corpus show zero cognitive-metaphor usage; tool/action verbs dominate. Test: interview prompt «describe the tool you wish existed for your portfolio» without suggesting vocabulary, code first 3 verbs used.
+
+- **H-062** — ICP B (22-32, $2-20K) parses cognitive/PKM metaphors as signals of «not-for-me sophistication», reducing conversion — `untested` — 0 interviews — 2026-04-23.
+  Test: split-test landing copy between cognitive-frame («Second Brain») and tool-frame («All your investments, one conversation») with ICP B proxy audience; measure signup intent and qualitative decode.
+
+- **H-063** — First-articulated retail investor pain in this category is fragmentation across brokers («multiple accounts», «one place») rather than cognitive-overload («can't hold in my head») — `partial-desk` — 0 interviews — 2026-04-23.
+  Evidence: Product Hunt user quotes #2, #4, #8, #9, #15, #20 in review doc all lead with fragmentation; zero quotes lead with cognitive-overload framing. Test: open-ended interview question «what's the hardest part of tracking your investments right now?», code first-mention.
+
+- **H-064** — Users respond more strongly to landing claims with concrete verbs/nouns (advice, place, balance-sheet, analyst, see) than to metaphorical noun phrases (second brain, command center, copilot) — `partial-desk` — 0 interviews — 2026-04-23.
+  Test: A/B landing headline comparison across two frames; measure time-to-scroll, time-to-CTA, signup intent.
+
+- **H-065** — Russian-language retail investor segment does not carry Notion/Forte cultural capital at the same density as US/EU; «Второй мозг для твоего портфеля» reads more clinically than «Second Brain for Your Portfolio» reads in English — `untested` — 0 interviews — 2026-04-23.
+  Test: CIS/RU interview cohort reactions to bilingual copy. Critical if RU launch precedes post-alpha.
+
+- **H-066** — Behavioral pattern-read output («you sold AAPL on the local low 3x last year») resonates strongest with post-mistake mid-career cohort ($30-150K, 30-50) rather than with ICP A ($20-100K, 28-40) millennial cohort — `partial-desk` — 0 interviews — 2026-04-23.
+  Test: present mock Coach output across age/capital segments, measure emotional + trust response.
+
+---
+
 ## Changelog
 
 - 2026-04-23 — initial version created after v2 discovery rewrite; 26 hypotheses logged across wedge / ICP-A / ICP-B / acquisition / pricing / new-from-v2.
+- 2026-04-23 — added H-060 through H-066 (7 new hypotheses) surfaced during Option 4 Second Brain independent user-researcher review.
