@@ -35,6 +35,7 @@ tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 - `everything-claude-code:market-research` — competitor brand audit
 - `everything-claude-code:deep-research` — naming/trademark/domain deep-dive
 - `everything-claude-code:exa-search` — web search для analog brands
+- `product-strategy:negotiation` — tactical empathy для domain/trademark negotiation когда дойдём до покупки
 
 ### Continuity
 - `everything-claude-code:save-session`, `:resume-session`

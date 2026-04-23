@@ -193,6 +193,7 @@ SaaS product для personal portfolio tracking + AI insights поверх бр�
 - `strategy-growth:obviously-awesome` — positioning (уже использован для 02_POSITIONING)
 - `product-innovation:inspired-product` — Cagan product mental-model
 - `product-innovation:37signals-way` — shape-up для организации работы
+- `sales-influence:hundred-million-offers` — Value Equation для pricing tier validation
 
 ### Validation
 - `everything-claude-code:product-lens` — pressure-test «why»

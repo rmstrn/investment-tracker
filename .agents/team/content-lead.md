@@ -28,6 +28,8 @@ tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 - `ux-design:hooked-ux` — triggers в onboarding / email sequences (Nir Eyal)
 - `sales-influence:influence-psychology` — CTA wording, paywall, social proof (Cialdini)
 - `marketing-cro:contagious` — viral-worthy messaging (Berger STEPPS)
+- `marketing-cro:cro-methodology` — CRO audit для landing/paywall conversion
+- `sales-influence:hundred-million-offers` — Value Equation для pricing/paywall framing (Alex Hormozi)
 
 ### Content production
 - `everything-claude-code:content-engine` — platform-native content (X, LinkedIn, TikTok, newsletter)

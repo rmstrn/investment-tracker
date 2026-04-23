@@ -36,6 +36,7 @@ tools: Read, Glob, Grep, Bash, Edit, Write
 - `product-innovation:design-sprint` — Jake Knapp, 4-дневный sprint (mapping/sketching/deciding/prototyping)
 - `ux-design:lean-ux` — cross-functional cadence
 - `ux-design:hooked-ux` — Nir Eyal triggers / habit loops
+- `ux-design:improve-retention` — behavior design (B=MAP) для retention surfaces (coach, onboarding)
 
 ### Audit & verify
 - `everything-claude-code:accessibility` — WCAG 2.2 AA
