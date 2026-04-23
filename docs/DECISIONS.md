@@ -657,6 +657,48 @@ Not a launch blocker (we stay on the information side of all four lines by desig
 **Owner.** Navigator (strategic scope). i18n infrastructure: tech-lead. Per-market legal review: post-alpha.
 **Revisit.** If alpha signals indicate one market dominates user acquisition by >70%, consider narrowing content/growth focus to that market while keeping others in product. Not before alpha + 3 months of real user data.
 
+## 2026-04-23 — Option 4 review synthesis: 7 PO decisions locked
+
+**Context.** After v1.3 Option 4 lock, CONSTRAINTS Rule 3 process correction triggered 6 parallel independent specialist reviews (brand-strategist, content-lead, product-designer, legal-advisor, finance-advisor, user-researcher — 6/6 WARN distribution). Navigator synthesis landed in `docs/product/REVIEW_SYNTHESIS_2026-04-23.md` with a weighted recommendation (keep metaphor as tagline/brand-world, demote from hero and product-name, ship Coach with warm-start feasibility gate). PO reviewed synthesis 2026-04-23 and locked seven decisions below. This entry is the decision ledger; execution across docs lives in the parallel `docs(strategy)`, `docs(positioning)`, `docs(naming)` commits from the same day.
+
+**Decisions locked.**
+
+**Q1 — YES demotion. «Second Brain for Your Portfolio» becomes tagline, not hero, not product name.**
+Hero reverts to imperative framing: «Спроси свой портфель» / «Ask your portfolio» (restoring the pre-Option-4-lock hero that was live and tested before the v2 rewrite). Product name sourced from Round 5 mind/memory territory; PO leaning Memoro but wants to see Round 6 before final lock. «Second Brain» lives as tagline and mid-page brand-world copy — retains strategic value (empty fintech territory, cross-category metaphor prior art) without paying the parse-test tax at hero + the Forte trademark tension at product-name. Rationale: resolves 4 of 6 specialist WARN concerns simultaneously (voice-rule violation, ICP B alienation, Forte tension, parse-time cost) without sacrificing the metaphor's downstream positioning value.
+
+**Q2 — YES with nuance. Coach warm-start is a working assumption, not a pre-lock feasibility gate.**
+PO confidence: «думаю мы сможем получить всю историю» via SnapTrade trade-history endpoints. Formal tech-lead feasibility verification happens during actual development stage (when Coach vertical is scoped), not now as a lock prerequisite. Oracle fallback (Path A, original v1.3 fallback) remains available if dev-stage verification fails. This defers the feasibility question from strategic-lock to eng-planning without pretending the risk is zero.
+
+**Q3 — Dashboard-primary architecture with AI woven throughout. Chat is a tab, not the home.**
+Rejects designer's Alt 1 (chat-primary home). Pattern is closer to Getquin / Kubera (dashboard + aggregation + tabs) with stronger AI integration — AI surfaces across dashboard cards, insights feed, coach notices — while chat lives as one of the primary navigation destinations. Full UX details (layout, dashboard card types, AI-woven interaction patterns) deferred to design phase (product-designer dispatch post-naming-lock).
+
+**Q4 — NO trademark spend. Accept post-launch rebrand risk.**
+No $2-5K US clearance search + attorney hold before name lock. Accepted risk: if a trademark conflict surfaces post-launch, rebrand. Rationale: CONSTRAINTS Rule 1 (no spend) + pre-alpha product where rebrand cost is recoverable compared to legal overhead upfront. Does not preclude later clearance when revenue makes legal spend rational; it blocks the pre-launch clearance spend specifically.
+
+**Q5 — Teaser-paywall pattern for Coach.**
+Free tier surfaces «AI noticed a pattern in your trades» as a teaser (one-line curiosity hook). Pattern details (what the pattern is, which trades, frequency, tendency direction) gated behind Plus: «Unlock details — upgrade to Plus». Design intent: FOMO + curiosity + conversion trigger stacked on a single touchpoint. Plus = full Coach (unlimited pattern-reads, full narrative). Pro = unlimited + advanced (factor analytics, tax overlay, alerts). Content-lead owns paywall copy execution post-naming-lock.
+
+**Q6 — YES in-context AI disclaimer. Format TBD design phase.**
+Footer disclaimer remains required and unchanged. Additional in-context disclaimer added specifically for EU/UK launch (stricter MiFID II + FCA requirements on investment information vs advice line). Format not pre-specified — PO suggested tooltip treatment as one possibility to minimize visual noise; product-designer will propose format candidates (inline micro-copy, tooltip, first-interaction modal, etc.) when design phase kicks off. Lane A stance locked 2026-04-23 ADR is not changed — this is an execution-layer reinforcement of the existing Lane A lock.
+
+**Q7 — Russia out of scope. Geography updated: «global без РФ».**
+Narrows the 2026-04-23 «global multi-market» lock (earlier same-day ADR): US + EU + UK + LATAM + APAC + crypto-native remain explicit; Russia removed from scope. CIS handling decided per-country post-alpha (not per-country locked here). Implication: 152-ФЗ data-localization is no longer a blocker (previously flagged as post-alpha required action under the earlier geography lock) — Russia is now explicitly out, not deferred. Rationale from PO: legal + geopolitical cost of RU-market compliance outweighs the white-space opportunity flagged in v2 discovery §10.6.
+
+**Evidence base.** See `docs/product/REVIEW_SYNTHESIS_2026-04-23.md` for the 6 specialist returns (all commits referenced inline) and Navigator weighted recommendation. PO answers arrived after synthesis review; this ADR captures the answers as-locked.
+
+**Implications (execution across three parallel commits, same day).**
+- `docs/product/STRATEGIC_OPTIONS_v1.md` → v1.6. Status changes from TENTATIVE to LOCKED (repositioned). Option 4 reframed as tagline/brand-world, not hero/name. Hero reverts to imperative. Geography amended. See `docs(strategy)` commit.
+- `docs/product/02_POSITIONING.md` → v3. `[PENDING-V2]` tags removed. Hero row reverts to imperative. Architecture row adds «dashboard-primary with chat tab + AI woven». Anti-positioning adds «NOT Personal Knowledge Management tool». Geography row removes Russia, adds LATAM/APAC. In-context AI disclaimer note added. See `docs(positioning)` commit.
+- `docs/product/03_NAMING.md` → Round 6 placeholder added. Round 5 preserved. PO lean noted (Memoro) but not locked. See `docs(naming)` commit.
+
+**What's NOT changing here.**
+- Lane A regulatory lock (2026-04-23 ADR) stands. Q6 reinforces it, doesn't alter it.
+- Multi-language day-1 scope narrowed to English-only launch (2026-04-23 Option-4-lock ADR) stands. Russian parallel-drafted secondary; EU languages post-launch.
+- Tech-lead, brand-strategist Round 6, content-lead, product-designer dispatches sequencing: Round 6 naming is in flight in parallel with this synthesis lock; execution specialists (content-lead full landing rewrite, product-designer full surface design) wait until PO locks final name.
+
+**Owner.** Navigator (decision synthesis + ledger). PO (decision source).
+**Revisit.** Q2 at coach vertical eng-planning stage (SnapTrade history verification gate). Q4 post-launch if trademark conflict surfaces. Q6 at design phase kickoff (format candidates for in-context disclaimer).
+
 ## 2026-04-23 — Option 4 «Second Brain for Your Portfolio» LOCKED; no pre-lock interview gate
 
 **Decision.** PO 2026-04-23 locked Option 4 Hybrid — «Second Brain for Your Portfolio» — as the product's strategic direction. Options 1 (Oracle), 2 (Analyst), and 3 (Companion) are rejected as standalone directions (retained in `STRATEGIC_OPTIONS_v1.md` as historical record only; do not re-propose). Hero is locked bilingually:
