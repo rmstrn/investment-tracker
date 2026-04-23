@@ -1,10 +1,10 @@
 # Onboarding Flow — Memoro
 
 **Owner:** product-designer
-**Status:** draft v1.0 — awaiting Navigator + content-lead + tech-lead sign-off
+**Status:** draft v1.1 — Stage 3 first-value moment updated to contextual-icon + bell-dropdown model per Coach UX PO lock 2026-04-23
 **Date:** 2026-04-23
-**Scope:** 3-stage onboarding. Stage 1 account creation (Clerk). Stage 2 broker sync (SnapTrade). Stage 3 first-value moment (warm-start ≤10 min via backfill-derived pattern-read, or cold-start dual path).
-**Depends on:** `docs/04_DESIGN_BRIEF.md` v1.2; `docs/design/DASHBOARD_ARCHITECTURE.md`; `docs/design/COACH_SURFACE_SPEC.md` §3 cold-start empty state; `docs/CC_KICKOFF_option4_coach_adr.md` §2.3 soft gate; `docs/product/02_POSITIONING.md` v3.1 §«Onboarding promise».
+**Scope:** 3-stage onboarding. Stage 1 account creation (Clerk). Stage 2 broker sync (SnapTrade). Stage 3 first-value moment (warm-start ≤10 min via backfill-derived pattern-read that lands as dot + bell-badge; cold-start dual path with bell-dropdown empty state).
+**Depends on:** `docs/04_DESIGN_BRIEF.md` v1.3; `docs/design/DASHBOARD_ARCHITECTURE.md` v1.1; `docs/design/COACH_SURFACE_SPEC.md` v2.0 §6 empty states + §7 bell-dropdown; `docs/CC_KICKOFF_option4_coach_adr.md` §2.3 soft gate; `docs/product/02_POSITIONING.md` v3.1 §«Onboarding promise»; `docs/DECISIONS.md` entry 2026-04-23 «Coach UX: contextual — NOT dedicated route, NOT filter-chip».
 
 ---
 
@@ -34,14 +34,14 @@ flowchart TD
 
     subgraph Stage3A["Stage 3A — Warm-start first-value (≤10 min)"]
         S3A1["Dashboard loads with hero + positions"] --> S3A2["Background: Core API pattern-detection<br/>runs on backfilled history"]
-        S3A2 --> S3A3["First pattern-read lands<br/>Bell notification fires"]
-        S3A3 --> S3A4["Banner on /coach: 'Memoro read your history — 2 patterns noticed'"]
+        S3A2 --> S3A3["First pattern-read lands<br/>Dot appears on affected position row<br/>(pulse for discovery)<br/>Bell badge increments to 1<br/>(bell pulses once this session)"]
+        S3A3 --> S3A4["First-time tutorial tooltip fires<br/>from the dot: 'Memoro noticed a pattern'"]
     end
 
     subgraph Stage3B["Stage 3B — Cold-start first-value (staggered)"]
         S3B1["Dashboard loads with hero + positions"] --> S3B2["First insight lands within 7 days<br/>(Slice 8e weekly worker)"]
-        S3B2 --> S3B3["Coach surface shows learning-progress<br/>empty state (COACH_SURFACE_SPEC §3)"]
-        S3B3 --> S3B4["At 30 tx or 30-day span:<br/>first coach pattern-read"]
+        S3B2 --> S3B3["Bell-dropdown shows Coach cold-start<br/>empty state + progress counter<br/>(COACH_SURFACE_SPEC §6.2).<br/>No dots on surfaces yet."]
+        S3B3 --> S3B4["At 30 tx or 30-day span:<br/>first coach dot appears on attachment point<br/>+ bell badge increments + bell pulse"]
     end
 
     Stage3A --> Home["Dashboard is daily home"]
@@ -292,6 +292,7 @@ T+0:00  Stage 2 sync completes. Dashboard loads with:
          - Hero: total value + today's delta (if intraday data available)
          - Positions table populated
          - «Memoro is reading your history» banner at top
+         - Bell icon visible in top-bar (badge = 0, no dots yet)
 
 T+0:30  Background: Core API pattern-detection queued on user's
          backfilled transactions (tech-lead Slice 8a foundation).
@@ -300,15 +301,34 @@ T+2-10  First pattern-read(s) complete. AI Service narrative
          generation runs. Regex guardrail validates.
 
 T+10    Insights-table row inserted with type `coach_weekly`.
-         Bell notification fires: «Memoro read your history.»
-         Banner on dashboard: «2 patterns noticed. View in Coach ▸»
-         Banner on /coach: «Memoro read your history — 2 patterns noticed»
+         First-value moment primitives fire:
+         - Dot appears on affected position row (or widget header /
+           chat thread / insight card / tx row per attachment
+           mapping). Dot pulses (1200ms scale cycle, every 2.5s,
+           bounded 5min or until user hovers/taps).
+         - Bell badge increments to N (1 or more, depending on
+           how many patterns detected from backfill).
+         - Bell icon gains violet-700 outer ring (coach-unread
+           differentiator, §14.7 Design Brief v1.3).
+         - Bell itself pulses ONCE (same 1200ms scale) — marks
+           first-coach-of-session. Subsequent patterns in the
+           session increment silently.
+         - Dismissable dashboard banner: «Memoro read your
+           history — N patterns noticed. Check the bell ↑.»
+         - If user's first interaction is with the dot: the
+           first-time tutorial tooltip fires (COACH_SURFACE_SPEC
+           §3.5) explaining the convention.
+         - If user's first interaction is with the bell: the
+           first-time bell tooltip fires (COACH_SURFACE_SPEC §7.5).
+         Tutorial flag persists per user; fires once across both paths.
 ```
 
 **Design contract:**
-- The banner is modal-free. User can dismiss it or click through. Dismissal doesn't cancel the notification in Bell.
-- If warm-start pattern-detection takes >30 minutes, banner escalates: «Still reading your history — a bit slower today. We'll notify you as soon as patterns land.»
-- If warm-start produces zero patterns (rare — user has imported-but-bland history): banner becomes «Memoro read your history — no patterns flagged this week. That's a good sign. Check back next Sunday for your first weekly read.»
+- The banner is modal-free. User can dismiss it or click through. Dismissal doesn't cancel the dot or the bell-badge — only the banner.
+- Dots and bell are the load-bearing first-value signals. Banner is a secondary human-readable announcement.
+- If warm-start pattern-detection takes >30 minutes, banner escalates: «Still reading your history — a bit slower today. We'll notify you as soon as patterns land.» Bell-dropdown continues to show Path A empty state (§6.1 of Coach spec).
+- If warm-start produces zero patterns (rare — user has imported-but-bland history): banner becomes «Memoro read your history — no patterns flagged this week. That's a good sign. Check back next Sunday for your first weekly read.» Bell-dropdown moves to post-gate quiet state (§6.3 of Coach spec).
+- **Reduced motion:** dot pulse + bell pulse disabled. Banner appears without slide-in animation.
 
 ### 4.3 Path B — cold-start timeline
 
@@ -318,34 +338,78 @@ T+0:00    Stage 2 sync completes. Dashboard loads with:
            - Positions table populated
            - «Welcome! Memoro's starting to learn your portfolio.»
              dismissable banner
+           - Bell icon visible; badge = 0; no coach-unread ring.
+             Opening bell shows Path B cold-start empty state
+             (COACH_SURFACE_SPEC §6.2) with day/tx progress counter.
 
 T+0-7d    First insight-of-the-week lands when ≥1 insight
           generator rule fires (e.g., «NVDA is 14% of your portfolio»
           can fire immediately from positions state).
           Target: first insight within 7 days; most users see one
           within first session due to static rules.
+          Insight appears in /insights feed + on dashboard top card.
+          No Coach dot yet (coach gate not crossed).
 
-T+0-30d   /coach shows cold-start empty state (COACH_SURFACE_SPEC §3
-          Path B). Counter shows progress toward 30tx-or-30d-span.
-          Dashboard Coach teaser tile is hidden entirely during
-          this window (DASHBOARD_ARCHITECTURE §2).
+T+0-30d   Bell-dropdown continues to show cold-start empty state
+          with updating counter.
+          No Coach dots on any surface.
+          Dashboard has no «Coach coming soon» tile — Coach is
+          invisible on surfaces during cold-start (by design,
+          to avoid advertising a locked/empty feature every login).
 
 T+30d     Soft gate threshold met (tx_count≥30 OR span≥30d).
           First coach pattern-read ships on next weekly cadence
           run (Sunday 00:00 UTC per tech-lead ADR 3).
-          Bell notification fires.
+          First-value moment primitives fire (same sequence as
+          Path A T+10):
+           - Dot appears + pulses on affected element
+           - Bell badge increments + coach-unread ring appears
+           - Bell pulses once (first-coach-of-session)
+           - Tutorial tooltip fires on first interaction
+           - Banner: «Memoro noticed your first pattern. Check
+             the bell ↑.»
 ```
 
 **Design contract:**
-- Cold-start period is NOT a dead zone. Dashboard is useful from day 1 (hero + positions + allocation). Insights land within 7 days. Only Coach waits.
-- The empty-state counter on /coach creates forward momentum («you're N days away»). Never frame as gate/lock; always as «Memoro is learning».
-- At T+30d when first coach pattern lands: Bell + dashboard banner «Memoro noticed your first pattern. View in Coach ▸».
+- Cold-start period is NOT a dead zone. Dashboard is useful from day 1 (hero + positions + allocation). Insights land within 7 days. Only Coach waits, and waiting is invisible on surfaces — only the bell shows the learning-progress state.
+- Progress counter inside the bell-dropdown («8 / 30 days» or «12 / 30 transactions») creates forward momentum. Never frame as gate/lock; always as «Memoro is learning your portfolio».
+- At T+30d when first coach pattern lands: primitive fires + banner as above.
+- **Reduced motion:** dot pulse + bell pulse disabled. Banner appears without animation.
 
 ### 4.4 Stage 3 mobile differences
 
 - Notifications use iOS push (one per first-value-moment; never stacked). Web uses Bell notification + email backup.
 - Banner on dashboard: same content, responsive layout. Dismissable via swipe on iOS, X on web.
 - No modal takeovers at first-value-moment — user is already in-product; don't block them.
+- Dot on iOS: 8px (touch-optimized); pulse respects system reduced-motion preference.
+- Bell on iOS: top-bar position; pulse respects system reduced-motion.
+- Tap-target concern on mobile: full position row / widget card is tappable when it carries a dot (not just the dot itself) — see `COACH_SURFACE_SPEC.md` §10.
+
+### 4.5 Onboarding tour — bell + dot convention
+
+The only explicit in-product onboarding tour moment is a **one-time callout** explaining the bell + dot convention. Fires on first bell or first dot interaction, whichever happens first. See `COACH_SURFACE_SPEC.md` §3.5 (first-dot tooltip) and §7.5 (first-bell tooltip) for the tooltip content.
+
+**Tour shape:**
+
+- NOT a carousel. NOT a modal takeover. NOT a guided walkthrough.
+- Single anchored tooltip on the element the user first touched (dot OR bell). Content:
+  - «When you see a dot like this, Memoro has noticed a pattern in your trades. Click to see.»
+  - «All patterns also live in the bell» (if the user's first interaction was with a dot).
+  - «This is Memoro's read-list» (if the user's first interaction was with the bell).
+- Dismiss: `Got it` button OR click outside.
+- Persistence: flag `coach_tutorial_seen` per user account. Fires once, ever. Suppressed on subsequent dot or bell interactions.
+
+**Rationale:**
+
+- Coach discoverability is the biggest UX risk of the contextual model (PO-acknowledged trade-off 2026-04-23).
+- A single contextual tooltip, fired exactly when the user is about to engage, is more effective than a preemptive carousel.
+- Onboarding stays «Stage 1+2 completion» bounded; Stage 3 remains background, not blocking.
+
+**If the user never interacts with dot or bell in their first session:** tutorial stays dormant. Fires on next session when they do engage. No nag, no upsell. If they go 7 days without engaging, a low-priority dashboard banner may once suggest exploring the bell — but that's a post-alpha refinement, not alpha-scope.
+
+**Onboarding tour vs tutorial tooltip — naming clarity:**
+
+In this document, «onboarding tour» refers to the one-time bell+dot tutorial described here. There is no other tour component in alpha. Stage 1-2 screens (sign-up, broker picker, sync progress) are not a «tour» — they are functional onboarding steps.
 
 ---
 
@@ -393,9 +457,12 @@ Content-lead owns final copy; product-designer owns where copy goes. Coordinatio
 | Screen 2.1 trust marker | Allay broker-password fear | «Read-only connection. Memoro never places trades or moves money.» |
 | Screen 2.3 «why it takes this long» | Expectation setting | «This takes 2–5 minutes for most brokers.» |
 | Screen 2.4 error copies | Calm + specific + next step | See §3.2 Screen 2.4 table |
-| Stage 3A warm-start banner | First-value announcement | «Memoro read your history — 2 patterns noticed» |
+| Stage 3A warm-start banner | First-value announcement | «Memoro read your history — N patterns noticed. Check the bell ↑.» |
 | Stage 3B cold-start banner | Welcome without pressure | «Welcome! Memoro's starting to learn your portfolio.» |
-| Stage 3B Coach empty state | Forward momentum, not lock | See `COACH_SURFACE_SPEC.md` §3 Path B |
+| Stage 3B Coach bell-dropdown empty state | Forward momentum, not lock | See `COACH_SURFACE_SPEC.md` §6.2 (cold-start) |
+| Stage 3B first-coach-land banner | First-pattern announcement | «Memoro noticed your first pattern. Check the bell ↑.» |
+| First-dot tutorial tooltip | One-time convention explainer | See `COACH_SURFACE_SPEC.md` §3.5 |
+| First-bell tutorial tooltip | One-time convention explainer (alt path) | See `COACH_SURFACE_SPEC.md` §7.5 |
 | First-time chat empty state | Suggested prompts | Coordinate with chat surface spec (future) |
 
 Navigator mediates content-lead review of these copy hooks.
@@ -468,7 +535,9 @@ Standard — no new tokens.
 - [ ] Sync progress bar updates accurately; stage list updates via `aria-live`.
 - [ ] Sync error states all have named CTAs + recover paths.
 - [ ] Warm-start banner appears within 10 min of backfill completion in Chromatic / Playwright E2E.
-- [ ] Cold-start empty state on /coach shows correct progress counter (not calendar-day).
+- [ ] Cold-start empty state in bell-dropdown (§6.2 Coach spec) shows correct day/tx progress counter (not calendar-day); updates daily.
+- [ ] First-value moment fires dot + bell badge + bell pulse in correct sequence for Path A warm-start (verified in Playwright with fixture backfill data).
+- [ ] First-time tutorial tooltip fires on first dot or first bell interaction, then suppressed via `coach_tutorial_seen` flag — verified in Playwright session-persistence test.
 - [ ] Mobile flow (320 + 768 breakpoints) end-to-end in Playwright.
 - [ ] Reduced-motion tested — no animations block progression.
 - [ ] WCAG 2.2 AA audit on all 5 screen primitives (sign-up, email verify, welcome, picker, sync).
@@ -478,4 +547,5 @@ Standard — no new tokens.
 
 ## 14. Changelog
 
-- v1.0 (2026-04-23) — initial spec. 3 stages, warm-start/cold-start dual paths in Stage 3, first-value-moment target ≤10 min via backfill-derived pattern-read. Mermaid flow map. Content-lead coordination points enumerated.
+- **v1.0 (2026-04-23)** — initial spec. 3 stages, warm-start/cold-start dual paths in Stage 3, first-value-moment target ≤10 min via backfill-derived pattern-read. Mermaid flow map. Content-lead coordination points enumerated.
+- **v1.1 (2026-04-23)** — Stage 3 first-value moment updated to contextual-icon + bell-dropdown model per Coach UX PO lock 2026-04-23. Removed Coach-route banner references. First-value moment now anchored on (a) dot appearing on affected position/widget element + pulse + (b) bell badge increment + first-session bell pulse. Added §4.5 onboarding tour — one-time bell+dot tutorial tooltip (fires on first interaction with either, suppressed thereafter via `coach_tutorial_seen` flag). Mermaid diagram Stage3A/Stage3B nodes updated. Path B cold-start now shows bell-dropdown empty state + counter (no surface-level tile). Design Brief dependency bumped v1.2 → v1.3.
