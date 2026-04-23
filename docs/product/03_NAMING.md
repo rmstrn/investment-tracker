@@ -82,12 +82,102 @@ Reference examples offered: Notion, Linear, Perplexity, Arc, Stripe, Vercel, Ant
 
 Purpose: reverse-engineer the vibe PO wants so next candidates match that feel, not PO's rejection list.
 
-## Next session actions
+## Round 5 — Mind/memory/second-brain territory (2026-04-23)
 
-1. PO provides reference brand names (calibration input)
-2. Generate candidates matching that vibe (evocative, not descriptive)
-3. Domain + trademark + social handles verification on shortlist (3-5 final)
-4. Lock name → move to brand foundation (logo, palette, typography) → CD brief
+**Trigger:** PO locked Option 4 «Second Brain for Your Portfolio» as strategic direction (`DECISIONS.md` 2026-04-23). Naming territory shifted from earlier rounds into mind / memory / brain / knowledge / recall / thought / synapse / cognition. Navigator dispatched brand-strategist with `docs/product/NAMING_ROUND_5_brief.md`.
+
+**Criteria recap (locked):**
+- 1 word ideal, 2 words max.
+- Memorable + meaningful (semantic content, not generic abstract).
+- Bilingual pronounceability: EN + RU primary. English is day-1 launch (PO 2026-04-23); RU secondary parallel.
+- Not in rejected-list below.
+- Domain indirect signal via WebFetch free pages only. **No purchase, no premium search, no outreach — per `.agents/team/CONSTRAINTS.md`.**
+
+### Round 5 candidates (10)
+
+| # | Name | Semantic rationale | Phonetic (EN / RU / parity) | Archetype lean | Domain indirect signal | Rejected-list check |
+|---|---|---|---|---|---|---|
+| 1 | **Mneme** | Greek Μνήμη — memory; one of the Greek Muses as «memory of the arts». Compact, evocative, rare enough to own. Direct semantic map to Second Brain memory claim. | EN «ne-mee» (silent M, 2 syl) / RU «мнэ́мэ» (2 syl) / parity: passable — English silent-M is counterintuitive, Russian rendering clean. | Sage-dominant, Magician modifier | `mneme.com` cert issue (unreachable — likely possibly-free or dormant). `mneme.app` ECONNREFUSED (possibly-free). Final verification via Namecheap/Porkbun required. | OK — not in rejected list |
+| 2 | **Recall** | English verb «to remember again / retrieve from memory». Direct Second Brain mapping. Imperative reads as brand command («Recall your portfolio»). | EN «rih-call» (2 syl) / RU «реко́лл» (2 syl) / parity: strong — both languages render cleanly, no letter cluster. | Magician + Sage blend | `recall.ai` — **TAKEN** (Series B meeting-recording company, $38M Series B, active product). Strong brand in AI space. `recall.com` likely taken by dictionary/media co. `recall.app` ECONNREFUSED — possibly-free. Final verification required. | OK — not in rejected list |
+| 3 | **Cortex** | Brain outer layer, technical/scientific edge. Second Brain literal anatomy. Common in tech (Cortex M processors, Cortex search). | EN «KORE-teks» (2 syl) / RU «ко́ртекс» (2 syl) / parity: strong — clean in both. | Sage-dominant | `cortex.app` → redirect to atom.com (Squadhelp) — **for sale premium, likely $5K-20K range**. `cortex.com` HTTP 522 (Cloudflare error — ambiguous; likely active site). Cortex.ai likely taken by CortexAI observability product. | OK — not in rejected list |
+| 4 | **Synapse** | Neural junction — where memory forms. Technical edge, evocative. | EN «SIN-aps» (2 syl) / RU «си́напс» (2 syl) / parity: strong — equal in both. | Sage + Magician | `synapse.com` — **TAKEN** (active product-development firm, 20+ years, Nike/Google/NASA clients). Synapse.app likely taken. Very crowded name in tech. | OK — not in rejected list |
+| 5 | **Bodh** | Sanskrit बोध — awakening, knowledge, consciousness. Short, evocative, rare. Cross-cultural resonance (adjacent to Bodhi, Buddha root). | EN «bohd» (1 syl) / RU «бодх» (1 syl) / parity: passable — Russian cluster «дх» uncommon but readable. | Sage-dominant, Magician modifier | `bodh.ai` — **TAKEN** (AI conversational product «Bodhi», memory-retention focus, at capacity / waitlist). Semantic overlap with our space — risky. `bodh.com` likely parked. | OK — not in rejected list |
+| 6 | **Noesis** | Greek νόησις — «the act of thinking / intellectual insight». Philosophical pedigree (Husserl phenomenology). Evocative, uncommon, serious. | EN «no-EE-sis» (3 syl) / RU «ноэ́зис» (3 syl) / parity: strong — clean in both. | Sage-dominant (strong) | `noesis.com` ECONNREFUSED (possibly-free or down). `noesis.app` empty page (possibly-free). Final verification required. | OK — not in rejected list |
+| 7 | **Ken** | Old English / Scots «knowledge, understanding, range of sight». 3-letter, extremely short, proverbial («beyond my ken»). | EN «ken» (1 syl) / RU «кен» (1 syl) / parity: strong — trivial. | Everyman + Sage | `ken.ai` cert expired (domain may be possibly-free or parked). `ken.app` empty (possibly-free). `ken.com` likely taken by a person. Homonym concern: «Ken» is a common English first name + Barbie-adjacent. | OK — not in rejected list. **Concern: homonym dilution.** |
+| 8 | **Lore** | Body of knowledge, tradition of stories. «Portfolio lore» reads as the accumulated knowledge about your holdings. | EN «lor» (1 syl) / RU «ло́ре» (2 syl) / parity: passable — Russian rendering adds syllable. | Sage + Everyman | `lore.com` — **TAKEN** (Lore Systems, sovereign AI control infra for defense/gov, well-funded, 47K+ newsletter subs). `lore.app` socket error (ambiguous). Very crowded brand. | OK — not in rejected list. **Concern: crowded.** |
+| 9 | **Memoro** | Latin «I remember» (1st-person singular memorō). Coined feel, invented-but-rooted. «Memoro remembers your portfolio.» | EN «me-MO-ro» (3 syl) / RU «мемо́ро» (3 syl) / parity: strong — clean vowel-heavy flow. | Magician-dominant (coined) + Sage | `memoro.app` empty (possibly-free). `memoro.com` empty (possibly-free). Promising. Final verification required. | OK — not in rejected list |
+| 10 | **Mindgrove** | Compound: «mind» + «grove». «Grove» = small tree stand, metaphor for curated/tended collection. Two-word-as-one-word. Evocative, gardenlike. | EN «MAIND-grov» (2 syl) / RU «майндгров» (2 syl) / parity: passable — Russian cluster heavy but readable. | Everyman + Sage | `mindgrove.app` — positioned «A graph for your mind» (possibly early-stage product or placeholder — ambiguous signal). `mindgrove.com` likely available. | OK — not in rejected list. **Concern: «grove» is a crowded SaaS suffix.** |
+
+### Top 3 recommended
+
+**Pick 1 — Mneme**
+- Strongest semantic tie to Second Brain: Greek root means «memory» and is literally the mother of the Muses (memory as source of knowledge).
+- Empty fintech territory (no known competitor uses this name).
+- Indirect domain signal: `.com` unreachable (cert issue — often indicates dormant/possibly-free); `.app` ECONNREFUSED (possibly-free). Final Namecheap/Porkbun check required.
+- Phonetic concern: English silent-M («ne-mee» not «m-neem») is a learning moment — real brand-education cost for early adopters. Russian rendering clean («мнэмэ»).
+- Rationale: short, evocative, ownable. The silent-M is a memorable-and-meaningful feature if positioned right («like the Muse of memory»); if positioned wrong, it's a phonetic stumbling block.
+- **Concern for Russian parallel:** letter cluster «мнэ» uncommon; acceptable but not native.
+
+**Pick 2 — Memoro**
+- Latin 1st-person-singular «I remember» is a brand voice all on its own — the product literally says «I remember» when named Memoro. Direct Second Brain identity fit.
+- Coined-feel (like Notion, Kubera, Figma) — no pre-existing baggage.
+- Indirect domain signal: `.com` and `.app` both empty-page WebFetch (possibly-free on both TLDs). Strong relative to Pick 1.
+- Strong bilingual parity — Latin-root vowel-heavy word translates phonetically equivalent in both English and Russian.
+- Archetype fit: coined Latin carries Magician (mystical) + Sage (scholarly) without being pretentious.
+- **Concern:** 3 syllables is at the upper bound of «memorable short name». Longer than Notion (2) or Stripe (1).
+
+**Pick 3 — Noesis**
+- Greek «intellectual act of thinking» — philosophical weight, Sage-archetype match.
+- 3 syllables, pronounceable in both languages.
+- Indirect domain signal: `.com` ECONNREFUSED (possibly-free or down), `.app` empty page (possibly-free).
+- Strong Sage-lean archetype alignment with Second Brain metaphor.
+- **Concern 1:** 3 syllables, slightly heavier than Mneme / Memoro.
+- **Concern 2:** Greek philosophy pedigree may feel «too academic» for ICP B (AI-native newcomers 22-32); Magician-Sage balance leans too far Sage without Everyman warmth.
+
+### Weakest for Russian parallel use (of the three)
+
+**Mneme** — «мнэмэ» letter cluster «мнэ» is uncommon in Russian; acceptable but not native-feeling. Memoro and Noesis are both stronger in Russian phonetics.
+
+### Open questions for PO (via Navigator)
+
+1. **Silent-M risk in Mneme.** Is the «like the Muse of memory» education burden acceptable, or does it kill the name? PO call.
+2. **Homonym concern for Ken.** Ken is a common English first name. Dilution risk vs «ultra-short memorable» benefit — PO preference?
+3. **Coined-vs-rooted preference.** Memoro is coined-feel (Latin root but not a living word). Mneme / Noesis are rooted (live Greek words). Is there a preference for rooted-authenticity vs coined-invented-for-us-only?
+4. **Russian parallel weight.** EN is day-1 launch; RU is post-launch secondary. How heavily should RU-phonetic parity weight naming decision? If EN-first is strong, can we accept marginal RU-phonetic cost (Mneme case)?
+
+### Rejected-list diff after Round 5
+
+No new entries added to rejected list — all 10 candidates pass the check against previous four rounds' rejected directions (Ask imperatives, Ask creative spellings, Folio roots, evocative trio Delphi/Koan/Vessel). None of Round 5 candidates overlap.
+
+**If PO rejects all 10,** the remaining untapped territory is:
+- Russian-source names (Svod, Istok, Vera — still untapped; Svod has a memory/compendium connotation that fits)
+- Pure-coined made-up roots (like Figma — no etymological anchor)
+
+### Domain signal summary (indirect only; final verification required)
+
+| Name | .com | .app | .ai | Notes |
+|---|---|---|---|---|
+| Mneme | cert/unreachable | ECONNREFUSED | not checked | Possibly-free on .com and .app — verify |
+| Memoro | empty | empty | not checked | Both possibly-free — strongest signal |
+| Noesis | ECONNREFUSED | empty | not checked | Both possibly-free — verify |
+| Recall | likely taken | ECONNREFUSED | **TAKEN (Series B meeting-AI co.)** | .ai blocked; check .com + .app |
+| Cortex | 522 ambiguous | for sale premium (Squadhelp) | likely taken | $.app $5K-20K estimate via broker — **PO approval required for purchase** |
+| Synapse | **TAKEN (product-dev firm)** | likely taken | likely taken | crowded |
+| Bodh | likely parked | not checked | **TAKEN (AI memory product «Bodhi»)** | semantic overlap risk |
+| Ken | likely taken (person) | empty | cert expired | homonym concern |
+| Lore | **TAKEN (AI gov co.)** | socket error | not checked | crowded |
+| Mindgrove | likely available | active product («graph for mind») | not checked | suffix concern |
+
+**No domain purchases implied. No trademarks filed. No outreach to any owner.**
+
+## Next session actions (post-Round-5)
+
+1. PO reviews Round 5 top 3 (Mneme / Memoro / Noesis) + 7 alternates via Navigator.
+2. PO answers open questions (silent-M risk, coined-vs-rooted preference, RU phonetic weight).
+3. Shortlist converges to 2-3 candidates.
+4. Shortlist gets final domain verification (free Namecheap / Porkbun / Cloudflare Registrar search) + USPTO / EUIPO trademark check (free public search).
+5. If shortlist name sits on broker (e.g. Cortex on Squadhelp), estimate range reported to PO; **no purchase without PO approval.**
+6. Lock name → move to brand foundation (logo, palette, typography, `04_BRAND.md`) → CD brief.
 
 ## Notes
 
@@ -103,10 +193,12 @@ Purpose: reverse-engineer the vibe PO wants so next candidates match that feel, 
 - Portfolio/folio roots (Folio, Foli, AskFolio, Trove, Stack)
 - First-pass evocative trio (Delphi, Koan, Vessel)
 
-## Directions NOT yet tried (worth exploring next session)
+## Directions NOT yet tried (worth exploring if Round 5 rejected)
 
-- Russian-source names (Vera, Istok, Svod) — untapped
-- Latin/Greek single words beyond Delphi/Koan (Sophia, Pythia, Thoth, Janus)
-- Made-up but evocative (like Figma, Notion, Kubera) — no descriptive content, pure brand
+- Russian-source names (Vera, Istok, Svod) — still untapped; Svod semantically fits Second Brain («compendium / vault»)
+- Latin/Greek single words beyond Delphi/Koan/Mneme/Noesis (Sophia, Pythia, Thoth, Janus) — some Greek covered in Round 5
+- Pure-coined made-up roots (like Figma — no etymological anchor at all); Memoro (Round 5) coined-but-Latin-rooted is a halfway step
 - Two-syllable abstract (like Stripe, Vercel, Rakuten)
-- Reference-driven after PO calibration on liked brands
+- Reference-driven — blocked until PO provides reference brands
+
+**Round 5 territory covered:** mind / memory / brain / knowledge / recall / cognition — 10 candidates produced 2026-04-23, see Round 5 section above.
