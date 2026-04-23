@@ -568,3 +568,25 @@ PO explicitly cannot provide reference brands («какие бренды нра�
 **Action.** `brand-strategist` next dispatch will operate on: 1-2 words, memorable + meaningful, avoiding rejected directions. No reference-brand calibration available — rely on archetype (Magician + Everyman) + locked positioning + bilingual pronounceability.
 
 **Owner.** brand-strategist (naming-doc owner). Revisit: next naming round kickoff.
+
+## 2026-04-23 — PortfolioPilot regulatory structure correction: hybrid, not pure RIA
+
+**Context.** Earlier working assumption (implicit in v1 discovery + lumped framing in v2 wedge table) treated PortfolioPilot as a pure-RIA product with the «Complete financial advice» hero as uniform advisor framing. Evidence pulled from globalpredictions.com/disclosures (fetched 2026-04-23) invalidates that shortcut.
+
+**Correction.** PortfolioPilot operates under a **hybrid regulatory structure** — a real-world implementation of what `STRATEGIC_OPTIONS_v1.md` calls Lane C:
+
+- Public site + Free tier = **education-only**, explicitly not advice (verbatim: «Nothing on the publicly available portions of the Platform should be construed as a solicitation or offer, or recommendation, to buy or sell any security»).
+- Paid tiers (Gold $20 / Platinum $49 / Pro $99) = **SEC-registered RIA** under a written Client Agreement (Global Predictions Inc., Form ADV, Form CRS).
+- Marketing copy («Complete financial advice for self-directed investors») is legally scoped by the disclosure: the «financial advisor» reference is to the user themselves, not a human advisor the product pretends to be.
+
+**Implication — de-risks Lane C as a strategic option.** Lane C was described in `STRATEGIC_OPTIONS_v1.md` as hypothetical with a real risk of «split brand reads dishonestly». PortfolioPilot's $30B AUM / 40K users confirm the split-narrative structure scales in practice with compliance discipline (disclosure-document + paywall-gated advisor language). This does NOT add a 4th strategic option; it changes the weight of Analyst's lane-flexibility when PO evaluates the three finalists.
+
+**Scope of this correction.** No positioning re-write. No option ranking change. Three files patched for evidence hygiene:
+
+- `docs/product/01_DISCOVERY.md` — §4.5 added («PortfolioPilot as validated Lane C implementation»); §2.1 wedge row and §2.2 survivor list clarified (hybrid, not pure-RIA).
+- `docs/product/competitor-matrix.md` — PortfolioPilot row + Origin/Mezzi/Range peers got regulatory-structure sub-rows; §8 summary got Lane A/B/C split.
+- `docs/product/STRATEGIC_OPTIONS_v1.md` — Lane C description updated with validation evidence; Option 2 (Analyst) regulatory-lane section expanded; Q6 decision aid + council resolution notes updated.
+
+**No council re-run recommended.** The evidence sharpens a descriptor (Lane C = validated, not hypothetical) but does not overturn any of the three finalists, the ICP analysis, or the wedge framing. A re-run would return the same three options with the same rankings; only Analyst's Lane C attractiveness marginally improves.
+
+**Owner.** Navigator. Revisit: next strategic-options pick session or if user-researcher surfaces additional regulatory evidence for other competitors (Origin, Mezzi primary docs not yet fetched).
