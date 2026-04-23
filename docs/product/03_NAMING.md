@@ -186,19 +186,141 @@ No new entries added to rejected list — all 10 candidates pass the check again
 - Non-criterion: «Second Brain» / «Portfolio Memory» are tagline/brand-world copy, NOT product name (per Q1 lock). Product name does NOT need to mirror the metaphor literally — it needs to be memorable + meaningful + ownable.
 - **PO lean note:** Memoro from Round 5 is the leading candidate; Round 6 is a widen-the-pool pass, not a rejection of Memoro. If Round 6 surfaces a stronger candidate, PO will re-compare; if not, Memoro holds the lead and moves toward final lock.
 
-**Status:** IN FLIGHT 2026-04-23. Results will populate this section when brand-strategist returns.
+**Status:** RETURNED 2026-04-23.
 
-### Round 6 candidates
+**Context update at dispatch time:** Tagline «Second Brain for Your Portfolio» is brand-world copy, NOT product name. Hero imperative is locked bilingually («Спроси свой портфель» / «Ask your portfolio»). Geography is global **without Russian Federation as launch market** (CIS diaspora still in scope). Product name must pair naturally with both the imperative hero and the memory-metaphor tagline.
 
-*(placeholder — brand-strategist to populate)*
+**Directions explored** (untapped after Rounds 1-5):
 
-### Round 6 top picks
+- **Direction A — Pure coined, no etymological anchor** (Figma / Kubera / Notion / Stripe pattern). 2 syllables max, ownable-by-construction.
+- **Direction B — Short EN-native coined, action/verb flavor** (Steady / Cover / Beam / Tally pattern). Not imperative (hero owns that), but verb-adjacent.
+- **Direction C — Russian-source single words** (Svod / Istok / Vera pattern). Global-minus-RF geography makes RU-source optional, but retains resonance for RU-speaking diaspora junior ICP.
+- **Direction D — Portmanteau / blends** (Robinhood / Brex / Chime / Ledgr pattern). Two-word compression that reads as one coined word.
 
-*(placeholder — brand-strategist to populate)*
+### Round 6 candidates (12 — 10 strong + 2 DOA documented for thoroughness)
+
+| # | Name | Dir | Semantic rationale | Phonetic (EN / RU / parity) | Archetype lean | Domain indirect signal (.com / .app / .ai / other) | Rejected-list check | Concern flags |
+|---|---|---|---|---|---|---|---|---|
+| 1 | **Orma** | A | Pure coined. Italian «orma» means «footprint / trace / imprint» — fits the memory-trace-of-your-portfolio metaphor if you reach for it, but shallow enough to read as invented-for-us. Two-syllable vowel-bookended shape (Figma / Notion / Kubera family). | EN «OR-ma» (2 syl) / RU «о́рма» (2 syl) / parity: strong — clean in both. | Magician-dominant (coined) + Everyman modifier | `.com` empty/minimal placeholder (possibly-free); `.ai` empty (possibly-free); `.app` ECONNREFUSED (possibly-free); `.io` empty (possibly-free); `.money` ECONNREFUSED (possibly-free). **Strongest domain signal in Round 6.** Final Namecheap/Porkbun verification required. | OK — not in rejected list | Italian speakers may hear «footprint» consciously — neutral-to-positive semantic map, no negative pull |
+| 2 | **Kavo** | A | Pure coined. No dictionary meaning in EN or RU. Two-syllable, consonant-opening, hard-soft shape. Reads as invented (Kavo / Kubera / Rakuten family). | EN «KAH-vo» (2 syl) / RU «ка́во» (2 syl) / parity: strong — trivial in both, though RU «каво» reads colloquially as a non-standard phonetic spelling of «кого» (whom) in casual speech — minor flavor risk. | Magician-dominant (coined) | `.com` ECONNREFUSED (possibly-free); `.app` ECONNREFUSED (possibly-free); `.ai` ERR_TLS_CERT_ALTNAME_INVALID (likely-possibly-free, cert misconfig signals dormant); `.io` empty (possibly-free). Final verification required. | OK — not in rejected list | RU colloquial «каво→кого» flavor is minor but real; could read as «playful mis-spelling» which is off-brand for a finance product |
+| 3 | **Nura** | A | Pure coined. Sanskrit-adjacent feel but no direct meaning (Nur is Arabic for «light», Nura is feminine form in some languages — shallow but non-conflicting). Two-syllable, soft-opening. | EN «NOO-ra» (2 syl) / RU «ну́ра» (2 syl) / parity: strong — clean in both. | Magician + Everyman | `.com` timeout (ambiguous); `.app` HTTP 401 (auth wall — signals parked-with-hosting, not necessarily taken); `.ai` for-sale at Spaceship broker (premium); `.io` empty (possibly-free); `.money` ECONNREFUSED (possibly-free). **Weakest of the A-trio on domains — .ai is premium.** | OK — not in rejected list | .ai blocked by broker; light semantic overlap with Arabic feminine name «Nura» (common name, not a brand) |
+| 4 | **Lumi** | A | Pure coined. Latin root «lumen» (light) is in the background but the word «Lumi» itself reads as invented. Two-syllable, soft-flowing, warm. Fits «the light that surfaces what you would miss» tagline undertone. | EN «LOO-mee» (2 syl) / RU «лю́ми» (2 syl) / parity: strong. | Magician (light-metaphor) + Sage | `.com` ECONNREFUSED (possibly-free — surprising for a 4-letter); `.app` empty page (possibly-free); `.ai` ECONNREFUSED (possibly-free). **Strong domain signal — verify urgently, likely already gone in one TLD we didn't check.** | OK — not in rejected list | «Lumi» is a common prefix in SaaS (Luminous, Luma AI, Lumi Labs) — phonetic territory is crowded even if exact-match domains look free; trademark risk elevated |
+| 5 | **Ember** | B | English noun — «a small glowing piece of coal or wood remaining in a fire». Metaphorical map: «your portfolio is the fire; your second brain keeps the embers glowing — quiet, persistent, always warm, never loud». Short, warm, distinct from typical fintech cold-tech palette. | EN «EM-ber» (2 syl) / RU «э́мбер» (2 syl) / parity: strong — clean in both; RU rendering adds no awkwardness. | Everyman + Magician (warmth-metaphor) | `.ai` empty (possibly-free); `.app` ECONNREFUSED (possibly-free); `.io` empty (possibly-free); `.com` not checked but Ember.js framework owns `emberjs.com` — `.com` likely taken by the open-source framework community. | OK — not in rejected list | **Ember.js (open-source JavaScript framework)** is a well-known developer tool. Phonetic territory is crowded for tech audience; however Ember.js does not own the fintech/finance trademark class — legal clearance still possible |
+| 6 | **Tally** | B | English verb/noun — «to count / keep a running total / keep score». Direct semantic map: «your portfolio's tally kept by a second brain». Native EN verb with light RU loan-word pattern. | EN «TA-lee» (2 syl) / RU «та́лли» (2 syl) / parity: strong — clean in both. | Everyman (counting-metaphor) + Sage | `.com` ERR_TLS_CERT_ALTNAME_INVALID (ambiguous; likely taken by a rights-holder); `.app` ECONNREFUSED (possibly-free but…); `.ai` **for-sale at Spaceship broker (premium)**. **`tally.so` is a major SaaS brand** (form builder, 500K+ teams — «doing to forms what Notion did to docs»). | OK — not in rejected list (technically) | **Serious brand crowding.** Tally.so dominates the short-tail Google results for «Tally»; PO would inherit phonetic competition with an established Notion-adjacent SaaS brand. Also: Tally (consumer fintech, ex-credit-card-consolidation company) shut down in 2022 — dormant trademark risk in the financial class. |
+| 7 | **Svod** | C | Russian «свод» — (1) vault / compendium / codex; (2) the arch/dome of a vault (architectural); (3) a consolidated collection of knowledge («свод правил» = code of rules, «свод знаний» = body of knowledge). Literal fit: «your portfolio's codex». Short, 1-syllable, strong. | EN «svod» (1 syl) / RU «свод» (1 syl) / parity: passable — English speakers will say «svohd» fluently (similar to «squad», «sword»); initial «sv-» cluster uncommon in English but pronounceable. | Sage-dominant | `.com` HTTP 403 (active server but restrictive — **likely taken by a streaming VOD-related brand**; «SVOD» is the industry acronym for Subscription Video On Demand, which overlaps heavily in search); `.app` 403 (consistent); `.ai` socket-closed (ambiguous); `.money` ECONNREFUSED (possibly-free); `.io` ECONNREFUSED (possibly-free). | OK — not in rejected list | **SVOD = industry acronym for Subscription Video On Demand.** This is a major SEO and disambiguation problem: «svod» in global English search will surface Netflix-class streaming-industry content before any fintech brand. RU audience reads «свод» correctly as «codex» — but global EN launch inherits streaming-industry baggage. |
+| 8 | **Vedi** | C | Russian «веди» (imperative of «вести» — lead / conduct / guide) and simultaneously the Slavic archaic letter «ВЕДИ» meaning «to know / knowledge». Direct memory/knowledge mapping. Short, 2-syllable, warm. Also close to Sanskrit «veda» (knowledge) for cross-cultural resonance. | EN «VEH-dee» (2 syl) / RU «ве́ди» (2 syl) / parity: strong — clean in both. | Sage + Everyman (imperative warmth) | `.com` ECONNREFUSED (possibly-free); `.app` empty (possibly-free); `.ai` empty (possibly-free); `.io` **TAKEN** (Vedi is Australian vet-practice SaaS with Sidekick AI, real usage metrics). | OK — not in rejected list | `.io` is taken by an active SaaS (vet-adjacent, has its own AI module called Sidekick) — trademark search should check USPTO «Vedi» in fintech class specifically. The vet-practice brand is a non-competing class, but the name itself is increasingly used in the AI-assistant space. |
+| 9 | **Istok** | C | Russian «исток» — source / origin / wellspring. Semantic map: «the source of understanding for your portfolio». Two-syllable, hard-consonant ending. | EN «EE-stok» (2 syl) / RU «исто́к» (2 syl) / parity: passable — English speakers will pronounce cleanly but the phonetic shape is unambiguously foreign, which could be an asset (like Rakuten, Skoda) or a friction (hard to spell from hearing). | Sage + Magician | `.app` **for-sale at Spaceship broker, price $6,999** (within reach but requires PO approval per Rule 1); `.com` timeout (ambiguous); `.ai` ECONNREFUSED (possibly-free). Russian military-industry context («Istok» JSC is a major Russian electronics manufacturer). | OK — not in rejected list | **Russian military-industrial association.** Istok JSC is a sanctioned Russian defense electronics manufacturer — global launch inherits geopolitical baggage in EU + US markets. KILL for geography-without-RF launch. |
+| 10 | **Memora** | D | Portmanteau: memory + era («a era of memory», «our memory-era»). Latin-adjacent feel. Direct semantic map to Second Brain metaphor. | EN «meh-MOR-ah» (3 syl) / RU «мемо́ра» (3 syl) / parity: strong. | Magician + Sage | `.com` parked/placeholder; `.ai` **TAKEN — Memora.ai is an active pre-launch memory-product** («Just start typing…», «store and recall information naturally», explicitly positioned against Notion). **Direct competitor in the exact memory/knowledge-capture space.** `.app` timeout. | OK — not in rejected list | **DOA — Memora.ai is a direct adjacent competitor** in the memory-product space (same Notion-category reference point). Cannot use. Documented for thoroughness. |
+| 11 | **Portmem** | D | Portmanteau: portfolio + memory. Direct literal compression. | EN «PORT-mem» (2 syl) / RU «портмэм» (2 syl) / parity: weak — RU rendering reads awkwardly, «port» as a root sounds like «портал / портье», «мэм» is not a native root. | Sage | `.com` **TAKEN — PortMem is an active enterprise SaaS** at v0.1 Research Preview, explicitly «working with enterprise partners in finance and legal to validate the system in production». **Direct competitor in finance memory-persistence space.** | OK — not in rejected list | **DOA — PortMem.com is an active enterprise finance-memory product.** Direct competitor. Cannot use. |
+| 12 | **Reckon** | B | English verb — «to calculate / figure / consider / suppose». Action-flavor, native EN verb, memory-and-inference-adjacent. | EN «REK-un» (2 syl) / RU «ре́кон» (2 syl) / parity: strong. | Everyman + Sage | `.com` **TAKEN** by Reckon (Australian accounting/payroll SaaS, active major brand, SMB accounting category). `.app` for-sale at Dynadot broker. | OK — not in rejected list | **DOA — Reckon.com is an established Australian accounting SaaS brand in the finance-adjacent class.** Direct trademark conflict. Cannot use. |
+
+### Round 6 domain signal summary (indirect only, final verification required)
+
+| Name | .com | .app | .ai | Other | Verdict |
+|---|---|---|---|---|---|
+| Orma | empty placeholder | ECONNREFUSED | empty | .io empty, .money ECONNREFUSED | **Strongest** — possibly-free across all checked |
+| Kavo | ECONNREFUSED | ECONNREFUSED | cert-invalid | .io empty | **Strong** — possibly-free signals; verify |
+| Nura | timeout | HTTP 401 auth wall | premium broker (Spaceship) | .io empty | Mixed — .ai is broker-premium |
+| Lumi | ECONNREFUSED | empty | ECONNREFUSED | — | **Strong** but likely too-good-to-be-true for 4-letter; verify urgently |
+| Ember | not checked (.com — Ember.js community owns mindshare) | ECONNREFUSED | empty | .io empty | Strong for .ai/.app/.io; .com likely crowded |
+| Tally | cert-invalid | ECONNREFUSED | premium broker | — | Weak — tally.so is dominant SaaS brand |
+| Svod | 403 active server | 403 | socket-closed | .money ECONNREFUSED, .io ECONNREFUSED | Weak — SVOD industry-acronym conflict |
+| Vedi | ECONNREFUSED | empty | empty | .io TAKEN (Australian vet SaaS) | Mixed — .io taken compromises trademark |
+| Istok | timeout | **for-sale $6,999** Spaceship | ECONNREFUSED | — | **DOA — Russian defense-industry association (Istok JSC)** |
+| Memora | parked | timeout | **TAKEN (direct competitor)** | — | **DOA — memora.ai is direct memory-product competitor** |
+| Portmem | **TAKEN (direct competitor)** | not checked | not checked | — | **DOA — finance-memory enterprise SaaS** |
+| Reckon | **TAKEN (Australian accounting SaaS)** | for-sale Dynadot | not checked | — | **DOA — finance-adjacent trademark conflict** |
+
+**No domain purchases implied. No trademarks filed. No outreach to any owner. All WebFetch signals are indirect and require Namecheap/Porkbun confirmation before any lock.**
+
+### Round 6 top 3 — ranked against Memoro (Round 5 benchmark)
+
+**Memoro baseline recap:** Latin 1st-person-singular «I remember», 3 syl, `.com` + `.app` possibly-free signals (Round 5). Archetype: Magician + Sage. Strongest bilingual parity. Concerns: 3 syllables (upper bound of «memorable short»); coined-but-Latin-rooted rather than fully invented; when paired with tagline «Second Brain for Your Portfolio» reads as brand-world redundancy («memory-named product for a memory-metaphor tagline»).
+
+---
+
+**Pick 1 — Orma**
+
+*Why it could beat Memoro:* Shorter (2 syl vs 3). Pure-coined — no etymological redundancy with the memory-metaphor tagline, so product-name and tagline do different jobs (tagline carries the metaphor; name carries the mark). Strongest Round 6 domain signal: empty placeholder or ECONNREFUSED across `.com`, `.app`, `.ai`, `.io`, `.money` — closest to a clean sweep we've seen across 6 rounds. Phonetic shape (vowel-bookended 2-syllable) sits in the Figma / Notion / Kubera family — proven modern-SaaS sound. Pairs clean with the imperative hero: «Ask Orma» reads as talking to a named assistant, which reinforces the second-brain relationship without the name itself saying «memory».
+
+*Why it is a peer of Memoro (not strict upgrade):* Italian speakers will hear «footprint / trace» consciously — this is a neutral semantic (and arguably on-brand: «your portfolio's trace»), but it means Orma is not strictly etymologically neutral. For a brand claiming «memory», «trace» is close enough to be a happy accident, but not a deliberate Latin-rooted claim like Memoro's «I remember». Memoro makes a declarative statement in the name; Orma makes a sound with a quiet semantic shadow.
+
+*Trade-off vs Memoro:* Orma wins on length + domain cleanliness + tagline-relationship; Memoro wins on declarative semantic clarity + stronger «say-what-you-mean» positioning fit.
+
+---
+
+**Pick 2 — Kavo**
+
+*Why it could beat Memoro:* Fully invented — no etymological anchor at all, closest to the Figma / Stripe / Kubera pattern the brief called out. 2-syllable CV-CV shape with a hard opening consonant gives it more phonetic distinctiveness than Orma's softer vowel-bookended shape. Domain signals broadly possibly-free across `.com`, `.app`, `.ai`, `.io` (with cert-invalid on `.ai` likely indicating dormant rather than active).
+
+*Why it is NOT strictly better than Memoro:* RU-speaking diaspora audience may read «каво» as a playful mis-spelling of «кого» (whom) — this is a minor flavor note, not a disqualifier, but it means the RU parallel is not strictly clean the way Memoro is. Also: no semantic anchor at all means the brand has to do 100% of the meaning-making through copy and experience; for a category («second brain for investing») that is still being invented, a word that carries some semantic shadow may do more work than a fully abstract mark.
+
+*Trade-off vs Memoro:* Kavo wins on pure-coined ownability + phonetic distinctiveness; Memoro wins on semantic work-done-by-the-name + RU-phonetic cleanness.
+
+---
+
+**Pick 3 — Ember**
+
+*Why it could beat Memoro (different axis):* This is the most different-axis pick in Round 6. Ember introduces a **warmth/light metaphor** into what is otherwise a memory/cognition naming territory — which, paired with the «Second Brain for Your Portfolio» tagline, gives the brand a two-layer metaphor structure (second brain = memory; ember = the quiet glow of knowledge). This is closer to what Notion does with «notion» (the word is warmth-adjacent, not storage-adjacent, and that tension makes the brand feel alive rather than literal). Short, native-EN, cleanly bilingual. Domain signal strong on `.ai`, `.app`, `.io`.
+
+*Why it is NOT strictly better than Memoro:* `.com` is almost certainly ceded to the Ember.js open-source community (the Ember.js framework has been a visible dev tool since 2011). For a developer-adjacent audience (ICP A Notion/Obsidian cohort), «Ember» will have an unavoidable JavaScript-framework association — this is not a trademark conflict (different classes) but a cultural-recall conflict. If we could acquire `ember.money` or `ember.app` that would blunt the issue, but the phonetic territory itself is compromised for the technically-literate segment of the ICP.
+
+*Trade-off vs Memoro:* Ember wins on metaphor-layering + warmth-tone + memorability for a broad audience; Memoro wins on cultural-recall cleanness for tech-native audience + direct tagline-fit.
+
+---
+
+### Recommendation
+
+**Memoro stays as the lead, but Orma deserves serious PO consideration as a tied peer.**
+
+Honest assessment:
+- **Memoro is not dethroned.** 10 of the 12 Round 6 candidates have material issues (DOA competitors on exact-match domains × 3, trademark conflicts × 2, premium-broker blockers × 2, phonetic crowding × 3). This itself is signal — the naming problem is genuinely hard at round 6, and Memoro's profile (possibly-free on `.com` and `.app`, clean bilingual phonetics, direct semantic fit) is rarer than it looks.
+- **Orma is the only Round 6 candidate that is a clean peer to Memoro on trade-offs.** It loses declarative semantic specificity but wins on length, domain cleanliness, and tagline-name separation (which is arguably a feature, not a bug, once the tagline does the memory-metaphor work).
+- **Kavo is a plausible upgrade axis if PO prefers fully-invented-Figma-style** over coined-Latin-rooted. Currently a step behind Orma on cleanness because of the RU-colloquial flavor note.
+- **Ember is a metaphor-axis alternative, not a domain-axis winner.** Include it only if PO actively values the warmth-metaphor layering.
+
+**Suggested PO decision path:**
+1. If PO values declarative semantic fit + RU-phonetic cleanness → **lock Memoro**.
+2. If PO values maximum ownability + tagline-name separation → **lock Orma**.
+3. If PO wants one more round with pure-Figma-style fully-abstract candidates → **Kavo is the starting point**, Round 7 would expand into that territory.
+
+Three of four Direction-D (portmanteau) candidates came back dead-on-arrival (Memora, Portmem, plus earlier Remembr ambiguous) — this signals that the portmanteau territory for memory+finance has already been colonized by active or pre-launch products. Direction D is effectively closed for this brand.
+
+### Round 6 open questions for PO
+
+1. **Orma vs Memoro — does the tagline-name separation (Orma = abstract mark, tagline = metaphor) read as more or less coherent than the tagline-name alignment (Memoro = memory, tagline = memory)?** This is the core aesthetic-strategy call; brand-strategist cannot decide it without PO input.
+2. **How much weight to put on the «Italian `orma` = footprint» shadow semantic?** Neutral-positive in our read; PO may read it as «too European», «too quiet», or «perfect».
+3. **Ember vs cultural-recall cost.** If ICP A is Notion/Obsidian cohort (productivity-native, likely dev-adjacent), Ember.js framework association is a real cost. Is this disqualifying for PO, or acceptable («most users will never know»)?
+4. **Pure-coined (Kavo) depth pass — Round 7?** If PO wants more Figma-style fully-invented options, that is Round 7 brief territory. Current Round 6 pass produced Orma (coined-with-semantic-shadow), Kavo (fully-coined), Lumi (coined-Latin-adjacent), Nura (coined-Sanskrit-adjacent) — only Kavo is strictly fully-invented, the rest have etymological shadows.
 
 ### Round 6 rejected-list diff
 
-*(placeholder — brand-strategist to populate)*
+No new entries to add to the rejected-direction list — the Round 6 candidates span four directions (pure-coined / EN-native-action / RU-source / portmanteau) that are each still partially open after Round 6. What IS rejected (case-by-case, not direction-level):
+
+- **Istok** — Russian defense-industry association (Istok JSC); not suitable for global-minus-RF launch.
+- **Memora** — Memora.ai is direct memory-product competitor at launch capture stage.
+- **Portmem** — Portmem.com is active finance-memory enterprise SaaS.
+- **Reckon** — Reckon.com is major Australian accounting SaaS with existing finance-class trademark.
+- **Orva** — Orva.com is active 75-year e-commerce brand (footwear/apparel merchandising).
+- **Ovra** — Ovra.com is active French artisan-marketing SaaS.
+- **Ludo** — Ludo.ai is active AI game-dev platform (Unity/Ubisoft customers).
+- **Beam** — Beam.ai is active enterprise AI automation (Fortune 500).
+- **Fathom** — Fathom.ai is active meeting-notetaker (300K+ companies), Fathom.com is Fathom Analytics.
+- **Gist** — Gist.ai is active AI-visibility platform (ProrataAI, DoorDash/Fortune customers).
+- **Arva** — Arva.ai is active AI-compliance platform for financial institutions (direct regulatory-adjacent conflict).
+- **Bearing** — Bearing.ai is active maritime AI platform (Forbes AI 50).
+- **Keen** — Keen.com is active psychic-services platform (wrong brand vibe).
+- **Poise** — Poise.com is major consumer health brand (Kimberly-Clark).
+- **Savvy** — Savvy.com is active vacation-rental platform.
+- **Cover** — Cover.ai is active school-safety tech company (TechCrunch-covered).
+- **Yasno** — Yasno.ai is active Russian AI image/text generator; Yasno.com is personal blog in political commentary.
+- **Cove** — Cove.app is for-sale premium at Spaceship.
+- **Tenet** — Tenet.ai priced at $16M broker listing; Tenet.app at $99K.
+- **Grasp** — Grasp.app is GoDaddy for-sale premium listing.
+- **Nira** — Nira.app is active 3D visualization SaaS; Nira.ai is Spaceship premium broker.
+- **Liva** — Liva.app is Brazilian health company (livasaude.com.br).
+
+These 22 are added to the case-by-case domain-conflict list (separate from the direction-level rejected list which remains: Ask imperatives, creative spellings, Folio roots, Delphi/Koan/Vessel trio).
 
 ---
 
@@ -225,12 +347,11 @@ No new entries added to rejected list — all 10 candidates pass the check again
 - Portfolio/folio roots (Folio, Foli, AskFolio, Trove, Stack)
 - First-pass evocative trio (Delphi, Koan, Vessel)
 
-## Directions NOT yet tried (worth exploring if Round 5 rejected)
+## Directions NOT yet tried (worth exploring if Rounds 5-6 rejected)
 
-- Russian-source names (Vera, Istok, Svod) — still untapped; Svod semantically fits Second Brain («compendium / vault»)
-- Latin/Greek single words beyond Delphi/Koan/Mneme/Noesis (Sophia, Pythia, Thoth, Janus) — some Greek covered in Round 5
-- Pure-coined made-up roots (like Figma — no etymological anchor at all); Memoro (Round 5) coined-but-Latin-rooted is a halfway step
-- Two-syllable abstract (like Stripe, Vercel, Rakuten)
+- Latin/Greek single words beyond Delphi/Koan/Mneme/Noesis (Sophia, Pythia, Thoth, Janus) — some Greek covered in Round 5; Latin covered in Round 5 (Memoro)
+- **Deeper pure-coined Figma-style pass** — Round 6 surfaced one strictly fully-invented candidate (Kavo); a Round 7 brief could explore this territory more thoroughly (3-letter roots, consonant-cluster shapes, rare-phoneme starters)
 - Reference-driven — blocked until PO provides reference brands
 
-**Round 5 territory covered:** mind / memory / brain / knowledge / recall / cognition — 10 candidates produced 2026-04-23, see Round 5 section above.
+**Round 5 territory covered:** mind / memory / brain / knowledge / recall / cognition — 10 candidates produced 2026-04-23.
+**Round 6 territory covered:** pure-coined (A), short EN-native action (B), Russian-source single words (C), portmanteau (D) — 12 candidates produced 2026-04-23; 6 survive trademark/domain filter; 22 case-by-case names added to conflict list.
