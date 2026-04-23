@@ -108,6 +108,20 @@ Flag legend:
 |---|---|---|---|---|---|---|
 | 18 | Per ECB household-finance statistics + OECD data: EU household equity participation is substantially lower than US (EU ~15-25% depending on country; US ~55% per SCF 2022); EU retail is more bond-oriented | ECB Statistical Data Warehouse + OECD Household Wealth Statistics | https://www.ecb.europa.eu/stats/html/index.en.html ; https://stats.oecd.org/ | 2026-04-23 | ECB + OECD public portals | `[SOURCE-PENDING for exact cross-country figures]` `[REFRESH: annual-biannual]` |
 
+### 3.9 SaaS trial + conversion benchmarks (for unit economics)
+
+Added 2026-04-23 post-4-locks patch to support trial-phase economics modeling in `PRICING_TIER_VALIDATION.md` §5.3.1 and §6.4.
+
+| # | Claim | Source | URL | Access date | Retrieval method | Flag |
+|---|---|---|---|---|---|---|
+| 19 | For B2C SaaS freemium products, typical Free-to-paid conversion rate is 2-5% over 90 days; best-in-class products can reach 5-10% | OpenView Partners annual SaaS Benchmarks Report (various years); ProfitWell «State of SaaS» reports | https://openviewpartners.com/blog/saas-benchmarks/ ; https://www.profitwell.com/recur/all/state-of-subscriptions | 2026-04-23 | Finance-advisor recall + URL candidates; public reports known to publish ranges but specific URL not fetched | `[SOURCE-PENDING]` `[REFRESH: annual]` |
+| 20 | For B2C SaaS with card-required trials (credit card collected at signup), typical trial→paid conversion rate is 40-60%; without card requirement, rate drops to 15-25% | ProfitWell benchmarks, Baremetrics SaaS reports, various SaaS conference presentations; convention widely cited in SaaS operator communities | https://www.profitwell.com/recur/all/state-of-subscriptions ; https://baremetrics.com/academy | 2026-04-23 | Finance-advisor recall of widely-cited industry benchmarks | `[SOURCE-PENDING for exact % figures]` `[REFRESH: annual]` |
+| 21 | SaaS industry-typical monthly churn rates: B2C consumer SaaS 5-7%/mo; B2B SaaS 1-3%/mo; freemium-converted segment generally higher churn than direct-paid | ProfitWell, Baremetrics, Recurly industry reports | Same URLs as row 20 | 2026-04-23 | Industry convention; specific URL verification pending | `[SOURCE-PENDING]` `[REFRESH: annual]` |
+
+**AI usage note on rows 19-21:** These are INTERNAL unit-economics benchmarks, not AI-user-facing benchmarks. AI should NOT cite these to users in chat/insights. Usage is scoped to internal financial modeling (PRICING_TIER_VALIDATION.md, FINANCIAL_MODEL.md when created). Flag applies: these rows need URL-fetch verification before being used in any PO-facing financial projections.
+
+**Finance-advisor acknowledgment:** Industry benchmark claims in rows 19-21 are widely-cited in SaaS operator communities (public SaaS conferences, State-of-SaaS reports, operator podcasts). Finance-advisor has encountered these ranges in multiple public presentations and operator blogs. However, specific URL + date + fetch-verification is pending per CONSTRAINTS-compliant research path. Use these ranges as DIRECTIONAL inputs to unit-economics modeling; flag explicitly as «industry-range hypothesis pending primary-source verification» until URLs fetched.
+
 ---
 
 ## 4. Finance formulas reference (not benchmarks but AI-use accuracy)
@@ -294,6 +308,7 @@ Sources finance-advisor will prioritize in v2 work. All public, all free.
 ## 7. Revision log
 
 - **2026-04-23 (v1):** Initial seed. 18 benchmark rows across market returns, retail composition, dividends, expense ratios, risk, behavioral finance, crypto, EU/US retail comparison. 6 formulas. Gap analysis for v2. ~10 rows flagged `[SOURCE-PENDING]` — needs verification work before AI citation live.
+- **2026-04-23 (v1.1, post-4-locks patch):** Added §3.9 SaaS trial + conversion benchmarks (rows 19-21: B2C Free→paid conversion, card-required trial→paid conversion, B2C SaaS churn rates). These are INTERNAL unit-economics benchmarks for financial modeling, NOT user-facing AI citations — scoped to PRICING_TIER_VALIDATION.md §5.3.1 and §6.4 trial economics analysis.
 
 ---
 
