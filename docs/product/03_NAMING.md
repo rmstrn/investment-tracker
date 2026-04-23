@@ -5,12 +5,20 @@
 
 ## Criteria locked
 
-- Short (1-2 slogs, max 3)
+- **Length: 1 word ideal, 2 words max** (refined 2026-04-23 by PO)
+- **Memorable + meaningful** (refined 2026-04-23): not generic abstract, not descriptive, has semantic content. The user should be able to say "это называется [X], и это про [чувство/идею]".
 - Pronounceable in both Russian and English
 - **NOT** generic fintech suffixes: `-ly`, `-io`, `fin-`, `wealth-`, `invest-`
 - Matches tone: Magician + Everyman (modern, smart, conversational, not corporate)
 - Domain `.com` / `.app` / `.ai` realistically obtainable (ideally <$10K)
 - No strong trademark conflicts in US (USPTO) + EU (EUIPO)
+
+## Calibration constraint 2026-04-23
+
+PO explicitly cannot provide reference brands («какие бренды нравятся по звуку» — no answer available). Earlier plan to reverse-engineer vibe from references is blocked. Next naming round must:
+- Operate within the refined criteria above
+- Stay away from rejected directions (see «Directions explicitly tried and rejected»)
+- Rely on: archetype (Magician + Everyman) + locked positioning + semantic hook connected to the product (chat/conversation/second-brain/portfolio-lens — not literal «Ask» or «Folio» which are rejected, but conceptually-adjacent evocative words)
 
 ## Rounds attempted (all rejected by PO)
 

@@ -537,3 +537,34 @@ prod secrets). Future cleanup = low-priority P3.
 **TD-090.** `InsightData.action_url` читается через runtime cast (`as { action_url?: string }`). Typed oneOf — Slice 6b scope.
 
 **Owner.** Web lead. **Revisit.** Slice 6b — заменить на backend mutation + invalidate TanStack query cache.
+
+
+## 2026-04-23 — Read-only is NOT a primary positioning differentiator
+
+Earlier `docs/product/02_POSITIONING.md` included «read-only» as one of the unique attributes and part of the anti-positioning. PO observation 2026-04-23: read-only is not a differentiator — every non-trading tracker claims it or is implicitly so. Competitors will also use this line in their own copy; it will become table stakes, not a wedge.
+
+**Decision.** Demote «read-only» from the unique-attributes list. Keep the FACT («we only read broker data, we don't place trades») inside functional descriptions and trust sections, but not as a hero-level differentiator or landing angle.
+
+**Implication for the wedge.** The real differentiator is the combination of (chat-first UX + proactive weekly insights + behavioral coach on actual trade history + source-cited AI + US+EU+crypto in one product + no HNW gate + no advisor upsell). «No trading execution» supports this, but doesn't lead it.
+
+**Action.** Flagged in `02_POSITIONING.md` pending v2 discovery research (in progress by user-researcher, 2026-04-23). Positioning document will be revised after v2 discovery lands.
+
+**Owner.** Navigator (positioning owner). Revisit: after user-researcher delivers v2 discovery report.
+
+## 2026-04-23 — Naming criteria refined
+
+After four rejected rounds, PO added criteria 2026-04-23:
+- Length: 1 word ideal, 2 words max
+- Memorable + meaningful (not generic abstract, not descriptive)
+
+PO explicitly cannot provide reference brands («какие бренды нравятся по звуку»). Calibration must come from within these new criteria rather than reverse-engineered vibe.
+
+**Previously rejected directions** (still off-limits, tracked in `docs/product/03_NAMING.md`):
+- Short imperative verbs: Ask, Tap, Hey, Reply, Know, Tell
+- Ask creative spellings: Asq, Yask, Aska, Asko
+- Portfolio/folio roots: Folio, Foli, AskFolio, Trove, Stack
+- First-pass evocative trio: Delphi, Koan, Vessel
+
+**Action.** `brand-strategist` next dispatch will operate on: 1-2 words, memorable + meaningful, avoiding rejected directions. No reference-brand calibration available — rely on archetype (Magician + Everyman) + locked positioning + bilingual pronounceability.
+
+**Owner.** brand-strategist (naming-doc owner). Revisit: next naming round kickoff.

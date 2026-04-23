@@ -1,9 +1,17 @@
-# 02 — Product Positioning (LOCKED, pending name)
+# 02 — Product Positioning (LOCKED → UNDER REVIEW)
 
 **Owner:** `navigator` agent (strategy core — ownership retained after 2026-04-23 team expansion).
 **Framework:** April Dunford's "Obviously Awesome" (5-step).
-**Current score:** 8/10 Strong — all components defined, awaiting name lock + live user validation.
+**Previous score:** 8/10 Strong (as of 2026-04-22).
 **Date locked:** 2026-04-22
+**Status 2026-04-23:** Positioning is under review pending v2 discovery (user-researcher working on expanded competitor analysis). Specific pending changes flagged below as `[PENDING-V2]`. Do not rewrite the document yet — wait for v2 discovery evidence.
+
+## Pending revisions (from DECISIONS.md 2026-04-23)
+
+- **[PENDING-V2] Demote «read-only» from unique attributes.** PO observation 2026-04-23: read-only is table stakes for non-trading trackers, not a differentiator. Every competitor will use this line. Keep the fact inside functional/trust sections, not as a hero angle. Corresponding edits:
+  - «Unique attributes» row #6 («Zero trading, zero fund-pushing, zero HNW gate») — split: HNW-gate stays as differentiator; no-trading moves to functional description only.
+  - «Anti-positioning» row «NOT broker (no trading execution)» — keep as anti-positioning (we're not a broker), but don't elevate to landing hero angle.
+  - Landing structure — no change needed (landing never claimed read-only as hero).
 
 ## Positioning Canvas
 
