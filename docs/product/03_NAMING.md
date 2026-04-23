@@ -1,12 +1,19 @@
-# 03 — Naming Workshop (IN PROGRESS)
+# 03 — Naming Workshop (LOCKED: Memoro)
 
-**Owner:** `brand-strategist` agent (as of 2026-04-23).
-**Status (2026-04-23):** PO leans **Memoro** from Round 5 top-3, but wants to see Round 6 alternatives before final lock. Round 6 dispatched in parallel 2026-04-23.
+**Owner:** `brand-strategist` agent (historical Rounds 1-6); Navigator (lock ADR + doc sweep).
+**Status (2026-04-23):** **LOCKED.** PO selected **Memoro** after Round 6 widen-the-pool comparison. Full rationale in `docs/DECISIONS.md` entry «2026-04-23 — Product name LOCKED: Memoro; domain memoro.co».
 
-> **[TODO — see `docs/PENDING_CLEANUPS.md` item #4]** Round 5 top-3 (Mneme / Memoro / Noesis) still reads as tie-ranked. Re-annotate with «PO result 2026-04-23: [final name] selected» header when name is locked post-Round-6.
-> **[TODO — see `docs/PENDING_CLEANUPS.md` item #1]** `[Name]` / `[Название]` placeholders across ALL docs need substitution with locked name. Same commit as Round 5 annotation.
+## RESULT 2026-04-23: MEMORO selected
 
-**Status (2026-04-22):** Name undecided. PO взял паузу на размышление. Все предложенные направления отклонены.
+Latin «I remember» (1st-person singular `memorō`) — 3 syllables, coined-feel like Notion / Figma / Kubera.
+Domain target: **memoro.co** (ICANN AVAILABLE, ~$30-50/yr standard registration — PO will register personally when ready per CONSTRAINTS Rule 1).
+`.com` deferred — `memoro.com` parked on Afternic broker aftermarket, future acquisition target when budget allows. Not launch-blocking.
+Pronunciation — EN «meh-MO-ro», RU «мемóро». Proper noun — same spelling EN + RU, no transliteration.
+Trademark clearance deferred per Q4 lock 2026-04-23 (accept post-launch rebrand risk).
+
+Rounds 1-6 preserved below as historical record (naming workshop evidence base).
+
+**Status (2026-04-22, historical):** Name undecided. PO взял паузу на размышление. Все предложенные направления отклонены.
 
 ## Criteria locked
 
@@ -335,10 +342,10 @@ These 22 are added to the case-by-case domain-conflict list (separate from the d
 
 ## Notes
 
-- Until name locked, all landing copy uses `[Название]` placeholder
-- Footer disclaimer has `[Название]` / `[Name]` placeholder
-- Domain WebFetch is indirect signal only — final check must be via Namecheap / Porkbun / Cloudflare Registrar
-- Trademark check not yet performed on any candidate (since no name locked)
+- Name LOCKED 2026-04-23 as **Memoro**. All placeholders substituted same commit; no more `[Name]` / `[Название]` in docs.
+- Footer disclaimer now reads «Memoro is not a registered investment advisor…» (EN) / «Memoro не является зарегистрированным инвестиционным советником…» (RU).
+- Domain WebFetch was indirect signal only — final check happens when PO registers `memoro.co` via Namecheap / Porkbun / Cloudflare Registrar (per CONSTRAINTS Rule 1).
+- Trademark check deferred per Q4 lock 2026-04-23 (accept post-launch rebrand risk).
 
 ## Directions explicitly tried and rejected (don't re-propose)
 

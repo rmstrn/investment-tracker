@@ -6,7 +6,7 @@
 **Status:** draft — awaiting PO review via Navigator
 **Language:** English primary (day-1 launch), Russian parallel secondary (post-launch wave — not wired into build)
 
-Per `.agents/team/CONSTRAINTS.md` reminder: **no external send of this copy.** No emails, no social posts, no newsletter publishes. This document lives in the repo as a draft for PO review. Name placeholder `[Name]` used throughout until `03_NAMING.md` locks a name.
+Per `.agents/team/CONSTRAINTS.md` reminder: **no external send of this copy.** No emails, no social posts, no newsletter publishes. This document lives in the repo as a draft for PO review. Product name is **Memoro** (locked 2026-04-23 — see `03_NAMING.md` and `DECISIONS.md`). Full rewrite under Memoro brand + imperative hero is dispatched to content-lead post-lock; this v1 draft predates the Option-4-synthesis repositioning (v3 positioning — hero reverts to imperative, Second Brain demoted to tagline) and is superseded by the upcoming content-lead rewrite.
 
 ---
 
@@ -166,7 +166,7 @@ Voice-check filters (per brief §Content voice-check):
 1. **Sub-hero variant pick.** Variant A recommended. Accept? Or does PO prefer Variant B (explicit «what X» mapping) or Variant C (tighter single-line)?
 2. **Proof bullet 3 phrasing.** «No judgment, no advice — just what it sees.» — does «no advice» read as over-claiming our Lane A stance, or as the positive trust signal we want? Alternate: «Patterns in your trades, without the lecture.» — more colloquial, still Lane A. PO preference?
 3. **Section 3 tighten.** I recommend changing locked «A few minutes a day» → «A few minutes a week» (honest to weekly cadence). Accept? Or keep «day» for ambitious framing?
-4. **Name placeholder.** `[Name]` used throughout. Once `03_NAMING.md` Round 5 resolves (Mneme / Memoro / Noesis shortlist), content-lead will sweep-replace in this document.
+4. **Name locked 2026-04-23 as Memoro.** This v1 draft is superseded by upcoming content-lead rewrite (Memoro brand + imperative hero per v3 positioning lock). No further placeholder sweep needed here.
 5. **Russian parallel content.** All Russian copy here is a parallel secondary draft, not wired into MVP build (English-only day-1 per PO 2026-04-23). Confirm Russian stays in-repo as draft only, not shipped day-1.
 
 ---

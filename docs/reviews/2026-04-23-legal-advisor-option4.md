@@ -235,7 +235,7 @@ Rospatent registry at https://www1.fips.ru/ (accessed 2026-04-23):
 
 ### Trademark verdict
 
-**WARN.** «Second Brain» as a standalone product brand has material conflict risk in US/EU/UK with Forte Labs and adjacent registrants. As a product tagline or descriptor (e.g. «[Name]: Second Brain for Your Portfolio» where [Name] is the actual brand), risk is meaningfully lower but non-zero. The descriptive-brand collision with Tiago Forte's «Building a Second Brain» ecosystem is also a brand-recognition risk separate from legal risk — users will associate our product with productivity software, not finance.
+**WARN.** «Second Brain» as a standalone product brand has material conflict risk in US/EU/UK with Forte Labs and adjacent registrants. As a product tagline or descriptor (e.g. «Memoro: Second Brain for Your Portfolio» where Memoro is the actual brand), risk is meaningfully lower but non-zero. The descriptive-brand collision with Tiago Forte's «Building a Second Brain» ecosystem is also a brand-recognition risk separate from legal risk — users will associate our product with productivity software, not finance.
 
 **Recommendation:**
 - DO NOT name the product «Second Brain». Use it as a tagline only. (Current `03_NAMING.md` Round 5 is in mind/memory territory — this aligns with the recommendation.)

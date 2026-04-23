@@ -8,49 +8,34 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 
 ## Active items
 
-### 1. Name substitution sweep (MAJOR — do once name is locked)
-**Trigger:** After PO locks final product name (Memoro or Round 6 winner).
-**Scope:**
-- Replace `[Name]` / `[Название]` placeholders across ALL docs with locked product name
-- Relevant files (non-exhaustive):
-  - `docs/product/02_POSITIONING.md` (footer disclaimer, multiple body refs)
-  - `docs/product/03_NAMING.md` (lock annotation)
-  - `docs/content/landing.md` (hero, sub, proof bullets already in English but refs to `[Name]` if any)
-  - `docs/content/email-sequences.md` (when created)
-  - `docs/content/microcopy.md` (when created)
-  - `docs/product/STRATEGIC_OPTIONS_v1.md` (references to «the product»)
-- Run Grep for `\[Name\]|\[Название\]|\[Product\]|\[Продукт\]` before commit
-- **Owner:** Navigator coordinates; content-lead does substitution.
-
-### 2. `02_POSITIONING.md` body narrative sync (MEDIUM — same sweep as #1)
-**Trigger:** Same time as #1 (name lock).
-**Scope:** Body text in sections still narrates Second-Brain-as-hero, though landing structure row was updated to imperative hero. Sections to retune:
-- «Tone of voice» — remove «your second brain» voice references; align to imperative + tagline separation
-- «Onboarding promise» narrative — remove lines like «Your second brain already knows what you hold»; replace with imperative-hero-consistent copy
-- «Brand archetype» description — ensure Magician+Everyman+Sage balance reflects demoted-Second-Brain (tagline) rather than Second-Brain-as-product-identity
-- «Key product principles» — verify framing still holds under tagline demotion
-**Owner:** content-lead drafts, Navigator merges.
-
-### 3. Supersede earlier «Geography CIS priority» ADR (SMALL — do anytime)
-**Trigger:** Anytime — low priority.
-**Scope:** In `docs/DECISIONS.md`, find the earlier 2026-04-23 «Geography LOCKED: global multi-market with CIS priority» entry and add banner at top: `**SUPERSEDED 2026-04-23 by Q7 decision: Russia out of scope; CIS per-country post-alpha.**`. Do NOT delete the original — preserve history.
-**Owner:** Navigator.
-
-### 4. Round 5 naming annotation (SMALL — do at name lock)
-**Trigger:** Same as #1.
-**Scope:** In `docs/product/03_NAMING.md` Round 5 section, add top-level annotation: `**Result 2026-04-23: [final name] selected. Round 5 preserved as historical.**`. No re-ordering of Pick 1/2/3 needed — historical record.
-**Owner:** brand-strategist annotates, Navigator merges.
-
 ### 5. Language expansion order clarifier (SMALL — do before wave-2 content work)
 **Trigger:** When content-lead starts wave-2 multi-language scoping (post-alpha).
-**Scope:** Add explicit ADR entry in `DECISIONS.md` clarifying: «English-first (day-1 launch locked). Wave-2 language order: Spanish → Portuguese (LATAM) → DE → IT → FR → NL (EU). Russian drafted parallel but NOT launch-gating (market out-of-scope per Q7).» Currently implied by combining 3 locks but not explicit anywhere.
+**Scope:** Add explicit ADR entry in `DECISIONS.md` clarifying: «English-first (day-1 launch locked). Wave-2 language order: Spanish → Portuguese (LATAM) → DE → IT → FR → NL (EU). Russian drafted parallel but NOT launch-gating (Russian Federation market out-of-scope per Q7; CIS non-RF diaspora still covered).» Currently implied by combining 3 locks but not explicit anywhere.
 **Owner:** Navigator + content-lead.
 
 ---
 
 ## Completed
 
-(none yet)
+### 1. Name substitution sweep — COMPLETED 2026-04-23
+**Trigger:** After PO locked final product name.
+**Closed:** Part of name-lock sweep commit 2026-04-23. All `[Name]` / `[Название]` / `[Product]` / `[Продукт]` / `[PRODUCT]` placeholders substituted with «Memoro» (proper noun; same EN + RU spelling). Verified by `grep -rn "\[Name\]\|\[Название\]\|\[Product\]\|\[Продукт\]" docs/` returning zero actual-placeholder matches (remaining matches describe the placeholder-substitution task itself, not actual placeholder content).
+**Commit:** will be filled in by Navigator at commit time.
+
+### 2. `02_POSITIONING.md` body narrative sync — COMPLETED 2026-04-23
+**Trigger:** Same as item #1 (name lock).
+**Closed:** Part of name-lock sweep commit 2026-04-23. Tone of Voice, Onboarding Promise, Brand Archetype, Key Product Principles sections all synced away from «your second brain» hero-voice residue toward Memoro-as-named-agent + imperative-hero + tagline framing. Positioning Statement updated from `[PRODUCT]` placeholder to «Memoro». Document title bumped v3 → v3.1 to reflect name lock.
+**Commit:** will be filled in by Navigator at commit time.
+
+### 3. Supersede earlier «Geography CIS priority» ADR — COMPLETED 2026-04-23
+**Trigger:** Anytime.
+**Closed:** Inline SUPERSEDED banner added to the earlier «Geography LOCKED: global multi-market with CIS priority» entry in `DECISIONS.md` prior to the name-lock sweep. The banner points to the later «Option 4 review synthesis: 7 PO decisions locked» entry (Q7) and notes Russia out-of-scope + CIS per-country post-alpha. Original entry preserved as historical record per ADR-preservation convention.
+**Commit:** earlier Option-4-synthesis commit (2026-04-23); closure tracked here.
+
+### 4. Round 5 naming annotation — COMPLETED 2026-04-23
+**Trigger:** Same as item #1 (name lock).
+**Closed:** Part of name-lock sweep commit 2026-04-23. `03_NAMING.md` document title bumped from «03 — Naming Workshop (IN PROGRESS)» → «03 — Naming Workshop (LOCKED: Memoro)». «RESULT 2026-04-23: MEMORO selected» annotation added at top with pronunciation, domain target, Round 5/6 preservation note. Rounds 1-6 preserved as historical record; no re-ranking inside rounds.
+**Commit:** will be filled in by Navigator at commit time.
 
 ---
 

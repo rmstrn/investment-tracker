@@ -1,11 +1,9 @@
-# 02 — Product Positioning (LOCKED v3 — imperative hero + Second Brain as tagline)
+# 02 — Product Positioning (LOCKED v3.1 — Memoro + imperative hero + Second Brain as tagline)
 
 **Owner:** `navigator` agent (strategy core).
 **Framework:** April Dunford's "Obviously Awesome" (5-step).
-**Date locked (v1):** 2026-04-22 · **Date locked (v2 — Second Brain metaphor):** 2026-04-23 · **Date locked (v3 — imperative hero restored, Second Brain demoted to tagline):** 2026-04-23
-**Status:** LOCKED (v3). PO locked 7 decisions from Option 4 review synthesis 2026-04-23 (see `DECISIONS.md` «Option 4 review synthesis: 7 PO decisions locked» + `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK section). v3 repositions Option 4 as tagline + brand-world copy; hero reverts to imperative. Product name sourced from naming rounds (Round 5 surfaced Mneme/Memoro/Noesis; Round 6 in flight 2026-04-23). Future edits require PO sign-off through Navigator.
-
-> **[TODO — see `docs/PENDING_CLEANUPS.md` item #2]** Body narrative in sections «Tone of voice» / «Onboarding promise» / «Brand archetype» / «Key product principles» still contains Second-Brain-as-hero-voice phrasing («Your second brain already knows...»). Needs sync pass to align body with imperative-hero + tagline-only framing. Trigger: when product name is locked, do this sweep in same commit as name substitution.
+**Date locked (v1):** 2026-04-22 · **Date locked (v2 — Second Brain metaphor):** 2026-04-23 · **Date locked (v3 — imperative hero restored, Second Brain demoted to tagline):** 2026-04-23 · **Date locked (v3.1 — product name = Memoro):** 2026-04-23
+**Status:** LOCKED (v3.1). PO locked 7 decisions from Option 4 review synthesis 2026-04-23 (see `DECISIONS.md` «Option 4 review synthesis: 7 PO decisions locked» + `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK section). v3 repositions Option 4 as tagline + brand-world copy; hero reverts to imperative. v3.1 locks product name as **Memoro** (see `DECISIONS.md` 2026-04-23 «Product name LOCKED: Memoro; domain memoro.co»). Body narrative synced to imperative-hero + tagline-only framing + Memoro-as-named-agent in same commit. Future edits require PO sign-off through Navigator.
 
 ## Locked constraints (inputs to this positioning)
 
@@ -38,23 +36,26 @@ Tertiary surfaces fit without forcing: scenarios (second brain runs what-ifs), e
 | **Best-fit customer** | ICP A (multi-broker millennial 28-40, $20-100K, productivity-native — Notion / Obsidian cohort) primary · Mid-career post-mistake retail ($30-150K, self-aware, post-quit-considering) secondary expansion via Coach surface · ICP B (AI-native newcomer 22-32, $2-20K) tertiary (acknowledged empty-state gap days 1-30 mitigated by chat + early insights) · **Geography: US + EU + UK + LATAM + APAC + crypto-native (global без РФ — Russia out-of-scope 2026-04-23).** |
 | **Market category** | **Subcategory: "AI portfolio intelligence"** (under portfolio trackers); positioned as «Second Brain for Investing» — empty sub-sub-category in fintech as of 2026-04-23. |
 | **Relevant trends** | LLM-first consumer apps · multi-broker retail reality · post-2022 advisor distrust · open-finance (SnapTrade/Plaid) · post-ChatGPT financial literacy · **Second Brain / Personal Knowledge Management movement (Forte's book, Notion / Obsidian market penetration) ported into finance domain** |
-| **Positioning statement** (internal) | For self-directed investors who juggle multiple brokers and want memory, surfacing, and pattern-reading on their actual portfolio — not advice — [PRODUCT] lets you ask your portfolio anything, on your real holdings, with sources. It is a second brain for your portfolio: it remembers what you hold, notices what you would miss, and explains what it sees. It never tells you what to buy. |
+| **Positioning statement** (internal) | For self-directed investors who juggle multiple brokers and want memory, surfacing, and pattern-reading on their actual portfolio — not advice — Memoro lets you ask your portfolio anything, on your real holdings, with sources. It is a second brain for your portfolio: it remembers what you hold, notices what you would miss, and explains what it sees. It never tells you what to buy. |
 
 ## Brand archetype
 
 **Magician + Sage primary · Everyman modifier.**
 
-- **Magician** — delivers «wow moment» AI responses tied to real data; delightful without sleight-of-hand (every claim has sources).
+- **Magician** — delivers «wow moment» AI responses tied to real data; delightful without sleight-of-hand (every claim has sources). Memoro's name («I remember» in Latin 1st-person-singular) leans Magician through quiet invention — coined-but-rooted, not sleight-of-hand.
 - **Sage** — knows, does not preach. Calm, specific, intellectual-without-snob. Notion / Obsidian / Linear intonation applied to finance.
 - **Everyman modifier** — accessible to retail, not corporate-cold. No jargon as gatekeeping. Inline vocabulary unpacking when needed.
 
-v1 archetype was «Magician + Everyman». v2 pulls Sage forward (knowledge-worker metaphor) while keeping Everyman as a warmth modifier.
+Archetype applies to a named product (**Memoro**) with a tagline («Second Brain for Your Portfolio»), not to the metaphor as product-identity. The name carries the Magician+Sage weight (Latin root, quiet invention); the tagline carries the category-claim work; the imperative hero («Ask your portfolio») carries Everyman directness.
+
+v1 archetype was «Magician + Everyman». v2 pulled Sage forward (knowledge-worker metaphor) while keeping Everyman as a warmth modifier. v3 (2026-04-23) clarifies: the Magician+Sage balance attaches to the named product Memoro, not to «Second Brain» as a product identity — demotion from hero + product-name to tagline is reflected in archetype framing.
 
 ## Tone of voice
 
 - Calm, specific, memory-oriented verbs: **remembers · notices · explains · surfaces · reads · holds context**
 - Short, direct, conversational
-- Imperative mood for user-facing copy («ask», «see», «notice» / «спроси», «посмотри», «замечай»)
+- Imperative mood for user-facing copy («ask», «see», «notice» / «спроси», «посмотри», «замечай») — consistent with the imperative hero, not «your second brain» second-person hero-voice
+- Memoro uses an imperative voice in user-facing copy («Ask your portfolio»), with «Second Brain for Your Portfolio» as tagline + brand-world copy. The product name (Memoro) carries the memory-semantics; copy does not need to repeat «your second brain» as narrative hero-voice on every line.
 - Zero hype, zero advisor-paternalism, zero «купи» signals
 - English-native craft at day-1 launch (PO lock); Russian parallel secondary; EU languages post-launch
 - **Regulatory constraint (Lane A):** AI never uses imperatives about user actions («buy X», «sell Y», «rebalance now» forbidden). Only `analyze / highlight / explain / surface / observe patterns`. This is the product identity, not just compliance.
@@ -108,10 +109,10 @@ Each tab shows a mock chat interaction demonstrating one capability of the secon
 ## Footer disclaimer (LOCKED, formal)
 
 **English (day-1):**
-> [Name] is not a registered investment advisor. Information is provided for educational purposes only. Past performance is not indicative of future results. All investment decisions are your own.
+> Memoro is not a registered investment advisor. Information is provided for educational purposes only. Past performance is not indicative of future results. All investment decisions are your own.
 
-**Russian (parallel secondary, for future RU launch):**
-> [Название] не является зарегистрированным инвестиционным советником. Информация предоставляется в образовательных целях. Прошлая доходность не гарантирует будущую. Все инвестиционные решения вы принимаете самостоятельно.
+**Russian (parallel secondary, for future RU-diaspora launch):**
+> Memoro не является зарегистрированным инвестиционным советником. Информация предоставляется в образовательных целях. Прошлая доходность не гарантирует будущую. Все инвестиционные решения вы принимаете самостоятельно.
 
 **Placement:** Footer on landing. Separate from body copy — keep landing positive territory.
 
@@ -127,24 +128,24 @@ Each tab shows a mock chat interaction demonstrating one capability of the secon
 
 **Status:** Pricing is hypothesis. Validate with real users post-alpha.
 
-## Key product principles (from 00_PROJECT_BRIEF, reconfirmed under Second Brain lens)
+## Key product principles (from 00_PROJECT_BRIEF, reconfirmed under v3 tagline-not-hero framing)
 
-1. **Trust over beauty** — fintech is about reliability. Zero «magic», everything explainable. A second brain with hallucinations is not a second brain.
-2. **Newcomer should not feel stupid** — all terms explained inline in context. Second brain's Everyman modifier.
-3. **Privacy and security at financial-app level** — your second brain is yours, not shared.
-4. **Read-only broker connection** — never request trading rights. Second brain observes; it does not act.
-5. **AI shows sources for every claim/analysis** — a second brain that cannot cite is just guessing.
-6. **Mobile and web are equal citizens** — your second brain is with you everywhere.
+1. **Trust over beauty** — fintech is about reliability. Zero «magic», everything explainable. Memoro's memory claim is only as strong as its ability to cite every output — hallucinations break the promise.
+2. **Newcomer should not feel stupid** — all terms explained inline in context. The Everyman modifier in Memoro's archetype mix attaches here.
+3. **Privacy and security at financial-app level** — Memoro holds your data; it is yours, not shared.
+4. **Read-only broker connection** — never request trading rights. Memoro observes; it does not act.
+5. **AI shows sources for every claim/analysis** — a portfolio brain that cannot cite is just guessing.
+6. **Mobile and web are equal citizens** — Memoro is with you everywhere.
 
 ## Onboarding promise (progressive disclosure, Option 4 specific)
 
-Onboarding stages reinforce the memory metaphor rather than introducing features:
+Onboarding stages reinforce the memory metaphor through what the product does (remembers, notices, reads patterns), with Memoro as the named agent rather than «your second brain» as narrative persona:
 
-- **Stage 1 (immediate, minute 1):** Chat + aggregation visible. «Your second brain already knows what you hold.»
-- **Stage 2 (within 24h of first sync):** First insight drops. «Your second brain noticed the first thing.»
-- **Stage 3 (day 30, after history accumulates):** First coach pattern-read. «Your second brain has remembered enough to see a pattern.»
+- **Stage 1 (immediate, minute 1):** Chat + aggregation visible. «Memoro remembers what you hold after first sync.»
+- **Stage 2 (within 24h of first sync, or earlier if SnapTrade backfill surfaces pattern-readable history):** First insight drops. «Memoro noticed the first thing.»
+- **Stage 3 (day 30, or earlier via backfill-derived first-value moment, after enough history accumulates):** First coach pattern-read. «Memoro has read enough of your trades to see a pattern.»
 
-Each stage extends the promise rather than replacing the last. Content-lead + product-designer own the narrative spec; product-designer dispatch deferred until tech-lead coach-vertical feasibility returns.
+Each stage extends the promise rather than replacing the last. Product-designer's `ONBOARDING_FLOW.md` spec (dispatched 2026-04-23 post-name-lock) handles the actual first-value-moment trigger logic — particularly the backfill-derived acceleration so ICP B users don't hit a 30-day empty-state for Coach. Content-lead owns narrative copy spec.
 
 ## Competitor differentiation (summary)
 

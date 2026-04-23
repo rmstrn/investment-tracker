@@ -736,3 +736,38 @@ Narrows the 2026-04-23 «global multi-market» lock (earlier same-day ADR): US +
 
 **Owner.** Navigator (strategic lock). `tech-lead`, `brand-strategist`, `content-lead` own their respective specialist outputs.
 **Revisit.** If any specialist returns a blocker → Oracle fallback. Otherwise revisit at alpha launch + 30 days with real user feedback on «second brain» parsing.
+
+## 2026-04-23 — Product name LOCKED: Memoro; domain memoro.co
+
+**Decision.** PO 2026-04-23 locked **Memoro** as the final product name. Pronounced «meh-MO-ro» (EN) / «мемóро» (RU). Primary domain target: **memoro.co**. Round 6 (dispatched 2026-04-23 same day in parallel with the decision-lock synthesis) surfaced 10 viable candidates + 2 DOA; PO reviewed Round 6 top-3 (Orma / Kavo / Ember) against Round 5 lead (Memoro) and held with Memoro.
+
+**Why Memoro over Round 6 alternatives.**
+- **vs Orma:** Orma was the closest peer on trade-off. Orma wins on length (2 syl vs 3), domain cleanliness across TLDs, and tagline/name separation (Orma = abstract mark, tagline «Second Brain» = metaphor — different jobs). Memoro wins on declarative semantic specificity — the name literally says «I remember» in Latin 1st-person-singular, which is the product identity, not a shadow. PO preferred the semantic-specificity axis: when the name says what the product does, brand-world copy doesn't have to carry 100% of the meaning-making load.
+- **vs Kavo:** Kavo is fully coined (Figma/Stripe shape) — maximum ownability but zero semantic work. RU-speaking diaspora has a minor colloquial flavor risk («каво» as mis-spelling of «кого»). Memoro's Latin root does useful brand work that a pure invented mark does not.
+- **vs Ember:** Ember introduces a warmth/light metaphor axis (different from memory/cognition territory). Strong candidate on different axis, but `.com` is effectively ceded to Ember.js open-source framework community — cultural-recall conflict for the tech-adjacent segment of ICP A (Notion/Obsidian cohort). Memoro has no equivalent cultural recall conflict.
+- **vs Mneme / Noesis (Round 5 alternates to Memoro):** Mneme has an English silent-M learning-burden («ne-mee» not «m-neem») — real brand-education cost. Noesis is 3 syllables and leans too-academic for ICP B (AI-native 22-32) without enough Everyman warmth. Memoro's bilingual phonetic parity is the strongest of the Round 5 top-3.
+
+**Why `.co` over `.com`.**
+- `memoro.com` is parked on Afternic (a domain aftermarket broker) — not a dormant registration, an explicit for-sale asset with broker-escrow overhead. Acquisition cost is unknown (Afternic listings start at $500 and run into five-figure range depending on seller's ask).
+- `memoro.co` is ICANN AVAILABLE via standard registrars (Namecheap / Porkbun / Cloudflare Registrar), ~$30-50/year standard registration. No broker, no escrow, no negotiation.
+- PO applied **CONSTRAINTS.md Rule 1** (no spend without explicit PO approval) and deferred the `.com` purchase entirely to a future date when budget permits. `.com` remains a future acquisition target but is explicitly NOT blocking launch.
+- `.co` TLD is well-established for SaaS brands (Notion.co redirect era, multiple Y Combinator launches on `.co`); does not read as low-quality.
+
+**Domain purchase status.** `memoro.co` is NOT yet registered. PO will register personally when ready (standard consumer-grade registration flow, ~$30-50/yr). CONSTRAINTS Rule 1 respected — Navigator did not authorize any spend; this ADR documents the target domain, not a completed transaction.
+
+**Evidence base.** See `docs/product/03_NAMING.md` Round 5 (Memoro baseline entry) + Round 6 (10-candidate comparison with Memoro as benchmark) for the full candidate pool, WebFetch indirect domain signals, phonetic analysis, and rejected-list deltas. Round 5 + Round 6 are preserved in `03_NAMING.md` as historical record.
+
+**Implications.**
+- `03_NAMING.md` — document title changes to «03 — Naming Workshop (LOCKED: Memoro)»; result annotation added at top; Round 5/6 preserved as history. Done same commit.
+- `[Name]` / `[Название]` / `[Product]` / `[Продукт]` placeholders across all docs — substituted with «Memoro» (same spelling for EN and RU — proper noun, no transliteration). Done same commit via grep sweep.
+- `02_POSITIONING.md` — body narrative sync for Tone of Voice / Onboarding promise / Brand archetype / Key product principles sections, aligning remaining «your second brain» hero-voice residue to imperative-hero + tagline framing. Done same commit.
+- `docs/PENDING_CLEANUPS.md` — items #1, #2, #4 closed and moved to Completed. Item #3 was half-done earlier (inline SUPERSEDED banner on geography ADR); moved to Completed in this commit. Item #5 (language expansion order clarifier) stays Active — trigger is post-alpha wave-2 content scope.
+- Trademark clearance deferred per Q4 lock 2026-04-23 («no trademark spend before launch; accept post-launch rebrand risk»). Memoro trademark search is post-launch PO decision.
+
+**What this does NOT change.**
+- Tagline «Second Brain for Your Portfolio» remains locked (mid-page brand-world copy).
+- Hero imperative remains locked bilingually («Ask your portfolio» / «Спроси свой портфель»).
+- All other locked decisions from Option 4 synthesis (Lane A, global без РФ, dashboard-primary, teaser-paywall Coach, in-context AI disclaimer) unchanged.
+
+**Owner.** Navigator (name lock + doc sweep). PO (decision source + future domain registration).
+**Revisit.** If `memoro.co` registration blocked for any reason when PO attempts it (unlikely — ICANN AVAILABLE signal is strong, but registrars occasionally surface last-minute conflicts), fall back to `.app` / `.io` / `.money` — all showed possibly-free WebFetch signals in Round 5 domain check. If broader trademark conflict surfaces post-launch, Q4 lock accepts the rebrand cost.
