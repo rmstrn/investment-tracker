@@ -622,6 +622,8 @@ Not a launch blocker (we stay on the information side of all four lines by desig
 
 ## 2026-04-23 — Geography LOCKED: global multi-market with CIS priority
 
+> **[SUPERSEDED 2026-04-23]** Later «Option 4 review synthesis: 7 PO decisions locked» entry (Q7) removed Russia from scope. Current geography = global multi-market **без РФ**; CIS handling per-country post-alpha, not launch priority. Preserved below as historical record. See `docs/PENDING_CLEANUPS.md` item #3.
+
 **Context.** Initial positioning (v2 discovery, `01_DISCOVERY.md`) described ICP A/B as «US primary, EU secondary» with partial CIS/RU coverage. `STRATEGIC_OPTIONS_v1.md` kept this scope implicit. PO was asked whether to narrow geography (common startup advice: pick one market, dominate, expand later).
 
 **Decision.** PO 2026-04-23 locks **global multi-market scope.** PO rationale, verbatim: «по географии я не хочу менять, в идеале нам чем больше рынков тем лучше, так же и СНГ».

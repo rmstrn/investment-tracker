@@ -5,6 +5,8 @@
 **Date locked (v1):** 2026-04-22 · **Date locked (v2 — Second Brain metaphor):** 2026-04-23 · **Date locked (v3 — imperative hero restored, Second Brain demoted to tagline):** 2026-04-23
 **Status:** LOCKED (v3). PO locked 7 decisions from Option 4 review synthesis 2026-04-23 (see `DECISIONS.md` «Option 4 review synthesis: 7 PO decisions locked» + `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK section). v3 repositions Option 4 as tagline + brand-world copy; hero reverts to imperative. Product name sourced from naming rounds (Round 5 surfaced Mneme/Memoro/Noesis; Round 6 in flight 2026-04-23). Future edits require PO sign-off through Navigator.
 
+> **[TODO — see `docs/PENDING_CLEANUPS.md` item #2]** Body narrative in sections «Tone of voice» / «Onboarding promise» / «Brand archetype» / «Key product principles» still contains Second-Brain-as-hero-voice phrasing («Your second brain already knows...»). Needs sync pass to align body with imperative-hero + tagline-only framing. Trigger: when product name is locked, do this sweep in same commit as name substitution.
+
 ## Locked constraints (inputs to this positioning)
 
 - **Strategic option = 4 «Second Brain for Your Portfolio» (LOCKED 2026-04-23; repositioned v3).** Unifying metaphor retained as TAGLINE and mid-page brand-world copy — NOT hero, NOT product name. Product name sourced separately from mind/memory territory (Round 5 + Round 6). See `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK and `DECISIONS.md` 2026-04-23 «Option 4 review synthesis: 7 PO decisions locked».

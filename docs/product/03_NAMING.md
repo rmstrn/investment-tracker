@@ -1,6 +1,11 @@
 # 03 — Naming Workshop (IN PROGRESS)
 
 **Owner:** `brand-strategist` agent (as of 2026-04-23).
+**Status (2026-04-23):** PO leans **Memoro** from Round 5 top-3, but wants to see Round 6 alternatives before final lock. Round 6 dispatched in parallel 2026-04-23.
+
+> **[TODO — see `docs/PENDING_CLEANUPS.md` item #4]** Round 5 top-3 (Mneme / Memoro / Noesis) still reads as tie-ranked. Re-annotate with «PO result 2026-04-23: [final name] selected» header when name is locked post-Round-6.
+> **[TODO — see `docs/PENDING_CLEANUPS.md` item #1]** `[Name]` / `[Название]` placeholders across ALL docs need substitution with locked name. Same commit as Round 5 annotation.
+
 **Status (2026-04-22):** Name undecided. PO взял паузу на размышление. Все предложенные направления отклонены.
 
 ## Criteria locked
