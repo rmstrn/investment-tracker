@@ -656,3 +656,39 @@ Not a launch blocker (we stay on the information side of all four lines by desig
 
 **Owner.** Navigator (strategic scope). i18n infrastructure: tech-lead. Per-market legal review: post-alpha.
 **Revisit.** If alpha signals indicate one market dominates user acquisition by >70%, consider narrowing content/growth focus to that market while keeping others in product. Not before alpha + 3 months of real user data.
+
+## 2026-04-23 — Option 4 «Second Brain for Your Portfolio» LOCKED; no pre-lock interview gate
+
+**Decision.** PO 2026-04-23 locked Option 4 Hybrid — «Second Brain for Your Portfolio» — as the product's strategic direction. Options 1 (Oracle), 2 (Analyst), and 3 (Companion) are rejected as standalone directions (retained in `STRATEGIC_OPTIONS_v1.md` as historical record only; do not re-propose). Hero is locked bilingually:
+
+- Russian: «Второй мозг для твоего портфеля»
+- English: «Second Brain for Your Portfolio»
+
+**No pre-lock interview validation gate (PO choice).** The earlier-proposed user-researcher live-interview validation gate («how would you describe this product to a friend?» Mom-Test pass against ICP A before full commit) is explicitly SKIPPED. PO rationale: live interviews deferred until post-alpha when real users exist. Pre-alpha validation is delegated to three parallel specialist feasibility checks instead — `tech-lead` (can coach vertical ship credibly? what's the slice breakdown?), `brand-strategist` (naming round 5 in mind/memory territory — is there a viable candidate avoiding the rejected list?), `content-lead` (English-first landing + paywall copy in Second Brain voice — does the metaphor carry top-of-fold?). `user-researcher`'s next dispatch is post-alpha.
+
+**Fallback to Oracle is named (not a hedge — an escape hatch).** If `tech-lead` returns «coach vertical not feasible for alpha» OR `brand-strategist` cannot surface a viable name in mind/memory territory after round 5, Navigator reverts to Oracle (Path A fallback — keeps the originally locked «Поговори со своим портфелем» hero, lowest cold-start risk, Slice 6 shipping momentum preserved). Fallback is documented here for transparency; it is not the expected path.
+
+**English-first launch (new constraint, 2026-04-23).** Day-1 launch content is English only. Russian parallel-drafted as secondary artifact (ready for v1.x wave but not shipped alongside English). EU languages (DE / IT / ES / FR / PT) deferred to post-launch waves entirely. This narrows the previously-locked multi-language-day-1 scope to English-day-1; Russian and EU languages remain on the roadmap but no longer gate launch. Rationale: reduces pre-alpha content localization + i18n infrastructure cost by ~3-6 weeks; English is sufficient to test Second Brain metaphor's hero parse against ICP A + AI-native ICP B before expanding language surface.
+
+**Rationale for picking Option 4 (recap).**
+- PO «объединить» intuition 2026-04-23: the product IS chat + insights + coach, and positioning should reflect that rather than privilege one surface.
+- Empty fintech territory: 34-competitor scan returned zero matches for «second brain for portfolio» vocabulary. First-mover owns the category read.
+- Cross-category prior art (Forte's book; Notion / Obsidian cultural footprint) lowers import cost — users apply a familiar concept to a new domain rather than learn a new one.
+- Lane A (information/education only) is a natural consequence of the memory metaphor, not a compromise. Brain remembers, notices, explains — it does not advise.
+- Multi-broker aggregation + global multi-market reinforce unified «one brain holds everything» narrative.
+
+**Risks acknowledged (tracked in `STRATEGIC_OPTIONS_v1.md` Option 4 risks section).**
+- Abstract-metaphor hero cognition ~4 sec vs Oracle's 3 sec (locked tested hero swapped for untested metaphor).
+- Coach 30-day cold-start inherited from Option 3 — hero promises «remembers» but first month is empty if mitigation not designed.
+- Eng scope heaviest of four options — all three surfaces must ship credibly at MVP; commodity drift if not.
+- Metaphor import risk for ICP B newcomers («слишком умно» read).
+- Naming territory must find a candidate in mind/memory space that avoids four rejected rounds.
+
+**Implications (actioned same day).**
+- `STRATEGIC_OPTIONS_v1.md` — v1.3: Option 4 marked LOCKED at top; Options 1/2/3 headings marked REJECTED (historical record); pre-lock gate removed; Q0 and Q9 resolved. — **DONE.**
+- `02_POSITIONING.md` — full v2 rewrite to Second Brain metaphor. Hero replaced. Landing structure adjusted (4 sections retained, subtitles updated to match chat/insights/coach narrative). Lane A lock + global geography lock + English-first launch reflected. `[PENDING-V2]` status removed. — **IN FLIGHT.**
+- Three parallel specialist dispatches launched 2026-04-23: `tech-lead` (feasibility), `brand-strategist` (naming round 5, mind/memory territory), `content-lead` (English-first landing draft). `user-researcher` NOT dispatched per this decision.
+- `03_ROADMAP.md` — pending revision once `tech-lead` returns with coach-vertical slice breakdown.
+
+**Owner.** Navigator (strategic lock). `tech-lead`, `brand-strategist`, `content-lead` own their respective specialist outputs.
+**Revisit.** If any specialist returns a blocker → Oracle fallback. Otherwise revisit at alpha launch + 30 days with real user feedback on «second brain» parsing.
