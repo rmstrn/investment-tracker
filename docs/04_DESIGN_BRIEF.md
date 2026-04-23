@@ -1,16 +1,56 @@
-# 04 — Design Brief v1.1
+# 04 — Design Brief v1.2
 
-Source of truth for the visual, interaction, and content design of Investment Tracker. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
+Source of truth for the visual, interaction, and content design of Memoro. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
 
 **Version history**
 - v1.0 — initial brief, foundations only
 - v1.1 — added freemium UX (§13), AI module UI (§14), tier-specific screens (§15), notifications (§16), security UI (§17), account management (§18), KPI coverage map (§19)
+- v1.2 — added §0 anti-pattern list (Memoro brand-metaphor guard); §2.2 Insights tone row changed «actionable» → «observational»; §14.2 Insights cadence honesty (weekly, not daily); new §14.6 Coach surface subsection referencing `docs/design/COACH_SURFACE_SPEC.md`; new §11.6 reference to `docs/design/DASHBOARD_ARCHITECTURE.md`; updated principles commentary for dashboard-primary architecture (positioning lock 2026-04-23)
+
+---
+
+## 0. Anti-pattern list — Memoro brand-metaphor guard
+
+Memoro's tagline is «Second Brain for Your Portfolio». The metaphor carries well-known aesthetic gravity that directly conflicts with the «calm over busy» principle and the Magician + Sage + Everyman archetype. This section is an explicit NO list. Designers and engineers MUST reject these patterns during design review and code review.
+
+### 0.1 Banned visual tropes
+
+The following are forbidden in Memoro's UI — at any tier, on any surface, on any platform (web and iOS):
+
+- **AI-sparkle visuals.** Gradient halos around AI output, animated sparkles on AI-generated content, «generating…» starbursts. The AI is the behavior, not the chrome.
+- **Neural-network / synapse imagery.** Glowing node constellations, animated synapse lines, brain-pulse loaders, neuron dot-grids, connectome graphs. Every second-brain productivity app defaults to this; we do not.
+- **Brain icons in persistent UI chrome.** No Lucide `brain` / `brain-cog` / `brain-circuit` in tab bars, nav, top bar, card headers, loading states. No SF Symbols `brain` / `brain.head.profile` / `brain.filled.head.profile` on iOS. The word «Memoro» carries the memory semantics; icons do not need to repeat it.
+- **«Thinking» / «memorizing» animations.** No pulsing dots indicating the brain is thinking during a non-streaming state. Streaming indicators in chat are allowed (`aria-live="polite"` text indicator); decorative brain-pulses outside streaming are not.
+- **«Memory indicator» progress bars.** No timelines showing «brain is learning», no accumulating-memory meters. Coach's 30-day cold-start IS a day-count progress (see `COACH_SURFACE_SPEC.md` §3), but that's a functional progress toward a named threshold — not decorative memory-chrome.
+- **Liquid Glass effects on AI content.** iOS 26 Liquid Glass is ALLOWED on chrome (tab-bar blur, nav background). It is FORBIDDEN on AI-generated cards (insight cards, coach cards, chat bubbles). Those surfaces stay opaque with standard `background.elevated`.
+- **Gradient meshes / blobs / glow effects.** No vaporwave gradients, no glowing orbs, no generative-AI-aesthetic meshes. Solid backgrounds and flat tokens only.
+- **Dashboard-jazz.** No confetti on gains. No animated celebrations. No particle effects. No haptic-visual fireworks. Robinhood is the anti-reference; we are not Robinhood.
+
+### 0.2 Banned copy-level patterns
+
+Copy and microcopy must also avoid:
+
+- **«Your brain noticed…»** / **«Your second brain…»** as persistent UI narration voice. The agent's name is **Memoro** — that's what copy says. Screen readers amplify personification awkwardly; «Your brain noticed X» reads strangely on screen readers. Use «Memoro noticed X» or verb-led framing («Noticed this week: X»).
+- **Imperative action language from AI.** Lane A LOCKED. AI never says «buy X», «sell Y», «rebalance», «reduce your exposure». Only `notice / observe / flag / surface / explain / show / summarize`. This applies to chat, insights, coach, and dashboard AI badges.
+
+### 0.3 Aesthetic reference — what we ARE
+
+Memoro belongs to the **editorial knowledge-work** visual tradition:
+
+- **Positive references (intonation):** Stripe, Linear, Ramp, Notion (product UI), Obsidian's restraint side. Calm typographic hierarchy, generous whitespace, restrained use of accent color, information density without visual noise, source citation treated as first-class content.
+- **Negative references (what we avoid):** Robinhood, eToro, most crypto-aesthetic fintech, 2025-era AI-consumer apps with sparkle-heavy interiors.
+
+### 0.4 Enforcement
+
+- Design review: every new surface spec must reference this anti-pattern list and declare compliance.
+- Code review: `code-reviewer` agent flags violations — brain icons in UI chrome, sparkle animations, gradient meshes in CSS, violate-able copy (see §0.2).
+- Token audit: `packages/design-tokens/` must not contain tokens named for brain/neural/sparkle imagery. If a need arises, raise through Navigator before token add.
 
 ---
 
 ## 1. Overview & principles
 
-The product is an AI-native portfolio tracker, not a brokerage. The design has to feel premium and calm — people trust us with a read-only view of their financial life, and the AI layer is the reason they come back.
+Memoro is an AI-native portfolio tracker — a «Second Brain for Your Portfolio» — not a brokerage, not an advisor (Lane A LOCKED). The design has to feel premium and calm — people trust us with a read-only view of their financial life, and the AI layer is the reason they come back. Architecture is dashboard-primary with AI woven (LOCKED 2026-04-23); see §11.6 and `docs/design/DASHBOARD_ARCHITECTURE.md`.
 
 Six principles, in priority order:
 
@@ -40,14 +80,21 @@ Not-goals: gamification, social feeds, leaderboards, push-notification maximizat
 |---|---|
 | Dashboard | Neutral, factual, tight |
 | AI chat | Warm, curious, allowed to hedge |
-| Insights | Proactive, specific, actionable |
+| Insights | Proactive, specific, observational (not «actionable» — Lane A lock 2026-04-23; AI never prescribes actions) |
 | Onboarding | Encouraging, never patronizing |
 | Errors | Calm, specific, with a next step |
 | Paywall | Honest about value, never guilt-trip |
 
 ### 2.3 Naming
 
-Product: **Investment Tracker** (working). Short form: "the tracker". Avoid internal codenames in UI.
+Product name LOCKED 2026-04-23: **Memoro** (Latin 1st-person-singular «I remember»). Tagline: **«Second Brain for Your Portfolio»** (v3.1 positioning lock). Hero: imperative «Ask your portfolio» / «Спроси свой портфель» (bilingual-ready; English day-1 launch).
+
+In-product references:
+- Product name: **Memoro** (never «the tracker», «the app», «Investment Tracker»).
+- Agent self-reference in copy: **Memoro** (third-person). «Memoro noticed…» / «Memoro is learning…». Never «your brain…», «your second brain…», or «I…» (no AI first-person).
+- Tagline use: sparingly in marketing surfaces; not persistent UI chrome.
+
+See §0.2 banned copy-level patterns.
 
 ---
 
@@ -285,6 +332,14 @@ Button, Input, Select, Combobox, Checkbox, Radio, Switch, Slider, Badge, Chip, T
 - **PaywallModal** — honest, single-column, no urgency manipulation
 - **UsageMeter** — linear bar with "X of Y used this month"
 - **FeatureLockRow** — inline lock icon + one-line reason + CTA
+- **LockedPatternCard** — teaser variant of `CoachPatternCard` showing category pill + generic headline + skeleton body + upgrade CTA. See `COACH_SURFACE_SPEC.md` §5.
+
+### 10.5 Coach primitives (new — §14.6)
+
+- **CoachPatternCard** — article-level card for one pattern read: category pill + headline + observational summary + evidence block + dismiss/snooze actions. Full anatomy in `COACH_SURFACE_SPEC.md` §2.
+- **CoachWeekAnchor** — section divider with week label («Week of April 14 – 20»). `<h2>` semantic.
+- **CoachEmptyState** — two variants (Path A backfill-in-progress, Path B true cold-start). See `COACH_SURFACE_SPEC.md` §3.
+- **CategoryPill** — categorical (not evaluative) pill with Lucide or token-colored outline + text label. Never color-only signal.
 
 ---
 
@@ -323,6 +378,29 @@ List view + "+ Connect" primary action. Each account card shows broker logo, dis
 ### 11.5 Empty states
 
 Illustration-free by default. Icon + short line + single CTA. Example: "No positions yet. Connect an account to see your portfolio. [ Connect ]".
+
+### 11.6 Dashboard architecture — detailed spec
+
+`docs/design/DASHBOARD_ARCHITECTURE.md` owns the full home-screen spec for Memoro:
+
+- Top-of-fold hierarchy (hero → insight of the week → charts → positions → coach teaser → activity).
+- AI-woven pattern (how «Memoro noticed» badges surface on cards without AI-sparkle chrome).
+- Primary routes + tab structure (Dashboard / Positions / Insights / Coach / Chat / Settings).
+- Web side-nav + iOS bottom tab-bar mapping (4 tabs on iOS).
+- Responsive behavior across 320/375/768/1024/1440/1920.
+- Per-ICP daily-use patterns (ICP A / ICP B / mid-career post-mistake).
+
+ASCII layout in §11.1 above is retained as a quick-reference; `DASHBOARD_ARCHITECTURE.md` is the authoritative source for dashboard design.
+
+### 11.7 Onboarding flow — detailed spec
+
+`docs/design/ONBOARDING_FLOW.md` owns the 3-stage onboarding flow:
+
+- Stage 1: account creation (Clerk-hosted).
+- Stage 2: broker sync (SnapTrade flow).
+- Stage 3: first-value moment (warm-start via SnapTrade backfill-derived pattern-read within 10 minutes, NOT 30-day wait).
+
+First-value-moment design handles both warm-start (backfill-triggered) and cold-start (no history) dual paths.
 
 ---
 
@@ -408,14 +486,17 @@ Free tier: 5 messages/day counter visible in input area. Plus/Pro: hidden unless
 
 ### 14.2 Proactive insights
 
-Purpose: the AI notices things without being asked.
+Purpose: Memoro notices things without being asked.
+
+**Cadence honesty (LOCKED 2026-04-23):** weekly-default, not daily. Free tier = 1 insight/week (weekly digest). Plus tier = daily (1 per day max). Pro tier = real-time as-found. Earlier «daily» framing for Free tier is rejected — daily pressure breaks the «calm over busy» principle and positions Memoro as push-driven notification stream, which it is not. Landing and in-product copy align on «weekly» for Free tier messaging.
 
 UI:
-- InsightCard in a vertical feed on dedicated page
-- "Insight of the day" card on dashboard (top 1)
-- Categories: concentration, behavioral, dividend, performance, rebalance
-- Each card: headline (one line), body (2-4 lines), source (which positions/dates), CTAs (View details / Dismiss / Snooze)
+- InsightCard in a vertical feed on dedicated page (`/insights`)
+- "Insight of the week" card on dashboard (top 1 for Free; today's for Plus; real-time for Pro). See `docs/design/DASHBOARD_ARCHITECTURE.md` §2.
+- Categories: concentration, behavioral (routes to Coach), dividend, performance, observational (NOT rebalance — rebalance is imperative; Lane A lock forbids imperative framing)
+- Each card: headline (one line, verb-led), body (2-4 lines, observational voice), source (which positions/dates), CTAs (View details / Dismiss / Snooze)
 - Dismissed insights never return; snoozed return in 7 days if still valid
+- Headline framing: **«Memoro noticed…»**, **«Flagged this week:…»**, **«Surfaced:…»**. Never «Your brain noticed…». See §0.2.
 
 ### 14.3 Behavioral coach
 
@@ -446,6 +527,27 @@ UI:
 - Shows the formula and the inputs ("5.2% = $2,100 gain / $40,384 cost basis")
 - Links to source transactions
 - Always available (no tier gate)
+
+### 14.6 Coach — behavioral pattern reads
+
+Purpose: Memoro surfaces patterns in user's trade history — observationally, never as advice.
+
+**Architecture:** dedicated route `/coach` with its own primary nav tab. Weekly cadence. Soft 30-day-or-30-transaction gate. Teaser-paywall for Free tier (locked pattern preview).
+
+**Detailed spec:** `docs/design/COACH_SURFACE_SPEC.md` — owns layout, pattern card anatomy, cold-start empty states (Path A warm-start via SnapTrade backfill; Path B true cold-start), interaction states, accessibility.
+
+**Integration contract with this design brief:**
+- Coach reuses `InsightCard`-adjacent primitive `CoachPatternCard` (new; see §10.5 below).
+- Coach patterns flow through the same mutation contract as insights (dismiss + snooze via existing insights backend, per Slice 6b pattern) — no new mutation primitives needed.
+- Coach has its own category taxonomy (Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal). Colored pills are categorical, NOT evaluative (no red-for-bad, green-for-good).
+- Coach weekly-cadence rendering follows week-anchor pattern (`h2` per week).
+- Coach cold-start gating uses tx-count-or-history-span soft gate (not calendar-day hard gate). See `COACH_SURFACE_SPEC.md` §3 and `CC_KICKOFF_option4_coach_adr.md` §2.3.
+- Coach in-context AI disclaimer: every pattern card's summary closes with observational-framing language («no judgment», «pattern only», or equivalent). This is the EU/UK MiFID II + FCA reinforcement called out in positioning (`02_POSITIONING.md` «In-context AI disclaimer»). Format is in-copy, not tooltip — see content-lead coordination note below.
+- Coach regulatory guardrail: backend regex filter per `CC_KICKOFF_option4_coach_adr.md` §2.6 Layer 2 rejects imperative output; design trusts the filter and renders only validated narratives.
+
+**Content-lead coordination:** every pattern category needs a narrative template. Product-designer owns the card anatomy; content-lead owns copy variants and the observational «no judgment» closer. Navigator coordinates.
+
+**Legal-advisor coordination:** in-context AI disclaimer format (tooltip vs inline vs first-interaction modal) is still open per positioning lock 2026-04-23 Q6. Product-designer's candidate recommendation is **inline observational closer on every coach card** (not tooltip) plus a one-time first-interaction modal on Coach tab first-open («Memoro shows patterns, not advice.» — Acknowledge). Legal-advisor to confirm whether inline closer satisfies EU/UK requirement or if explicit disclaimer component is required. Tracked as open question in `COACH_SURFACE_SPEC.md` §9.
 
 ---
 
@@ -581,7 +683,18 @@ Negative references (what we avoid):
 ## Appendix B — Change log
 
 - **v1.0 → v1.1:** added §13 freemium UX, §14 AI module UI, §15 tier-specific screens, §16 notifications, §17 security UI, §18 account management, §19 KPI coverage map; updated §3.5 with WCAG audit outcomes from PR #31.
+- **v1.1 → v1.2 (2026-04-23):** Memoro product-name lock + dashboard-primary architecture lock alignment. Added:
+  - **§0 Anti-pattern list** — explicit ban list guarding the «Second Brain» metaphor against AI-sparkle / brain-chrome / neural-network / gradient-mesh / Liquid-Glass-on-AI-content / dashboard-jazz drift. Copy-level patterns banned («Your brain noticed…»). Enforcement notes for design review + code review.
+  - **§2.2 Insights tone** — «actionable» → «observational» (Lane A lock, AI never prescribes).
+  - **§2.3 Naming** — Memoro locked; agent-self-reference policy («Memoro noticed…», never «your brain…», never AI first-person).
+  - **§10.4 Monetization** — added `LockedPatternCard` primitive for Coach teaser-paywall.
+  - **§10.5 Coach primitives** — new subsection introducing `CoachPatternCard`, `CoachWeekAnchor`, `CoachEmptyState`, `CategoryPill`.
+  - **§11.6 Dashboard architecture** — pointer to `docs/design/DASHBOARD_ARCHITECTURE.md`.
+  - **§11.7 Onboarding flow** — pointer to `docs/design/ONBOARDING_FLOW.md`.
+  - **§14.2 Insights cadence honesty** — Free tier = weekly (not daily); aligned with positioning + landing.
+  - **§14.6 Coach surface** — new subsection; delegates detailed spec to `docs/design/COACH_SURFACE_SPEC.md`; coach integration contract (mutation reuse, category taxonomy, cold-start gating, regulatory guardrail, legal-advisor coordination for in-context AI disclaimer format).
+  - No token changes. Token system remains metaphor-neutral; v1.1 palette + semantic mapping survives v1.2 unchanged.
 
 ---
 
-Maintained by the design lead. Changes require a PR with rationale in the description. Ship tokens first in `packages/design-tokens`, then this doc, then TASK_07/08 implementation catches up.
+Maintained by the product-designer agent (Navigator mediates PO review). Changes require a PR with rationale in the description. Ship tokens first in `packages/design-tokens`, then this doc, then TASK_07/08 implementation catches up.
