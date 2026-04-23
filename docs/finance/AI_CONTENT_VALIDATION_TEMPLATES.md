@@ -448,10 +448,114 @@ For each sampled output:
 
 ---
 
-## 10. Revision log
+## 10. Coach teaser copy — Lane A validation (LOCKED 2026-04-23)
 
-- **2026-04-23 (v1):** Initial template. finance-advisor. Whitelist/blacklist verbs, softening patterns, system prompt skeletons, regex detector patterns, audit checklist. Coordinates with content-lead + tech-lead + legal-advisor per review Action Items.
+Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-locks ADR, Coach teasers are revealed via contextual blinking icons + bell-dropdown (not a dedicated `/coach` route). Teaser popover reveals SUBJECT (asset/category + pattern name + instance count) but NOT substance (trade details / narrative / interpretation).
+
+This section validates the teaser copy pattern against Lane A in all current target jurisdictions: **US SEC, EU MiFID II, UK FCA PERG 8.30A**. (Russia is OUT OF SCOPE per 2026-04-23 Q7 and not validated.)
+
+### 10.1 Reference teaser copy
+
+> **«Memoro noticed a pattern in your [ticker/sector/category] trades — upgrade to Plus to see detail.»**
+
+With sub-line:
+
+> **«Pattern category: [disposition-effect / chasing-momentum / anchoring / loss-aversion / concentration-drift] • Seen [N] times in the last [window]»**
+
+And CTA:
+
+> **«Upgrade to Plus to see detail»** (primary) / **«Not interested»** (secondary)
+
+### 10.2 Word-by-word Lane A validation
+
+| Phrase | Lane A status | Reasoning |
+|---|---|---|
+| «Memoro noticed» | PASS (all 3 jurisdictions) | Factual observation verb; on whitelist §2.1; describes what the AI observed without telling the user what to do |
+| «a pattern» | PASS | Generic noun; no prescriptive weight; no evaluative loading |
+| «in your [ticker] trades» | PASS | References user's own data factually; this is a descriptive claim about what the user's records show, not a claim about what the user should do |
+| «in your [sector] trades» | PASS | Same reasoning as ticker-level |
+| «in your [category] trades» | PASS | Same reasoning; category can be dividend-paying / growth / value / tech-heavy etc. |
+| «upgrade to Plus» | PASS | Commerce verb directed at product tier, NOT at investment action; this is standard SaaS upgrade language, well-established as non-regulated commerce copy in all three jurisdictions |
+| «to see detail» | PASS | Reveals nothing about what the detail IS until user upgrades; no implicit claim of value; no implicit prescription |
+| «Pattern category: [disposition-effect]» | PASS | Industry-standard behavioral-finance terminology; see BENCHMARKS_SOURCED.md §3.6 row 16 (Shefrin & Statman 1985, Odean 1998); using the academic/descriptive name not a loaded name («panic-selling» would FAIL) |
+| «Seen [N] times in the last [window]» | PASS | Quantitative factual observation of frequency; no interpretation of what it means |
+
+### 10.3 Jurisdiction-specific notes
+
+**US SEC:**
+- Lane A (information/education) in US is SEC-unregulated when content is general, not personalized recommendation
+- Teaser is personalized to user's own data but limits itself to observation (what the user did), not to a recommendation (what the user should do)
+- Substance of pattern (gated) would need re-validation if Plus narrative includes prescription — see §5.3 Coach system prompt skeleton + BENCHMARKS_SOURCED.md references
+- **US verdict: PASS** — teaser is observation, not recommendation per IA Act §202(a)(11) / Investment Advisers Act personalization test
+
+**EU MiFID II:**
+- «Personal recommendation» under MiFID II Art. 4(1)(4) requires recommendation of a specific financial instrument to a specific person for a specific course of action
+- Teaser references user's specific financial instruments (by ticker) but makes NO recommendation for any course of action — it points to a pattern, not to a trade
+- «Upgrade to Plus» is explicitly a commerce action, not a financial-instrument transaction
+- **EU verdict: PASS** — teaser describes observed behavior; does not meet the three-prong personal-recommendation test
+
+**UK FCA PERG 8.30A:**
+- UK personal-recommendation test parallel to MiFID II; PERG 8.30A Q21+ tests for (a) specific instrument, (b) specific person, (c) specific course of action / «steer»
+- Teaser: (a) specific instrument YES, (b) specific person YES, (c) course of action NO — teaser does not steer the user toward buying, selling, holding, or otherwise transacting in the instrument
+- «Noticed a pattern» is closer to the unregulated «generic advice» / «information» category
+- **UK verdict: PASS** — teaser fails (c) specific course of action, therefore is not a personal recommendation under PERG 8.30A
+
+### 10.4 Extended regex blacklist for teaser copy (engineering invariant)
+
+Per DECISIONS 2026-04-23 dispatch, teaser copy specifically must be protected from evaluative language that general AI output might permit in context. Teaser is a compressed high-stakes surface; stricter rules apply.
+
+**Regex patterns — teaser copy MUST NOT match any of these:**
+
+```regex
+# Hard-block: prescriptive action in teaser
+\byou\s+(should|must|ought\s+to|need\s+to)\s+(trade|buy|sell|hold|rebalance|reduce|increase|trim|add|diversify|reconsider)\b
+
+# Hard-block: judgment language about user's trades
+\b(wrong|mistake|bad\s+idea|harmful|poor\s+decision|unhealthy|dangerous|concerning)\s+(trade|decision|move|position|allocation|pattern|behavior)\b
+
+# Hard-block: prescription-adjacent verbs in teaser
+\b(reconsider|rethink|warn|worry|regret)\b
+
+# Hard-block: evaluative adjectives on user's behavior/pattern
+\b(risky|concerning|dangerous|harmful|unhealthy|poor|bad)\s+(pattern|behavior|trade|trading|habit|tendency)\b
+
+# Hard-block: emotional pressure language
+\b(should\s+be\s+worried|might\s+regret|will\s+regret|worrying)\b
+```
+
+**Implementation for engineering:**
+- Run these regex patterns against every teaser popover copy variant (headline, sub-line, CTA)
+- Match → HARD BLOCK (teaser does not render; fall back to generic safe teaser or suppress teaser entirely + log to audit)
+- These patterns extend the general blacklist in §6 — do NOT replace. General prescription blacklist (§6.1-§6.3) applies to teaser copy AS WELL.
+
+### 10.5 Teaser copy variants PASS list (for content-lead reference)
+
+Content-lead may produce variants drawn from these safe shapes:
+
+- «Memoro noticed a pattern in your [ticker] trades»
+- «Memoro noticed a recurring behavior in your [sector] positions»
+- «Memoro noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
+- «Memoro spotted a pattern in your [category] activity»
+- «A pattern appeared across your [ticker/sector] trades»
+
+All of these use whitelist verbs («noticed», «spotted», «appeared») + neutral pattern references + no action steering + no judgment.
+
+### 10.6 Teaser copy variants BLOCKED list (reject in content-lead review)
+
+- «Memoro is worried about your [ticker] positions» — emotional pressure + judgment
+- «You might be making a mistake with [ticker]» — judgment language
+- «Your [ticker] trades look concerning» — evaluative adjective + judgment
+- «Memoro found a risky pattern in your trades» — evaluative + prescription-adjacent
+- «Time to reconsider your [ticker] strategy» — prescription verb + urgency
+- «Don't miss what Memoro found» — FOMO pressure is acceptable commerce copy BUT combined with pattern reference it borders on prescription; prefer «Memoro noticed…» observational framing
 
 ---
 
-**End of AI Content Validation Templates. Awaiting content-lead microcopy drafts + tech-lead system prompt production + legal-advisor per-jurisdiction sign-off.**
+## 11. Revision log
+
+- **2026-04-23 (v1):** Initial template. finance-advisor. Whitelist/blacklist verbs, softening patterns, system prompt skeletons, regex detector patterns, audit checklist. Coordinates with content-lead + tech-lead + legal-advisor per review Action Items.
+- **2026-04-23 (v1.1, post-4-locks patch):** Added §10 Coach teaser copy Lane A validation. Word-by-word validation of reference teaser against US SEC + EU MiFID II + UK FCA PERG 8.30A (Russia out of scope per Q7). Extended regex blacklist in §10.4 specifically for teaser copy (stricter than general AI output blacklist since teaser is compressed + high-stakes). PASS/BLOCKED variant lists for content-lead reference in §10.5 / §10.6.
+
+---
+
+**End of AI Content Validation Templates v1.1. Awaiting content-lead microcopy drafts + tech-lead system prompt production + legal-advisor per-jurisdiction sign-off.**
