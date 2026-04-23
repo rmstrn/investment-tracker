@@ -1,18 +1,29 @@
-# Strategic Options — LOCKED: Option 4 «Second Brain for Your Portfolio»
+# Strategic Options — TENTATIVE: Option 4 under proper multi-agent review
 
-**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 LOCKED)
-**Owner:** Navigator (orchestrator); synthesis pulls from brand-strategist, product-designer, content-lead
-**Source:** v2 discovery (34 competitors, evidence-based) + parallel specialist synthesis + council debate
+**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 locked) · **2026-04-23 (v1.4 — demoted to TENTATIVE pending proper multi-agent review per CONSTRAINTS Rule 3)**
+**Owner:** Navigator (orchestrator); synthesis pulls from independent specialist returns (not simulated)
 
-## Status: LOCKED BY PO 2026-04-23 — Option 4 «Second Brain for Your Portfolio»
+## Status: TENTATIVE (v1.4) — Option 4 under proper multi-agent review
 
-**PO decision 2026-04-23 (v1.3).** Option 4 Hybrid — «Second Brain for Your Portfolio» — is locked as the product's strategic direction. Options 1 (Oracle), 2 (Analyst), and 3 (Companion) are retained below as rejected alternatives for historical record; do not re-propose them.
+**Process correction 2026-04-23.** Earlier v1.3 locked Option 4 based on Navigator single-context synthesis (Navigator simulated 4-voice council + 3 specialist lenses within its own context, not real parallel Agent-tool dispatches). PO identified this as broken process violating CONSTRAINTS Rule 3: strategic decisions require REAL independent parallel specialist review, not simulation.
 
-**Hero LOCKED (bilingual):**
+**Status demoted to TENTATIVE** pending:
+- Independent parallel dispatch of 6 specialists (brand-strategist + user-researcher + finance-advisor + legal-advisor + content-lead + product-designer) via real Agent-tool calls
+- Each specialist isolated — no specialist sees another's draft before writing their own
+- Synthesis by Navigator after all 6 return, with one weighted recommendation
+- PO final lock after seeing all 6 independent views
+
+**Working artifacts remain as drafts** (not deleted, not elevated):
+- `docs/content/landing.md` — landing hero draft (Second Brain frame)
+- `docs/product/03_NAMING.md` Round 5 — 10 name candidates in mind/memory territory
+- `docs/CC_KICKOFF_option4_feasibility.md` — tech-lead feasibility memo
+- `docs/product/02_POSITIONING.md` v2 — rewritten to Second Brain metaphor
+
+These stay as hypothesis-level work product. They become final only if multi-agent review confirms Option 4 (or they are rewritten if review selects alternative).
+
+**Hero (tentative):**
 - Russian: «Второй мозг для твоего портфеля»
 - English: «Second Brain for Your Portfolio»
-
-**Pre-lock validation gate — SKIPPED by PO choice.** Earlier draft (v1.2) proposed a pre-lock gate: `user-researcher` runs short «how would you describe this product to a friend?» test with ICP A before full commitment. PO 2026-04-23 chose to skip this gate and proceed directly to specialist dispatch (tech-lead feasibility, brand-strategist naming round 5, content-lead landing). Rationale (PO call): live interviews deferred until post-alpha when real users exist; pre-alpha validation relies on specialist feasibility checks instead.
 
 **Fallback path if specialist work surfaces blockers.** If tech-lead coach ADR returns «coach vertical not feasible for alpha» OR brand-strategist cannot find a viable name in mind/memory territory after round 5, Navigator reverts to Oracle (Path A fallback — keeps locked «Поговори со своим портфелем» hero, lowest cold-start risk, shipping momentum preserved). This is not a hedge — it's a named escape hatch documented for transparency.
 

@@ -31,6 +31,62 @@ Not covered (pre-authorized):
 
 ---
 
+## Rule 3 — Multi-agent review mandatory for strategic decisions
+
+**Any strategic product decision requires real independent parallel dispatch of relevant specialists via Agent tool. Single-agent simulation of multiple voices is NOT acceptable.**
+
+### What counts as strategic
+
+- Idea / product direction
+- Positioning / wedge / anti-positioning
+- Brand metaphor / brand archetype
+- Naming
+- Pricing tier structure (not individual price adjustments — the tier framework itself)
+- Regulatory lane selection (Lane A vs B vs C)
+- Major product surface emphasis (chat-first vs insights-first vs coach-first)
+- ICP definition
+- Major feature inclusion/exclusion that affects positioning
+
+### What does NOT count (routine — single-specialist dispatch fine)
+
+- Specific wireframe inside already-locked surface
+- Specific copy variant inside already-locked voice
+- Slice breakdown of an already-locked feature
+- Bug fix, patch, refactor
+- Implementation ADR for already-locked decision
+
+### The required process
+
+1. **Navigator identifies required specialists** based on decision type (see matrix in Rule 3 details below)
+2. **Navigator dispatches each via separate `Agent` tool call** with `run_in_background: true`. Each in isolated context. Constraints Rule 1 + 2 reminder in every prompt.
+3. **Each specialist returns independent artifact** — verdict (support / warn / reject) + reasoning + risks + alternatives if applicable. Specialists do NOT see each other's drafts.
+4. **Navigator synthesizes** after all return. Must include:
+   - All views presented (not filtered)
+   - Agreement/disagreement matrix
+   - Risks each surfaced
+   - **One weighted recommendation** with rationale (PO explicitly asked for this)
+5. **Navigator presents to PO.** PO decides. Navigator does NOT lock strategic decisions alone.
+
+### Specialist composition matrix
+
+| Decision type | Required specialists |
+|---|---|
+| New metaphor / positioning / idea | brand-strategist + user-researcher + finance-advisor + legal-advisor + content-lead + product-designer |
+| Naming | brand-strategist + legal-advisor + content-lead + user-researcher |
+| Pricing tier design | finance-advisor + user-researcher + content-lead + product-designer |
+| Major product feature | product-designer + user-researcher + tech-lead + (finance-advisor if finance) + (legal-advisor if regulatory) |
+| Acquisition channel / messaging | content-lead + user-researcher + brand-strategist |
+| Regulatory boundary | legal-advisor + finance-advisor + content-lead |
+
+### Anti-patterns (FORBIDDEN)
+
+- Navigator simulating multiple voices in its own context and calling it «council»
+- Main assistant interpreting PO intuition as a locked strategic decision
+- Locking strategic decision without seeing each specialist's independent return
+- Specialists seeing each other's drafts before writing their own (biases return toward conformity)
+
+---
+
 ## Rule 2 — No external communication in PO's name
 
 **Never post, email, DM, comment, message, or otherwise communicate from PO's identity on any external platform without explicit per-message PO approval.**
