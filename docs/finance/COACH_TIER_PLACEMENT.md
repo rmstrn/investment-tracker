@@ -10,15 +10,28 @@
 
 ## 1. Executive summary
 
-PO locked **teaser-paywall** pattern for Coach surface. This document formalizes the pattern into an operational spec that product-designer, content-lead, tech-lead, and engineering can build against.
+PO locked **teaser-paywall** pattern for Coach surface. **2026-04-23 UX lock (DECISIONS 4-locks): Coach is contextual — blinking icons on dashboard/position elements + bell-dropdown hub in top-bar. NO dedicated `/coach` route. NO filter-chip in insights feed.** This document formalizes both the tier-behavior pattern and the placement/UX pattern into an operational spec that product-designer, content-lead, tech-lead, and engineering can build against.
 
 Core pattern per tier:
 
 | Tier | Coach behavior | Value anchor | Lane A framing |
 |---|---|---|---|
-| **Free** | 1 pattern teaser per month, starting after first sync; headline + obfuscated body + Plus-upgrade CTA | activation event + conversion driver | observation («Memoro noticed…»), no prescription |
-| **Plus** | Unlimited detailed pattern-reads across core categories (chasing-momentum, disposition-effect, anchoring, loss-aversion, concentration-drift) | full behavioral memory value | descriptive pattern reads, no normative verbs |
+| **Free** | **2 pattern teasers per calendar month** (see §1.1 cap rationale); blinking contextual icon on relevant element; click → teaser popover («Memoro noticed a pattern in your [asset/category] trades — upgrade to Plus to see detail») | activation event + conversion driver | observation («Memoro noticed…»), no prescription; SUBJECT revealed, SUBSTANCE paywalled |
+| **Plus** | Unlimited detailed pattern-reads across core categories (chasing-momentum, disposition-effect, anchoring, loss-aversion, concentration-drift); full teaser popover + deep-dive via chat | full behavioral memory value | descriptive pattern reads, no normative verbs |
 | **Pro** | Unlimited + advanced categories (factor-exposure-drift, tax-loss-harvesting-missed, sector-rotation-pattern) + historical retrospectives + export | power-user tier for sophisticated ICP A | same Lane A constraints + more categories |
+
+### 1.1 Coach UX placement (LOCKED 2026-04-23)
+
+Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-locks ADR:
+
+- **Contextual icons** — blinking Memoro icon appears on the element tied to the pattern (position card if pattern is single-ticker, dashboard concentration widget if pattern is portfolio-level, chat message if pattern surfaces in conversation). Icon is the primary visual trigger.
+- **Icon click → teaser popover** — compact overlay showing teaser headline («Memoro noticed a pattern in your NVDA trades»), subject-level detail (which asset/category, how many instances), paywall CTA («Upgrade to Plus to see detail»). Does NOT open a new route — stays in context.
+- **Bell-dropdown hub in top-bar** — persistent icon with unread count. Click reveals list of all currently-fired Coach patterns (unread + read). Single discovery point if user missed icons in context.
+- **No `/coach` route** — explicit rejection. Contrary to product-designer's earlier dedicated-route recommendation.
+- **No filter-chip in insights feed** — explicit rejection. Contrary to tech-lead's filter-chip proposal. Coach is NOT merged into insights feed; it lives as its own surface via icon+bell.
+- **No dedicated Coach tab/menu item** — keeps Coach «woven into existing surfaces» per Q3 dashboard-primary lock.
+
+**Rationale for 2 teasers/month cap (finance-advisor recommendation):** v1 spec had 1 teaser/month. Post-4-locks, with contextual icon visibility, users will notice pattern-firings more frequently than in a passive card format. 2 teasers/mo balances: (a) cost — at $0.013 per Coach run on Haiku × 2 runs/mo = $0.026/user/mo extra burn on worst case (still negligible); (b) conversion — more teasers = more conversion opportunities but diminishing returns past ~3/mo; (c) annoyance — >3 teasers/mo on Free may feel spammy, eroding brand promise of «Free is always Free». **Cap = 2/calendar month, first teaser fires on first qualifying pattern (warm-start within 24h, cold-start ~day 30), second teaser fires 2+ weeks after first if another qualifying pattern exists.** If user upgrades, cap lifts immediately to unlimited.
 
 **Key unit-economics hypothesis:** Free teaser creates a Day-30-to-90 activation event that functions as the primary Free → Plus conversion driver for users who come through organic acquisition. Without Coach-as-conversion-lever, the Free tier has no differentiated activation beyond first-sync dashboard + basic chat (which competitors Getquin / PortfolioPilot-free offer at equivalent quality).
 
@@ -32,7 +45,12 @@ Core pattern per tier:
 
 ### 2.1 Free tier Coach behavior
 
-**Allocation:** 1 pattern teaser per calendar month, starting after first successful broker sync.
+**Allocation:** **2 pattern teasers per calendar month** (updated 2026-04-23 from v1 «1/month»), starting after first successful broker sync. See §1.1 rationale for cap.
+
+**Visual pattern:**
+- Blinking Memoro icon appears on the element tied to the pattern (position card, dashboard widget, or chat thread)
+- Icon click opens teaser popover in-context (does NOT navigate to a new route)
+- Bell-dropdown in top-bar shows «1 new Coach pattern» or «2 new Coach patterns»; click lists all currently-fired patterns
 
 **Timing trigger hierarchy (first pattern):**
 
@@ -42,17 +60,21 @@ Core pattern per tier:
 
 **Monthly cadence:** After first teaser, subsequent teasers fire monthly on the anniversary-of-first-teaser day, OR when a new qualifying pattern is detected (whichever comes first — but capped at 1 unlocked teaser per calendar month).
 
-**Teaser format (content-lead owns final copy, finance-advisor validates Lane A):**
+**Teaser popover format (content-lead owns final copy, finance-advisor validates Lane A):**
 
-- **Headline (visible to Free user):** «Memoro noticed a pattern in your [ticker/cluster] trades»
+Per DECISIONS 2026-04-23 Coach UX lock: teaser reveals SUBJECT (asset / pattern category) but NOT substance.
+
+- **Headline (visible to Free user, in popover):** «Memoro noticed a pattern in your [ticker/sector/category] trades»
   - Observation verb («noticed») — Lane A clean
-  - Specific instrument reference allowed at headline level (factual observation of what the user holds)
-  - No action verb, no normative framing
-- **Obfuscated body (Free-tier blurred):** pattern category name + first line of pattern description behind a paywall blur treatment
-  - Example visible: «Disposition-effect pattern detected • Seen 4 times in the last 6 months»
-  - Example obfuscated: «[blurred: full pattern narrative, specific trade dates, frequency tendency]»
-- **Primary CTA:** «Unlock details — upgrade to Plus»
-- **Secondary CTA:** «Not interested» (dismiss; no pressure)
+  - Specific asset/category reference allowed at headline level (factual observation of what the user holds; references user's own data)
+  - No action verb, no normative framing, no evaluative framing
+- **Subject line (visible):** pattern category name + instance count
+  - Example visible: «Pattern category: disposition-effect • Seen 4 times in the last 6 months»
+  - This is SUBJECT-LEVEL detail — reveals WHAT the pattern is called and HOW OFTEN, but NOT the specific trade details / narrative / interpretation
+- **Obfuscated body (Free-tier paywalled):** specific trade dates, tickers referenced, full narrative, confidence indicator
+  - Example obfuscated: «[locked: full pattern narrative with specific trade dates, trade sizes, frequency tendency, behavioral-finance reference]»
+- **Primary CTA:** «Upgrade to Plus to see detail»
+- **Secondary CTA:** «Not interested» (dismiss; no pressure; respects dismissal signal — see §4.4)
 
 **Empty-state (cold-start path, no qualifying pattern yet):**
 
@@ -62,12 +84,18 @@ Core pattern per tier:
   - Lane A clean (observation framing, no prescription)
 - Warm-start partial backfill: «Memoro has read [N] trades from your history. Looking for patterns as more data accumulates.»
 
-**Lane A guardrails on teaser headline (finance-advisor validated):**
+**Lane A guardrails on teaser headline (finance-advisor validated; extended 2026-04-23 per DECISIONS 4-locks dispatch):**
 
-Allowed headline shapes:
-- «Memoro noticed a pattern in your [ticker] trades»
+Allowed headline shapes (Lane A safe in US / EU / UK — Russia out of scope per 2026-04-23 Q7):
+- «Memoro noticed a pattern in your [ticker/sector/category] trades»
 - «Memoro noticed a recurring behavior in your [sector/cluster] positions»
 - «Memoro noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
+
+Lane A validation per word:
+- «Memoro noticed» — factual observation verb (whitelist per `AI_CONTENT_VALIDATION_TEMPLATES.md` §2.1); safe
+- «a pattern» — generic, no prescriptive weight; safe
+- «in your [asset] trades» — references user's own data factually; safe
+- «Upgrade to Plus to see detail» — commerce action CTA, NOT investment-action CTA; safe in all four jurisdictions
 
 BLOCKED headline shapes (Lane A violations, reject in content-lead review):
 - «Memoro suggests you [action]» — prescriptive verb
@@ -75,6 +103,26 @@ BLOCKED headline shapes (Lane A violations, reject in content-lead review):
 - «Memoro recommends [action]» — explicit advice
 - «This is risky — [action] now» — urgency + implicit prescription
 - «Most successful investors [action]» — social proof prescription
+
+**Extended blacklist for teaser copy specifically (new 2026-04-23):**
+
+Teaser copy MUST NOT contain ANY evaluative commentary on user's trading behavior (extends general AI blacklist in `AI_CONTENT_VALIDATION_TEMPLATES.md` §3):
+
+- «you should trade» — prescription
+- «reconsider» — soft prescription + evaluative
+- «wrong» — judgment
+- «mistake» — judgment
+- «bad idea» — evaluation
+- «harmful» — evaluation
+- «risky» (as free-standing adjective on user's behavior) — evaluation
+- «concerning» — evaluation
+- «poor decision» — judgment
+- «unhealthy» — evaluation
+- «dangerous» — evaluation
+- «warn» (as in «we warn you») — prescription-adjacent
+- «worry» — emotional pressure
+
+The teaser's job is to generate CURIOSITY, not JUDGMENT. «Memoro noticed a pattern» invites the user to look; «Memoro noticed a concerning pattern» tells the user what to feel. The first is Lane A safe; the second crosses the line.
 
 ### 2.2 Plus tier Coach behavior
 
@@ -162,15 +210,19 @@ This is a HYPOTHESIS, not a model — must be replaced with real cohort data pos
 
 ### 3.3 Activation event design (finance-advisor view)
 
-The teaser is the **activation event** for conversion. Before the first teaser fires, Free user has:
+The **activation event is the first blinking contextual icon appearing after SnapTrade backfill completes** (per DECISIONS 2026-04-23 Coach UX lock). The visual moment — a static dashboard suddenly shows a pulsing Memoro icon on a specific position — creates the curiosity-reveal moment that drives conversion consideration. Click → teaser popover with subject reveal → curiosity gap → Plus upgrade CTA.
+
+Before the first teaser fires, Free user has:
 
 - Dashboard view of their portfolio (commodity — Getquin / PortfolioPilot-free / Kubera-trial all show this)
-- 5 chat messages per day (competitive with Fiscal.ai 10/mo free but limited)
+- 50 chat messages per month on Haiku (no daily cap; burst-friendly; per 2026-04-23 4-locks)
 - 1 insight per week (weekly dividends, drawdowns — commodity-level value)
 
-None of these are Memoro-unique. The differentiated activation that separates Memoro from Getquin/PortfolioPilot-free/Snowball-free is the Coach teaser. Without warm-start, that differentiated activation does not exist for 30 days. With warm-start, it exists within 24 hours.
+None of these are Memoro-unique. The differentiated activation that separates Memoro from Getquin/PortfolioPilot-free/Snowball-free is the Coach teaser — surfaced via blinking contextual icon, not via a dedicated route. Without warm-start, that differentiated activation does not exist for 30 days. With warm-start, it exists within 24 hours.
 
 **Finance-advisor conclusion:** Warm-start backfill is the single highest-leverage operational decision for Free → Plus conversion. Q2 defers this to development-stage feasibility verification. This document flags that the conversion funnel is materially different between the two branches (warm-start operational vs not), and the two branches should be modeled as separate scenarios, not averaged.
+
+**Key assumption to validate post-alpha:** The contextual-icon UX pattern assumes that «subject reveal» in the teaser popover is sufficient to drive upgrade consideration (curiosity gap). If it turns out that Free users see the teaser and either (a) forget about it before deciding to upgrade, or (b) dismiss it because the subject alone doesn't convey enough value, conversion may lag. The dedicated-route alternative (rejected 2026-04-23) would give patterns more persistent visibility. **A/B test post-alpha if engagement weak** (per DECISIONS revisit schedule).
 
 ---
 
@@ -256,7 +308,7 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 - Warm-start backfill (Q2 working assumption) — primary mitigation
 - Honest empty-state for cold-start users — retention via expectation-setting, not fake-value
 - Weekly insight cadence (1/week) — keeps engagement touchpoints active even during Coach cold-start
-- Chat availability (5 msg/day) — provides immediate utility for users who want to ask questions
+- Chat availability (50 msg/month on Haiku, no daily cap) — provides immediate utility for users who want to ask questions
 
 **Projected Free-tier 30-day retention:**
 
@@ -366,7 +418,8 @@ This range materially affects unit economics (see `PRICING_TIER_VALIDATION.md`).
 ## 10. Revision log
 
 - **2026-04-23 (v1):** Initial spec. finance-advisor. Formalizes PO Q5 lock into operational tier-behavior specification.
+- **2026-04-23 (v1.1, post-4-locks patch):** Updated for contextual UX lock per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment». Changes: (a) teaser placement = blinking contextual icons + bell-dropdown hub (rejected dedicated `/coach` route and filter-chip alternatives); (b) Free allocation increased from 1 teaser/mo to 2 teasers/mo to match contextual-visibility pattern; (c) teaser popover format reveals SUBJECT (asset/category + pattern name + instance count) but NOT substance (trade details / narrative / interpretation); (d) extended blacklist for teaser copy (no evaluative language on user's behavior); (e) activation event redefined as «first blinking icon post-backfill» (vs generic «first teaser fire»). Free tier cost impact of 2 teasers/mo: ~$0.026/user/mo extra burn on Haiku worst case — still negligible, does not change sustainability verdict.
 
 ---
 
-**End of Coach Tier Placement Spec. Awaiting product-designer UX spec + content-lead teaser microcopy + tech-lead feasibility confirmation.**
+**End of Coach Tier Placement Spec v1.1. Awaiting product-designer UX spec (icon visual + popover layout + bell-dropdown design) + content-lead teaser microcopy + tech-lead feasibility confirmation for contextual icon infrastructure.**
