@@ -1,21 +1,22 @@
-# 02 — Product Positioning (LOCKED v2 — Second Brain)
+# 02 — Product Positioning (LOCKED v3 — imperative hero + Second Brain as tagline)
 
 **Owner:** `navigator` agent (strategy core).
 **Framework:** April Dunford's "Obviously Awesome" (5-step).
-**Date locked (v1):** 2026-04-22 · **Date locked (v2 — Second Brain):** 2026-04-23
-**Status:** LOCKED. Option 4 «Second Brain for Your Portfolio» picked by PO 2026-04-23 (see `DECISIONS.md`). This document is the working positioning canvas; any future edits require PO sign-off through Navigator.
+**Date locked (v1):** 2026-04-22 · **Date locked (v2 — Second Brain metaphor):** 2026-04-23 · **Date locked (v3 — imperative hero restored, Second Brain demoted to tagline):** 2026-04-23
+**Status:** LOCKED (v3). PO locked 7 decisions from Option 4 review synthesis 2026-04-23 (see `DECISIONS.md` «Option 4 review synthesis: 7 PO decisions locked» + `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK section). v3 repositions Option 4 as tagline + brand-world copy; hero reverts to imperative. Product name sourced from naming rounds (Round 5 surfaced Mneme/Memoro/Noesis; Round 6 in flight 2026-04-23). Future edits require PO sign-off through Navigator.
 
 ## Locked constraints (inputs to this positioning)
 
-- **Strategic option = 4 «Second Brain for Your Portfolio» (LOCKED 2026-04-23).** Unifying metaphor across chat + insights + coach. See `STRATEGIC_OPTIONS_v1.md` and `DECISIONS.md` 2026-04-23 entry «Option 4 «Second Brain for Your Portfolio» LOCKED».
-- **Regulatory lane = A (LOCKED 2026-04-23).** Information/education only. Lane B (RIA day-1) and Lane C (hybrid) rejected. Lane A is now a positive trust signal («brain remembers, notices, explains — it does not advise»), not a compliance caveat.
-- **Geography = global multi-market (LOCKED 2026-04-23).** US + EU + UK + CIS/RU + crypto-native.
-- **Launch language = English only (LOCKED 2026-04-23).** Day-1 content is English. Russian parallel-drafted as secondary; EU languages (DE / IT / ES / FR / PT) deferred to post-launch waves. Earlier multi-language-day-1 constraint narrowed here per PO decision.
-- **Hero = locked bilingually.** Russian: «Второй мозг для твоего портфеля». English: «Second Brain for Your Portfolio». Sub-hero «Remembers. Notices. Explains.» / «Помнит. Замечает. Объясняет.»
+- **Strategic option = 4 «Second Brain for Your Portfolio» (LOCKED 2026-04-23; repositioned v3).** Unifying metaphor retained as TAGLINE and mid-page brand-world copy — NOT hero, NOT product name. Product name sourced separately from mind/memory territory (Round 5 + Round 6). See `STRATEGIC_OPTIONS_v1.md` v1.6 LOCK and `DECISIONS.md` 2026-04-23 «Option 4 review synthesis: 7 PO decisions locked».
+- **Regulatory lane = A (LOCKED 2026-04-23).** Information/education only. Lane B (RIA day-1) and Lane C (hybrid) rejected. Lane A is now a positive trust signal («brain remembers, notices, explains — it does not advise»), not a compliance caveat. In-context AI disclaimer added (reinforcement) specifically for EU/UK per MiFID II + FCA stricter advice-line; format TBD design phase.
+- **Geography = global multi-market без РФ (LOCKED 2026-04-23, amended).** US + EU + UK + LATAM + APAC + crypto-native. Russia explicitly out of scope (Q7 lock 2026-04-23). CIS handling per-country post-alpha.
+- **Launch language = English only (LOCKED 2026-04-23).** Day-1 content is English. Russian parallel-drafted as secondary; EU languages (DE / IT / ES / FR / PT) deferred to post-launch waves.
+- **Architecture = dashboard-primary with AI woven (LOCKED 2026-04-23, Q3).** Chat is one of the primary tabs/destinations, not the home. Dashboard + aggregation + tabs pattern (Getquin/Kubera shape) with stronger AI integration (AI surfaces across dashboard cards, insights feed, coach notices). Full UX spec deferred to design phase.
+- **Hero = imperative (LOCKED 2026-04-23, Q1, bilingual).** English: «Ask your portfolio». Russian: «Спроси свой портфель». Restoring the pre-Option-4-lock hero. «Second Brain for Your Portfolio» demoted to tagline + mid-page brand-world copy.
 
-## Unifying metaphor — «Second Brain for Your Portfolio»
+## Unifying metaphor — «Second Brain for Your Portfolio» (tagline, not hero)
 
-Ported from productivity/knowledge-management category (Tiago Forte book; Notion / Obsidian cultural territory) into finance. 34-competitor scan returned zero matches — empty fintech territory.
+Ported from productivity/knowledge-management category (Tiago Forte book; Notion / Obsidian cultural territory) into finance. 34-competitor scan returned zero matches — empty fintech territory. Repositioned v3 (2026-04-23): runs as **tagline + mid-page brand-world copy**, NOT as hero line and NOT as product name. Hero is imperative; product name sourced from naming rounds. The metaphor retains strategic value (category-claim defensibility, cross-category prior art) while avoiding hero parse-test tax and Forte-trademark tension at product-name level.
 
 The metaphor contains three primary product surfaces without fracturing:
 
@@ -32,10 +33,10 @@ Tertiary surfaces fit without forcing: scenarios (second brain runs what-ifs), e
 | **Competitive alternatives** | (1) Spreadsheets + broker-native apps · (2) Dashboard-legacy (Empower, Kubera, Snowball, Sharesight) · (3) AI research tools (ChatGPT, Fiscal.ai, WarrenAI) · (4) AI-portfolio advisors (PortfolioPilot, Origin, Mezzi — advisor-framed / Lane C hybrid) · (5) AI aggregators (Getquin — EU aggregator + AI layer) · (6) Do nothing |
 | **Unique attributes** | (1) Second-brain metaphor unifying chat + insights + coach into one product, not three bundled features · (2) Chat-first UX tied to **your** aggregated portfolio · (3) Proactive curated weekly insights (what you would miss) · (4) Behavioral coach on actual trade history (what you did, pattern-read, no judgment) · (5) Source-cited AI answers · (6) US+EU+crypto in one product · (7) No HNW gate · (8) No advisor upsell — information/education only (positive trust signal) |
 | **Value themes** | (1) One brain, three manifestations — unified memory of your portfolio · (2) Remembers, notices, explains — never advises · (3) Everything in one view — 1000+ brokers and exchanges · (4) On your side — zero upsells, zero «buy X» signals |
-| **Best-fit customer** | ICP A (multi-broker millennial 28-40, $20-100K, productivity-native — Notion / Obsidian cohort) primary · Mid-career post-mistake retail ($30-150K, self-aware, post-quit-considering) secondary expansion via Coach surface · ICP B (AI-native newcomer 22-32, $2-20K) tertiary (acknowledged empty-state gap days 1-30 mitigated by chat + early insights) · **Geography: global — US primary, EU + UK + CIS/RU + crypto-native all in scope.** |
+| **Best-fit customer** | ICP A (multi-broker millennial 28-40, $20-100K, productivity-native — Notion / Obsidian cohort) primary · Mid-career post-mistake retail ($30-150K, self-aware, post-quit-considering) secondary expansion via Coach surface · ICP B (AI-native newcomer 22-32, $2-20K) tertiary (acknowledged empty-state gap days 1-30 mitigated by chat + early insights) · **Geography: US + EU + UK + LATAM + APAC + crypto-native (global без РФ — Russia out-of-scope 2026-04-23).** |
 | **Market category** | **Subcategory: "AI portfolio intelligence"** (under portfolio trackers); positioned as «Second Brain for Investing» — empty sub-sub-category in fintech as of 2026-04-23. |
 | **Relevant trends** | LLM-first consumer apps · multi-broker retail reality · post-2022 advisor distrust · open-finance (SnapTrade/Plaid) · post-ChatGPT financial literacy · **Second Brain / Personal Knowledge Management movement (Forte's book, Notion / Obsidian market penetration) ported into finance domain** |
-| **Positioning statement** (internal) | For self-directed investors who juggle multiple brokers and want memory, surfacing, and pattern-reading on their actual portfolio — not advice — [PRODUCT] is a second brain for your portfolio. It remembers what you hold, notices what you would miss, and explains what it sees. It never tells you what to buy. |
+| **Positioning statement** (internal) | For self-directed investors who juggle multiple brokers and want memory, surfacing, and pattern-reading on their actual portfolio — not advice — [PRODUCT] lets you ask your portfolio anything, on your real holdings, with sources. It is a second brain for your portfolio: it remembers what you hold, notices what you would miss, and explains what it sees. It never tells you what to buy. |
 
 ## Brand archetype
 
@@ -66,23 +67,27 @@ v1 archetype was «Magician + Everyman». v2 pulls Sage forward (knowledge-worke
 - NOT generic aggregator-with-AI-bolted-on (Getquin territory — they put AI on top of an aggregator; we are a second brain that happens to aggregate)
 - NOT price predictor
 - NOT AI-first-novelty-app (we do real work on real data with sources)
+- NOT Personal Knowledge Management tool — we are specifically a **financial-portfolio brain**, not a generic memory container for knowledge/notes/bookmarks (disambiguation from Forte / Notion / Obsidian / Readwise territory per user-researcher evidence 2026-04-23; metaphor imported from their category, product scope is not)
+- NOT chat-primary app — chat is a tab, not the home (architecture LOCKED 2026-04-23 Q3: dashboard-primary with AI woven across dashboard cards, insights, coach)
 - NOT ugly fintech (implicit via design)
 
-## Final landing structure (LOCKED 2026-04-23 — Second Brain voice)
+## Final landing structure (LOCKED 2026-04-23 v3 — imperative hero + Second Brain mid-page)
 
-Four sections retained from v1 landing lock (2026-04-22), with subtitles and framing rewritten to match Second Brain metaphor. Landing copy is English day-1 (PO lock); Russian drafts are parallel secondary.
+Four sections retained from v1 landing lock (2026-04-22). v3 reverts hero to imperative (restored pre-Option-4-lock hero); «Second Brain for Your Portfolio» moves to mid-page brand-world / tagline section. Landing copy is English day-1 (PO lock); Russian drafts are parallel secondary.
 
 | # | Section | Hero (English, day-1) | Sub (English, day-1) | Hero (Russian, secondary) | Sub (Russian, secondary) |
 |---|---|---|---|---|---|
-| 1 | **Hero** | Second Brain for Your Portfolio. | Remembers. Notices. Explains. | Второй мозг для твоего портфеля. | Помнит. Замечает. Объясняет. |
-| 2 | **4 tabs (demo scenarios)** | Ask your second brain. | Four things it can do on your actual holdings. | Спроси свой второй мозг. | Вот четыре вещи, которые он умеет на твоих реальных позициях. |
-| 3 | **Insights (what it notices)** | A few minutes a day and you will not miss a thing. | Dividends, drawdowns, events — your second brain surfaces them before you do. | Пара минут в день — и ты ничего не упустишь. | Дивиденды, просадки, события — твой второй мозг замечает их раньше тебя. |
-| 4 | **Aggregation (what it holds)** *(marquee)* | One brain holds everything. | 1000+ brokers and exchanges. | Один мозг держит всё. | Больше 1000 брокеров и криптобирж. |
+| 1 | **Hero (imperative, LOCKED v3)** | Ask your portfolio. | Remembers. Notices. Explains. | Спроси свой портфель. | Помнит. Замечает. Объясняет. |
+| 2 | **4 tabs (demo scenarios)** | Ask on your actual holdings. | Four things it can do on what you really own. | Спроси на своих реальных позициях. | Вот четыре вещи, которые он умеет на том, что у тебя есть. |
+| 3 | **Brand-world (Second Brain tagline, mid-page v3)** | A second brain for your portfolio. | One memory across chat, insights, and behavioral coach — on your actual holdings, with sources. | Второй мозг для твоего портфеля. | Одна память: чат, инсайты, коуч — на твоих реальных позициях, со ссылками на источники. |
+| 4 | **Insights (what it notices)** | A few minutes a day and you will not miss a thing. | Dividends, drawdowns, events — surfaced before you notice. | Пара минут в день — и ты ничего не упустишь. | Дивиденды, просадки, события — подсвечены раньше, чем ты заметишь. |
+| 5 | **Aggregation (what it holds)** *(marquee)* | One view holds everything. | 1000+ brokers and exchanges. | Один экран держит всё. | Больше 1000 брокеров и криптобирж. |
 | **Footer** | Disclaimer (formal) | — | — | — | — |
 
 **Design notes:**
-- Section 4 remains a right-to-left marquee component showing broker/exchange logos (Fidelity · Schwab · Interactive Brokers · Robinhood · E*TRADE · Trading212 · Hargreaves Lansdown · Questrade · Wealthsimple · Coinbase · Binance · Kraken · etc.).
-- Sub-proofs on hero section carry the sub-surface mapping load: `answers on your actual holdings with sources` (chat) · `surfaces dividends, drawdowns, concentration — before you notice` (insights) · `reads patterns in your trades — without judgment` (coach). Content-lead owns final copy in `docs/content/landing.md`.
+- Section «Aggregation» remains a right-to-left marquee component showing broker/exchange logos (Fidelity · Schwab · Interactive Brokers · Robinhood · E*TRADE · Trading212 · Hargreaves Lansdown · Questrade · Wealthsimple · Coinbase · Binance · Kraken · etc.).
+- Sub-proofs on hero section carry the sub-surface mapping load: `answers on your actual holdings with sources` (chat) · `surfaces dividends, drawdowns, concentration — before you notice` (insights) · `reads patterns in your trades — without judgment` (coach). Content-lead owns final copy in `docs/content/landing.md`; execution waits until PO locks final product name.
+- Section 3 («Brand-world») is where «Second Brain for Your Portfolio» lives as tagline + mid-page copy (v3 lock). It is NOT the hero; it establishes the category claim / brand-world narrative after the imperative hero has landed the functional promise.
 - No dedicated safety/trust section above-fold. Competitor audit showed this is only needed for money-managing products (Range), not trackers (Snowball, Kubera keep trust messaging minimal/mid-page). «Not advisor» is framed as positive trust signal inside sub-proofs rather than a dedicated section.
 
 ### 4-tabs section: demo scenarios (content retained from v1, voice lightly retuned)
@@ -106,7 +111,9 @@ Each tab shows a mock chat interaction demonstrating one capability of the secon
 **Russian (parallel secondary, for future RU launch):**
 > [Название] не является зарегистрированным инвестиционным советником. Информация предоставляется в образовательных целях. Прошлая доходность не гарантирует будущую. Все инвестиционные решения вы принимаете самостоятельно.
 
-**Placement:** Footer only. NOT in landing body — keep landing positive territory.
+**Placement:** Footer on landing. Separate from body copy — keep landing positive territory.
+
+**In-context AI disclaimer (LOCKED 2026-04-23 Q6, format TBD).** In addition to the footer disclaimer, in-context AI reinforcement will be added inside the app — specifically required for EU/UK launch (stricter MiFID II + FCA line between investment information and investment advice than US SEC). Format not yet specified: tooltip treatment is one possibility (PO suggestion to minimize visual noise); product-designer will propose candidates (inline micro-copy, tooltip, first-interaction modal, surface-level banner, etc.) when design phase kicks off. Lane A lock unchanged — this is execution-layer reinforcement, not a new regulatory stance.
 
 ## Pricing tiers (from 00_PROJECT_BRIEF, reconfirmed)
 
@@ -141,7 +148,7 @@ Each stage extends the promise rather than replacing the last. Content-lead + pr
 
 - **vs PortfolioPilot** («Complete financial advice»): they are advisor-framed (Lane C hybrid); we are memory-framed (Lane A clean). Split-narrative vs unified narrative.
 - **vs Origin** («Own your wealth. Ask anything.»): they are multi-topic SEC advisor (invest + budget + wellness); we are investing-pure second brain. Narrower, deeper.
-- **vs Getquin** («Your entire wealth. One platform.»): they are aggregator-first + AI layer on top; we are brain-first (aggregation / chat / insights / coach = one memory). Also: EU-dominant vs our explicit global (including CIS/RU).
+- **vs Getquin** («Your entire wealth. One platform.»): they are aggregator-first + AI layer on top; we are brain-first (aggregation / chat / insights / coach = one memory). Also: EU-dominant vs our explicit global (US + EU + UK + LATAM + APAC + crypto-native, без РФ).
 - **vs Mezzi** («Self-manage your wealth. Get fiduciary advice.»): advice-framed at $299/yr; we are observation-framed at retail pricing.
 - **vs Wealthfolio / Ghostfolio**: OSS privacy-first trackers; we are managed second brain with AI memory.
 - **vs Simply Wall St / Snowball / Fey**: position-level or dividend-level analytics; we add behavioral memory (coach) on top of holdings analytics (insights) on top of chat.
@@ -159,4 +166,4 @@ Each stage extends the promise rather than replacing the last. Content-lead + pr
 
 - **TD-091 (PO-level, not tech):** Add "positive" insight type to backend enum. Current: info/warning/critical → renders info/warning/negative in UI. No way to generate celebratory signals («portfolio outperformed S&P»). Trigger: alpha user feedback if insights feel too doom-focused.
 - **TD-090 (P3):** Typed `action_url` in Insight schema (oneOf discriminated union). Trigger: start of Slice 6b or TASK_05 catalogue finalization.
-- **Post-alpha language expansion order.** Russian is next after English (hard minimum per CIS/RU priority); after Russian, EU language order (DE / IT / ES / FR / PT) TBD with content-lead + growth strategy based on alpha signal.
+- **Post-alpha language expansion order.** English day-1 locked. Russian parallel-drafted secondary (still useful for CIS non-RU markets post-alpha per-country). EU language order (DE / IT / ES / FR / PT) + LATAM Spanish / Portuguese / APAC launch languages TBD with content-lead + growth strategy based on alpha signal. Russia is out of scope (Q7 lock 2026-04-23) — RU content is not launch-gating.
