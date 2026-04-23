@@ -1,459 +1,770 @@
 # Coach Surface Spec — Memoro
 
 **Owner:** product-designer
-**Status:** draft v1.0 — awaiting Navigator + tech-lead sign-off (informs Slice 8c)
+**Status:** draft v2.0 — rewritten from dedicated-route model to contextual-icon + bell-hub model per PO lock 2026-04-23
 **Date:** 2026-04-23
-**Scope:** dedicated `/coach` route — full-surface behavioral coach. Standalone route (not a filter inside Insights feed), per PO dashboard-primary architecture decision Q3 2026-04-23.
-**Depends on:** `docs/04_DESIGN_BRIEF.md` v1.1→v1.2; `docs/design/DASHBOARD_ARCHITECTURE.md` v1.0; `docs/CC_KICKOFF_option4_coach_adr.md` (tech-lead pattern-detection architecture — ADR 1 + ADR 5 for soft-gate semantics).
+**Scope:** Coach as a contextual layer across existing surfaces. No dedicated `/coach` route, no primary nav tab. Coach is surfaced via (1) small dot indicators on the elements a pattern concerns and (2) a top-bar bell-dropdown hub listing all current patterns.
+**Depends on:** `docs/04_DESIGN_BRIEF.md` v1.2→v1.3; `docs/design/DASHBOARD_ARCHITECTURE.md` v1.0→v1.1; `docs/CC_KICKOFF_option4_coach_adr.md` (tech-lead pattern-detection ADRs 1-5 unchanged); `docs/DECISIONS.md` entry 2026-04-23 «Trial + Free tier + Coach UX + brand commitment (4 locks)».
 
 ---
 
-## 0. Delta from tech-lead ADR
+## 0. Delta from prior draft (v1.0)
 
-Tech-lead's ADR recommended Coach live inside the existing Insights Feed as a new insight-type (`coach_weekly`). Product-designer disagrees with that specific recommendation for UX reasons, but **without disagreeing on the backend architecture**:
+v1.0 of this spec recommended a dedicated `/coach` route with its own primary nav tab. PO (2026-04-23) locked a **contextual Coach surface** instead — rejecting both the product-designer `/coach` route and the tech-lead filter-chip-inside-Insights proposals.
 
-- **Keep ADR 1-5 backend architecture.** Core API rule-based detection + AI Service narrative + regex guardrail + soft 30-day gate. All of that is sound.
-- **Change the delivery surface.** Coach gets its own route (`/coach`) with its own tab, NOT a filter-view of Insights Feed.
+**What changed (UX):**
 
-**Why the delta:**
+- No `/coach` route. No primary nav tab labelled «Coach».
+- Coach patterns surface as **small dot indicators** on the elements the pattern concerns (position rows, dashboard widget headers, chat thread previews, insight cards, transaction rows).
+- A **top-bar bell-dropdown** is the hub listing all current patterns — single discovery surface for users who want the full list.
+- Teaser-paywall for Free tier is unchanged in shape (reveal subject, not substance) but delivered inside a **popover opened from the dot**, not a full-page locked card.
+- Empty state is unchanged in shape but delivered inside the bell-dropdown, not a full-page surface.
 
-1. **User segmentation weight.** Coach is the differentiator against PortfolioPilot / Origin / Mezzi — it is a category claim («Second Brain that pattern-reads your behavior»). Burying it as a filter-chip inside Insights Feed demotes the category claim from «this is one of three Second Brain surfaces» to «this is a type of insight». The positioning lock (Option 4, three-surface metaphor) requires three visible destinations.
-2. **Cold-start design problem demands a dedicated surface.** The 30-day cold-start needs a full-surface narrative treatment (see §3). A filter-chip inside Insights Feed cannot host a cold-start empty state without dominating the feed's normal state for non-coach users.
-3. **Mobile tab-bar affords 4 primary tabs (iOS HIG).** Coach earns a tab slot. Hiding it behind a filter makes mobile users three clicks deep for a surface we advertised as primary.
-4. **Engineering scope impact: +0 slices.** Coach still ships inside Slice 8c (per tech-lead) — the slice shifts from «filter-chip + new card variant inside insights feed» to «dedicated /coach route reusing the same card primitive». LOC estimate unchanged.
+**What did NOT change (backend + detection):**
 
-**What's unchanged:** detection architecture, narrative generation, pattern catalog, weekly cadence, regulatory guardrail, soft gate. All of it.
+- Tech-lead ADRs 1-5 stand: rule-based detection in Core API, narrative generation in AI Service, regex guardrail (Layer 2), soft 30-day-OR-30-tx gate, weekly cadence (Sunday 00:00 UTC).
+- Pattern catalog stands: Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal.
+- Mutation contract stands: patterns reuse insights `dismiss` / `snooze` endpoints (Slice 6b pattern).
+- Regulatory guardrail stands: every narrative passes the Lane A regex filter server-side; UI trusts validated output.
 
-This delta is tracked as an open question for Navigator → PO (§9).
+**Why PO rejected the dedicated route:**
 
----
+- Route-primacy argument (product-designer v1.0) claimed Coach as a category-claim deserves a tab slot. PO preferred a design where Coach IS the AI-woven behaviour of the existing dashboard + positions, not a separate destination. Reinforces dashboard-primary architecture (Q3 2026-04-23 lock) and the «AI is the interface, not a feature» principle (§1 Design Brief).
+- Filter-chip-inside-Insights (tech-lead ADR) buried the category. Contextual indicators promote the category to every surface where it's relevant, which is stronger than either route or filter.
+- Mobile tab-bar is freed (4 tabs instead of 5+) — see `DASHBOARD_ARCHITECTURE.md` §4 updated spec.
 
-## 1. Coach home layout
+**Trade-off PO accepted:**
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│ /coach                                                          │
-├─────────────────────────────────────────────────────────────────┤
-│ ┌────────────────────────────────────────────────────────────┐  │
-│ │ HEADER                                                     │  │
-│ │   Memoro · Coach                                           │  │
-│ │   "Patterns Memoro noticed in your trades"                 │  │
-│ │   Last read: 2 days ago  ·  Next read: Sunday              │  │
-│ └────────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│ ┌───────────────────────────────────────────┬───────────────┐   │
-│ │ FILTER ROW (chips, horizontal scroll mob) │ Counter       │   │
-│ │ All · Concentration · Timing · Dividends  │ N patterns    │   │
-│ └───────────────────────────────────────────┴───────────────┘   │
-│                                                                 │
-│ ┌────────────────────────────────────────────────────────────┐  │
-│ │ WEEK ANCHOR — "Week of April 14 – 20"                      │  │
-│ ├────────────────────────────────────────────────────────────┤  │
-│ │ PATTERN CARD                                               │  │
-│ │   Category pill · Date read                                │  │
-│ │   Headline (one line, verb-led)                            │  │
-│ │   Summary (2-4 lines — no imperatives)                     │  │
-│ │   Evidence: You sold AAPL on 2026-02-15, 2026-02-22…       │  │
-│ │   Source (link to transactions) · Dismiss · Snooze         │  │
-│ └────────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│ ┌────────────────────────────────────────────────────────────┐  │
-│ │ PATTERN CARD (locked preview for Free)                     │  │
-│ │   Category pill · "Pattern locked"                         │  │
-│ │   Headline (obfuscated: "A behavioral pattern this week")  │  │
-│ │   Summary (blurred / redacted lines)                       │  │
-│ │   [Upgrade to Plus to read ▸]                              │  │
-│ └────────────────────────────────────────────────────────────┘  │
-│                                                                 │
-│ ┌────────────────────────────────────────────────────────────┐  │
-│ │ WEEK ANCHOR — "Week of April 7 – 13"                       │  │
-│ │   (older pattern cards, same anatomy)                      │  │
-│ └────────────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-### Header
-
-- Title: «Memoro · Coach» — positional crumb, reinforces Memoro is the agent. `text-2xl` Semibold, `text.primary`.
-- Subtitle: verb-led short explanation. «Patterns Memoro noticed in your trades» — `text-sm` `text.secondary`.
-- Meta row: last read + next scheduled read. Uses `text-xs` `text.muted`. Helps users understand the weekly cadence without needing to ask.
-
-### Filter row
-
-- Chip primitives (Design Brief §10.1). Selected chip has `accent.primary` outline + `violet-50` fill.
-- Categories map to pattern catalog codes (per tech-lead §2.4): Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal. Plus «All» default.
-- Horizontal scroll on mobile <640. Wrapped on desktop.
-- Right-aligned counter: `N patterns` showing filtered count (visual parity with Insights feed, Slice 6a pattern).
-
-### Week anchor
-
-- Divider-style section header separating pattern cards by week.
-- `text-sm` Medium, `text.secondary`. «Week of April 14 – 20» format.
-- Scroll-sticky on desktop (optional polish; can defer).
-
-### Empty state (≥30d history, no patterns this week)
-
-- See §3 for full cold-start treatment (before 30d).
-- Post-30d «no pattern this week» state: compass icon at 40px, line: «Memoro read your trades this week and didn't flag a pattern. That's a good sign», no CTA. Previous weeks still visible below if any.
+- Discoverability risk: if indicators are too subtle, users miss patterns. Mitigated by (a) first-time-use micro-tooltip explaining the convention, (b) bell-dropdown as always-on-screen anchor, (c) onboarding tour highlights bell + explains dot convention once.
+- Post-alpha A/B test: contextual vs hypothetical dedicated route. If engagement weak, revisit (per DECISIONS entry «Revisit: A/B test contextual vs dedicated route post-alpha if engagement weak»).
 
 ---
 
-## 2. Pattern card anatomy
+## 1. Attachment-point taxonomy
 
-This is the core reusable primitive. Name it `CoachPatternCard` (parallel to `InsightCard` but distinct).
+Coach patterns surface on five kinds of element. Each type owns a specific visual treatment and a specific click/tap behavior.
 
-### Default state (Free, no lock) OR (Plus, Pro)
+| # | Attachment type | When it appears | Example pattern |
+|---|---|---|---|
+| 1 | **Position row / position card** | Pattern concerns a specific symbol | Concentration flag on NVDA; Timing pattern on AAPL; Cost-averaging rhythm on VTI |
+| 2 | **Dashboard widget header** | Pattern concerns the widget's scope | Concentration across allocation donut; Timing drawdown on portfolio chart; Activity pattern on recent-transactions widget |
+| 3 | **Chat thread preview** (in chat list) + **chat thread head** (when open) | Pattern relates to the subject of an existing chat thread | User asked about NVDA → later Memoro notices NVDA concentration pattern |
+| 4 | **Insight card** (in `/insights` feed or dashboard «Insight of the week») | A coach pattern is adjacent to an insight the user has seen | Concentration insight + concentration coach pattern on same position |
+| 5 | **Transaction row** (in position detail transaction history) | Pattern cites that specific transaction as evidence | A sell-at-local-low timing pattern's evidence row |
 
-```
-┌─────────────────────────────────────────────────────────┐
-│ [Timing]  ·  Read: 2 days ago                           │
-│                                                         │
-│ Memoro noticed a sell-at-local-low pattern              │
-│ in your AAPL trades                                     │
-│                                                         │
-│ You sold AAPL on three dates in the last 90 days, each  │
-│ within 2% of a local low. Each time, AAPL recovered     │
-│ within 30 days. Memoro noticed this is a pattern —      │
-│ no judgment on whether it was the right call.           │
-│                                                         │
-│ ┌─────────────────────────────────────────────────┐     │
-│ │ Evidence                                        │     │
-│ │   · Sold 12 AAPL on 2026-02-15 at $158.22      │     │
-│ │   · Sold 18 AAPL on 2026-02-22 at $155.40      │     │
-│ │   · Sold  8 AAPL on 2026-03-05 at $162.11      │     │
-│ │ View transactions ▸                             │     │
-│ └─────────────────────────────────────────────────┘     │
-│                                                         │
-│ 🗨  Dismiss   ·   ⏱  Snooze 30 days                     │
-└─────────────────────────────────────────────────────────┘
-```
+**Design rule — one dot per element.** Even if multiple patterns concern the same element (e.g., NVDA has both Concentration and Timing patterns open), the row shows a single dot. Dot click opens popover that lists all patterns for that element, grouped by category.
 
-**Anatomy (by element):**
+**Design rule — no cascade.** A pattern that concerns NVDA does NOT also indicate on the portfolio chart widget (even though portfolio chart includes NVDA). Indicators are attached to the most-specific matching element only. Widget-level indicators are reserved for patterns whose evidence crosses multiple symbols (e.g., an allocation-level concentration pattern).
 
-- **Category pill:** chip with category name in `text-xs` Medium. Color by category: Concentration (`amber-600` outline), Timing (`sky-600` outline), Dividends (`emerald-600` outline), Cost-averaging (`emerald-600` outline), Contrarian-signal (`sky-600` outline). Category color is NOT a signal of «good/bad» — never red/green for category pills. Color is categorical, not evaluative. See accessibility §6.
-- **Read date:** `text-xs` `text.muted`, relative format («2 days ago», «April 14», «3 weeks ago»).
-- **Headline:** `text-lg` Medium, `text.primary`. One line. Verb-led, Memoro as subject, user in 2nd person. Never «Your brain noticed». Never imperative («You should…»). Framing template: «Memoro noticed [pattern] in your [context]» OR «Memoro flagged [observation]».
-- **Summary:** `text-base` Regular, `text.secondary`. 2-4 lines. Closes with «no judgment» framing language or Lane-A-safe phrase («no recommendation to make», «patterns only»).
-- **Evidence block:** bordered (border.subtle, radius-md, padding 12) sub-panel. Header «Evidence» in `text-sm` Medium. Body: bulleted list of specific transactions with exact qty/price/date. Monospaced (`Geist Mono`) tabular-nums for qty + price. Link: «View transactions» → `/positions?filter=[symbol]` with linked tx rows. This evidence block is what earns user trust — every claim cites data.
-- **Actions row:** `Dismiss` (primary destructive-adjacent; text-sm, text.secondary, icon `x`) + `Snooze 30 days` (secondary; icon `clock`). Dismiss removes the pattern permanently. Snooze hides for 30 days and returns if pattern still holds. Both use existing insights mutation contract from Slice 6b (no new backend needed — tech-lead confirms pattern-read rows reuse insights-mutation endpoints).
-
-### Plus/Pro full detail — identical to default state
-
-No visual distinction between Plus and Pro for coach readings — both tiers see full evidence + full narrative. Pro tier differentiator is real-time cadence (daily pattern-scans instead of weekly); Plus stays weekly (ADR 3). Both get full content once delivered.
+**Design rule — no backdoor indicators.** Top-bar logo, side nav items, footer, or settings icons never receive dots. The bell is the only chrome-level surface that aggregates; everything else is surface-scoped.
 
 ---
 
-## 3. Cold-start handling — 30-day empty state
+## 2. Icon treatment — the dot
 
-This is the critical surface. Hero promises «remembers», and the first month is structurally empty for users without historical import. The design must reframe that emptiness as productive.
+This is the load-bearing primitive. It must be:
 
-### Two paths
+- **Recognizably Memoro-signal** (users learn «dot means Memoro noticed something»).
+- **Calm** (compliant with Design Brief v1.2 §0 anti-pattern list — NO sparkle, NO gradient halo, NO brain-glow).
+- **Categorical, not evaluative** (never red-for-bad / green-for-good — Coach patterns are observational).
+- **Discoverable without being noisy** (see §3 for the motion spec).
 
-Per tech-lead ADR 5 (soft gate — `tx_count >= 30 OR span >= 30 days`):
-
-**Path A — Warm-start (historical import via SnapTrade backfill).** User connects a broker with ≥30 days of history. Backfill pulls it. Coach runs immediately on available history. First pattern-read lands within ~10 minutes of first sync completing. Stage 3 of onboarding promise fires on-sync, not on-day-30.
-
-**Path B — Cold-start (no historical data).** User has a broker with no backfill, or account is genuinely new. Coach has no history to pattern-read. Hard wait until 30 days / 30 transactions accumulate.
-
-### Path A empty state (warm-start pending, backfill running)
+### 2.1 Visual anatomy
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    🧭                                   │
-│                                                         │
-│      Memoro is reading your trade history               │
-│                                                         │
-│   We're processing the trades Memoro can see            │
-│   from your broker. First patterns land in              │
-│   a few minutes — usually under 10.                     │
-│                                                         │
-│           [ Progress bar — ~40% ]                       │
-│                                                         │
-│   What Memoro will look for:                            │
-│     · Concentration patterns                            │
-│     · Timing patterns (when you buy / sell)             │
-│     · Cost-averaging rhythms                            │
-│     · Dividend clusters                                 │
-│                                                         │
-│   You can close this page — we'll notify you.           │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────┐
+│ NVDA    ● · Timing   │   ← position row with dot
+│ $14,202   +$120       │
+└───────────────────────┘
 ```
 
-- Progress bar: optional visual. Shows a conservative fraction based on «transactions processed / transactions to process». If exact count not available, show indeterminate animated shimmer instead of false precision.
-- «What Memoro will look for» list: sets expectations without promising specific patterns will be found.
-- «Close this page — we'll notify you»: respects user's time. Bell notification fires when first pattern-read completes.
-- If backfill genuinely takes >30 minutes (edge case), escalate tone: «This is taking longer than usual — your broker's data feed is slow. We'll notify you when ready.»
+- **Shape:** filled circle, 6px diameter at default size, 8px on touch-optimized (mobile / iOS tap targets).
+- **Position:** top-right of the element, 8px inset from the right edge, vertically centered to the element's primary label. For position rows: after the symbol name. For widget headers: far-right of the header baseline. For chat threads: to the right of the thread timestamp.
+- **Color:** category-colored using existing semantic tokens (NO new tokens needed — see §8):
+  - Concentration → `semantic.warning` (amber-600)
+  - Timing → `semantic.info` (sky-600)
+  - Dividends → `semantic.positive` (emerald-600)
+  - Cost-averaging → `semantic.positive` (emerald-600)
+  - Contrarian-signal → `semantic.info` (sky-600)
+- **Multi-category on same element:** if the element has patterns from more than one category, the dot uses `accent.primary` (violet-700) as a «multiple» signal. Popover (§4) lists categories individually.
+- **Border / halo:** none. No ring, no outer glow. A halo reads as sparkle.
+- **Pairing with label:** on elements with enough horizontal space (dashboard widget headers, position detail headers), append `· [Category]` text after the dot in `text-xs` `text.muted`. This gives pre-click semantic information. On space-constrained elements (position rows in tables, chat thread previews), dot alone.
 
-### Path A empty state (warm-start succeeded, patterns generated)
+### 2.2 Reduced-motion variant
 
-User lands on /coach and sees the populated surface per §1 — skip the empty state entirely.
+- Dot is static. No pulse.
+- Nothing else changes — color, size, position remain identical.
 
-### Path B empty state (no history, genuine cold-start)
+### 2.3 Forbidden patterns (re-assert §0 Design Brief)
 
-```
-┌─────────────────────────────────────────────────────────┐
-│                    🧭                                   │
-│                                                         │
-│        Memoro is still learning your portfolio          │
-│                                                         │
-│   Coach needs at least 30 days of trade history         │
-│   to read patterns. You have [N] days — [M] to go.      │
-│                                                         │
-│          ┌──────────────────────────────┐               │
-│          │ Progress: ████░░░░░░░ 8/30   │               │
-│          └──────────────────────────────┘               │
-│                                                         │
-│   In the meantime:                                      │
-│     · Dashboard shows what Memoro sees today            │
-│     · Insights flag things you'd miss                   │
-│     · Chat answers questions about your holdings        │
-│                                                         │
-│   [  Go to Insights  ]    [  Ask Memoro  ]              │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
-```
-
-- Progress counter with day-count (or transaction-count — whichever the soft-gate logic is using for this user; show the one closer to threshold).
-- Sets expectation clearly: 30 days is the bar, you're not being gated forever.
-- Routes user to surfaces that DO work during the cold-start (Insights + Chat). Dashboard works from day 1 too, but routing user back to dashboard feels like a loop.
-- Tone: «Memoro is learning», not «you don't have enough». Never make the user feel inadequate. «Still learning» is honest and doesn't blame the user.
-- Never show a locked pattern card here — cold-start is about emptiness, not about upselling.
-
-### Counter behavior
-
-- Updates daily. If user crosses threshold mid-day (first pattern read completed), surface auto-refreshes to populated state on next load. Don't require manual reload.
-- If Path A backfill completes mid-Path-B wait, user auto-promotes to Path A then populated state.
-- Counter never goes backward. If tx count drops (e.g., a transaction is deleted in broker), counter holds highest-ever-seen value. This prevents a punitive «you lost a day» experience.
+- No sparkle glyph instead of a dot.
+- No gradient fill. Solid color only.
+- No outer glow, halo, drop-shadow with color.
+- No brain icon next to the dot.
+- No animated rotation. No particle effects.
+- No «AI-active» chrome in the row background (e.g., tinted-violet row background). Row stays default.
 
 ---
 
-## 4. Interaction states
+## 3. Icon interaction — pulse, states, tooltip
 
-Each `CoachPatternCard` has these states.
+### 3.1 Motion — the pulse
 
-### Default (populated, unread)
+When a new coach pattern attaches to an element, the dot pulses subtly for a bounded period to aid discovery, then goes static.
 
-Base visual per §2.
+**Pulse spec:**
 
-### Hover (desktop)
+- **Animation:** scale 1.0 → 1.15 → 1.0 over 1200ms, linear-ish ease (`easing-inout` from Design Brief §8).
+- **Cadence:** every 2500ms (not continuous — a breath, not a strobe).
+- **Duration:** pulse runs for up to **5 minutes** of active-page time, OR until user hovers/taps the dot, whichever comes first. After that, dot is static until dismissed/snoozed or the pattern ages out.
+- **Cross-session persistence:** pulse state is session-local (resets on page reload). If a pattern is still unread after 7 days of user's active sessions, pulse does NOT re-start. Bell-count remains the authoritative «unread» signal.
+- **Reduced motion:** pulse disabled entirely. Dot is static.
+- **Multiple dots pulsing simultaneously:** allowed but capped at 3 concurrently visible. If more than 3 unread patterns are on-screen, only the top 3 in DOM order pulse; others are static. (Prevents a wall-of-strobes effect.)
 
-- Card border transitions from `border.subtle` → `border.default` over 120ms.
-- Evidence block does NOT change.
-- Actions row stays visible (already not hover-gated).
-- Cursor: default (not pointer — the card itself isn't clickable; only its buttons are).
+**Why this motion spec:**
 
-### Focus
+- Subtle — complies with Design Brief «calm over busy» principle.
+- Bounded — does not create persistent visual noise for the user who hasn't engaged.
+- Resettable via user action — hover/tap stops the pulse, which gives users agency over the affordance.
+- Not AI-sparkle — scale-pulse is a recognized interaction motion, not a decorative AI-aesthetic motif.
 
-- 2px `violet-700` focus ring with 2px `background.page` offset. Wraps entire card when card-level focus is triggered (via keyboard tab).
-- Individual buttons (Dismiss, Snooze, View transactions) get their own focus rings on internal tab-walk.
+### 3.2 Hover state (desktop)
 
-### Active / Pressed (Dismiss, Snooze buttons only)
-
-- Button scale(0.97) for 100ms. `accent.pressed` color for primary variants.
-
-### Loading (mutation in flight)
-
-- On click of Dismiss or Snooze: button shows spinner (16px) + disables. Card stays visible until mutation resolves. On success: card fades out 200ms (respects reduced-motion — instant removal on reduce).
-
-### Error (mutation failure)
-
-- Card stays visible. Toast («Couldn't dismiss this pattern — try again») appears top-right. Button re-enables.
-
-### Teaser-paywall (Free tier, §5)
-
-- See §5.
-
-### Empty state (§3)
-
-- See §3.
-
----
-
-## 5. Teaser-paywall visual pattern
-
-Free tier sees a **locked preview** of coach patterns. This is the «Memoro noticed a pattern» tease that hooks upgrade conversion without feeling manipulative.
-
-### Locked card layout
+- Cursor: pointer.
+- Dot expands: 6px → 8px (scale 1.33) over 120ms.
+- **Inline micro-tooltip** appears below (or above if near viewport bottom) the dot:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│ [Timing]  ·  Locked preview                             │
-│                                                         │
-│ Memoro noticed a pattern in your trading this week      │
-│                                                         │
-│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░            │
-│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░            │
-│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                       │
-│                                                         │
-│ ┌─────────────────────────────────────────────────┐     │
-│ │ Evidence   [locked]                             │     │
-│ │ ░░░░░░░░░░░░░░░░░░░░░░░░░                       │     │
-│ │ ░░░░░░░░░░░░░░░░░░░░░░░░░                       │     │
-│ └─────────────────────────────────────────────────┘     │
-│                                                         │
-│ Plus unlocks full pattern reads + weekly cadence.       │
-│ [ Upgrade to Plus  ▸ ]                                  │
-└─────────────────────────────────────────────────────────┘
+┌─────────────────────────────────┐
+│ Memoro noticed a Timing pattern │
+│ Click to read                   │
+└─────────────────────────────────┘
 ```
 
-**What's shown:**
+  - Copy template: «Memoro noticed a [Category] pattern» + «Click to read» (Free: «Upgrade to Plus to read»; see §5).
+  - Style: `text-xs` `text.primary` on `background.elevated`, `border.subtle`, `radius-md`, `shadow-md`, 8px padding.
+  - Delay: 300ms before show (prevents flicker on quick mouse-overs).
+  - Hide: on mouseout with 150ms delay (prevents flicker).
 
-- **Category pill** — shown (Timing, Concentration, etc.). Tells user what domain the pattern is in without telling them the pattern.
-- **Headline** — generic «Memoro noticed a pattern in your trading this week» / «Memoro noticed a concentration pattern this week» / «Memoro noticed a dividend rhythm this week». Category-specific but pattern-vague.
-- **Summary lines** — rendered as skeleton shimmer (horizontal bars) in `background.muted` color. NOT filled with text. User knows content is there but cannot read it.
-- **Evidence block** — locked. Evidence header shown with a small lock icon; body shown as skeleton shimmer.
-- **CTA** — «Upgrade to Plus» primary button. One honest sentence of value explanation below the button.
+### 3.3 Focus state (keyboard)
 
-**What's NOT shown:**
+- Dot is a focusable element (`<button>` wrapper with `aria-label="Memoro noticed a [Category] pattern on [element name]. Press Enter to read."`).
+- Focus ring: 2px `violet-700` with 2px `background.page` offset — matches Design Brief §12.2.
+- Enter or Space: opens popover (§4). Same as click.
+- Escape while popover open: closes popover, returns focus to dot.
 
-- No exact pattern name («sell-at-local-low» is withheld — category «Timing» is shown, specific pattern is not).
-- No dates, symbols, or transaction details.
-- No «# of patterns locked» count — avoids scarcity framing.
-- No countdown timers, no urgency language («your patterns expire in…»). Never.
+### 3.4 Active / pressed
 
-**Design Brief §13.3 «Never» list enforced.** No dark patterns. Upgrade copy is honest about value, not guilt-trip.
+- Dot scale 0.92 for 100ms on mousedown/touchstart. Feedback is tactile, not decorative.
 
-### Locked card visual treatment
+### 3.5 First-time-use tooltip (onboarding aid)
 
-- Card outline: `border.default` (slightly darker than default cards to signal «restricted»).
-- Content overlay: skeleton shimmer on text lines (matches existing skeleton primitive from §10.1).
-- Lock icon on the Evidence block header: Lucide `lock`, 14px, `text.muted`.
-- CTA button: `accent.primary` fill, `text.onAccent` text. Same as primary button in rest of system — no special «urgent upgrade» styling.
-- Hover: cursor stays default (card not clickable); button hovers normally.
+First time a user encounters a pulsing dot on any surface, a one-time **coach tutorial tooltip** attaches to the first dot:
 
-### When teaser-paywall shows
+```
+┌──────────────────────────────────────────┐
+│ Memoro noticed a pattern                 │
+│                                          │
+│ When you see a dot like this, Memoro     │
+│ has read your trades and noticed         │
+│ something worth sharing. Click to see.   │
+│                                          │
+│ All patterns also live in the bell (↑).  │
+│                                          │
+│                           [ Got it ]     │
+└──────────────────────────────────────────┘
+```
 
-Per `DASHBOARD_ARCHITECTURE.md` §2 Coach teaser tile note:
+- Shows ONCE per user, ever. Persists via user-pref flag (`coach_tutorial_seen`, per-user-account).
+- Copy mentions the bell as a secondary anchor («All patterns also live in the bell»).
+- Dismiss via `Got it` button OR clicking outside. Dismissal marks the flag.
+- On mobile: same shape, positioned to not overflow viewport.
+- If user's first encounter is the bell-dropdown (not a dot on a surface), the tutorial tooltip fires from the first dot instead — bell-dropdown has its own in-dropdown onboarding line (§7.5).
 
-- Free tier with ≥30 days history: shows latest locked pattern on dashboard AND inside /coach route.
-- Free tier with <30 days history: shows cold-start empty state on /coach (§3); no locked card. Dashboard Coach teaser tile is also hidden in this window.
-- Plus/Pro: no locked cards ever. All patterns full content.
+### 3.6 Popover — the click destination
 
-### Upgrade CTA destination
-
-- Routes to `/pricing?source=coach&pattern=[category]` — analytics tracking the conversion source. Product-designer does not own this URL/analytics scheme; hands to navigator → frontend-engineer for implementation.
-- Modal vs full-page: recommend full-page paywall for coach upgrade (matches Design Brief §13.2 «page lock»). Coach is a dedicated surface; users clicking «upgrade» expect to see pricing comparison, not a modal. PO to confirm.
-
----
-
-## 6. Accessibility
-
-### Screen reader
-
-- Page title: «Coach — Memoro».
-- Each week anchor is `<h2>` (e.g., `<h2>Week of April 14 – 20</h2>`).
-- Each pattern card is `<article aria-labelledby="pattern-[id]">`. The headline carries the `id`.
-- Category pill is decorative-with-label: `<span class="category-pill" aria-label="Category: Timing">Timing</span>`. Don't rely on visual category-pill alone.
-- Evidence block is `<section aria-label="Evidence">` with `<ul>` of transactions. Each transaction line announces qty, symbol, date, price.
-- Dismiss / Snooze buttons: `aria-label="Dismiss pattern: [headline]"` / `aria-label="Snooze pattern for 30 days: [headline]"`.
-- Locked state: `aria-label` on card adds «Locked preview. Upgrade to Plus to read.» so screen-reader users understand the gate without visual skeleton inference.
-- **Verb-led framing on screen reader:** «Memoro noticed a sell-at-local-low pattern in your AAPL trades». Never «your brain noticed». Never «your second brain…». The name of the agent IS «Memoro» — screen readers say it cleanly. The brain metaphor lives in positioning copy, NOT in UI chrome.
-
-### Keyboard flow
-
-- Tab into /coach header.
-- Tab through filter chips left-to-right.
-- Tab into first pattern card (focus ring wraps card).
-  - Enter / Space while card focused: no-op. Card isn't a button.
-  - Tab again: focus moves to «View transactions» link inside evidence.
-  - Tab: Dismiss button.
-  - Tab: Snooze button.
-  - Tab: next card.
-- Escape: unfocuses card; returns to nav.
-
-### Contrast
-
-- All text on card surface meets 4.5:1.
-- Skeleton shimmer lines for locked cards: `background.muted` on `background.elevated`. Intentionally low contrast — signal is «not readable». Not a WCAG violation because skeleton is decorative; underlying locked state has text alternative.
-- Category pill text: 4.5:1 minimum on chip fill.
-- Evidence block monospaced numbers: 4.5:1.
-
-### Reduced motion
-
-- Skeleton shimmer: static at `prefers-reduced-motion: reduce` (no pulse). Color-only signal of locked state.
-- Card fade-out on dismiss: instant on reduce.
-- Progress bar shimmer in cold-start: static on reduce.
-
-### Color-only signaling — forbidden
-
-- Category pills use color AND text label.
-- No red pill means «bad pattern»; no green pill means «good pattern». Coach patterns are observational, not evaluative. Color coding is categorical only.
+Clicking / tapping / activating a dot opens a **teaser popover** anchored to the dot. NOT a full modal. See §4.
 
 ---
 
-## 7. Mobile vs desktop variations
+## 4. Popover — pattern teaser / detail view
+
+The popover is the read-surface for a single attachment point. Different content shapes per tier.
+
+### 4.1 Plus / Pro — full detail popover
+
+```
+┌──────────────────────────────────────────────────┐
+│ [Timing]  ·  Read: 2 days ago             [×]   │
+│                                                  │
+│ Memoro noticed a sell-at-local-low pattern       │
+│ in your AAPL trades                              │
+│                                                  │
+│ You sold AAPL on three dates in the last 90 days │
+│ each within 2% of a local low. Each time, AAPL   │
+│ recovered within 30 days. Memoro noticed this    │
+│ is a pattern — no judgment on whether it was     │
+│ the right call.                                  │
+│                                                  │
+│ ┌────────────────────────────────────────────┐   │
+│ │ Evidence                                   │   │
+│ │   · Sold 12 AAPL on 2026-02-15 at $158.22 │   │
+│ │   · Sold 18 AAPL on 2026-02-22 at $155.40 │   │
+│ │   · Sold  8 AAPL on 2026-03-05 at $162.11 │   │
+│ │ View transactions ▸                        │   │
+│ └────────────────────────────────────────────┘   │
+│                                                  │
+│ Dismiss  ·  Snooze 30 days                       │
+└──────────────────────────────────────────────────┘
+```
+
+**Anatomy (by element — elements carry the same visual language as v1.0 `CoachPatternCard`, but as popover content):**
+
+- **Category pill + read date** — `text-xs` Medium; same color-by-category rules as §2.1.
+- **Close button** — top-right `×`; closes popover, dot goes static (pulse already over by this point anyway).
+- **Headline** — `text-base` Medium (smaller than v1.0 card; popover is compact). One line verb-led. «Memoro noticed [pattern] in your [context]».
+- **Summary** — `text-sm` Regular, `text.secondary`. 2-4 lines. Closes with observational-framing language.
+- **Evidence block** — same as v1.0 `CoachPatternCard` §2. Bordered sub-panel, `Geist Mono` for qty / price. «View transactions» link routes to `/positions/[symbol]?tx=[ids]`.
+- **Actions row** — `Dismiss` + `Snooze 30 days`. Reuses Slice 6b mutation contract.
+
+**Sizing:**
+
+- Desktop: max-width 480px; positioned below the dot with 8px offset; auto-flip to above if viewport bottom within 100px.
+- Mobile: bottom sheet takeover instead of popover. Swipe-down or `×` to close. Full-width, radius-lg top corners.
+
+**Opening animation:**
+
+- Desktop: scale 0.98 → 1.0 + opacity 0 → 1 over 150ms. Reduced-motion: instant.
+- Mobile: sheet slide-up over 200ms. Reduced-motion: instant.
+
+### 4.2 Free tier — teaser popover
+
+```
+┌──────────────────────────────────────────────────┐
+│ [Timing]  ·  Locked preview              [×]    │
+│                                                  │
+│ Memoro noticed a pattern in your NVDA trades     │
+│                                                  │
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │
+│ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░                │
+│                                                  │
+│ ┌────────────────────────────────────────────┐   │
+│ │ Evidence [locked]                          │   │
+│ │ ░░░░░░░░░░░░░░░░░░░░░░░░░                  │   │
+│ │ ░░░░░░░░░░░░░░░░░░░░░░░░░                  │   │
+│ └────────────────────────────────────────────┘   │
+│                                                  │
+│ Plus unlocks full pattern reads.                 │
+│ [ Upgrade to Plus ▸ ]                            │
+└──────────────────────────────────────────────────┘
+```
+
+**What's shown (subject):**
+
+- **Category pill** — the pattern domain (Timing, Concentration, Dividends, Cost-averaging, Contrarian-signal).
+- **Subject-specific headline** — specific to what the pattern is about, but not substance. Templates:
+  - Per-symbol patterns: «Memoro noticed a pattern in your [SYMBOL] trades»
+  - Widget-level patterns: «Memoro noticed a [Category] pattern this week»
+  - Chat-thread patterns: «Memoro noticed a pattern related to [thread subject]»
+- **Skeleton shimmer bars** — standing in for the summary body. Uses existing `Skeleton` primitive (Design Brief §10.1) at `background.muted` on `background.elevated`. NOT filled with text.
+- **Evidence block — locked** — header «Evidence» + small `lock` icon (Lucide, 14px, `text.muted`); body as skeleton shimmer.
+- **CTA** — «Upgrade to Plus» primary button + one-line honest value explanation.
+
+**What's NOT shown (substance):**
+
+- No specific pattern name (withhold «sell-at-local-low»; show category «Timing»).
+- No dates, price points, transaction details.
+- No «# patterns locked this week» — avoids scarcity framing.
+- No countdown, no urgency language.
+
+**Design Brief §13.3 «Never» list enforced.** Copy is honest about value, not guilt-trip.
+
+**Upgrade CTA destination:**
+
+- Routes to `/pricing?source=coach&pattern=[category]&attachment=[type]` for analytics. Full pricing page, not modal — matches Design Brief §13.2 «page lock» for Pro/Plus upgrades.
+- Product-designer does not own URL/analytics scheme. Hand to frontend-engineer via Navigator.
+
+### 4.3 Dismiss / Snooze behavior
+
+- **Dismiss:** pattern removed permanently for this user. Dot disappears. Bell-count decrements. No undo.
+- **Snooze 30 days:** pattern hidden; dot disappears; bell-count decrements. If pattern still holds 30 days later, re-fires with fresh dot + pulse.
+- **Mutation contract:** reuses insights `dismiss` / `snooze` endpoints per tech-lead ADR + Slice 6b pattern. No new backend required.
+- **Loading / error states:** inherited from Slice 6b implementation (in-flight spinner on button; toast on failure; card stays until resolved).
+
+### 4.4 Popover dismissal
+
+- `×` close button.
+- Click outside popover.
+- `Escape` key.
+- On close, focus returns to the originating dot.
+- Dismissal does NOT mark pattern as read — only `Dismiss` action marks it read. User can open the popover repeatedly.
+
+---
+
+## 5. Free-tier paywall treatment — summary
+
+Free tier Coach experience:
+
+- Dots appear on attachment points as normal. Category color shows.
+- Hover tooltip: «Memoro noticed a [Category] pattern — upgrade to Plus to read».
+- Click → teaser popover (§4.2). Subject revealed, substance locked.
+- Bell-dropdown lists all current patterns with locked state indicator (§7.3).
+- `Dismiss` available on Free locked patterns (user can hide a pattern they don't want to see even if they can't read it — agency over visual noise).
+- `Snooze` available on Free locked patterns (same rationale).
+- **No cold-start empty state on a dedicated surface** — contextual model has no surface to show empty. Bell-dropdown empty copy handles this (§7.3 Path A/B).
+
+Free-to-Plus conversion signals:
+
+- CTA in popover.
+- CTA in bell-dropdown footer («Upgrade to Plus for full pattern reads»).
+- Contextual dashboard banner after week 2 if ≥3 locked patterns unread (honest, not pushy — «Memoro has noticed 3 patterns this month. Upgrade to Plus to see them»).
+
+**No dark patterns.** No countdown, no scarcity, no «expires soon». Never. (§13.3 Design Brief.)
+
+---
+
+## 6. Empty states
+
+Coach is contextual — there is no dedicated surface to be «empty». The empty state lives inside the bell-dropdown.
+
+### 6.1 Path A — warm-start pending (backfill running)
+
+Bell-dropdown empty copy:
+
+```
+┌────────────────────────────────────────┐
+│ Memoro is reading your trade history   │
+│                                        │
+│ First patterns land in a few minutes.  │
+│ You'll see a dot here when they do.    │
+│                                        │
+│ [ Progress bar indeterminate ]         │
+└────────────────────────────────────────┘
+```
+
+- Bell icon still visible (unread count = 0; no badge).
+- No dots anywhere on surfaces during this window.
+- When first pattern lands: bell-count increments to 1 + bell pulses once (same spec as dot pulse, §3.1) + dot appears on corresponding attachment point + dashboard banner (see `ONBOARDING_FLOW.md` §4.2).
+
+### 6.2 Path B — cold-start (no history)
+
+Bell-dropdown empty copy:
+
+```
+┌────────────────────────────────────────┐
+│ Memoro is learning your portfolio      │
+│                                        │
+│ Coach reads your trade history to spot │
+│ patterns. You'll need about 30 days    │
+│ of trading for the first read.         │
+│                                        │
+│ Progress: ████░░░░░░░░░░ 8 / 30 days  │
+│                                        │
+│ In the meantime, Memoro is watching    │
+│ your Dashboard and Insights for you.   │
+└────────────────────────────────────────┘
+```
+
+- Bell icon visible; unread count = 0.
+- No dots on surfaces.
+- Progress counter updates daily. If Path A pattern fires mid-Path-B (e.g., user connects a second broker with history), auto-promotes to populated state.
+- Counter is day-count OR transaction-count — whichever is closer to threshold for this user. Uses same soft-gate logic as tech-lead ADR 5.
+- **Never frame as lock or gate.** «Memoro is learning» is honest and does not blame the user.
+
+### 6.3 Post-gate — no patterns this week (all patterns dismissed or none generated)
+
+Bell-dropdown empty copy:
+
+```
+┌────────────────────────────────────────┐
+│ You're all caught up                   │
+│                                        │
+│ Memoro read your trades this week and  │
+│ didn't flag anything new. Check back   │
+│ Sunday for the next read.              │
+└────────────────────────────────────────┘
+```
+
+- Bell icon visible; unread count = 0 (no badge).
+- Tone: quiet, not apologetic. «Didn't flag» is honest — no patterns is a valid outcome.
+
+---
+
+## 7. Bell-dropdown hub — full spec
+
+The top-bar bell is the always-on-screen aggregation surface for all «Memoro noticed» notifications, including Coach patterns. This extends the existing `BellDropdown` primitive (Design Brief §10.3, §16.2).
+
+### 7.1 Bell icon in top bar
+
+- Lucide `bell` icon, 20px, `text.primary` at rest.
+- Positioned in top-bar right group, left of `PlanBadge`. See `DASHBOARD_ARCHITECTURE.md` §7 updated.
+- **Unread count badge:** small circle overlay top-right of bell, `semantic.info` fill (sky-600), `text.onAccent` text, `text-xs` Semibold. Shows count 1-9, `9+` for 10+. Existing primitive behavior (§16.2 Design Brief).
+- **Unread coach-pattern differentiator:** when at least one unread item in the dropdown is a coach pattern, bell icon gains a subtle 1px `accent.primary` (violet-700) ring at the icon's outer radius. Differentiates coach-present from «just product notifications». Disappears when all coach patterns read.
+- **Bell pulse:** first time a new coach pattern lands in a session, bell pulses ONCE using the same dot-pulse spec (§3.1). Subsequent patterns in the same session: badge count increments silently. User-agency principle — one attention-grab per session, not per pattern.
+- **Keyboard shortcut:** `Cmd/Ctrl+B` opens the bell-dropdown. Hint shown in tooltip on bell hover.
+
+### 7.2 Dropdown structure — Plus / Pro
+
+```
+┌──────────────────────────────────────────────┐
+│ Notifications                                │
+│                                              │
+│ COACH · This week                            │
+│ ┌──────────────────────────────────────┐     │
+│ │ [Timing]   NVDA — sell-at-local-low  │     │
+│ │ 2 days ago                  View ▸   │     │
+│ └──────────────────────────────────────┘     │
+│ ┌──────────────────────────────────────┐     │
+│ │ [Concentration]  Portfolio            │     │
+│ │ 3 days ago                  View ▸   │     │
+│ └──────────────────────────────────────┘     │
+│                                              │
+│ COACH · Earlier                              │
+│ ┌──────────────────────────────────────┐     │
+│ │ [Dividends]   VTI — quarterly rhythm │     │
+│ │ 11 days ago                 View ▸   │     │
+│ └──────────────────────────────────────┘     │
+│                                              │
+│ OTHER NOTIFICATIONS                          │
+│ ┌──────────────────────────────────────┐     │
+│ │ Weekly digest ready                   │     │
+│ │ 1 day ago                   View ▸   │     │
+│ └──────────────────────────────────────┘     │
+│                                              │
+│ Mark all read · Notification settings        │
+└──────────────────────────────────────────────┘
+```
+
+**Structure:**
+
+- Header: «Notifications» (`text-sm` Medium, `text.secondary`).
+- Section groups:
+  - **Coach · This week** — patterns from the current weekly cycle (Sunday 00:00 UTC – Sat 23:59 UTC).
+  - **Coach · Earlier** — patterns from older cycles, not yet read / dismissed.
+  - **Other notifications** — non-coach types (digest emails, price alerts, billing, etc.).
+- Each coach-pattern row:
+  - Category pill (same color rules as §2.1).
+  - Subject identifier (symbol for per-symbol patterns; «Portfolio» for widget-level; thread title for chat-thread patterns).
+  - Pattern-name teaser (only for Plus/Pro) or generic «a pattern this week» (for Free — see §7.3).
+  - Timestamp relative («2 days ago»).
+  - `View` link — clicking opens the same popover as clicking the dot (§4). Focus management: popover opens anchored to the row, not to a dot elsewhere.
+- Footer: «Mark all read» (clears coach section unread; does NOT dismiss patterns — just marks them read in the notification hub) + «Notification settings» link to `/settings/notifications`.
+
+**Grouping choice rationale:**
+
+- Chronological within «This week» (most recent first) — users skim for newness.
+- «Earlier» is collapsed by default if >3 items (click to expand). Prevents wall-of-rows.
+- Coach grouped separately from other notification types because coach reading is a different task (pattern reading) from consuming digest emails or billing alerts. Grouping reduces cognitive switching.
+
+### 7.3 Dropdown structure — Free tier
+
+Identical structure to Plus/Pro but with row teaser-only content:
+
+```
+┌──────────────────────────────────────────────┐
+│ Notifications                                │
+│                                              │
+│ COACH · This week                            │
+│ ┌──────────────────────────────────────┐     │
+│ │ [Timing]   NVDA — 🔒 Locked preview  │     │
+│ │ 2 days ago                Unlock ▸   │     │
+│ └──────────────────────────────────────┘     │
+│ ┌──────────────────────────────────────┐     │
+│ │ [Concentration]  Portfolio — 🔒      │     │
+│ │ 3 days ago                Unlock ▸   │     │
+│ └──────────────────────────────────────┘     │
+│                                              │
+│ Upgrade to Plus for full pattern reads ▸     │
+│                                              │
+│ ...                                          │
+└──────────────────────────────────────────────┘
+```
+
+- Lock icon + «Locked preview» indicator after the subject.
+- `Unlock ▸` link per row — routes to `/pricing?source=coach&pattern=[category]&attachment=[type]&entry=bell` (analytics tracks entry point).
+- Footer CTA: «Upgrade to Plus for full pattern reads ▸» — single, honest, non-scarcity.
+- `Mark all read` still works for Free users (they can mute the bell count without unlocking).
+- If zero unread patterns and zero older (brand-new Free user): empty-state copy per §6.
+
+### 7.4 Sizing / positioning
+
+- Desktop: dropdown anchored to bell, 380px wide, max-height 60vh with internal scroll. Positioned below bell with 8px offset. Auto-flip if viewport bottom within 200px (rare — bell is in top bar).
+- Mobile: bottom sheet takeover. Full-width, radius-lg top corners. Swipe-down or `×` to close.
+
+### 7.5 First-time-bell tooltip
+
+If user opens bell-dropdown before ever clicking a surface dot, the first open shows a one-time coach explainer at the top of the dropdown:
+
+```
+┌──────────────────────────────────────────────┐
+│ ℹ This is Memoro's read-list.                │
+│   When Memoro notices a pattern in your      │
+│   trades, it shows up here and with a dot    │
+│   on the affected element.                   │
+│                              [ Got it ]      │
+└──────────────────────────────────────────────┘
+```
+
+Same persistence flag as §3.5 (`coach_tutorial_seen`) — tutorial fires from whichever surface the user encounters first (dot OR bell), then is suppressed on the other surface.
+
+### 7.6 Accessibility (bell-dropdown)
+
+- `<button aria-label="Notifications — N unread" aria-haspopup="menu" aria-expanded="false">` for the bell button.
+- Dropdown: `role="menu"` (existing BellDropdown primitive semantics — see Design Brief §10.3 TD-005 note; minimal arrow-nav is current tech-debt).
+- Coach rows: `role="menuitem"` with `aria-label="Coach pattern: Timing on NVDA, 2 days ago. Click to read."` (Plus/Pro) or `aria-label="Coach pattern: Timing on NVDA, locked preview. Click to unlock with Plus."` (Free).
+- Keyboard: Tab into bell → Enter opens dropdown → Tab walks through rows → Enter opens popover anchored to that row → Escape closes popover back to bell → Escape again closes dropdown back to top bar.
+- Keyboard shortcut: `Cmd/Ctrl+B` toggles dropdown from anywhere in the app.
+- Reduced motion: dropdown opens instantly (no scale/opacity animation).
+
+---
+
+## 8. Paid-tier indicator
+
+Plus/Pro difference from Free:
+
+- **Dot** — identical visual. No «Plus-only» ring or styling. Tier is not signalled visually on the attachment-point dot.
+- **Popover** — Plus/Pro sees full detail (§4.1); Free sees teaser (§4.2).
+- **Bell-dropdown rows** — Plus/Pro sees pattern-name teaser; Free sees locked-row state.
+- **Dismiss / Snooze** — available to all tiers.
+
+**Design rule: no visible tier-status on the indicator itself.** Users should not feel watched-by-tier on the chrome. Tier difference manifests at the read-level (what content is shown) not at the discovery-level (whether the dot exists).
+
+---
+
+## 9. Accessibility
+
+### 9.1 Screen reader — dots
+
+- Dot is wrapped in `<button aria-label="Memoro noticed a [Category] pattern on [element name]. Press Enter to read.">`.
+- Multi-category dot: `aria-label="Memoro noticed [N] patterns on [element name]. Press Enter to read."`.
+- Decorative pulse is not announced (`aria-hidden` on the animation layer).
+- **Verb-led framing enforced:** «Memoro noticed a pattern» — never «your brain noticed». See Design Brief §0.2.
+
+### 9.2 Screen reader — popover
+
+- Popover opens as `<dialog role="dialog" aria-modal="true" aria-labelledby="popover-headline-[id]">`.
+- Focus moves to popover close button on open.
+- Headline is `<h3 id="popover-headline-[id]">`.
+- Category pill: `<span aria-label="Category: Timing">Timing</span>`.
+- Evidence block: `<section aria-label="Evidence">` with `<ul>` of transactions. Each transaction line announces qty, symbol, date, price via monospaced tabular-nums content.
+- Dismiss / Snooze: `aria-label="Dismiss pattern: [headline]"` / `aria-label="Snooze pattern for 30 days: [headline]"`.
+- Locked popover: `aria-label` on dialog adds «Locked preview. Upgrade to Plus to read.».
+
+### 9.3 Screen reader — bell-dropdown
+
+- Bell: `<button aria-label="Notifications — [N] unread" aria-haspopup="menu" aria-expanded="[bool]">`.
+- Coach section header: `role="presentation"` text + grouped rows have common `aria-labelledby`.
+- Each row: `role="menuitem"`. See §7.6 label templates.
+- `Mark all read`: announces count affected via toast on activation.
+
+### 9.4 Keyboard flow (end-to-end)
+
+- **From dashboard:** Tab to bell → Enter → dropdown open → Tab to first coach row → Enter → popover open → Tab to Dismiss / Snooze → Enter to activate → mutation → focus returns to row.
+- **From attachment surface:** Tab to dot (within position row, widget, etc.) → Enter → popover open → same flow.
+- **Global:** `Cmd/Ctrl+B` toggles bell-dropdown from anywhere.
+- Escape closes popover (focus → dot OR row); Escape again closes dropdown if open.
+
+### 9.5 Contrast
+
+- Dot color on white surface: Concentration (amber-600 = #d97706) hits 4.76:1; Timing (sky-600 = #0284c7) hits 4.62:1; Dividends/Cost-averaging (emerald-600 = #059669) hits 4.54:1. All meet AA non-text 3:1 and large-text 4.5:1 thresholds.
+- Dot color on dark surface: use the dark-mode semantic tokens (sky-400, emerald-400, amber-400) — already audited in Design Brief §3.3 for 4.5:1 on `background.elevated` dark.
+- Popover text, evidence numbers, button labels: 4.5:1 minimum on card surface.
+- Skeleton shimmer (locked state): intentionally low contrast — signal is «not readable». Not a WCAG violation because underlying locked state has text alternative via `aria-label`.
+- **Color-only signaling forbidden.** Every dot pairs with category text in hover tooltip / popover / bell-dropdown row. Users who cannot distinguish amber-vs-sky-vs-emerald get the category name in text.
+
+### 9.6 Reduced motion
+
+- Dot pulse: disabled (§3.1 reduced-motion spec).
+- Bell first-session pulse: disabled.
+- Popover open / close: instant (no scale/opacity transition).
+- Dropdown open / close: instant.
+- Skeleton shimmer in locked states: static color (no animated shimmer).
+- Banner slide-in on first-value: instant.
+
+---
+
+## 10. Mobile vs desktop variations
 
 | Element | Desktop ≥1024 | Mobile ≤768 |
 |---|---|---|
-| Header | Full content + meta row | Stacked; meta row on second line, `text-xs` |
-| Filter row | Inline chips + right-aligned counter | Horizontal scroll chips; counter below |
-| Week anchor | Sticky on scroll (optional, can defer) | Non-sticky; inline divider |
-| Pattern card | Max-width 720px centered, evidence block inline | Full-width, evidence block full-width below summary |
-| Evidence list | Flat list with chevron link | Same; link text unchanged |
-| Actions row | Right-aligned buttons | Left-aligned buttons; full-width separators |
-| Locked card | Same layout, centered | Full-width; CTA button full-width at bottom |
-| Cold-start empty state | Centered with max-width 560 | Full-width with 16px side padding |
+| Dot size | 6px diameter | 8px diameter (touch optimized) |
+| Dot position | Inline-right of element label, 8px inset | Same, but absolute-positioned to avoid table cell truncation on narrow rows |
+| Hover tooltip | Shown on mouseover | Not shown (touch devices have no hover); tap opens popover directly |
+| Popover | Anchored below/above dot, max 480px wide | Bottom sheet takeover, full-width |
+| First-time tooltip | Anchored popover style | Full-width card positioned to not overflow |
+| Bell position | Top-bar right group | Top-bar right group (or in hamburger menu if <640) |
+| Bell-dropdown | Anchored dropdown 380px, max 60vh | Bottom sheet takeover, full-width |
+| Keyboard shortcut | `Cmd/Ctrl+B` visible hint on hover | N/A (no hardware keyboard assumed) |
 
 **Mobile-specific concerns:**
 
-- Touch targets: Dismiss + Snooze buttons must be ≥44×44 CSS pixels (iOS HIG). Desktop can compact to 32×32.
-- Horizontal scroll of filter chips: no scroll-snap (too jarring); momentum scroll native.
-- Coach tab on iOS bottom tab-bar (see `DASHBOARD_ARCHITECTURE.md` §4 iOS section).
+- Touch targets: dot alone is 8px — below the 44x44 HIG minimum. Solved by making the entire row (position row, widget header, chat thread, etc.) tappable when it carries a dot; tap triggers popover. The dot itself is a visual anchor, not the sole tap target. Users can tap anywhere on the row.
+- iOS tab-bar: see `DASHBOARD_ARCHITECTURE.md` §4 updated — bell lives in top-bar, not tab-bar. 4 tabs remain (Dashboard / Insights / Chat / Settings).
+- Android: same as iOS principle.
 
 ---
 
-## 8. Design tokens used
+## 11. Design tokens used
 
 From `packages/design-tokens/tokens/semantic/{light,dark}.json`:
 
 - `background.page`, `background.elevated`, `background.muted`
-- `text.primary`, `text.secondary`, `text.muted`
+- `text.primary`, `text.secondary`, `text.muted`, `text.onAccent`
 - `border.subtle`, `border.default`, `border.strong`
-- `accent.primary` (violet-700) — CTA and category-pill (Timing/Contrarian) outline
-- `semantic.warning` (amber-600) — category-pill (Concentration) outline
-- `semantic.info` (sky-600) — category-pill (Timing) outline
-- `semantic.positive` (emerald-600) — category-pill (Dividends/Cost-averaging) outline
+- `accent.primary` (violet-700) — CTA + bell coach-unread ring + multi-category dot
+- `semantic.warning` (amber-600) — Concentration dot
+- `semantic.info` (sky-600) — Timing / Contrarian-signal dot
+- `semantic.positive` (emerald-600) — Dividends / Cost-averaging dot
+- Dark-mode dots use `semantic.*` dark values (amber-400 / sky-400 / emerald-400).
 
-**No new tokens required for coach surface.**
-
----
-
-## 9. Open questions for PO (via Navigator)
-
-1. **Dedicated /coach route vs. insights-feed filter-chip.** Tech-lead's ADR recommends filter-chip; product-designer (this spec) recommends dedicated route. PO to adjudicate. If PO picks filter-chip, §1-§5 of this spec rework to fit inside Insights Feed; §3 cold-start gets harder (takes over entire feed for users with <30d history).
-2. **Upgrade CTA destination:** full-page pricing vs. modal. Recommendation: full-page. See §5.
-3. **Coach weekly cadence Sunday 00:00 UTC:** user-timezone aware or UTC global? Recommendation: UTC global for MVP (simpler; matches tech-lead Slice 8e plan); revisit post-alpha if user feedback says patterns «feel stale by Monday morning» in non-UTC markets.
-4. **Snooze duration default:** 30 days vs 7 days. Recommendation: 30 days (matches pattern cadence — snoozing a weekly pattern for 7 days barely helps; 30 days gives the pattern time to evolve or clear). PO to confirm.
-5. **Can Coach be dismissed category-wide?** User: «I don't want to see Concentration patterns anymore». Recommendation: yes, via settings → notifications → coach categories (matches Design Brief §16 notification overrides). Not MVP; post-alpha refinement.
+**No new tokens required for contextual coach surface.**
 
 ---
 
-## 10. Dependencies
+## 12. Interaction states reference
 
-- **Blocked on:** PO sign-off on §9.1 (route vs filter-chip). Tech-lead ADRs 1-5 already merged as recommendations. Frontend-engineer adding Coach to nav (per `DASHBOARD_ARCHITECTURE.md` §4).
+Consolidated state matrix for the dot + popover + bell primitives.
+
+### Dot
+
+- **Default (unread, recent):** colored, 6px, pulse on (or static if `prefers-reduced-motion: reduce`).
+- **Default (unread, ≥5min of active-page-time):** colored, 6px, static (pulse timed out).
+- **Hover (desktop):** colored, 8px (scale 1.33), micro-tooltip visible.
+- **Focus (keyboard):** colored, focus ring 2px violet-700 + 2px offset.
+- **Active / pressed:** scale 0.92, 100ms.
+- **Read (popover closed after view):** colored, 6px, static.
+- **Dismissed:** gone.
+- **Snoozed:** gone (returns in 30 days if pattern still holds).
+
+### Popover
+
+- **Opening:** scale 0.98→1.0 + opacity 0→1 over 150ms. Reduced-motion: instant.
+- **Open (Plus/Pro):** full detail per §4.1.
+- **Open (Free):** teaser per §4.2.
+- **Mutation in flight:** button spinner + disabled.
+- **Mutation error:** card stays visible + toast.
+- **Closing:** opacity 1→0 over 100ms.
+
+### Bell
+
+- **Default (no unread):** bell icon, no badge, no ring.
+- **Unread (non-coach only):** bell + count badge (sky-600 fill).
+- **Unread (contains coach):** bell + count badge + violet-700 outer ring.
+- **First coach of session:** one pulse (same spec as dot pulse) then settles to default-unread state.
+- **Open:** bell icon state unchanged; dropdown open below.
+- **Keyboard shortcut triggered:** same as click.
+
+### Bell-dropdown
+
+- **Plus/Pro with coach patterns:** §7.2 structure.
+- **Free with coach patterns:** §7.3 structure.
+- **Empty Path A (backfill in progress):** §6.1 copy.
+- **Empty Path B (cold-start):** §6.2 copy + day/tx counter.
+- **Empty post-gate (all read / none this week):** §6.3 copy.
+
+---
+
+## 13. Content-lead coordination
+
+Copy hooks needed. Product-designer owns shape; content-lead owns wording variants.
+
+| Location | Purpose | Current draft (content-lead to finalize) |
+|---|---|---|
+| Dot hover micro-tooltip (Plus/Pro) | One-liner discovery | «Memoro noticed a [Category] pattern» + «Click to read» |
+| Dot hover micro-tooltip (Free) | Discovery + upgrade | «Memoro noticed a [Category] pattern — upgrade to Plus to read» |
+| First-time dot tooltip | Tutorial | §3.5 draft copy |
+| First-time bell tooltip | Tutorial (alt path) | §7.5 draft copy |
+| Popover headline (Plus/Pro, per-symbol) | Observational, verb-led | «Memoro noticed a [pattern-name] pattern in your [SYMBOL] trades» |
+| Popover headline (Plus/Pro, widget-level) | Observational | «Memoro noticed a [Category] pattern this week» |
+| Popover summary (all patterns) | Observational + «no judgment» closer | AI-Service-generated narrative, passes Lane A regex guardrail, closes with observational-framing language |
+| Popover teaser headline (Free, per-symbol) | Subject only | «Memoro noticed a pattern in your [SYMBOL] trades» |
+| Popover teaser headline (Free, widget-level) | Subject only | «Memoro noticed a [Category] pattern this week» |
+| Popover teaser value proposition (Free) | Upgrade framing | «Plus unlocks full pattern reads.» |
+| Bell-dropdown section headers | Grouping | «Coach · This week» / «Coach · Earlier» / «Other notifications» |
+| Bell-dropdown empty (Path A) | Warm-start | §6.1 copy |
+| Bell-dropdown empty (Path B) | Cold-start | §6.2 copy — «Memoro is learning your portfolio» |
+| Bell-dropdown empty (post-gate, no patterns) | Quiet state | §6.3 copy — «You're all caught up» |
+| Bell-dropdown Free footer CTA | Upgrade | «Upgrade to Plus for full pattern reads ▸» |
+| Dashboard banner (Free, ≥3 unread patterns) | Conversion nudge | «Memoro has noticed N patterns this month. Upgrade to Plus to see them.» |
+
+Navigator mediates content-lead review.
+
+---
+
+## 14. Legal-advisor coordination
+
+Per positioning lock 2026-04-23 Q6 (EU/UK MiFID II + FCA in-context disclaimer format), the in-context AI disclaimer remains open.
+
+**Product-designer recommendation (unchanged from v1.0):**
+
+- **In-copy observational closer** on every popover summary — «Memoro noticed this is a pattern — no judgment» / «patterns only» / equivalent verb-led Lane-A-safe framing. This is AI-Service-generated narrative, passes Layer 2 regex guardrail.
+- **One-time first-interaction modal** on first dot-click (separate from the §3.5 tutorial tooltip — this one is the disclaimer specifically): «Memoro shows patterns based on your trade history, not advice. This is educational, not investment guidance. [Acknowledge]». Once acknowledged, never shown again (persisted flag `coach_disclaimer_acknowledged`).
+
+Legal-advisor to confirm:
+
+1. Does the in-copy observational closer plus first-interaction modal satisfy EU/UK requirement, OR is an explicit `Disclaimer` component mandatory on every popover?
+2. If explicit `Disclaimer` component required, product-designer proposes a small footer strip in the popover (`text-xs`, `text.muted`, single line) with a link to full disclaimer in legal page.
+
+Tracked as open question §17.
+
+---
+
+## 15. Dependencies
+
+- **Blocked on:**
+  - Legal-advisor confirmation on §14 disclaimer format.
+  - Content-lead finalization of §13 copy hooks.
+  - Tech-lead confirmation that pattern-read metadata includes attachment-point type + target identifier (symbol, widget, thread-id, etc.) so the client can route a pattern to the correct dot. (Requires payload extension in insights API; coordinate via Navigator.)
+  - Frontend-engineer buy-in for dot primitive + popover + bell-dropdown extension. Sizing impact: no new slice required beyond Slice 8c — changes scope from «dedicated /coach page» to «contextual dot primitive + popover + bell-dropdown coach section». LOC estimate likely lower than v1.0 plan.
+
 - **Blocks:**
-  - Slice 8c (coach web surface) implementation.
-  - Onboarding flow spec (§3 Stage 3 depends on Coach first-pattern-read timing).
-  - Design Brief v1.2 §14.6 (new subsection referencing this spec).
+  - Slice 8c implementation (now scoped as contextual surface, not dedicated route).
+  - Onboarding tour surface (`ONBOARDING_FLOW.md`) — needs to highlight bell + explain dot convention.
+  - Design Brief v1.3 §14.6 + new §14.7 bell-dropdown subsection.
 
 ---
 
-## 11. Verification checklist (before production ships)
+## 16. Verification checklist (before production ships)
 
 Product-designer sign-off gates:
 
-- [ ] All pattern narrative copy passes regex guardrail locally (tech-lead §2.6 Layer 2 test fixtures).
-- [ ] Every pattern card has verb-led framing ("Memoro noticed…" not "Your brain noticed…").
-- [ ] Locked card treats skeleton shimmer as decorative — screen-reader announces «Locked. Upgrade to Plus.» without relying on visual skeleton inference.
-- [ ] Cold-start empty state correctly differentiates Path A (backfill in progress) vs Path B (true cold-start). Both tested with fixture data in Storybook / Chromatic equivalent.
-- [ ] Filter chip keyboard nav: arrow keys move between chips, space/enter selects, escape clears.
-- [ ] Reduced-motion removes all shimmer and fade animations; content still legible / functional.
-- [ ] Contrast-check all chip categories with color tokens in both light + dark themes.
-- [ ] Mobile tap targets 44×44 minimum on all interactive elements.
-- [ ] Dismiss / Snooze mutations handle failure with visible toast (not silent).
+- [ ] Dot primitive renders on all 5 attachment-point types (position row, dashboard widget header, chat thread preview, insight card, transaction row) — tested in Storybook / Chromatic equivalent.
+- [ ] Pulse animation respects `prefers-reduced-motion: reduce` — verified in Playwright.
+- [ ] Pulse stops after 5 minutes of active page time OR on first hover/tap, whichever first.
+- [ ] Concurrent-pulse cap = 3 (only top 3 pulsing, rest static) — verified.
+- [ ] First-time-tutorial tooltip fires once per user, then suppressed via flag.
+- [ ] Popover opens anchored to dot (desktop) / bottom sheet (mobile) — both tested.
+- [ ] All pattern narratives in popover pass Lane A regex guardrail — tested with fixtures from tech-lead §2.6 Layer 2.
+- [ ] Every popover carries verb-led framing («Memoro noticed…») — audit per Design Brief §0.2.
+- [ ] Locked teaser popover (Free) reveals subject, never substance — visual + screen-reader audit.
+- [ ] Bell icon shows coach-unread ring when at least one coach pattern unread — verified on all viewport sizes.
+- [ ] Bell-dropdown opens with `Cmd/Ctrl+B` keyboard shortcut.
+- [ ] Bell-dropdown groups: «Coach · This week» / «Coach · Earlier» / «Other notifications» — correct grouping under mixed-notification fixtures.
+- [ ] Empty state Path A / B / post-gate all differentiable and correct — tested with fixture data.
+- [ ] Dismiss / Snooze mutations reuse insights endpoints (Slice 6b) with correct loading + error states.
+- [ ] Mobile tap targets ≥44×44 on popover buttons + bell + full-row tap zone on attachment points.
+- [ ] WCAG 2.2 AA contrast check on dot colors (amber-600 / sky-600 / emerald-600 on white; amber-400 / sky-400 / emerald-400 on dark).
+- [ ] Keyboard flow: Tab to dot → Enter → popover → Tab through buttons → Escape → focus returns to dot.
+- [ ] Keyboard flow: Tab to bell → Enter → dropdown → Tab through rows → Enter → popover → Escape → focus returns to row.
+- [ ] Screen reader announces «Memoro noticed a [Category] pattern on [element]» for every dot.
+- [ ] Dark-mode dot colors + popover surfaces meet contrast thresholds.
+- [ ] Upgrade CTA (Free popover + bell footer) routes to correct pricing URL with analytics parameters.
 
 ---
 
-## 12. Changelog
+## 17. Open questions for PO (via Navigator)
 
-- v1.0 (2026-04-23) — initial spec. Delta from tech-lead ADR on surface location (dedicated route, not filter-chip) with rationale. Full anatomy + cold-start + teaser-paywall + accessibility.
+1. **Disclaimer format.** Inline observational closer + one-time modal (recommended) vs explicit `Disclaimer` component per popover. Legal-advisor + PO to confirm.
+2. **Snooze default.** 30 days recommended. PO to confirm. (Carried over from v1.0.)
+3. **Dashboard banner conversion nudge threshold.** Recommended: Free users with ≥3 unread locked patterns see a subtle banner once per month. PO to confirm or adjust threshold.
+4. **Keyboard shortcut conflict.** `Cmd/Ctrl+B` — conflicts with browser bookmark bar toggle on some browsers. Alternative: `Cmd/Ctrl+Shift+B` or `Cmd/Ctrl+.`? Recommendation: use `Cmd/Ctrl+Shift+B` for no conflict. Tech-lead / PO to confirm.
+5. **Dot on chat thread previews — scope.** Attachment-point #3 requires knowing which chat threads have coach-adjacent patterns. Is the chat thread metadata rich enough for this mapping at alpha? Tech-lead to confirm; may defer this attachment-point type to post-alpha if not feasible.
+6. **Category-wide mute from bell-dropdown.** Should «Notification settings» link include per-category coach mute (e.g., «Don't show Concentration patterns»)? Recommendation: yes, in `/settings/notifications` as checkbox per category. Matches Design Brief §16 overrides. Post-alpha refinement.
+
+---
+
+## 18. Changelog
+
+- **v1.0 (2026-04-23)** — initial spec with dedicated `/coach` route + filter chips + week anchors + full-surface pattern cards. Delta from tech-lead filter-chip ADR documented.
+- **v2.0 (2026-04-23)** — major rewrite. Contextual-icon + bell-hub model per PO lock 2026-04-23 («Coach UX: contextual — NOT dedicated route, NOT filter-chip»). Removed `/coach` route sections; added attachment-point taxonomy (§1), dot interaction spec (§2-3), popover spec (§4), bell-dropdown hub extension (§7), contextual empty states (§6). Tech-lead backend ADRs 1-5 unchanged.
