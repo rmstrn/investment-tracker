@@ -24,7 +24,7 @@ Short list of material changes since the original v1 audit:
 
 | Product | Category | Why it matters |
 |---|---|---|
-| **PortfolioPilot** | Self-directed AI advisor | $30B+ AUM, 40K+ users, Free+$20/$49/$99 tiers, 12K+ institutions aggregation, portfolio-aware AI. **Most direct competitor to our wedge we've found.** |
+| **PortfolioPilot** | Self-directed AI advisor (**hybrid regulatory structure** — see §5.4) | $30B+ AUM, 40K+ users, Free+$20/$49/$99 tiers, 12K+ institutions aggregation, portfolio-aware AI. **Most direct competitor to our wedge we've found.** |
 | **Origin** | AI financial assistant | Hero "Own your wealth. / Track everything. Ask anything." — sub-hero matches our wedge framing. Claims "first SEC-regulated AI financial advisor" (2025) |
 | **Mezzi** | AI wealth replacement | "Self-manage your wealth. Get fiduciary advice." — AI + Plaid/Finicity aggregation; $299-1,499/yr |
 | **Fey** | AI research + tracker | Acquired by Wealthsimple ~mid-2025; IBKR+E*Trade portfolio sync; $300/yr flat |
@@ -70,7 +70,7 @@ v2 observation: **"AI + portfolio-aware chat" is the 2025-2026 wave.** Early "AI
 | Read-only (no trading) | PortfolioPilot, Origin, Mezzi, Getquin, Kubera, Snowball, Sharesight, Simply Wall St, Empower, Monarch, Wealthfolio | **Common attribute**, not unique |
 | For retail (not HNW-gated) | Getquin, Snowball, Sharesight, Monarch, Copilot, Gainify, Wealthfolio, Albert, Origin ($1/yr intro), Simply Wall St | **Common**, NOT an exclusive wedge attribute |
 | No trade execution | PortfolioPilot, Origin, Mezzi, Kubera, Snowball, Sharesight, Monarch, Empower, Simply Wall St, Wealthfolio | **Common** |
-| No advisor upsell | **Here's where it gets interesting:** Kubera ✓, Snowball ✓, Simply Wall St ✓, Getquin ✓, Sharesight ✓, Wealthfolio ✓. BUT: PortfolioPilot positions AS "advice"; Origin = SEC-registered advisor; Mezzi = "fiduciary advice"; Range = full advisor. | **Split** — all pure trackers avoid advisor upsell; all AI-first products lean INTO advisor framing |
+| No advisor upsell | **Here's where it gets interesting:** Kubera ✓, Snowball ✓, Simply Wall St ✓, Getquin ✓, Sharesight ✓, Wealthfolio ✓. BUT: PortfolioPilot positions AS "advice" **on paid tiers only — hybrid structure, see §5.4**; Origin = SEC-registered advisor; Mezzi = "fiduciary advice"; Range = full advisor. | **Split** — all pure trackers avoid advisor upsell; all AI-first products lean INTO advisor framing (PortfolioPilot = hybrid: free = education-only, paid = RIA) |
 
 ### 2.2 Wedge intersection: who has ALL of [AI chat + portfolio-aware + retail + read-only + not-advisor]?
 
@@ -78,7 +78,7 @@ Running the strict filter:
 - **AI chat + portfolio-aware**: PortfolioPilot, Origin, Mezzi, Getquin, Fey, Wealthfolio, Kubera (external)
 - **+ Read-only + no trading**: remove Public, Moomoo → left with PortfolioPilot, Origin, Mezzi, Getquin, Fey, Wealthfolio, Kubera
 - **+ Retail (not HNW-gated by threshold or income)**: all survive in marketing language, though PortfolioPilot + Mezzi skew sophisticated
-- **+ Not advisor-framed**: remove PortfolioPilot ("Complete financial advice"), Origin ("SEC-regulated AI financial advisor"), Mezzi ("fiduciary advice")
+- **+ Not advisor-framed**: remove PortfolioPilot (paid tiers operate as SEC RIA — hybrid structure, see §5.4), Origin ("SEC-regulated AI financial advisor"), Mezzi ("fiduciary advice")
 - **Survivors: Getquin, Fey (recently acquired), Wealthfolio, Kubera (AI delegated to external LLMs)**
 
 **Narrower wedge finding:** The "no advisor" + "AI portfolio chat" combination IS lightly occupied. Getquin leads in EU, Kubera is AI-via-external-LLMs (weak), Wealthfolio is OSS+niche, Fey is research-first and post-acquisition.
@@ -143,6 +143,26 @@ Current hero "Поговори со своим портфелем. Просто 
 ### 4.4 Safety/trust placement validation
 
 Current decision (footer-only disclaimer) is VALIDATED by audit. See `competitor-positioning.md` §2.3 — products that are trackers put trust in footer/mid; products that are advisors put it in hero. Our positioning matches the tracker pattern, correctly.
+
+### 4.5 PortfolioPilot as validated Lane C implementation
+
+**New evidence (2026-04-23, from globalpredictions.com/disclosures):** PortfolioPilot is **not a pure-RIA product** — it operates under a **hybrid regulatory structure** that is a real-world implementation of what `STRATEGIC_OPTIONS_v1.md` calls «Lane C (hybrid — launch A, add RIA tier later)».
+
+**Direct quotes from their disclosure page:**
+
+1. **Lane A — public site + Free tier (education only):** «The publicly available portions of the Platform... are provided for educational purposes only and are not intended to provide legal, tax, or financial planning advice. Nothing on the publicly available portions of the Platform should be construed as a solicitation or offer, or recommendation, to buy or sell any security.»
+2. **Lane B — paid tiers Gold $20 / Platinum $49 / Pro $99 behind written Client Agreement (SEC RIA):** «Global Predictions Inc. provides investment advice only through its internet-based application, PortfolioPilot, and only to investors who are advisory clients of Global Predictions pursuant to written advisory Client Agreements ("Advisory Services").»
+3. **Marketing copy legally scoped:** their «Complete financial advice for self-directed investors» hero is constrained by the disclosure: «The financial advisor described in this marketing language is referring to you, the reader. PortfolioPilot is meant to be an aid to the self-directed investor.»
+4. Global Predictions Inc. has Form ADV, Form CRS, and the standard SEC RIA registration footer («Registration does not imply a certain level of skill or training»).
+
+**Implication for our strategic thinking:**
+
+- Lane C is **no longer a hypothetical path**. It has a $30B-AUM, 40K-user validated implementation. This materially de-risks Lane C as a strategic option — the gate-structure (free = education, paid = RIA) is workable in practice, not just in theory.
+- PortfolioPilot's «Complete financial advice» hero is **not a pure-RIA claim** — it's a hybrid claim, legally scoped by a disclosure page that retail users rarely read. Our previous mental model («PortfolioPilot = SEC RIA, we are education-only, clean wedge») was too simple.
+- The actual competitive difference is: **PortfolioPilot operates on Lane C; we are currently locked to Lane A** (per `02_POSITIONING.md` and `DECISIONS.md` 2026-04-23). Either of these is a deliberate stance, not a default.
+- The «not advisor-framed» dimension in the wedge table (§2.1) is **more nuanced than stated**: PortfolioPilot is education-only for non-paying users, advice-scoped for paying users. If our ICP A (millennials, $20K-100K, likely to try free first) compares us to PortfolioPilot on landing/free experience, both are Lane A there — the advisor differentiation only manifests post-paywall.
+
+**No positioning file edit triggered by this note.** `02_POSITIONING.md` remains Lane A-locked pending PO pick in `STRATEGIC_OPTIONS_v1.md`. This subsection exists so the v2 record does not carry the earlier «PortfolioPilot = pure RIA» shortcut.
 
 ---
 
