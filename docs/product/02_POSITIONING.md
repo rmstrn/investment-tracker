@@ -6,12 +6,18 @@
 **Date locked:** 2026-04-22
 **Status 2026-04-23:** Positioning is under review pending v2 discovery (user-researcher working on expanded competitor analysis). Specific pending changes flagged below as `[PENDING-V2]`. Do not rewrite the document yet — wait for v2 discovery evidence.
 
+**Locked constraints (2026-04-23, PO decisions):**
+- **Regulatory lane = A (LOCKED).** Information/education only. Lane B (RIA day-1) and Lane C (hybrid) rejected. See `DECISIONS.md` 2026-04-23 entry «Regulatory lane LOCKED: Lane A» for rationale. Implication for this document: anti-positioning extended (see below); Lane A is now a positive trust signal, not a compliance caveat.
+- **Geography = global multi-market (LOCKED).** US + EU + UK + CIS/RU + crypto-native. Multi-language day-1 non-negotiable (minimum EN + RU; likely DE/IT/ES/FR/PT for EU). See `DECISIONS.md` 2026-04-23 entry «Geography LOCKED: global multi-market with CIS priority». Implication for this document: best-fit customer row stays global; multi-lang scope flagged in landing structure section.
+
 ## Pending revisions (from DECISIONS.md 2026-04-23)
 
 - **[PENDING-V2] Demote «read-only» from unique attributes.** PO observation 2026-04-23: read-only is table stakes for non-trading trackers, not a differentiator. Every competitor will use this line. Keep the fact inside functional/trust sections, not as a hero angle. Corresponding edits:
   - «Unique attributes» row #6 («Zero trading, zero fund-pushing, zero HNW gate») — split: HNW-gate stays as differentiator; no-trading moves to functional description only.
   - «Anti-positioning» row «NOT broker (no trading execution)» — keep as anti-positioning (we're not a broker), but don't elevate to landing hero angle.
   - Landing structure — no change needed (landing never claimed read-only as hero).
+
+- **[LOCKED 2026-04-23] Extend anti-positioning with Lane A explicit statement.** Add new row: «NOT registered investment advisor — information/education only». This is now a positive trust signal per PO lock (not just a regulatory caveat). See anti-positioning section below — already reflected there post-lock.
 
 ## Positioning Canvas
 
@@ -39,8 +45,9 @@
 
 ## Anti-positioning (what we're NOT)
 
-- NOT broker (no trading execution)
-- NOT advisor (no "buy/sell" imperatives — regulatory)
+- NOT broker (no trading execution) — *functional fact, not landing hero angle*
+- NOT registered investment advisor — information/education only (**Lane A LOCKED 2026-04-23**; positive trust signal, not just regulatory caveat)
+- NOT advisor in any framing (no "buy/sell" imperatives — per Lane A lock, this extends beyond regulatory: advisor-style tone forbidden across product, not just in AI output)
 - NOT HNW wealth manager (Range/Arta territory)
 - NOT dividend terminal (Snowball territory)
 - NOT price predictor

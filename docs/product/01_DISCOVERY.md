@@ -164,6 +164,36 @@ Current decision (footer-only disclaimer) is VALIDATED by audit. See `competitor
 
 **No positioning file edit triggered by this note.** `02_POSITIONING.md` remains Lane A-locked pending PO pick in `STRATEGIC_OPTIONS_v1.md`. This subsection exists so the v2 record does not carry the earlier «PortfolioPilot = pure RIA» shortcut.
 
+### 4.6 Wedge reassessment under PO 2026-04-23 constraints
+
+**Context.** PO 2026-04-23 locked two constraints that change the wedge analysis above:
+1. **Regulatory lane = A (information/education only).** Lane B and Lane C rejected. See `DECISIONS.md` 2026-04-23 entry «Regulatory lane LOCKED: Lane A».
+2. **Geography = global multi-market.** US + EU + UK + CIS/RU + crypto-native with multi-language day-1 (minimum EN + RU; likely DE/IT/ES/FR/PT for EU). See `DECISIONS.md` 2026-04-23 entry «Geography LOCKED: global multi-market with CIS priority».
+
+**Wedge effect of these constraints.**
+
+Under Lane A only + global, the main direct competitor shifts:
+
+- **Before these constraints:** PortfolioPilot was framed as the most direct competitor because it occupies «AI + portfolio-aware + retail + multi-broker + US primary». But PortfolioPilot operates on Lane C (hybrid — public free = education, paid tiers = SEC RIA). Under our new constraints, PortfolioPilot is **a different-lane competitor**, not same-lane — the direct head-to-head on landing / free tier is now less sharp.
+- **After these constraints:** the direct competitor on our exact lane + our exact geographic ambition becomes **Getquin**.
+  - Lane A (pure tracker, education-only positioning — confirmed in `competitor-matrix.md` §8 regulatory-lane split)
+  - 500K users, €20B tracked, EU-dominant with multi-lang EN/IT/DE already shipping
+  - Explicit AI positioning on landing («AI Financial Agents»: optimization, scenarios, retirement planning)
+  - 2-3 year head start on multi-broker aggregation + multi-lang infrastructure
+  - Our multi-lang day-1 requirement is their existing baseline → no language advantage on our side
+
+**Implication for Navigator + research dispatch.** v2 discovery covered Getquin surface-level (one row in `competitor-matrix.md`, one sub-claim in §3.2, one adjacency note in §4.1 and §4.3). That depth was appropriate when PortfolioPilot was framed as the primary direct competitor. **Under the new constraints, Getquin warrants a dedicated deep-dive research dispatch for user-researcher.** Questions to scope:
+- EU penetration patterns — what makes EU users pick Getquin vs broker-native tools / Empower-equivalents?
+- Multi-language UX approach — which languages are fully localized vs partial? Landing only vs full product?
+- AI Financial Agents capability boundaries — what exactly can the agents do, what can't they? How close is it to «chat with your portfolio»?
+- Churn vectors — Reddit / Trustpilot / App Store signals on why users leave Getquin
+- US expansion signals — are they moving US-ward (which would intensify head-to-head), or staying EU-native?
+- Pricing structure vs our hypothesis (Free / Premium €89.99/yr / Wealth €149.99/yr — where does value-perception concentrate?)
+
+**Not a wedge-invalidation.** The three options in `STRATEGIC_OPTIONS_v1.md` remain viable under the new constraints — re-ranked (Companion > Oracle > Analyst in defensibility), but all three still coherent. Getquin pressure is felt unevenly: Oracle shares Getquin's Lane + ambition most directly, Analyst adds Snowball / Simply Wall St pressure in the insights-only space, Companion has no direct Getquin overlap (no behavioral-pattern-detection on actual trade history in Getquin's AI Agent scope). See `STRATEGIC_OPTIONS_v1.md` cross-comparison table row «Main competitor under Lane A + global».
+
+**Research dispatch flagged.** Next user-researcher dispatch should prioritize Getquin deep-dive over other competitor re-scans. Documented as open action in `STRATEGIC_OPTIONS_v1.md` open-questions §8.
+
 ---
 
 ## 5. Implications for ICP
