@@ -1,7 +1,34 @@
-# Strategic Options — v1.5: Navigator synthesis returned, PO decision pending
+# Strategic Options — v1.6: LOCKED (repositioned per PO decisions)
 
-**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 locked) · 2026-04-23 (v1.4 — demoted to TENTATIVE pending proper multi-agent review per CONSTRAINTS Rule 3) · **2026-04-23 (v1.5 — 6 independent specialist reviews returned; Navigator synthesis complete; PO lock pending)**
-**Owner:** Navigator (orchestrator); synthesis pulls from independent specialist returns (not simulated)
+**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 locked) · 2026-04-23 (v1.4 — demoted to TENTATIVE pending proper multi-agent review per CONSTRAINTS Rule 3) · 2026-04-23 (v1.5 — 6 independent specialist reviews returned; Navigator synthesis complete; PO lock pending) · **2026-04-23 (v1.6 — LOCKED; PO locked 7 decisions from synthesis; Option 4 repositioned as tagline/brand-world, NOT hero/product-name; imperative hero restored)**
+**Owner:** Navigator (orchestrator); v1.6 lock reflects PO decisions post-synthesis
+
+---
+
+## v1.6 LOCK — 7 PO decisions from synthesis (2026-04-23)
+
+**Status:** LOCKED (repositioned). Option 4 «Second Brain for Your Portfolio» retained as tagline and brand-world copy, demoted from hero and from product-name. Hero reverts to imperative: «Спроси свой портфель» / «Ask your portfolio» (restoring the pre-Option-4-lock hero that was live and tested before the v2 rewrite). Execution ledger lives in `DECISIONS.md` 2026-04-23 «Option 4 review synthesis: 7 PO decisions locked».
+
+**Seven locks (summary; rationale in `DECISIONS.md`):**
+
+- **Q1 — YES demotion.** «Second Brain for Your Portfolio» = TAGLINE + brand-world copy. NOT hero, NOT product name. Hero reverts to imperative. Product name sourced from Round 5 (Mneme / Memoro / Noesis — PO leaning Memoro, Round 6 in flight in parallel for additional options before final lock).
+- **Q2 — YES with nuance.** Coach warm-start via SnapTrade trade-history = working assumption, not pre-lock feasibility gate. Formal verification happens during Coach vertical eng-planning. Oracle fallback retained.
+- **Q3 — Dashboard-primary architecture.** Chat is a tab, not the home. AI woven across dashboard cards + insights feed + coach. Getquin/Kubera shape with stronger AI integration. Full UX spec deferred to design phase.
+- **Q4 — NO trademark spend.** No $2-5K US clearance search before name lock. Accept post-launch rebrand risk if conflict surfaces. CONSTRAINTS Rule 1 applied.
+- **Q5 — Teaser-paywall pattern for Coach.** Free tier shows «AI noticed a pattern in your trades» teaser; detail gated behind Plus. Plus = full coach. Pro = unlimited + advanced. Content-lead execution post-naming-lock.
+- **Q6 — YES in-context AI disclaimer.** Footer disclaimer unchanged; additional in-context reinforcement added specifically for EU/UK (MiFID II + FCA stricter advice-vs-information line). Format (tooltip / inline micro / first-interaction modal) TBD design phase. Lane A lock unchanged — this is execution-layer reinforcement.
+- **Q7 — Russia out of scope.** Geography amended: «global **без РФ**» (previously «global + CIS priority»). US + EU + UK + LATAM + APAC + crypto-native remain explicit. CIS handling per-country post-alpha. 152-ФЗ no longer blocker — RU explicitly out, not deferred.
+
+**Repositioning summary (what changed from v1.5 → v1.6):**
+- Option 4 hero («Second Brain for Your Portfolio») → Option 4 tagline + brand-world copy. Hero reverts to imperative «Спроси свой портфель» / «Ask your portfolio».
+- Product name: NOT «Second Brain»; sourced from Round 5/6 mind/memory territory. PO lean = Memoro (unlocked pending Round 6).
+- Coach: warm-start working assumption; tech-lead verifies at dev-stage, not pre-lock. Oracle fallback preserved.
+- Architecture: dashboard-primary + chat-as-tab + AI-woven (rejects designer Alt 1 chat-primary).
+- Pricing: teaser-paywall coach pattern locked.
+- Regulatory: in-context AI disclaimer added for EU/UK; Lane A lock unchanged.
+- Geography: Russia removed from scope; LATAM + APAC remain; CIS handling post-alpha per-country.
+
+**No specialists re-dispatched for execution yet.** Round 6 naming (brand-strategist) is in flight in parallel with this lock. Content-lead full landing rewrite and product-designer full surface design wait until PO locks final product name.
 
 ---
 
@@ -36,17 +63,19 @@
 
 ---
 
-## Status: TENTATIVE (v1.5) — 6 specialist reviews complete; PO lock pending
+## Status: LOCKED (v1.6, repositioned) — see v1.6 LOCK section above
 
-**Process correction 2026-04-23.** Earlier v1.3 locked Option 4 based on Navigator single-context synthesis (Navigator simulated 4-voice council + 3 specialist lenses within its own context, not real parallel Agent-tool dispatches). PO identified this as broken process violating CONSTRAINTS Rule 3: strategic decisions require REAL independent parallel specialist review, not simulation.
+**Process correction 2026-04-23 (historical).** Earlier v1.3 locked Option 4 based on Navigator single-context synthesis (Navigator simulated 4-voice council + 3 specialist lenses within its own context, not real parallel Agent-tool dispatches). PO identified this as broken process violating CONSTRAINTS Rule 3: strategic decisions require REAL independent parallel specialist review, not simulation.
 
-**Status demoted to TENTATIVE** pending:
+**Status demoted to TENTATIVE (v1.4) pending:**
 - Independent parallel dispatch of 6 specialists (brand-strategist + user-researcher + finance-advisor + legal-advisor + content-lead + product-designer) via real Agent-tool calls
 - Each specialist isolated — no specialist sees another's draft before writing their own
 - Synthesis by Navigator after all 6 return, with one weighted recommendation
 - PO final lock after seeing all 6 independent views
 
-**Working artifacts remain as drafts** (not deleted, not elevated):
+**Status resolved 2026-04-23 (v1.6).** All 6 returns complete. Navigator synthesis shipped in `REVIEW_SYNTHESIS_2026-04-23.md`. PO reviewed and locked 7 decisions (see v1.6 LOCK section at top of this file + `DECISIONS.md` 2026-04-23 «Option 4 review synthesis: 7 PO decisions locked»). Option 4 kept as tagline/brand-world; hero reverts to imperative; product-name sourced separately from naming rounds.
+
+**Working artifacts status (v1.6):**
 - `docs/content/landing.md` — landing hero draft (Second Brain frame)
 - `docs/product/03_NAMING.md` Round 5 — 10 name candidates in mind/memory territory
 - `docs/CC_KICKOFF_option4_feasibility.md` — tech-lead feasibility memo
