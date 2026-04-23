@@ -59,7 +59,11 @@
 | Product | Hero headline (verbatim) | AI type | Integration | Pricing | Target | Geo | Standout | Weakness | 2025-26 change |
 |---|---|---|---|---|---|---|---|---|---|
 | **PortfolioPilot** ⚠ critical competitor | "Complete financial advice for self-directed investors" | chat-portfolio-aware + proactive-insights + scenario-sim + AI Equity Research | **12,000+ institutions aggregation** (read-only) | **Free** / Gold $20/mo / Platinum $49/mo / Pro $99/mo (annual pricing) | "self-directed investors"; modest → complex portfolios | US | $30B+ AUM, 40K+ users; multi-asset incl. crypto/RE/PE/metals; M6 Forecasting Competition winner | Feels advisor-y ("Complete financial advice"); Platinum unlocks real AI | Expanded estate + scenario modeling 2025; $93M tax-loss harvesting savings |
+| ↳ **Regulatory structure** | **Hybrid** (confirmed 2026-04-23 via globalpredictions.com/disclosures). Public site + Free tier = **education-only / not advice** (explicit in disclosure). Paid tiers (Gold $20 / Platinum $49 / Pro $99) = **SEC-registered RIA under Client Agreement** (Global Predictions Inc. — Form ADV, Form CRS, standard RIA artifacts). This = real-world implementation of "Lane C" hybrid model per `STRATEGIC_OPTIONS_v1.md`. |
 | **Origin** ⚠ critical competitor | "Own your wealth. Track everything. Ask anything." | chat-portfolio-aware + proactive-insights; "first SEC-regulated AI financial advisor with full-context reasoning" | multi-account aggregation + investment tracking | **$1 for first year** (intro); investment account 0% expense | couples + individuals, financial wellness + investing | US | **"SEC-regulated AI advisor"** claim; daily recaps across spending + holdings + news; AI Budget Builder | Couples/budgeting lean dilutes pure-investor UX; regulatory positioning very different from ours | **Launched SEC-regulated AI advisor 2025**; $1/year promo aggressive |
+| ↳ **Regulatory structure** | **Pure RIA** (per self-claim: "first SEC-regulated AI financial advisor"). Advisor framing is on the hero, not gated behind a paywall. Full Lane B. |
+| **Mezzi** (see §3) — **Regulatory structure** | **Pure RIA** per "fiduciary advice" hero + paid-only access (Core $299/yr entry — no free tier through which unadvised users experience the product). Fiduciary claim legally requires RIA registration. Full Lane B. |
+| **Range** (see §3) — **Regulatory structure** | **Pure RIA + human advisors** (SEC RIA fiduciary per hero; CFP/CPA/CFA staff). Lane B, HNW-gated ($200K income minimum). |
 | **Albert (Genius AI)** | "Introducing Genius. Your personal financial assistant." | chat-basic + budgeting/investing hybrid | aggregation + own brokerage | $19.99/mo – $39.99/mo (30-day free trial) | integrated money management users | US | Budget + bank + invest + ID theft insurance all in one | Budget-first, investing is secondary | Genius positioning stable; rates updated 2026-04-23 |
 | **Wealthfolio** | "Grow Wealth. Keep Control." | chat-basic (built-in AI assistant) | SnapTrade + CSV; 100% open-source | **Free desktop + optional "Wealthfolio Connect" subscription** (price not on homepage) | privacy-conscious self-directed | Global/OSS | **Open-source, local-first, privacy-first**, 6,260 GitHub stars | Niche; setup friction; no cloud-first UX | Active releases 2025-2026 |
 | **Ghostfolio** | "Ghostfolio – Open Source Wealth Management Software" | none flagged | self-hosted or cloud | [pricing page returned limited content; Open Source basic tier + Premium — verify separately] | DIY/privacy-conscious/OSS | Global | Open-source alternative to paid trackers | No AI as of 2026-04-23; niche audience | [no specific 2025-26 announcement captured] |
@@ -113,6 +117,14 @@
 - Read-only + portfolio-aware AI + retail-priced + NO trade execution + NOT HNW-gated: **PortfolioPilot, Origin, Mezzi, Wealthfolio, Getquin** — **5 products directly in our wedge**
 
 **Wedge pressure summary:** Our original 2026-04-22 claim of "uncontested wedge" assumed the chat-with-portfolio + read-only + retail + no-advisor combination was empty. **It is not.** PortfolioPilot, Origin, and Mezzi each occupy overlapping parts of it, and Getquin occupies it for EU. Deeper analysis in `competitor-positioning.md` and `01_DISCOVERY.md` v2.
+
+**Regulatory-lane clarification (2026-04-23):** Of the «advisor-framed AI competitors», **regulatory structure is not uniform**:
+
+- **Pure RIA (Lane B):** Origin, Mezzi, Range — advisor identity is front-of-house, legally consistent with registration from day one.
+- **Hybrid (Lane C):** PortfolioPilot — public site + free tier are legally education-only; paid tiers operate as SEC RIA under a written Client Agreement (Global Predictions Inc. Form ADV). Confirmed via disclosures page 2026-04-23.
+- **Lane A (education-only, no advisor framing):** all pure trackers (Kubera, Snowball, Simply Wall St, Sharesight, Getquin, Wealthfolio, Ghostfolio).
+
+This matters for our positioning: PortfolioPilot validates Lane C as a viable hybrid structure ($30B AUM, 40K users) rather than a theoretical option. See `01_DISCOVERY.md` §4.5 and `STRATEGIC_OPTIONS_v1.md` regulatory-lane axis.
 
 ---
 
