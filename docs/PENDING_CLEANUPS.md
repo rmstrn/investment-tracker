@@ -20,12 +20,12 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 ### 1. Name substitution sweep — COMPLETED 2026-04-23
 **Trigger:** After PO locked final product name.
 **Closed:** Part of name-lock sweep commit 2026-04-23. All `[Name]` / `[Название]` / `[Product]` / `[Продукт]` / `[PRODUCT]` placeholders substituted with «Memoro» (proper noun; same EN + RU spelling). Verified by `grep -rn "\[Name\]\|\[Название\]\|\[Product\]\|\[Продукт\]" docs/` returning zero actual-placeholder matches (remaining matches describe the placeholder-substitution task itself, not actual placeholder content).
-**Commit:** will be filled in by Navigator at commit time.
+**Commit:** 3524b33.
 
 ### 2. `02_POSITIONING.md` body narrative sync — COMPLETED 2026-04-23
 **Trigger:** Same as item #1 (name lock).
 **Closed:** Part of name-lock sweep commit 2026-04-23. Tone of Voice, Onboarding Promise, Brand Archetype, Key Product Principles sections all synced away from «your second brain» hero-voice residue toward Memoro-as-named-agent + imperative-hero + tagline framing. Positioning Statement updated from `[PRODUCT]` placeholder to «Memoro». Document title bumped v3 → v3.1 to reflect name lock.
-**Commit:** will be filled in by Navigator at commit time.
+**Commit:** 3524b33.
 
 ### 3. Supersede earlier «Geography CIS priority» ADR — COMPLETED 2026-04-23
 **Trigger:** Anytime.
@@ -35,7 +35,7 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 ### 4. Round 5 naming annotation — COMPLETED 2026-04-23
 **Trigger:** Same as item #1 (name lock).
 **Closed:** Part of name-lock sweep commit 2026-04-23. `03_NAMING.md` document title bumped from «03 — Naming Workshop (IN PROGRESS)» → «03 — Naming Workshop (LOCKED: Memoro)». «RESULT 2026-04-23: MEMORO selected» annotation added at top with pronunciation, domain target, Round 5/6 preservation note. Rounds 1-6 preserved as historical record; no re-ranking inside rounds.
-**Commit:** will be filled in by Navigator at commit time.
+**Commit:** 3524b33.
 
 ---
 
