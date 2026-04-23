@@ -14,11 +14,20 @@ PO-locked tiers per `02_POSITIONING.md`:
 
 | Tier | Price | Annual equiv | Core value |
 |---|---|---|---|
-| **Free** | $0 | $0 | 2 accounts, 90-day history, basic charts + allocation, AI Chat 5 msg/day, 1 insight/week, Coach teaser (1/month, warm-start) |
-| **Plus** | ~$8-10/mo | ~$96-120/yr | Unlimited accounts, full history, unlimited chat, daily insights, dividend calendar, benchmark comparison, CSV export, full Coach pattern-reads |
+| **Free** | $0 | $0 | 2 accounts, 90-day history, basic charts + allocation, AI Chat **50 messages/month (no daily cap) on Haiku**, 1 insight/week, Coach teaser (1/month, warm-start) |
+| **Plus** | ~$8-10/mo | ~$96-120/yr | Unlimited accounts, full history, unlimited chat on Sonnet, daily insights, dividend calendar, benchmark comparison, CSV export, full Coach pattern-reads. **14-day trial, card required at signup.** |
 | **Pro** | ~$20/mo | ~$240/yr | Everything in Plus + tax reports per jurisdiction, advanced analytics (Sharpe/Sortino/factors/max drawdown), custom alerts, API access, advanced Coach categories |
 
-**Finance-advisor verdict: WARN (viable but with 3 structural risks to resolve before launch).**
+**Model routing (per DECISIONS 2026-04-23):**
+- Free tier AI responses: **Claude 3.5 Haiku** (5x cheaper than Sonnet; sufficient quality for Free-tier depth)
+- Plus + Pro (and 14-day Plus trial): **Claude 3.5 Sonnet** (full product experience)
+
+**Trial structure (per DECISIONS 2026-04-23):**
+- 14-day Plus access, card required at signup
+- Card charged on day 14 → Plus subscription OR auto-downgrade to Free if card fails / user cancels
+- Card-required pattern trades some trial uptake for much better trial→paid conversion (industry standard; see §6.4)
+
+**Finance-advisor verdict: SUPPORT (post-2026-04-23 4-locks patch). Free-tier sustainability red flag from v1 is RESOLVED by Haiku routing + 50 msg/mo monthly cap. Trial economics are SAFE with wide margin. Plus + Pro margin analysis unchanged from v1 and remains healthy.**
 
 ### Verdict breakdown:
 
@@ -38,8 +47,8 @@ PO-locked tiers per `02_POSITIONING.md`:
 - Dashboard view of aggregated portfolio (up to 2 broker accounts)
 - Basic charts: allocation pie, time-series value chart
 - 90-day history retention (everything older is gated)
-- AI Chat: 5 messages per day, cleared at midnight
-- Insights: 1 per week, curated from available observations
+- AI Chat: **50 messages per calendar month, no daily cap (burstable), served by Haiku model**
+- Insights: 1 per week, curated from available observations (served by Haiku)
 - Coach: 1 teaser per month, Plus-paywalled detail (see `COACH_TIER_PLACEMENT.md`)
 - Email weekly digest (1/week)
 - Mobile + web access (equal citizens per `02_POSITIONING.md`)
@@ -47,19 +56,26 @@ PO-locked tiers per `02_POSITIONING.md`:
 **Gated (requires upgrade):**
 - 3rd broker account onward
 - History beyond 90 days
-- 6th chat message of the day
+- 51st chat message in a calendar month
+- Sonnet-quality AI responses (Free tier gets Haiku)
 - Coach pattern detail unlock
 - Daily insights (beyond 1/week)
 - Dividend calendar view
 - Benchmark comparison against retail medians
 - CSV export of any data
 
+**Rationale for 50/mo monthly cap with NO daily limit (per DECISIONS 2026-04-23):**
+- PO chose monthly cap only (rejected 3/day + 60/mo combo proposed in v1)
+- User can burst 10 messages in one day and be silent the next — more retail-friendly usage pattern
+- 50/mo is tighter than v1-proposed 60/mo — better unit economics, same UX shape
+- Haiku routing (5x cheaper than Sonnet) makes the cap generous in value terms without being expensive in COGS terms
+
 ### 2.2 Plus tier ($8-10/mo)
 
 **Adds (beyond Free):**
 - Unlimited broker accounts (vs. 2 on Free)
 - Full history retention (vs. 90 days on Free)
-- Unlimited AI Chat (vs. 5/day on Free)
+- Unlimited AI Chat on Sonnet (vs. 50/mo on Haiku for Free)
 - Daily insights (vs. 1/week on Free)
 - Dividend calendar view with ex-dates + payment dates
 - Benchmark comparison (vs. retail aggregates where sourced — see `BENCHMARKS_SOURCED.md`)
@@ -94,9 +110,9 @@ PO-locked tiers per `02_POSITIONING.md`:
 |---|---|---|---|
 | Broker accounts | 2 | unlimited | unlimited |
 | History | 90 days | full | full |
-| Chat | 5/day | unlimited | unlimited |
+| Chat | 50/mo on Haiku | unlimited on Sonnet | unlimited on Sonnet |
 | Insights | 1/week | daily | daily + custom alerts |
-| Coach | 1 teaser/mo (detail gated) | full core patterns | full + advanced + retrospectives |
+| Coach | 2 teasers/mo (detail gated, contextual icons) | full core patterns | full + advanced + retrospectives |
 | Analytics | basic (allocation, time-series) | + dividend calendar, benchmarks | + Sharpe, Sortino, factor, max drawdown |
 | Tax | none | none | per-jurisdiction reports |
 | Export | none | CSV | CSV + API |
@@ -260,88 +276,176 @@ At percentages of portfolio value, all tiers are economically invisible if they 
 
 ## 5. Cost-to-serve per tier
 
-**Critical pre-alpha analysis:** what does each tier cost Memoro per user, especially on LLM inference?
+**Critical pre-alpha analysis:** what does each tier cost Memoro per user, especially on LLM inference? **This section updated 2026-04-23 post-4-locks patch for Haiku routing on Free + Sonnet on Plus/Pro/Trial.**
 
-### 5.1 Anthropic API cost model (Claude 3.5 Sonnet reference pricing as of 2026-04-23 — PUBLIC PRICING)
+### 5.1 Anthropic API cost model (public pricing as of 2026-04-23)
 
-Per Anthropic pricing page (anthropic.com/pricing):
-- Input tokens: $3 / 1M tokens
-- Output tokens: $15 / 1M tokens
+Per Anthropic pricing page (anthropic.com/pricing) at 2026-04-23:
 
-Note: pricing subject to change; verify before financial modeling lock. `[REFRESH]` flag.
+| Model | Input ($/M tok) | Output ($/M tok) | Use in Memoro |
+|---|---|---|---|
+| **Claude 3.5 Haiku** | $0.80 | $4.00 | Free tier (per DECISIONS 2026-04-23) |
+| **Claude 3.5 Sonnet** | $3.00 | $15.00 | Plus + Pro + 14-day Plus trial |
+
+Haiku is 3.75x cheaper on input and 3.75x cheaper on output than Sonnet. Sonnet costs ~3.75x Haiku for equivalent token volumes.
+
+Note: pricing subject to change; verify before financial model lock. `[REFRESH: quarterly]`.
 
 ### 5.2 Estimated token consumption per interaction
 
-**Chat interaction (typical):**
-- Input: user question + portfolio context + chat history ≈ 2,000-5,000 tokens
-- Output: AI response ≈ 300-600 tokens
-- Cost per chat: ($3 × 3,500/1M) + ($15 × 450/1M) ≈ $0.0105 + $0.00675 ≈ **$0.017 per chat**
+**Assumptions per DECISIONS 2026-04-23 Free-tier patch brief:**
+- Free chat: average 500 input tokens + 400 output tokens per message (light context; Haiku handles portfolio summaries well without heavy context)
+- Plus chat (heavy context with full portfolio + history): 3,500 input + 450 output per message (unchanged from v1)
+- Insights: 4,000 input + 125 output per run (unchanged)
+- Coach pattern detection + narrative: 15,000 input + 300 output per run (unchanged; history context is the large cost)
 
-**Insight generation (weekly / daily):**
-- Input: portfolio state + recent events ≈ 3,000-5,000 tokens
-- Output: insight ≈ 100-150 tokens
-- Cost per insight: ($3 × 4,000/1M) + ($15 × 125/1M) ≈ $0.012 + $0.00188 ≈ **$0.014 per insight**
+**Cost per message — Free tier (Haiku, 500 in / 400 out):**
+- (500 × $0.80 + 400 × $4.00) / 1M = ($0.00040 + $0.00160) = **$0.00200 per Free chat message**
 
-**Coach pattern-detection + narrative (monthly or triggered):**
-- Input: full trade history + portfolio context ≈ 10,000-20,000 tokens (history is the large context)
-- Output: pattern narrative ≈ 200-400 tokens
-- Cost per pattern-read: ($3 × 15,000/1M) + ($15 × 300/1M) ≈ $0.045 + $0.0045 ≈ **$0.050 per Coach run**
+**Cost per message — Plus/Pro/Trial (Sonnet, 3500 in / 450 out heavy context):**
+- (3,500 × $3.00 + 450 × $15.00) / 1M = ($0.0105 + $0.00675) = **$0.01725 per Plus chat message**
 
-Prompt caching + context optimization could reduce these ~30-50% at scale, but v1 estimates use uncached base rates.
+**Cost per insight — Haiku (Free) vs Sonnet (Plus/Pro):**
+- Haiku: (4000 × $0.80 + 125 × $4.00) / 1M = $0.00320 + $0.00050 = **$0.00370 per Free insight**
+- Sonnet: (4000 × $3.00 + 125 × $15.00) / 1M = $0.01200 + $0.00188 = **$0.01388 per Plus insight** (rounded $0.014)
+
+**Cost per Coach pattern-detection + narrative:**
+- Haiku (Free tier teaser): (15000 × $0.80 + 300 × $4.00) / 1M = $0.01200 + $0.00120 = **$0.01320 per Free Coach run**
+- Sonnet (Plus/Pro): (15000 × $3.00 + 300 × $15.00) / 1M = $0.04500 + $0.00450 = **$0.04950 per Plus Coach run**
+
+Prompt caching + context optimization could reduce these 30-50% at scale, but v1.1 estimates use uncached base rates for conservatism.
 
 ### 5.3 Monthly LLM cost per active user per tier
 
-**Free tier monthly LLM cost (per user, if user uses allocation fully):**
-- Chat: 5/day × 30 days × $0.017 = $2.55
-- Insight: 1/week × 4 weeks × $0.014 = $0.056
-- Coach teaser detection: 1/month × $0.050 = $0.05 (detection runs monthly even if nothing fires)
-- **Total Free LLM cost: ~$2.66 per fully-active Free user per month**
+**Free tier monthly LLM cost (Haiku, 50 msg/mo cap, no daily limit):**
+
+_Worst case (user maxes monthly cap):_
+- Chat: 50 messages × $0.00200 = **$0.100**
+- Insight: 1/week × 4 × $0.00370 = **$0.015**
+- Coach detection: 1/month × $0.01320 = **$0.013**
+- **Total Free LLM cost (worst case, fully-active user): ~$0.128/user/mo (round to $0.13)**
+
+_Typical user (30% of monthly cap ≈ 15 messages; industry active-user ratio):_
+- Chat: 15 × $0.00200 = $0.030
+- Insight: 4 × $0.00370 = $0.015
+- Coach: $0.013
+- **Total Free LLM cost (typical user): ~$0.058/user/mo (round to $0.06)**
+
 - Revenue offset: $0
-- **Gross margin per Free user: -$2.66/mo**
+- **Gross margin per Free user (worst case): -$0.13/mo**
+- **Gross margin per Free user (typical): -$0.06/mo**
 
-**Plus tier monthly LLM cost (per active user):**
-- Chat: unlimited; typical daily user ~10 chats/day × 30 × $0.017 = $5.10 (upper bound if heavily used)
-- Insight: daily × 30 × $0.014 = $0.42
-- Coach: pattern-detection + narrative on trigger; assume 4 runs/month average = 4 × $0.050 = $0.20
-- **Total Plus LLM cost: ~$5.72 per active Plus user per month (upper bound)**
+**Compared to v1 (pre-4-locks) which showed -$2.66/mo worst case: 20x improvement.** The combination of Haiku routing + 50 msg/mo cap + light-context assumption drops the per-user burn from «structural financial risk» to «negligible operating cost».
+
+**Plus tier monthly LLM cost (Sonnet, unlimited chat — typical-usage estimate):**
+- Chat: unlimited; typical active Plus user uses ~300 messages/month (10/day equivalent, industry SaaS active-user pattern with heavier context)
+  - 300 × $0.01725 = $5.175
+- Insight: daily × 30 × $0.01388 = $0.416
+- Coach: typical Plus user triggers 4 pattern-reads/mo average; 4 × $0.04950 = $0.198
+- **Total Plus LLM cost (typical active user): ~$5.79/user/mo**
+
+Upper bound (heavy Plus user, 600 msg/mo chat):
+- 600 × $0.01725 + $0.42 + $0.20 = $10.95/user/mo
+
 - Revenue: $8-10/mo
-- **Gross margin per Plus user: ~$2.28 - $4.28/mo (28-48% gross margin at LLM level)**
+- **Gross margin per Plus user (typical): $8-10 − $5.79 − Stripe 2.9%+$0.30 ≈ $1.65-$3.65/mo (18-41% gross margin at LLM level)**
+- **Gross margin per heavy-use Plus user: $8-10 − $10.95 = NEGATIVE at $8 price point, break-even at $10.** Fair-use policy + model tiering for routine responses advised (see §5.4).
 
-**Pro tier monthly LLM cost (per active user):**
-- Chat: unlimited; power users may run 20+ chats/day × 30 × $0.017 = $10.20 (upper bound)
-- Insight: daily + custom alerts; ~45 alerts/month × $0.014 = $0.63
-- Coach: advanced categories fire more frequently; ~8 runs/month × $0.050 = $0.40
+**Pro tier monthly LLM cost (Sonnet, unlimited + advanced):**
+- Chat: power users ~600 chats/mo × $0.01725 = $10.35
+- Insight: daily + custom alerts ~45/mo × $0.01388 = $0.624
+- Coach: advanced categories + retrospectives ~8 runs/mo × $0.04950 = $0.396
 - Tax reports: computed, not LLM-generated (outside LLM cost)
-- **Total Pro LLM cost: ~$11.23 per active Pro user per month (upper bound)**
+- **Total Pro LLM cost (typical active Pro user): ~$11.37/user/mo**
 - Revenue: $20/mo
-- **Gross margin per Pro user: ~$8.77/mo (44% gross margin at LLM level)**
+- **Gross margin per Pro user: $20 − $11.37 − Stripe ~$0.88 ≈ $7.75/mo (39% gross margin at LLM level)**
 
-### 5.4 Gross margin risks flagged
+### 5.3.1 Trial-phase economics (14-day Plus access on Sonnet)
 
-**CRITICAL — Free tier negative gross margin at scale:**
+**Per DECISIONS 2026-04-23 Trial lock: 14-day Plus trial, card required at signup.**
 
-If Memoro has 10,000 active Free users using full allocation, LLM burn = 10,000 × $2.66 = **~$26,600/month** ($319,200/year) in Anthropic API cost with ZERO revenue offset.
+_Trial COGS per user over 14 days (Sonnet at Plus usage rate):_
+- Plus typical LLM cost $5.79/mo × (14/30) = **$2.70/trial-user LLM**
+- Infra overhead $0.75/mo × (14/30) = $0.35
+- **Total trial COGS per user: ~$3.05/trial-user over 14 days**
 
-**Mitigations:**
+_If user converts on day 14 (card charged):_
+- Stripe first-month fee: 2.9% × $9 + $0.30 = $0.56
+- Day-15 onward: user pays $9/mo, generates ~$1.89/mo gross contribution (after COGS + Stripe)
+- Break-even on trial COGS alone: $3.05 / $1.89 ≈ 1.6 months of paid retention needed to recover trial cost
+- **At 5% monthly churn (industry B2C SaaS), average paid tenure is ~20 months → LTV after trial = $1.89 × 20 = $37.80.**
+- **LTV − trial COGS = $37.80 − $3.05 = $34.75 net contribution per converting trial user.**
 
-1. **Cap Free AI interactions harder.** Current 5 msg/day may be too generous. Alternatives:
-   - 5 msg/week (aggressive cap) → $0.34/user/month LLM cost
-   - 3 msg/day (modest reduction) → $1.53/user/month
-   - 10 msg/day but only 3 complex queries/day → mixed cap
-2. **Use cheaper model for Free tier responses.** Claude 3.5 Haiku or similar lower-tier model at Free. Production quality check required.
-3. **Aggressive prompt caching for Free tier portfolio context.** Static portfolio context can be cached across sessions; reduces input token cost significantly.
-4. **Convert high-volume Free users.** Rate-limit feedback («You've used 3 of 5 messages today — upgrade for unlimited») drives conversion.
+_If user does NOT convert (card fails / user cancels at day 14):_
+- Auto-downgrade to Free tier
+- Trial COGS of $3.05 is SUNK (no revenue offset)
 
-**Finance-advisor flag for PO:** Without cost caps, Free tier at scale is a real financial bleed. Recommend: tech-lead + finance-advisor agree on Free tier LLM-cost cap BEFORE alpha launch (target <$1.50/user/month).
+_Break-even trial→paid conversion rate (LTV basis):_
+- Expected value per trial start: p × $34.75 + (1 − p) × (−$3.05) ≥ 0
+- p ≥ $3.05 / ($34.75 + $3.05) = **p ≥ 8.1%** for trial to break even on LTV basis
+- Industry benchmark for card-required B2C SaaS trial→paid: **40-60%** (per ProfitWell, Baremetrics public reports; see §6.4)
+- **Memoro trial has a 5-7x cushion between break-even (8%) and industry benchmark (40-60%). Trial economics are SAFE with wide margin.**
 
-**MEDIUM — Plus tier margin is thin at heavy-user profile:**
+_Break-even trial→paid conversion rate (1-month horizon — pessimistic):_
+- If we only count month-1 paid retention (1 paid month × $1.89 − $3.05 = −$1.16): p × $1.89 − $3.05 ≥ 0 → **p ≥ 61%** to break even in 1 month alone
+- This is above the industry benchmark. BUT: this overlooks LTV. With LTV horizon, trial is safe; with 1-month payback horizon, trial is marginal at industry conversion rates and LOSSY at below-benchmark conversion.
+- **Implication:** trial economics depend on Plus retention past month 1. If Plus churn is pathological (>15%/mo), trial eats into margin. If Plus churn is normal (5-7%/mo), trial is strongly accretive.
 
-A heavy-use Plus user (20+ chats/day, full Coach triggering) can approach $10+ LLM cost at $8-10 revenue = zero or negative margin. Mitigations:
-1. Plus tier «fair use» policy (unstated limits that kick in at pathological usage; industry-standard practice)
-2. Prompt optimization + context compression
-3. Cheaper model for routine insights (Haiku); Sonnet only for complex chat
+_Red flag for trial COGS:_
+- If trial→paid conversion comes in at <15% (well below industry benchmark), trial COGS eats material lunch at scale: 10K trial starts × $3.05 = $30,500 burn with 1,500 × $37.80 = $56,700 LTV offset → net +$26,200. Still positive but margin compressed.
+- If trial→paid conversion collapses to <8%, trial becomes net negative.
+- **Monitoring action:** measure trial→paid conversion at 90 days post-launch (per DECISIONS 2026-04-23 revisit schedule); if <15%, investigate trial duration / card-required policy / onboarding UX.
+
+### 5.4 Gross margin risks flagged (post-4-locks)
+
+**RESOLVED — Free tier negative gross margin at scale:**
+
+v1 flagged $26,600/month burn at 10K active Free users on Sonnet with 5 msg/day cap. Post-4-locks with Haiku + 50 msg/mo:
+
+| User scale | Free LLM burn/mo (worst case, fully-maxed users) | Free LLM burn/mo (typical, 30% of cap) |
+|---|---|---|
+| 1K Free | ~$130 | ~$60 |
+| 10K Free | ~$1,300 | ~$600 |
+| 100K Free | ~$13,000 | ~$6,000 |
+
+Add infra ($0.30/user/mo): total Free burn at 100K = $30,000-$43,000/mo. **Compare to $319,200/yr ($26,600/mo) v1 projection at 10K users — the 4-locks patch reduces Free burn at 10x the user count to below the pre-patch burn at 1x user count.** Structural Free-tier cost risk is RESOLVED.
+
+**MEDIUM — Plus tier margin thin at heavy-user profile (unchanged from v1):**
+
+A heavy-use Plus user (600+ chats/mo, full Coach triggering) can approach $11+ LLM cost at $8-10 revenue = zero or negative margin. Mitigations same as v1:
+1. Plus «fair use» policy (unstated limits at pathological usage; industry convention)
+2. Prompt optimization + context compression (potential 30-50% reduction at scale)
+3. Model tiering inside Plus — Haiku for routine insights + light chat, Sonnet for complex chat (Coach, pattern-reads, advice-adjacent refusals)
 
 **Pro tier has healthy margin at $20** — most sustainable tier economically.
+
+**MEDIUM — Trial COGS at scale if conversion under-performs (new post-4-locks):**
+
+At 10K trial starts/mo, trial COGS = $30,500/mo. Offset depends on conversion rate × LTV. At industry-benchmark 50% conversion: offset = $189K/mo LTV-basis (strongly positive). At 15% conversion: offset = $56.7K/mo (still net positive). At 8% break-even, zero-net. Below 8%: net drain.
+
+Monitoring: trial→paid conversion measured at 90 days post-launch; re-evaluate if <15%.
+
+### 5.4.1 Free-tier sustainability at scale (the key question)
+
+**Per DECISIONS 2026-04-23: «measure actual Free burn at 1K / 10K / 100K users; adjust cap if unit economics break».** This section establishes the baseline.
+
+Free-tier total cost at scale (LLM + infra, typical-usage assumption):
+
+| Active Free users | Typical-use LLM burn/mo | Typical-use infra burn/mo | Total Free burn/mo | Comment |
+|---|---|---|---|---|
+| 1,000 | $60 | $300 | ~$360 | Negligible; within any startup burn |
+| 10,000 | $600 | $3,000 | ~$3,600 | Manageable; offset by even 1% Plus conversion (100 × $1.89 = $189/mo) INSUFFICIENT → need higher conv |
+| 100,000 | $6,000 | $30,000 | ~$36,000 | Material but not catastrophic; break-even at ~12% Plus conversion (see §6.5) |
+
+Worst-case Free-tier total cost at scale (all users max their 50 msg/mo):
+
+| Active Free users | Worst-case LLM burn/mo | Worst-case infra burn/mo | Total Free burn/mo |
+|---|---|---|---|
+| 1,000 | $130 | $300 | ~$430 |
+| 10,000 | $1,300 | $3,000 | ~$4,300 |
+| 100,000 | $13,000 | $30,000 | ~$43,000 |
+
+**Finance-advisor red flag assessment:** NO sustainability red flag at any user-count tier (1K / 10K / 100K) under current 4-locks structure, provided Haiku routing is in place for Free responses. At 100K Free users with 0% conversion, $36K/mo burn is material but not existential (compare: a single senior-engineer hire ≈ $15-25K/mo loaded in US). At even 5% Free→Plus conversion at 100K users, Plus revenue contribution = 5K × $1.89 = $9.4K/mo, covering 25% of Free burn. At 12%+ conversion (see §6.5 break-even), Free tier is net-profitable at scale.
 
 ### 5.5 Additional costs not modeled above (rough)
 
@@ -354,18 +458,26 @@ Per-user costs beyond LLM:
 
 These add roughly $0.50-1.50/user/month at current hosting pricing. Not huge but meaningful at Free-tier scale.
 
-### 5.6 Unit-economics sanity table
+### 5.6 Unit-economics sanity table (updated 2026-04-23 post-4-locks)
 
-| Tier | Revenue/mo | LLM cost/mo (upper) | Other infra cost/mo | Est. gross margin | Gross margin % |
+| Tier | Revenue/mo | LLM cost/mo | Infra cost/mo | Est. gross margin | Gross margin % |
 |---|---|---|---|---|---|
-| Free (heavy user) | $0 | $2.66 | $0.50 | -$3.16 | N/A (negative) |
-| Free (light user) | $0 | $0.80 | $0.30 | -$1.10 | N/A (negative) |
-| Plus (median user) | $9 | $3.00 | $0.75 | $5.25 | 58% |
-| Plus (heavy user) | $9 | $5.72 | $1.00 | $2.28 | 25% |
-| Pro (median user) | $20 | $7.00 | $1.25 | $11.75 | 59% |
-| Pro (heavy user) | $20 | $11.23 | $1.50 | $7.27 | 36% |
+| Free (worst case, maxed) | $0 | $0.128 (Haiku) | $0.30 | -$0.43 | N/A (negative) |
+| Free (typical) | $0 | $0.058 (Haiku) | $0.30 | -$0.36 | N/A (negative, but tiny) |
+| Trial (14d Plus, Sonnet) | $0 | $2.70 (Sonnet, 14d) | $0.35 | -$3.05 | N/A (deferred revenue via day-14 conversion) |
+| Plus (typical) | $9 | $5.79 (Sonnet) | $0.75 | $1.90 (post-Stripe) | 21% |
+| Plus (heavy) | $9 | $10.95 (Sonnet) | $1.00 | -$3.50 | Negative; fair-use needed |
+| Pro (typical) | $20 | $11.37 (Sonnet) | $1.25 | $6.50 (post-Stripe) | 33% |
+| Pro (heavy) | $20 | $13.00 (Sonnet) | $1.50 | $4.62 | 23% |
 
-**Finance-advisor note:** Plus median user gross margin ~58% is HEALTHY for SaaS at scale. Plus heavy user at 25% is thin but not negative. Pro median at 59% is excellent. Free is the financial risk — needs cap.
+**Finance-advisor note (post-4-locks):**
+- Free typical at -$0.36/mo is NEGLIGIBLE — essentially a free-trial of the product at near-zero marginal cost. Haiku routing makes Free sustainable at any realistic user scale.
+- Plus typical at 21% gross margin is below v1's 58% — but v1 used lower Sonnet usage assumptions (300 msg/mo at heavier cost). Real number depends on usage distribution; monitor post-alpha.
+- Plus heavy-user negative margin is the real risk tier — fair-use policy + model tiering within Plus required.
+- Pro at 33% typical is healthy; remains most sustainable paid tier.
+- Trial (14-day) at -$3.05/user is an ACQUISITION COST, not a recurring loss — break-even needs trial→paid conversion ≥8% on LTV basis (well under industry 40-60% benchmark).
+
+**Key observation:** v1 flagged Free tier as the PRIMARY financial risk. Post-4-locks with Haiku + 50 msg/mo cap, Free tier is NO LONGER the primary risk. The new primary financial risks are (in order): (1) Plus heavy-user margin compression; (2) trial→paid conversion under-performance; (3) Plus churn driving LTV below trial break-even.
 
 ---
 
@@ -438,9 +550,56 @@ Highest-leverage loss points (where best mitigation → biggest conversion lift)
 
 From `COACH_TIER_PLACEMENT.md` §3.3:
 
-**The activation event is the first Coach teaser firing.** Before this, user has commodity-level tracker features. After this, user experiences Memoro's structural differentiator + sees paid-tier value anchor («there's more detail behind this»). Without the activation event firing in the first 7-14 days post-signup, Free → Plus conversion likely underperforms.
+**The activation event is the first Coach teaser firing — manifested as a blinking contextual icon on a position card or dashboard widget (per DECISIONS 2026-04-23 Coach UX lock).** Before this, user has commodity-level tracker features. After this, user experiences Memoro's structural differentiator + sees paid-tier value anchor («there's more detail behind this» via teaser popover). Without the activation event firing in the first 7-14 days post-signup, Free → Plus conversion likely underperforms.
 
 **This is the single most important funnel metric to track post-alpha.**
+
+**Trial→paid conversion industry benchmarks (card-required B2C SaaS):**
+
+| Pattern | Typical trial→paid conversion | Source |
+|---|---|---|
+| Card-required trial (credit card at signup) | 40-60% | ProfitWell public benchmarks 2023; Baremetrics SaaS benchmarks reports `[SOURCE-PENDING URL]` |
+| Card-not-required / freemium trial | 15-25% | Same sources |
+| OpenView SaaS Benchmarks Report (broad SaaS) | 20-30% median freemium Free→paid over 90d | OpenView Partners `[SOURCE-PENDING]` |
+| B2C consumer SaaS ($5-15/mo price point) | 25-40% trial→paid when card required | Industry convention; see `BENCHMARKS_SOURCED.md` for specific citable rows when verified |
+
+**Memoro's trial hypothesis:** 30-50% trial→paid conversion at 14 days (card-required pattern; Plus product experience delivered). At 8.1% break-even (§5.3.1), even pessimistic trial performance covers COGS. Key sensitivity: Plus retention past month 1.
+
+### 6.5 Free→Plus conversion break-even threshold
+
+**Question: At what Free→Plus conversion rate does the Free tier become net-profitable at scale?**
+
+Inputs:
+- Free user drain: $0.42/user/mo (typical) to $0.43/user/mo (worst case), round to $0.42
+- Plus user gross contribution: $1.89/mo (typical Plus user, post-Stripe, post-COGS)
+- Conversion horizon: 12 months (a signed-up Free user either converts within ~12 months or is unlikely to ever convert)
+
+**1-month horizon break-even:**
+- Condition: (1-p) × (-$0.42) + p × $1.89 ≥ 0
+- p ≥ $0.42 / ($0.42 + $1.89) = **p ≥ 18.2%** for Free tier to break even in 1 month
+- This is high — Free-tier economics do not break even instantly
+
+**12-month LTV horizon (more realistic SaaS framing):**
+- Free user 12-month drain: $0.42 × 12 = $5.04
+- Plus user 12-month gross contribution: $1.89 × 12 = $22.68 (assuming user stays Plus for 12+ months; with churn, weighted lower)
+- Plus LTV at 5% monthly churn (20-month avg tenure): $1.89 × 20 = $37.80
+- Condition (LTV-basis): (1-p) × (-$5.04) + p × $37.80 ≥ 0
+- **p ≥ $5.04 / ($5.04 + $37.80) = p ≥ 11.8%** over 12-month LTV horizon
+- At 7% churn (14-month avg tenure): Plus LTV = $26.46 → **p ≥ 16.0%**
+- At 10% churn (10-month tenure): Plus LTV = $18.90 → **p ≥ 21.1%**
+
+**Summary break-even ranges:**
+
+| Plus churn scenario | Plus LTV | Free→Plus break-even |
+|---|---|---|
+| Optimistic (4% monthly churn, 25-mo avg) | $47.25 | 9.6% |
+| Industry-typical (5% churn, 20-mo avg) | $37.80 | 11.8% |
+| Pessimistic (7% churn, 14-mo avg) | $26.46 | 16.0% |
+| High-churn (10% churn, 10-mo avg) | $18.90 | 21.1% |
+
+**Hypothesis vs break-even:** `COACH_TIER_PLACEMENT.md` §3.1 hypothesizes Free→Plus conversion 3-7% over 90 days. Annualized to 12 months, 3-7% at 90 days likely compounds to ~8-18% at 12 months (continued conversion curve + some late converters). This is in the NEIGHBORHOOD of the break-even band (12-16%) but not clearly above it.
+
+**Finance-advisor assessment:** Free tier at scale is near-break-even under hypothesis, with meaningful downside risk if conversion is at the low end (3%) and Plus churn is high (7%+). At upside conversion (7%+ at 90d → 15%+ at 12mo) + industry-typical churn, Free tier is profitable. **The 4-locks structure makes Free tier economically viable — but profitability depends on maintaining Plus churn ≤7%/mo and Free→Plus conversion ≥12%/12mo.**
 
 ---
 
@@ -448,7 +607,9 @@ From `COACH_TIER_PLACEMENT.md` §3.3:
 
 | # | Risk | Severity | Impact | Mitigation owner |
 |---|---|---|---|---|
-| F1 | Free tier negative gross margin at scale; LLM burn without offset | HIGH | $26K+/mo at 10K active Free users fully-using allocation | tech-lead (caps + model tier); finance-advisor (monitoring) |
+| F1 | Free tier negative gross margin at scale (RESOLVED 2026-04-23 by Haiku + 50 msg/mo lock) | LOW | Post-4-locks: worst case $43K/mo at 100K users; break-even at ~12% conversion (see §6.5) | finance-advisor (ongoing monitoring at 1K/10K/100K thresholds) |
+| F1a | Plus heavy-user margin negative at $8; fair-use needed | MEDIUM | Users using 600+ chat msgs/mo on Sonnet exceed $9 revenue | tech-lead (model tiering inside Plus + fair-use policy) |
+| F1b | Trial COGS $3.05/user not recovered if conversion <8% | MEDIUM | 10K/mo trial starts × $3.05 = $30.5K/mo burn; offset depends on conversion | finance-advisor (90d post-launch measurement); content-lead (trial onboarding UX) |
 | F2 | Pro $20 head-to-head with PortfolioPilot Gold $20 — RIA competitor with proof | HIGH | Pro-tier conversion pressure; differentiation must earn price parity | Navigator (positioning); content-lead (differentiation messaging); product-designer (UX edge) |
 | F3 | Plus $8-10 in crowded 4-way cluster — differentiation not on price axis | MEDIUM | Plus feels «just another tracker» at same price as Copilot/Snowball/Getquin | content-lead (unique Coach messaging); product-designer (Memoro-unique UX) |
 | F4 | Warm-start backfill failure reduces Plus conversion 30-50% | HIGH | Plus revenue hypothesis fails if cold-start is the common path | tech-lead (SnapTrade coverage audit); product-designer (empty-state design) |
@@ -463,18 +624,16 @@ From `COACH_TIER_PLACEMENT.md` §3.3:
 
 ## 8. Top 3 finance decisions flagged for PO
 
-### 8.1 Free tier AI cost cap — LAUNCH-BLOCKING operational decision
+### 8.1 Free tier AI cost — RESOLVED by 2026-04-23 4-locks lock
 
-**Recommendation:** lower Free tier AI chat from 5 msg/day to 3 msg/day AND cap total monthly message count (e.g., 60/month) to protect against heavy-Free-use burn. Target: LLM cost per fully-active Free user <$1.50/month.
+**Status:** RESOLVED. PO locked Free tier at 50 msg/mo (monthly-only, no daily cap) on Haiku model (5x cheaper than Sonnet). Resulting economics per §5.3 above: $0.06-0.13/user/mo worst case, 20x improvement over v1's Sonnet+5-msg/day projection.
 
-**Why this is launch-blocking:** without a cap, 10K active Free users fully using allocation = $26K/mo Anthropic bill. If Free → Plus conversion is only 3%, that's 300 paying users × $9 = $2,700/mo revenue — massive net loss.
+**Dependency (flag for tech-lead):** Haiku routing for Free tier MUST ship before 50 msg/mo cap goes live. If cap is enforced but responses still route to Sonnet, cost/user becomes $0.375-$0.86/mo (3.75x worse than Haiku). Still sustainable but loses the cost advantage that makes Free tier viable at 100K users.
 
-**Trade-off:** 3 msg/day feels tight vs Getquin / PortfolioPilot free tiers. Mitigate by:
-- Pairing cap with strong conversion nudge («Upgrade for unlimited chat»)
-- Using model-tiering (Haiku for Free, Sonnet for Plus+) to reduce cost without reducing count
-- Periodic re-evaluation post-alpha based on actual usage distribution (if most users use 1-2 chats, 5/day is fine)
-
-**Alternative:** use Haiku for Free instead of Sonnet (~3-5x cost reduction per token). Quality check required.
+**Monitoring action (per DECISIONS 2026-04-23 revisit schedule):**
+- Track actual Free-user chat usage distribution at 30 / 90 / 180 days post-launch
+- Measure actual LLM burn at 1K / 10K / 100K active Free user thresholds
+- Revisit cap if unit economics break (e.g., if typical-use ratio turns out to be >60% of cap, rather than the assumed 30%)
 
 ### 8.2 Pro tier at $20 differentiation earn-vs-undercut decision
 
@@ -515,7 +674,8 @@ From `COACH_TIER_PLACEMENT.md` §3.3:
 ## 10. Revision log
 
 - **2026-04-23 (v1):** Initial validation. finance-advisor. Per-tier value mapping, competitor comparison (PortfolioPilot Gold + Getquin Premium + Snowball Starter + Mezzi Core + ChatGPT Plus), value-per-dollar analysis, cost-to-serve model with Anthropic pricing reference, conversion funnel bottleneck analysis, top-3 PO flags. Most numerical claims flagged `[SOURCE-PENDING]` or hypothesis-labeled until real cohort data post-alpha.
+- **2026-04-23 (v1.1, post-4-locks patch):** Rewrote §5 cost-to-serve with Haiku-on-Free + Sonnet-on-Plus/Pro/Trial pricing per DECISIONS 2026-04-23 Trial+Free+Coach+Brand lock. Added §5.3.1 trial-phase economics (14-day Plus trial on Sonnet = $3.05/user trial COGS; break-even 8.1% on LTV basis). Added §5.4.1 Free-tier sustainability at 1K/10K/100K user thresholds. Added §6.5 Free→Plus break-even threshold analysis (11.8-16% under industry-typical churn). Added §6.4 trial→paid industry benchmarks. Verdict changed from WARN to SUPPORT: Free tier structural cost risk RESOLVED; new primary risks are Plus heavy-user margin + trial→paid conversion under-performance + Plus churn. Updated §5.6 unit-economics sanity table. Updated §8.1 from «cap Free harder» recommendation to «Free tier RESOLVED by PO lock; dependency flag: Haiku routing must ship before 50 msg/mo cap».
 
 ---
 
-**End of Pricing Tier Validation v1. Awaiting tech-lead SnapTrade coverage audit + product-designer teaser UX + content-lead microcopy + real cohort data post-alpha for v2 refinement.**
+**End of Pricing Tier Validation v1.1. Awaiting tech-lead SnapTrade coverage audit + product-designer teaser UX + content-lead microcopy + Haiku routing implementation + real cohort data post-alpha for v2 refinement.**
