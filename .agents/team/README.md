@@ -21,6 +21,13 @@ developer syncs them into their local runtime.
 | `user-researcher.md` | ICP validation, interviews, JTBD, opportunity mapping | opus |
 | `content-lead.md` | Landing copy, email sequences, microcopy, paywall copy | opus |
 
+### Domain SMEs — internal validators (dispatched by Navigator)
+
+| Agent | Role | Model |
+|---|---|---|
+| `finance-advisor.md` | AI content validation (formulas/benchmarks), startup finance model, Lane A numeric compliance | opus |
+| `legal-advisor.md` | Privacy policy / ToS drafts, GDPR + SEC + MiFID II + FCA + 39-ФЗ boundary review, subprocessor DPAs | opus |
+
 ### Engineering-side (via tech-lead)
 
 | Agent | Role | Model |
