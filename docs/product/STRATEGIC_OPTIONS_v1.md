@@ -1,9 +1,9 @@
 # Strategic Options — 3 candidate directions
 
-**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock)
+**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added)
 **Owner:** Navigator (orchestrator); synthesis pulls from brand-strategist, product-designer, content-lead
 **Source:** v2 discovery (34 competitors, evidence-based) + parallel specialist synthesis + council debate
-**Status:** PO locked two constraints 2026-04-23 (regulatory lane A; geography global multi-market). Options re-ranked below under these constraints. Awaiting PO pick among the three finalists (one direction; then all-in).
+**Status:** PO locked two constraints 2026-04-23 (regulatory lane A; geography global multi-market). Options re-ranked below under these constraints. **v1.2:** Option 4 «Hybrid — Second Brain for Your Portfolio» added per PO intuition «я бы хотел все объединить как то» (2026-04-23). Navigator evaluated and recommends Path B (Option 4) as preferred pick; Path A (pick primary from Options 1-3) remains viable fallback. Awaiting PO final pick.
 
 ## PO constraints locked 2026-04-23
 
@@ -285,49 +285,169 @@ Lane B разрушает самое distinctive value-prop («наблюден�
 
 ---
 
+## Option 4 — «Hybrid» (Second Brain for Your Portfolio)
+
+### Added 2026-04-23 (v1.2) per PO intuition
+PO phrasing 2026-04-23: «я бы хотел все объединить как то». Options 1-3 each pick one of three surfaces (chat / insights / coach) as primary and relegate the others. PO's intuition is that the product IS all three, and the positioning should reflect that. Option 4 is the response: a single unifying metaphor that naturally contains all three surfaces without creating an «everything app» commodity read.
+
+### Regulatory lane: **A (LOCKED by PO 2026-04-23).**
+«Second brain» semantics (memory + surface + reflect) align perfectly with Lane A — the brain doesn't advise, it holds context, notices things, reminds, explains. Lane A is NOT a compromise here, it's a natural consequence of the metaphor.
+
+### Unifying metaphor
+**«Second Brain for Your Portfolio».** Ported from productivity/knowledge-management category (Tiago Forte book; Notion, Obsidian, Roam cultural territory) into finance. In 34-competitor scan (`competitor-matrix.md`): **zero** matches. No fintech competitor claims «second brain» vocabulary. Empty territory.
+
+The three surfaces map naturally:
+- **Chat = the conversation with your second brain.** You ask, it answers on your actual holdings with sources.
+- **Insights = what your second brain surfaces proactively.** Weekly digest of dividends, drawdowns, events, concentration shifts — things you'd miss.
+- **Coach = what your second brain notices about your behavior over time.** Pattern-reads on actual trade history («ты продал Apple на локальном дне три раза за год»).
+
+The metaphor also contains scenarios (second brain runs what-ifs), explainers (inline vocabulary unpacking), and aggregation (second brain holds everything in one place) — tertiary surfaces fit without forcing.
+
+### One-paragraph pitch
+Не advisor, не terminal, не tracker-с-AI-сбоку. Второй мозг для твоего портфеля — держит контекст, отвечает на вопросы, подсвечивает что ты упустил, помнит как ты торговал. Chat, insights и paттерны — не три разных продукта, а три проявления одной памяти о твоих деньгах. Не продаёт советы. Не осуждает. Просто помнит, замечает, объясняет.
+
+### Positioning angle (1-liner)
+«Второй мозг для твоего портфеля. Помнит, замечает, объясняет.»
+
+### Brand archetype tuning + voice feel
+- **Archetype:** Magician + Sage dominant (knowing, cool-headed, intellectual); Everyman modifier (accessible, not snobby). Notion/Obsidian intonation applied to finance.
+- **Voice:** calm, specific, memory-oriented verbs («помнит», «замечает», «объясняет», «подсвечивает»). Zero hype, zero advisor-paternalism. Close to Oracle's тихая точность but with proactive warmth from «замечает».
+- **Personality:** как тихий, надёжный референт, который ведёт записи о твоих решениях и в нужный момент подаёт reminder — без оценки, без «я тебе говорил».
+- **Pacing:** unhurried. Информация появляется когда имеет смысл появиться, не дёргает постоянно.
+
+### Product emphasis (surface matrix — all three primary, ordered by onboarding sequence)
+- **Surface 1 (immediate, minute 1):** Chat с portfolio context — «задай вопрос своему второму мозгу». Всегда доступен, home-adjacent.
+- **Surface 2 (minute 10, after first sync):** Insights feed — «вот что твой второй мозг заметил». Proactive surfacing, not passive.
+- **Surface 3 (day 30, after history accumulates):** Coach pattern-read — «вот что твой второй мозг помнит о твоих сделках». Weekly cadence post-history.
+- **Tertiary (embedded, not separate):** Scenarios (chat-tool), explainer (inline), aggregation (foundation layer).
+- **Onboarding flow shape:** 3-stage progressive disclosure. Stage 1 = chat + aggregation visible immediately («твой мозг уже знает что у тебя есть»). Stage 2 = first insight drops within 24h («твой мозг заметил первое»). Stage 3 = first coach pattern-read day 30 («твой мозг помнит достаточно, чтобы увидеть паттерн»). Each stage extends the promise, doesn't replace the last.
+
+### Messaging frame (landing hero)
+- **Russian:** Второй мозг для твоего портфеля. / Помнит, замечает, объясняет.
+- **English:** A second brain for your portfolio. / Remembers, notices, explains.
+- **Sub-proof 1:** Отвечает на твои реальные позиции — с источниками / Answers on your actual holdings, with sources
+- **Sub-proof 2:** Подсвечивает дивиденды, просадки, концентрацию — до того как ты заметишь / Surfaces dividends, drawdowns, concentration — before you notice
+- **Sub-proof 3:** Читает паттерны в твоих сделках — без осуждения / Reads patterns in your trades — without judgment
+
+### Competitor differentiation
+- **vs PortfolioPilot** («Complete financial advice»): они advisor-framed (Lane C); мы memory-framed (Lane A). Split-narrative vs unified narrative
+- **vs Origin** («Own your wealth. Ask anything.»): они multi-topic advisor (invest + budget + wellness); мы investing-pure second brain
+- **vs Getquin** («Your entire wealth. One platform.»): они aggregator-first + AI layer; мы brain-first (aggregation, chat, insights, coach = one memory). Также: EU dominant vs наш global multi-market explicit
+- **vs Mezzi** («Self-manage your wealth. Get fiduciary advice.»): они advice-framed $299/yr; мы observation-framed retail-priced
+- **vs Wealthfolio / Ghostfolio**: они OSS privacy-first tracker; мы managed second-brain с AI memory
+- **vs Notion / Obsidian (cross-category)**: они second brain for knowledge/notes; мы second brain for one specific knowledge domain — deep domain-expertise in finance vs generic
+
+### Which ICP wins
+- **A (millennials 28-40, $20-100K, multi-broker):** strong fit. «Second brain» productivity metaphor resonates with this cohort (они уже читали Forte / используют Notion). Memory + knowledge-worker framing ценит их self-image.
+- **B (newcomers 22-32, $2-20K, AI-native):** neutral-positive fit. AI-native users parse «second brain» immediately; но empty-state day 1 тяжелее (coach не стреляет 30 дней). Requires strong chat + early insights to carry первый месяц.
+- **Mid-career post-mistake retail (new ICP from Option 3):** strong fit. «Brain that remembers how you traded» без осуждения = именно то, что им нужно.
+- **Recommendation:** ICP A primary (strongest archetype match), mid-career retail secondary (natural expansion via coach surface), ICP B tertiary (acknowledged gap in day 1-30 UX that chat+insights mitigate).
+
+### Risks / trade-offs
+- **Focus-loss risk (PRIMARY concern — see section below):** abstract metaphor requires sub-proofs to do heavy lifting; cognitive cost ~4 sec vs 3 sec for Oracle's «Поговори со своим портфелем»
+- **Eng scope — heaviest of four options:** all three surfaces must ship and work at MVP. Chat shipped; insights feed (Slice 6a) shipped; coach is new vertical requiring major ADR (pattern detection, narrative generation, temporal reasoning)
+- **Locked hero rewrite:** current «Поговори со своим портфелем / Просто задай вопрос» replaced — tested, concrete hero swapped for abstract metaphor. Not a zero-risk move
+- **Metaphor import risk:** «second brain» is Notion/Obsidian-coded — productivity vocabulary ported to finance may read as pretentious for ICP B newcomers («слишком умно»)
+- **30-day cold-start (inherited from Option 3 coach):** coach promise requires 30 days history. If hero promises «remembers how you traded» but first month is empty — brand damage. Requires disciplined onboarding narrative that doesn't over-promise before data arrives
+- **Naming territory conflict:** «second brain» implies a NAME in mind/memory/knowledge territory. Brand-strategist round 5 criteria lock 1-2 words + memorable + meaningful. Need to check rejected list — «Folio/Foli» (portfolio roots) rejected; «Delphi/Koan/Vessel» rejected. «Memory/Mind/Recall/Synapse/Neuron» territory not yet explored
+- **Content-lead rewrite cost:** landing, paywall, emails, microcopy — all need second-brain-voice rewrite. Rough estimate: 2-3 weeks of content work vs 1 week for Path A variants
+
+### Unifying metaphor (NEW SECTION — what differentiates Option 4 from Path A)
+Path A approach (Options 1-3): **pick one surface as primary, relegate the other two.** Oracle → chat primary, insights + coach secondary. Analyst → insights primary, chat + coach secondary. Companion → coach primary, chat + insights secondary. Landing hero reflects the primary; product ships all three but marketing voices one.
+
+Path B approach (Option 4): **one metaphor that naturally contains all three surfaces.** Landing hero doesn't privilege any surface; sub-proofs 1-2-3 map to chat, insights, coach respectively. Product structure reinforces metaphor — first chat question (minute 1) → first insight drop (day 1) → first coach pattern (day 30) reads as «your second brain is learning you» instead of «here's feature #1, feature #2, feature #3».
+
+**The strategic difference:** Path A ships three surfaces under one brand voice (whichever option chosen). Path B ships three surfaces under one conceptual frame that makes them feel like ONE product instead of three bundled features. This matters for perceived product coherence in year 1 — when users describe us to friends, Path A gets «it's an AI tracker that also has chat» (three things), Path B gets «it's a second brain for investing» (one thing).
+
+Path A also wins on: cognitive simplicity (hero parses in 3 sec vs 4 sec), shipping speed (Analyst aligns with current Slice 6 work), locked-hero preservation. Path B wins on: empty brand territory, PO «объединить» intuition, longer defensibility horizon, narrative unity for 3 surfaces we ARE building anyway.
+
+### Risk of focus-loss (NEW SECTION — honest evaluation)
+The biggest risk with any «combine three things» positioning is commodity drift — «AI tracker with chat + insights + coach» collapses into the crowded «AI + portfolio» category where PortfolioPilot, Origin, Mezzi, Getquin, Fey, Wealthfolio all already live. Option 4 avoids this ONLY IF the unifying metaphor is strong enough to create a distinct category read.
+
+**«Second Brain for Your Portfolio» holds against focus-loss** for three reasons:
+1. **Empty territory in fintech.** No competitor claims this metaphor. First mover owns it.
+2. **Metaphor has prior art in adjacent category.** Productivity/knowledge-management users already parse «second brain» (Forte's book ~1M copies; Notion/Obsidian market penetration). Import cost is low; users don't have to learn a new concept, they have to apply a familiar concept to a new domain.
+3. **Metaphor is specific about WHAT, not just WOW.** «Second brain» implies memory, surfacing, pattern-reading — the three specific things we do. Unlike «Portfolio Partner» (blurry) or «Portfolio Companion» (vague), «second brain» prescribes behavior.
+
+**Focus-loss risk remains real if:**
+- Sub-proofs 1-2-3 don't hold tight mapping to chat/insights/coach respectively — landing then reads «lots of stuff» instead of «one brain, three manifestations»
+- Product fails to ship all three surfaces credibly at MVP (coach especially — 30-day cold-start killer)
+- Brand-strategist name lands in territory that doesn't reinforce memory/brain semantics — product name disconnected from positioning dilutes the metaphor
+
+**Mitigation paths:**
+- Disciplined content-lead brief: hero + sub-proofs must read as «one brain, three manifestations», not «three features bundled»
+- Tech-lead coach ADR scoped honestly — if coach can't ship with strong 30-day-or-less UX, revert to Path A (Oracle primary) rather than over-promise in hero
+- Brand-strategist naming round 5 scoped to mind/memory/knowledge territory explicitly (not wide-open creative)
+
+**If mitigation fails, Option 4 collapses into commodity «AI + tracker»** — worse outcome than picking any of Options 1-3 cleanly. Option 4 is higher-variance than Path A: better breakout if executed, worse commodity drift if not.
+
+### What happens next if PO picks this
+1. Navigator relocks `02_POSITIONING.md`: full rewrite of unique-attributes, value-themes, archetype (Magician+Sage primary, Everyman modifier), landing structure (hero rewrite + sub-proofs + landing sections re-sequenced to match chat/insights/coach narrative). Documents Option 4 lock decision in `DECISIONS.md`.
+2. **brand-strategist dispatched for naming round 5** scoped to mind/memory/knowledge/synapse territory. Criteria: 1-2 words, memorable + meaningful, bilingual pronounceability, avoid all four rejected rounds. New territory → new candidate pool (Recall, Synapse, Cortex, Meridian, Lumen, Axon, etc. — illustrative, not final).
+3. **content-lead dispatched for landing rewrite** (ru+en) + paywall + email templates + microcopy — all in second-brain voice. This is the largest content scope of four options.
+4. **product-designer dispatched for 3-stage progressive disclosure flow** (minute 1 chat / day 1 insight / day 30 coach). Must design the «your brain is learning» narrative across onboarding. Separate brief for each surface's entry point + cross-references.
+5. **user-researcher dispatched for validation:** «second brain for portfolio» tested against ICP A (millennials) in short live-validation pass — Mom-Test compliant, «how would you describe this product to a friend?». Fast-cycle test before full commit.
+6. **tech-lead receives intent:** major ADR required for coach vertical (pattern detection architecture, narrative generation, temporal reasoning on transaction history). Slice 6b+ sequencing re-evaluated: insights Slice 6b continues, coach vertical Slice 7+. Current roadmap needs Option-4-aware revision.
+
+---
+
 ## Cross-comparison table
 
-| Axis | Oracle | Analyst | Companion |
+| Axis | Oracle | Analyst | Companion | **Option 4 — Hybrid (Second Brain)** |
 |---|---|---|---|
-| **Archetype centre** | Magician + Sage | Magician + Hero | Everyman + Sage |
-| **Voice feel** | Тихая точность | Резкая ясность | Тёплая наблюдательность |
-| **Primary home surface** | Chat | Insights feed | Weekly coach digest |
-| **Secondary surfaces** | Insights, aggregation | Chat drill-in, analytics | Chat, insights |
-| **Primary ICP fit** | A (strong) | A (dominant) | A (strong) + new «post-mistake» ICP |
-| **Secondary ICP fit** | B (neutral) | B (weak) | B (weak) + new ICP |
-| **Current product state alignment** | Partial (chat shipped, home redesign needed) | **Strong (Slice 6a ready; 6b+ aligned)** | Weak (coach surface brand-new) |
-| **Eng scope vs current roadmap** | Moderate | Low (shipping-aligned) | **High (new AI surface)** |
-| **Differentiation vs PortfolioPilot** | UX shift + not-advisor | Tone shift + not-advisor | Philosophy shift (observation vs advice) |
-| **Differentiation vs Origin** | Investing-pure + Russian | ICP + tone + pro-grade | Observation vs advice (biggest gap) |
-| **Differentiation vs Getquin** | Chat-first vs aggregator-first | Chat+insights vs aggregator+AI-layer | Coach vs general AI |
-| **Shipping risk** | Low-mid | **Low** | Mid-high |
-| **Breakout potential** | Mid (expected play) | Mid-high | **High (most distinctive)** |
-| **Regulatory lane — primary (post 2026-04-23 lock)** | A (LOCKED) | A (LOCKED; B/C revoked) | A (LOCKED) |
-| **Regulatory lane — v1 flexibility (historical)** | B incompatible, C awkward | All three coherent; C natural (**now moot**) | B destroys brand, C weak (**now moot**) |
-| **Regulatory lane — rationale** | Philosophy «знает, не поучает» requires A | Analyst voice legit observer-only под Lane A; lost Lane-C tier-progression | Observer-identity = A-only; Lane A IS the product identity |
-| **Main competitor under Lane A + global (PO 2026-04-23)** | **Getquin** (500K users, EU, multi-lang, AI Financial Agents) | **Snowball + Simply Wall St + Getquin** (3-way insights-only pressure) | **Nobody direct** (zero competitor on behavioral-coach-on-trade-history at Lane A) |
-| **Bilingual / multi-lang parity ease** | Strong (neutral tone translates well) | **Mid (angular English phonetics)** | Strong (pattern narratives language-agnostic) |
-| **Multi-lang day-1 feasibility** | Strong | Mid (analyst jargon harder to localize) | Strong (fewer fixed phrases, LLM-generated) |
-| **MVP cold-start risk** | Low | Low | **High (30-day history gate)** |
-| **Naming territory openness** | Oracle/lens/watcher words | Sharp/clarity/focus words | Observer/companion/mirror words |
-| **Wedge-fit v1 (council avg, pre-lock)** | **Strongest** | Strong | Strong-but-risky |
-| **Wedge-fit v1.1 (post 2026-04-23 lock)** | Strong (Getquin pressure increases) | **Weakened** (lost Lane-C moat; 3-way pressure) | **Strongest** (zero direct competitor; identity = constraint) |
+| **Archetype centre** | Magician + Sage | Magician + Hero | Everyman + Sage | Magician + Sage (primary) + Everyman modifier |
+| **Voice feel** | Тихая точность | Резкая ясность | Тёплая наблюдательность | Спокойная память (calm + specific + memory-oriented) |
+| **Primary home surface** | Chat | Insights feed | Weekly coach digest | **All three (progressive disclosure: chat → insights → coach)** |
+| **Secondary surfaces** | Insights, aggregation | Chat drill-in, analytics | Chat, insights | Scenarios, explainer, aggregation (tertiary/embedded) |
+| **Primary ICP fit** | A (strong) | A (dominant) | A (strong) + new «post-mistake» ICP | A (strong — productivity-metaphor resonance) + mid-career post-mistake |
+| **Secondary ICP fit** | B (neutral) | B (weak) | B (weak) + new ICP | B (neutral-positive for AI-native; empty-state day-1 gap) |
+| **Current product state alignment** | Partial (chat shipped, home redesign needed) | **Strong (Slice 6a ready; 6b+ aligned)** | Weak (coach surface brand-new) | Partial (chat + insights shipped; coach new vertical) |
+| **Eng scope vs current roadmap** | Moderate | Low (shipping-aligned) | **High (new AI surface)** | **Highest (all three surfaces must ship; coach vertical + full re-layered onboarding)** |
+| **Differentiation vs PortfolioPilot** | UX shift + not-advisor | Tone shift + not-advisor | Philosophy shift (observation vs advice) | Frame shift (memory vs advice) + unified narrative |
+| **Differentiation vs Origin** | Investing-pure + Russian | ICP + tone + pro-grade | Observation vs advice (biggest gap) | Investing-pure second brain vs multi-topic advisor |
+| **Differentiation vs Getquin** | Chat-first vs aggregator-first | Chat+insights vs aggregator+AI-layer | Coach vs general AI | Brain-first (memory/surface/reflect) vs aggregator+AI-layer |
+| **Shipping risk** | Low-mid | **Low** | Mid-high | **High (all three surfaces must ship credibly)** |
+| **Breakout potential** | Mid (expected play) | Mid-high | **High (most distinctive)** | **Highest if executed (empty fintech territory + unified narrative); worst commodity drift if not** |
+| **Regulatory lane — primary (post 2026-04-23 lock)** | A (LOCKED) | A (LOCKED; B/C revoked) | A (LOCKED) | A (LOCKED — «second brain» semantics align naturally with Lane A) |
+| **Regulatory lane — v1 flexibility (historical)** | B incompatible, C awkward | All three coherent; C natural (**now moot**) | B destroys brand, C weak (**now moot**) | B/C contradict memory-metaphor (brain remembers, doesn't advise) |
+| **Regulatory lane — rationale** | Philosophy «знает, не поучает» requires A | Analyst voice legit observer-only под Lane A; lost Lane-C tier-progression | Observer-identity = A-only; Lane A IS the product identity | Memory-framed product = Lane A natural consequence, not constraint |
+| **Main competitor under Lane A + global (PO 2026-04-23)** | **Getquin** (500K users, EU, multi-lang, AI Financial Agents) | **Snowball + Simply Wall St + Getquin** (3-way insights-only pressure) | **Nobody direct** (zero competitor on behavioral-coach-on-trade-history at Lane A) | **Nobody direct in fintech** (empty «second brain for portfolio» territory); cross-category metaphor import from Notion/Obsidian |
+| **Bilingual / multi-lang parity ease** | Strong (neutral tone translates well) | **Mid (angular English phonetics)** | Strong (pattern narratives language-agnostic) | Strong («второй мозг» parses equivalently in RU; memory verbs translate cleanly) |
+| **Multi-lang day-1 feasibility** | Strong | Mid (analyst jargon harder to localize) | Strong (fewer fixed phrases, LLM-generated) | Strong (metaphor-level abstraction translates; copy volume highest due to 3-surface narrative) |
+| **MVP cold-start risk** | Low | Low | **High (30-day history gate)** | **High (inherits coach 30-day gate; hero promises «remembers» so empty first month = brand damage)** |
+| **Naming territory openness** | Oracle/lens/watcher words | Sharp/clarity/focus words | Observer/companion/mirror words | Mind/memory/knowledge/synapse territory (unexplored; rejected list doesn't overlap) |
+| **Wedge-fit v1 (council avg, pre-lock)** | **Strongest** | Strong | Strong-but-risky | N/A (added v1.2) |
+| **Wedge-fit v1.1 (post 2026-04-23 lock)** | Strong (Getquin pressure increases) | **Weakened** (lost Lane-C moat; 3-way pressure) | **Strongest** (zero direct competitor; identity = constraint) | N/A (added v1.2) |
+| **Unifying metaphor strength** | N/A (single angle per option) | N/A | N/A | **Strong** (council consensus: empty fintech territory + specific-not-vague + cross-category prior art reduces import cost) |
+| **Focus-loss risk** | Low (one angle chosen) | Low | Low | **Mid** (holds if sub-proofs tight-mapped to 3 surfaces + coach ships credibly; collapses to «AI+tracker» commodity if not) |
+| **Product dev effort vs single option** | Baseline (chat-redesign) | **Lowest (aligned with Slice 6a+6b)** | Highest single-surface (new coach vertical) | **Highest overall (all three surfaces at MVP; cannot reduce scope without metaphor collapse)** |
+| **Landing hero cognition time (est.)** | 3 sec (tested, locked) | 3 sec | 4 sec (pattern concept) | **~4 sec (abstract metaphor; sub-proofs carry load)** |
+| **Locked hero compatibility** | Keeps «Поговори со своим портфелем» | Rewrite | Major rewrite | **Major rewrite (swap tested hero for abstract metaphor)** |
+| **PO «объединить» intuition fit** | Partial (one surface dominates) | Partial | Partial | **Full match (all three surfaces reflected in hero narrative)** |
+| **Defensibility horizon** | ~12 months (contested angle) | ~12 months | ~18 months (no direct competitor) | **~18-24 months (empty territory + cross-category metaphor high adoption cost for competitors)** |
 
 ---
 
 ## Decision aid — PO question checklist
 
-Пять вопросов, которые разводят эти три опции. Ответ PO на них даёт direct mapping.
+Пять вопросов, которые разводят опции. Ответ PO на них даёт direct mapping. **Updated v1.2:** questions extended to disambiguate Path A (pick primary from Options 1-3) vs Path B (Option 4 Hybrid).
+
+### Q0 — Path A vs Path B (new, v1.2)
+- **«Хочу одно сильное позиционирование на одном surface; другие surfaces ship, но marketing про один»** → Path A (Oracle / Analyst / Companion)
+- **«Моя интуиция "объединить" важна; готов принять cost абстрактности ради unified narrative»** → Path B (Option 4 Hybrid)
+- **«Не уверен; давай валидируем через user-researcher «how would you describe this product?» test»** → defer 1 week, run validation, pick post-evidence
 
 ### Q1 — Кто твой primary user emotionally?
 - **«Разумный adult, который ценит тишину»** → Oracle
 - **«Serious self-directed, который хочет pro-ясности»** → Analyst
 - **«Self-aware retail, который знает что ошибается»** → Companion
+- **«Productivity-native, который ценит tools-that-remember»** → Option 4 Hybrid
 
 ### Q2 — Насколько готов рисковать на breakout vs defensibility?
 - **Хочу defensibility и solid execution** → Oracle (самый «очевидный» = самый низкий риск)
 - **Хочу близко к тому что уже строим** → Analyst (Slice 6a уже дал нам этот фундамент)
 - **Хочу breakout опцию, готов к variance** → Companion (может не взлететь, но если взлетит — уникальный продукт)
+- **Хочу highest-variance опцию с unified narrative** → Option 4 Hybrid (breakout если метафора держит + все три surface ships; commodity drift если нет)
 
 ### Q3 — Насколько важно не отходить от текущего roadmap и shipping momentum?
 - **Критично, альфа через 1-2 слайса** → Analyst (Slice 6b+ аккуратно продолжают)
@@ -373,11 +493,13 @@ Three options evaluated against this:
 
 - **PO lock 2026-04-23 v1.1 (final):** PO после deliberation locked Lane A (rejected B и C) + global geography + multi-lang day-1. Re-ranking трёх опций под новые constraints: **Companion > Oracle > Analyst** (см. re-evaluation section above и cross-comparison table). Analyst lost её Lane-C flexibility moat; Oracle держится при увеличенной Getquin pressure; Companion становится strongest defensible wedge (zero direct competitor на behavioral-coach-on-trade-history at Lane A + multi-market). Council re-run не требуется — constraints не добавили новые voices, только зафиксировали axis choice; existing council output остаётся valid с updated weighting.
 
+- **v1.2 — Option 4 «Hybrid (Second Brain for Your Portfolio)» added 2026-04-23** per PO intuition «я бы хотел все объединить как то». Navigator ran 4-voice council on 5 candidate unifying metaphors: Portfolio Partner, Second Brain, Portfolio Mirror, Portfolio Console, Second Set of Eyes. **Council consensus: Second Brain is strongest candidate** — Factual voice confirms empty territory in fintech (zero matches in 34-competitor scan); Senior Strategist confirms defensible horizon 18-24 months due to empty territory + cross-category prior art (Forte / Notion / Obsidian); Skeptic flags ~4 sec hero cognition vs Oracle's 3 sec (manageable but real cost); Consistency checker confirms metaphor holds across brand + product + content + microcopy without fracture (coach surface fits naturally, unlike Mirror where coach fractures). Runner-up: Second Set of Eyes (coherent but under-claims AI capability). Rejected: Partner (blurry), Mirror (coach fracture), Console (narrow TAM). **Navigator recommendation: Path B (Option 4) preferred under PO constraints.** Rationale: Path A (pick primary from 1-3) simpler and lower-risk, but sacrifices PO's «объединить» intuition which is a real strategic signal; all three surfaces ship regardless in any path; empty territory + metaphor unity creates stronger 18-24 month defensibility than picking one contested angle. **Path A fallback path:** Oracle primary (keeps locked hero + lowest cold-start risk) if coach ADR proves too risky OR user-researcher validation shows «second brain» doesn't parse for ICP A.
+
 ---
 
 ## Open questions для PO
 
-1. **Готов ли locked hero («Поговори со своим портфелем / Просто задай вопрос») перезаписать?** Oracle сохраняет, Analyst меняет («Портфель, который умеет отвечать»), Companion меняет сильно («Увидь паттерны в своих сделках»). Если hero — санстити, это сужает до Oracle.
+1. **Готов ли locked hero («Поговори со своим портфелем / Просто задай вопрос») перезаписать?** Oracle сохраняет, Analyst меняет («Портфель, который умеет отвечать»), Companion меняет сильно («Увидь паттерны в своих сделках»), Option 4 Hybrid меняет полностью («Второй мозг для твоего портфеля / Помнит, замечает, объясняет»). Если hero — санстити, это сужает до Oracle.
 2. **Насколько критичен shipping momentum?** Если альфа через 1-2 слайса — Analyst (aligned with Slice 6a+6b). Если можем позволить redesign home — Oracle. Если готов к major ADR — Companion.
 3. **30-day cold start для Companion — приемлем?** Yes/No бинарный фильтр.
 4. **«Post-mistake retail» — это реальный ICP или ре-проекция ICP A?** Нужен user-researcher дисптч для validation, но PO intuition здесь ценен.
@@ -387,6 +509,8 @@ Three options evaluated against this:
 7. **Multi-language day-1 scope — acknowledged tradeoff?** Global constraint locked 2026-04-23 требует minimum EN+RU, желательно DE/IT/ES/FR/PT для EU competitive reach. Это ~3-6 weeks pre-alpha content + i18n infrastructure cost. PO готов принять этот scope expansion или хочет обсудить reduced launch set (e.g. EN+RU only → expand post-alpha)?
 
 8. **Getquin specifically — deep-dive research дисптч?** Под Lane A + global Getquin становится main direct competitor (Oracle) или significant pressure (Analyst). 01_DISCOVERY v2 covered Getquin surface-level. Deep-dive research brief для user-researcher рекомендован: EU penetration patterns, multi-lang UX approach, AI Financial Agents capability boundaries, churn vectors.
+
+9. **Option 4 Hybrid — path confidence check.** Navigator recommendation: Path B (Option 4) preferred. But Path B requires: (a) coach ADR feasibility check (can coach ship credibly at MVP? tech-lead's call); (b) user-researcher validation that «second brain for portfolio» parses для ICP A в 3-5 sec; (c) brand-strategist naming round 5 в mind/memory territory without hitting rejected list; (d) content-lead landing + paywall + email rewrite capacity (~2-3 weeks). Если PO склоняется к Path B — запустить эти 4 parallel validations как pre-lock gate. Если PO склоняется к Path A — какой из Options 1-3 primary (по re-ranking v1.1: Companion preferred, но Oracle безопаснее для shipping)?
 
 ---
 
