@@ -194,6 +194,36 @@ Under Lane A only + global, the main direct competitor shifts:
 
 **Research dispatch flagged.** Next user-researcher dispatch should prioritize Getquin deep-dive over other competitor re-scans. Documented as open action in `STRATEGIC_OPTIONS_v1.md` open-questions §8.
 
+### 4.7 Getquin deep-dive + peer scan (2026-04-23 second pass)
+
+**Dispatched 2026-04-23 same day as §4.6 flag.** Full output in `docs/product/getquin-deep-dive.md` and `competitor-matrix.md` §5b + updated §8.
+
+**Headline findings (Getquin):**
+- **Live public locales are EN/IT/DE only** — ES/PT claimed on `/portfolio-tracker/` page but return 404 on landings (hiring signal for Southern Europe early 2026 per LinkedIn — rollout in flight not shipped). **Russian/CIS is zero — `getquin.com/ru/` returns 404; no Russian blog; no CIS broker integrations.** Under our PO 2026-04-23 global multi-market constraint this is an unclaimed wedge, not a contested one.
+- **US broker integration is effectively zero** — IBKR sync reported broken on free tier (r/eupersonalfinance 2025), Fidelity explicitly blocked (r/fidelityinvestments), Schwab/Vanguard/Robinhood unconfirmed. DE-scoped professional liability insurance (imprint). Under our US + EU day-one constraint, US broker depth is real differentiation.
+- **AI is gated to Wealth €150/yr tier** — Premium €90/yr gets computed AI analytics (not conversational agents). Zero AI-specific sentiment in public user-review corpus (Product Hunt, Play Store aggregate). Landing claim is «asserted», not «user-validated». This creates room for any option we pick (Oracle / Companion / Hybrid) to out-deliver on actual AI quality.
+- **Zero behavioral pattern detection on trade history** — AI sample questions are state/forward-facing only («what drove performance», «harvest losses», «news relevance»), none retrospective. This is material for Companion direction (no Getquin overlap on behavioral-coach-on-trade-history axis) and reinforces v1.1 ranking Companion > Oracle > Analyst under Lane A.
+- **Lean team and funding** — 27 LinkedIn employees, $15M Series A June-July 2022 (Portage Ventures + Horizons Ventures), no subsequent round surfaced. Hiring focus Southern Europe business-development (not product / engineering AI hires visible). Shipping velocity ceiling relative to a well-capitalized launch.
+- **Data accuracy + support are under-delivered per own-user complaints** — most-cited negative across Product Hunt + Play Store + Reddit + Mustachian Post + Helpmoji. Their own status page confirms unresolved sync issues. Support perceived as «AI chatbots even for Premium users» — ironic given their AI-as-value positioning.
+- **Business model includes in-app advertising** — confirmed on security page. Our clean «no ads, no affiliate sales» positioning is a differentiator not just vs theoretical advisor-upsells but vs Getquin's actual ads-in-app reality.
+
+**Peer scan — 6 additions to competitor corpus:**
+1. **Parqet** (DE, 350K users, 4.7 App Store) — missed in v2. Uses **MCP bridge to Claude + ChatGPT** rather than embedded AI. Second EU incumbent alongside Getquin.
+2. **AllInvestView** — 30+ brokers, 80+ exchanges, 14+ tax jurisdictions, global, "AI Assistant" across all tiers. Direct competitor on multi-broker-breadth claim.
+3. **Investry AI** — US-only, $0-$19.99/mo, Claude-powered static insights (no chat), no broker sync yet.
+4. **Corvo** — free, AI chat via Claude + Monte Carlo 8,500 paths, individual-developer open-source, beta v0.16.
+5. **PortfolioGlance** — free, privacy-first (no credential sharing, manual entry), multi-currency, AI token pool.
+6. **Guardfolio** — US self-directed + retirees, "AI risk alerts + plain-language guidance", landing returned 403 firsthand but third-party verified.
+
+**Wedge implications (matrix §8 updated):**
+- Read-only + portfolio-aware AI + retail + not-HNW wedge expanded from 5 to **11 products**
+- **EU incumbents are ~850K combined users** (Getquin 500K + Parqet 350K) — structurally strong in DE/EU
+- **Privacy-first tail is real** — PortfolioGlance + Corvo + Wealthfolio serve this segment, under-counted in v2
+- **2026 AI-first entrants numerous** — Investry AI + Corvo + Guardfolio + AllInvestView all launching with overlapping claims. Crowded 2026 field.
+- **Multi-broker breadth NOT uncontested** — AllInvestView's 30+ brokers + 14+ tax jurisdictions directly challenges our breadth claim
+
+**No ranking shift recommended in `STRATEGIC_OPTIONS_v1.md`.** Findings reinforce v1.1 ranking Companion > Oracle > Analyst under Lane A + global. Option 4 (Hybrid Second Brain) remains orthogonal to all surfaced peers.
+
 ---
 
 ## 5. Implications for ICP
