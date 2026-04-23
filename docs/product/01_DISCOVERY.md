@@ -1,5 +1,7 @@
 # 01 — Product Discovery (Market Research 2026-04-22)
 
+**Owner:** `user-researcher` agent (as of 2026-04-23). Navigator = reader. Initial content is desk research; live-interview evidence lives in `USER_RESEARCH/`.
+
 ## Key finding
 
 Market has moved since `00_PROJECT_BRIEF.md` was written. The original positioning — "AI-native трекер, разговор вместо таблиц" — is **validated but no longer uniquely occupied**. Multiple 2024-2026 challengers claim "AI + investing" territory, each from different angles.

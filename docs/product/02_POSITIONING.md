@@ -1,5 +1,6 @@
 # 02 — Product Positioning (LOCKED, pending name)
 
+**Owner:** `navigator` agent (strategy core — ownership retained after 2026-04-23 team expansion).
 **Framework:** April Dunford's "Obviously Awesome" (5-step).
 **Current score:** 8/10 Strong — all components defined, awaiting name lock + live user validation.
 **Date locked:** 2026-04-22

@@ -1,5 +1,6 @@
 # 03 — Naming Workshop (IN PROGRESS)
 
+**Owner:** `brand-strategist` agent (as of 2026-04-23).
 **Status (2026-04-22):** Name undecided. PO взял паузу на размышление. Все предложенные направления отклонены.
 
 ## Criteria locked
