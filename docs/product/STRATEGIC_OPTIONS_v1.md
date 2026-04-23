@@ -1,9 +1,42 @@
-# Strategic Options — TENTATIVE: Option 4 under proper multi-agent review
+# Strategic Options — v1.5: Navigator synthesis returned, PO decision pending
 
-**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 locked) · **2026-04-23 (v1.4 — demoted to TENTATIVE pending proper multi-agent review per CONSTRAINTS Rule 3)**
+**Date:** 2026-04-23 (v1) · 2026-04-23 (v1.1 — PO constraints lock) · 2026-04-23 (v1.2 — Option 4 Hybrid added) · 2026-04-23 (v1.3 — Option 4 locked) · 2026-04-23 (v1.4 — demoted to TENTATIVE pending proper multi-agent review per CONSTRAINTS Rule 3) · **2026-04-23 (v1.5 — 6 independent specialist reviews returned; Navigator synthesis complete; PO lock pending)**
 **Owner:** Navigator (orchestrator); synthesis pulls from independent specialist returns (not simulated)
 
-## Status: TENTATIVE (v1.4) — Option 4 under proper multi-agent review
+---
+
+## v1.5 addendum — 6-specialist review results + Navigator weighted recommendation (2026-04-23)
+
+**Full synthesis:** [docs/product/REVIEW_SYNTHESIS_2026-04-23.md](./REVIEW_SYNTHESIS_2026-04-23.md)
+
+**Review returns (all independent, isolated per CONSTRAINTS Rule 3):**
+- brand-strategist → WARN conditional-keep — commit preceding `2ca3526`
+- content-lead → WARN leaning-REJECT-for-hero / SUPPORT-for-sub-hero — commit `2ca3526`
+- product-designer → WARN conditional-support — commit `f7870e8`
+- legal-advisor → WARN conditional-GO — commit `6453443`
+- finance-advisor → WARN — commit `b97dbcb`
+- user-researcher → WARN — commit `105cad2`
+
+**Distribution:** 6/6 WARN. 0 SUPPORT. 0 REJECT.
+
+**Navigator weighted recommendation (does NOT lock — PO locks):**
+
+**KEEP «Second Brain for Your Portfolio» as brand-world tagline; DEMOTE from hero and from product-name; RESTORE imperative hero («Ask your portfolio.» / «Спроси свой портфель.»); SHIP Coach at MVP with warm-start on imported history (tech-lead feasibility gate); GATE launch behind three pre-conditions — trademark clearance clean, AI output invariant landed, in-context Lane A disclaimers.**
+
+**Three reasons weighting:**
+1. Brand-strategist's product-NAME vs category-CLAIM separation insight unlocks 4 of 6 specialist concerns without sacrificing the metaphor's strategic value. Forte trademark tension, voice-rule violation, ICP B alienation, and PO «объединить» intuition all resolve if «Second Brain» runs as tagline + brand-world copy while product name lives in Round 5 mind/memory territory and hero is imperative.
+2. Coach 30-day cold-start is the highest-impact risk and has a specific, tech-lead-gated fix (warm-start on imported SnapTrade history). If warm-start feasible → Coach ships at MVP with honest hero promise. If not → Oracle fallback cleanly preserves locked hero and zero cold-start. Decision reduces to a single feasibility question with a named fallback.
+3. Evidence asymmetry favors demotion: UR's 60-quote retail-investor corpus + 4/5 adjacent-content semantic-collision evidence is hard, reproducible, and specific. «Empty fintech territory» claim in positioning v2 is real but qualitative. Demoting hero pays only brand-voice re-draft cost; keeping hero as-drafted pays parse-test tax + RU gut-microbiome tax + potential FTC §5 exposure if Coach 30-day empty.
+
+**Path B fallback (if warm-start infeasible):** Oracle (Path A fallback already named in v1.3; locked «Поговори со своим портфелем» hero preserved; lowest cold-start risk).
+
+**Path C fallback (if trademark clearance returns unfavorably):** «Portfolio Memory» as tagline (brand-strategist Alt B + legal Alt 1 converge; Round 5 names Mneme/Memoro already aligned with this axis).
+
+**Status:** Option 4 remains TENTATIVE. PO lock decision required on three Priority-1 questions (see §REVIEW_SYNTHESIS_2026-04-23.md §6). No specialists re-dispatched until PO decides.
+
+---
+
+## Status: TENTATIVE (v1.5) — 6 specialist reviews complete; PO lock pending
 
 **Process correction 2026-04-23.** Earlier v1.3 locked Option 4 based on Navigator single-context synthesis (Navigator simulated 4-voice council + 3 specialist lenses within its own context, not real parallel Agent-tool dispatches). PO identified this as broken process violating CONSTRAINTS Rule 3: strategic decisions require REAL independent parallel specialist review, not simulation.
 
