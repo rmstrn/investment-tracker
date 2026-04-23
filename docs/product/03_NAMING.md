@@ -170,6 +170,33 @@ No new entries added to rejected list — all 10 candidates pass the check again
 
 **No domain purchases implied. No trademarks filed. No outreach to any owner.**
 
+## Round 6 — dispatched 2026-04-23 in parallel with decision-lock
+
+**Context.** PO reviewed Round 5 top 3 (Mneme / Memoro / Noesis) + 7 alternates as part of the Option 4 review synthesis 2026-04-23 (`DECISIONS.md` «Option 4 review synthesis: 7 PO decisions locked», Q1). PO indicated **Memoro** as the leading candidate from Round 5 but wants to see additional options before final lock. Round 6 dispatched in parallel with decision-lock (main-context dispatch, not Navigator dispatch) to widen the candidate pool before name-lock.
+
+**Brief (scoped for brand-strategist Round 6):**
+- Same criteria as Round 5 (1-2 words, memorable + meaningful, bilingual pronounceability, domains indirect-signal only, no purchase, no outreach per `.agents/team/CONSTRAINTS.md`).
+- Territory: **extend** mind / memory / brain / knowledge / synapse / cognition territory from Round 5. Do NOT re-propose the Round 5 ten candidates. Do NOT re-propose any rejected-list direction (Ask imperatives, creative spellings, Folio roots, evocative trio Delphi/Koan/Vessel).
+- Adjacent territories worth exploring: Russian-source names (Svod, Istok — still untapped; Svod semantically fits memory/compendium), pure-coined made-up roots (Figma-style, no etymological anchor), two-syllable abstract (Stripe/Vercel/Rakuten phonetic shape), further Greek/Latin beyond what Round 5 covered (Sophia, Pythia, Thoth, Janus, Memor, Mnemos variants).
+- Non-criterion: «Second Brain» / «Portfolio Memory» are tagline/brand-world copy, NOT product name (per Q1 lock). Product name does NOT need to mirror the metaphor literally — it needs to be memorable + meaningful + ownable.
+- **PO lean note:** Memoro from Round 5 is the leading candidate; Round 6 is a widen-the-pool pass, not a rejection of Memoro. If Round 6 surfaces a stronger candidate, PO will re-compare; if not, Memoro holds the lead and moves toward final lock.
+
+**Status:** IN FLIGHT 2026-04-23. Results will populate this section when brand-strategist returns.
+
+### Round 6 candidates
+
+*(placeholder — brand-strategist to populate)*
+
+### Round 6 top picks
+
+*(placeholder — brand-strategist to populate)*
+
+### Round 6 rejected-list diff
+
+*(placeholder — brand-strategist to populate)*
+
+---
+
 ## Next session actions (post-Round-5)
 
 1. PO reviews Round 5 top 3 (Mneme / Memoro / Noesis) + 7 alternates via Navigator.
