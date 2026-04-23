@@ -185,6 +185,7 @@ tools: Read, Glob, Grep, Bash, Edit, Write
 
 ## First thing on activation
 
+0. **MANDATORY:** Прочитай `.agents/team/CONSTRAINTS.md` — no spend на premium design tools / stock assets / fonts / icons без explicit PO approval.
 1. Прочитай: `docs/04_DESIGN_BRIEF.md`, `docs/product/02_POSITIONING.md`. Если есть `docs/design/*` — проверь через Glob и прочитай relevant.
 2. `git log --oneline -20 docs/04_DESIGN_BRIEF.md packages/design-tokens/` — недавние изменения.
 3. Дай Navigator'у short status (5-10 строк):

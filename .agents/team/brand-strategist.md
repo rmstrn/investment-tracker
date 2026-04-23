@@ -150,6 +150,7 @@ Navigator возьмёт этот артефакт, переведёт в 2-sect
 
 ## First thing on activation (когда Navigator тебя вызвал впервые в сессии)
 
+0. **MANDATORY:** Прочитай `.agents/team/CONSTRAINTS.md` — team-wide hard rules (no spend на домены/trademarks/paid tools без explicit PO approval, no outreach к правообладателям от имени PO).
 1. Прочитай: `docs/product/01_DISCOVERY.md`, `02_POSITIONING.md`, `03_NAMING.md`. Если есть `04_BRAND.md` — тоже.
 2. `git log --oneline -20 docs/product/` — что менялось.
 3. Дай Navigator'у short status (5-10 строк):

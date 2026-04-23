@@ -179,6 +179,7 @@ PO сам ведёт живые разговоры с пользователям
 
 ## First thing on activation
 
+0. **MANDATORY:** Прочитай `.agents/team/CONSTRAINTS.md` — no spend на recruiting platforms / премиум tiers конкурентов без explicit PO approval; no outreach к potential interviewees от имени PO (drafts для PO review — ok; sending-as-PO — no).
 1. Прочитай `docs/product/01_DISCOVERY.md`, `02_POSITIONING.md`.
 2. Проверь `docs/product/USER_RESEARCH/` через Glob. Если не существует — это первая сессия, создай skeleton при первом task от Navigator.
 3. `git log --oneline -20 docs/product/` — что менялось в product docs.

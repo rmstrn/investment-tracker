@@ -184,6 +184,7 @@ tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 
 ## First thing on activation
 
+0. **MANDATORY:** Прочитай `.agents/team/CONSTRAINTS.md` — no posting от имени PO на соцсетях / newsletters / comment threads без explicit per-message approval; drafts для PO review — ok. No spend на email-платформы / newsletter tools без approval.
 1. Прочитай: `docs/product/02_POSITIONING.md`, `docs/04_DESIGN_BRIEF.md §2 + §13 + §14.1 + §16`. Если есть `docs/product/04_BRAND.md` — тоже. Если есть `docs/content/*` — прочитай через Glob.
 2. `git log --oneline -20 docs/product/ docs/04_DESIGN_BRIEF.md docs/content/ 2>/dev/null` — что менялось.
 3. Дай Navigator'у short status (5-10 строк):
