@@ -13,6 +13,15 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Scope:** Add explicit ADR entry in `DECISIONS.md` clarifying: «English-first (day-1 launch locked). Wave-2 language order: Spanish → Portuguese (LATAM) → DE → IT → FR → NL (EU). Russian drafted parallel but NOT launch-gating (Russian Federation market out-of-scope per Q7; CIS non-RF diaspora still covered).» Currently implied by combining 3 locks but not explicit anywhere.
 **Owner:** Navigator + content-lead.
 
+### 6. Physical address for commercial email compliance (SMALL — do before first commercial email send)
+**Trigger:** Before first commercial email (marketing / newsletter / trial-expiry / upgrade-offer) fires to any recipient. Transactional emails (welcome / password reset / receipt) may not need it depending on jurisdiction.
+**Scope:**
+- Add legal entity name + physical mailing address to email footer (both bilingual EN + RU templates)
+- Required by US CAN-SPAM Act §5.5, EU ePrivacy + GDPR Article 13, Canada CASL, UK PECR
+- Likely placeholder in `docs/content/email-sequences.md` footer: replace `[PHYSICAL ADDRESS PLACEHOLDER]` with actual address
+- PO deferred 2026-04-23: no commercial emails being sent yet, so not blocking
+**Owner:** PO (entity + address decision) → content-lead (template update) → legal-advisor (compliance verification).
+
 ---
 
 ## Completed
