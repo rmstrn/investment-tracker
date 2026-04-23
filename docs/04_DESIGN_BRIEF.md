@@ -1,4 +1,4 @@
-# 04 — Design Brief v1.2
+# 04 — Design Brief v1.3
 
 Source of truth for the visual, interaction, and content design of Memoro. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
 
@@ -6,6 +6,7 @@ Source of truth for the visual, interaction, and content design of Memoro. Consu
 - v1.0 — initial brief, foundations only
 - v1.1 — added freemium UX (§13), AI module UI (§14), tier-specific screens (§15), notifications (§16), security UI (§17), account management (§18), KPI coverage map (§19)
 - v1.2 — added §0 anti-pattern list (Memoro brand-metaphor guard); §2.2 Insights tone row changed «actionable» → «observational»; §14.2 Insights cadence honesty (weekly, not daily); new §14.6 Coach surface subsection referencing `docs/design/COACH_SURFACE_SPEC.md`; new §11.6 reference to `docs/design/DASHBOARD_ARCHITECTURE.md`; updated principles commentary for dashboard-primary architecture (positioning lock 2026-04-23)
+- v1.3 — rewrote §14.6 Coach surface to contextual-icon + bell-hub model per PO lock 2026-04-23; added new §14.7 BellDropdown pattern (extension of §10.3 + §16.2); updated §15 tier-specific screens to remove Coach-route references; no token changes
 
 ---
 
@@ -332,14 +333,28 @@ Button, Input, Select, Combobox, Checkbox, Radio, Switch, Slider, Badge, Chip, T
 - **PaywallModal** — honest, single-column, no urgency manipulation
 - **UsageMeter** — linear bar with "X of Y used this month"
 - **FeatureLockRow** — inline lock icon + one-line reason + CTA
-- **LockedPatternCard** — teaser variant of `CoachPatternCard` showing category pill + generic headline + skeleton body + upgrade CTA. See `COACH_SURFACE_SPEC.md` §5.
+- ~~**LockedPatternCard**~~ — **OBSOLETE in v1.3.** Was a teaser variant of the v1.2 `CoachPatternCard` (dedicated-route model). Replaced by CoachPopover teaser variant in v1.3 (contextual-dot model). See §10.5 and `COACH_SURFACE_SPEC.md` §4.2.
 
-### 10.5 Coach primitives (new — §14.6)
+### 10.5 Coach primitives (v1.3 — contextual model)
 
-- **CoachPatternCard** — article-level card for one pattern read: category pill + headline + observational summary + evidence block + dismiss/snooze actions. Full anatomy in `COACH_SURFACE_SPEC.md` §2.
-- **CoachWeekAnchor** — section divider with week label («Week of April 14 – 20»). `<h2>` semantic.
-- **CoachEmptyState** — two variants (Path A backfill-in-progress, Path B true cold-start). See `COACH_SURFACE_SPEC.md` §3.
-- **CategoryPill** — categorical (not evaluative) pill with Lucide or token-colored outline + text label. Never color-only signal.
+v1.3 **supersedes v1.2** Coach primitives. PO 2026-04-23 locked Coach as contextual (not dedicated route); primitives redesigned accordingly.
+
+**New (v1.3 — used):**
+
+- **CoachDot** — 6px (desktop) / 8px (mobile) filled circle, categorical semantic color (amber-600 Concentration, sky-600 Timing / Contrarian, emerald-600 Dividends / Cost-averaging, violet-700 multi-category). Wrapped in a `<button>` for keyboard + a11y. Optional bounded pulse animation (scale 1.0→1.15→1.0, 1200ms, every 2.5s, max 5min active-page-time, `prefers-reduced-motion` → static). Mount point: any of 5 attachment types per `COACH_SURFACE_SPEC.md` §1.
+- **CoachPopover** — dialog anchored to a CoachDot (desktop, max 480px) or full-width bottom sheet (mobile). Two content variants:
+  - **Full detail (Plus/Pro):** category pill + read date + verb-led headline + observational summary + evidence block (monospaced tabular-nums transaction list) + dismiss/snooze actions.
+  - **Teaser (Free):** category pill + subject-only headline + skeleton shimmer body + locked evidence + «Upgrade to Plus» CTA.
+- **CategoryPill** — retained; categorical (not evaluative) pill with token-colored outline + text label. Used inside CoachPopover and bell-dropdown rows. Never color-only signal.
+
+**Removed (v1.2 primitives obsoleted by v1.3):**
+
+- ~~`CoachPatternCard`~~ — article-level card for `/coach` route; route removed.
+- ~~`CoachWeekAnchor`~~ — `<h2>` week divider; no dedicated coach surface to anchor.
+- ~~`CoachEmptyState`~~ — full-surface Path A/B empty states; empty states now live in bell-dropdown (`COACH_SURFACE_SPEC.md` §6).
+- ~~`LockedPatternCard` (v1.2 §10.4)~~ — full locked card variant; replaced by teaser variant inside CoachPopover.
+
+Frontend-engineer implements CoachDot + CoachPopover in Slice 8c (scope unchanged at slice level; substituting primitives within the slice).
 
 ---
 
@@ -383,10 +398,10 @@ Illustration-free by default. Icon + short line + single CTA. Example: "No posit
 
 `docs/design/DASHBOARD_ARCHITECTURE.md` owns the full home-screen spec for Memoro:
 
-- Top-of-fold hierarchy (hero → insight of the week → charts → positions → coach teaser → activity).
-- AI-woven pattern (how «Memoro noticed» badges surface on cards without AI-sparkle chrome).
-- Primary routes + tab structure (Dashboard / Positions / Insights / Coach / Chat / Settings).
-- Web side-nav + iOS bottom tab-bar mapping (4 tabs on iOS).
+- Top-of-fold hierarchy (hero → insight of the week → charts → positions → activity). Coach has no dedicated dashboard tile; coach dots surface on position rows + widget headers instead (v1.3 contextual model).
+- AI-woven pattern (how «Memoro noticed» badges surface on cards without AI-sparkle chrome; coach dots are a distinct primitive).
+- Primary routes + tab structure (Dashboard / Positions / Insights / Chat / Settings — 5 routes, Coach is contextual, not a route).
+- Web side-nav + iOS bottom tab-bar mapping (4 tabs on iOS: Dashboard / Insights / Chat / Settings).
 - Responsive behavior across 320/375/768/1024/1440/1920.
 - Per-ICP daily-use patterns (ICP A / ICP B / mid-career post-mistake).
 
@@ -493,7 +508,7 @@ Purpose: Memoro notices things without being asked.
 UI:
 - InsightCard in a vertical feed on dedicated page (`/insights`)
 - "Insight of the week" card on dashboard (top 1 for Free; today's for Plus; real-time for Pro). See `docs/design/DASHBOARD_ARCHITECTURE.md` §2.
-- Categories: concentration, behavioral (routes to Coach), dividend, performance, observational (NOT rebalance — rebalance is imperative; Lane A lock forbids imperative framing)
+- Categories: concentration, behavioral (Coach surfaces contextually via dots on related elements — see §14.6 v1.3 contextual model), dividend, performance, observational (NOT rebalance — rebalance is imperative; Lane A lock forbids imperative framing)
 - Each card: headline (one line, verb-led), body (2-4 lines, observational voice), source (which positions/dates), CTAs (View details / Dismiss / Snooze)
 - Dismissed insights never return; snoozed return in 7 days if still valid
 - Headline framing: **«Memoro noticed…»**, **«Flagged this week:…»**, **«Surfaced:…»**. Never «Your brain noticed…». See §0.2.
@@ -528,26 +543,89 @@ UI:
 - Links to source transactions
 - Always available (no tier gate)
 
-### 14.6 Coach — behavioral pattern reads
+### 14.6 Coach — contextual behavioral pattern reads
 
 Purpose: Memoro surfaces patterns in user's trade history — observationally, never as advice.
 
-**Architecture:** dedicated route `/coach` with its own primary nav tab. Weekly cadence. Soft 30-day-or-30-transaction gate. Teaser-paywall for Free tier (locked pattern preview).
+**Architecture (LOCKED 2026-04-23 by PO, supersedes earlier dedicated-route and filter-chip proposals):** Coach is a **contextual layer**, not a primary route. Coach is surfaced via:
 
-**Detailed spec:** `docs/design/COACH_SURFACE_SPEC.md` — owns layout, pattern card anatomy, cold-start empty states (Path A warm-start via SnapTrade backfill; Path B true cold-start), interaction states, accessibility.
+1. **Dot indicator primitive** on attachment-point elements — position rows, dashboard widget headers, chat thread previews, insight cards, transaction rows. A small (6px desktop / 8px mobile) categorical-colored filled circle signals «Memoro noticed a pattern concerning this element».
+2. **Top-bar bell-dropdown** as the aggregation hub — see §14.7.
+
+Coach is NOT a primary route. Coach is NOT a nav item. Coach is woven into existing surfaces.
+
+**Detailed spec:** `docs/design/COACH_SURFACE_SPEC.md` v2.0 — owns attachment-point taxonomy, dot primitive, pulse motion spec, hover/focus/active states, popover (Plus/Pro full detail + Free teaser), bell-dropdown hub, empty states (Path A warm-start, Path B cold-start, post-gate quiet), accessibility. Supersedes v1.0 `/coach` route spec.
 
 **Integration contract with this design brief:**
-- Coach reuses `InsightCard`-adjacent primitive `CoachPatternCard` (new; see §10.5 below).
+- Coach dot primitive uses existing semantic color tokens — `semantic.warning` (Concentration), `semantic.info` (Timing / Contrarian-signal), `semantic.positive` (Dividends / Cost-averaging), `accent.primary` (multi-category on same element). No new tokens required.
+- Coach popover content (both Plus/Pro detail variant and Free teaser variant) reuses existing primitives: Skeleton (locked state shimmer), Dialog (popover), Button (CTA), Lucide `lock` icon, existing dismiss/snooze mutation buttons.
 - Coach patterns flow through the same mutation contract as insights (dismiss + snooze via existing insights backend, per Slice 6b pattern) — no new mutation primitives needed.
-- Coach has its own category taxonomy (Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal). Colored pills are categorical, NOT evaluative (no red-for-bad, green-for-good).
-- Coach weekly-cadence rendering follows week-anchor pattern (`h2` per week).
-- Coach cold-start gating uses tx-count-or-history-span soft gate (not calendar-day hard gate). See `COACH_SURFACE_SPEC.md` §3 and `CC_KICKOFF_option4_coach_adr.md` §2.3.
-- Coach in-context AI disclaimer: every pattern card's summary closes with observational-framing language («no judgment», «pattern only», or equivalent). This is the EU/UK MiFID II + FCA reinforcement called out in positioning (`02_POSITIONING.md` «In-context AI disclaimer»). Format is in-copy, not tooltip — see content-lead coordination note below.
-- Coach regulatory guardrail: backend regex filter per `CC_KICKOFF_option4_coach_adr.md` §2.6 Layer 2 rejects imperative output; design trusts the filter and renders only validated narratives.
+- Coach has its own category taxonomy (Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal). Dot colors + popover category pills are categorical, NOT evaluative (no red-for-bad, green-for-good).
+- Coach cold-start gating uses tx-count-or-history-span soft gate (not calendar-day hard gate). Bell-dropdown shows progress counter during cold-start (`COACH_SURFACE_SPEC.md` §6.2). See `CC_KICKOFF_option4_coach_adr.md` §2.3.
+- Coach in-context AI disclaimer: every popover summary closes with observational-framing language («no judgment», «pattern only», or equivalent). Narrative is AI-Service-generated and passes Lane A regex guardrail (`CC_KICKOFF_option4_coach_adr.md` §2.6 Layer 2) server-side; client trusts the filter and renders only validated text.
+- Coach regulatory guardrail: backend regex filter rejects imperative output; design trusts the filter.
+- Coach dot anti-pattern compliance (§0): NO sparkle, NO brain glyph, NO gradient halo, NO AI-glow. Solid filled circle only. Optional subtle pulse (scale 1.0→1.15→1.0, 1200ms, every 2.5s, bounded to 5 min active-page-time, `prefers-reduced-motion: reduce` → static).
 
-**Content-lead coordination:** every pattern category needs a narrative template. Product-designer owns the card anatomy; content-lead owns copy variants and the observational «no judgment» closer. Navigator coordinates.
+**Removed v1.2 primitives:**
 
-**Legal-advisor coordination:** in-context AI disclaimer format (tooltip vs inline vs first-interaction modal) is still open per positioning lock 2026-04-23 Q6. Product-designer's candidate recommendation is **inline observational closer on every coach card** (not tooltip) plus a one-time first-interaction modal on Coach tab first-open («Memoro shows patterns, not advice.» — Acknowledge). Legal-advisor to confirm whether inline closer satisfies EU/UK requirement or if explicit disclaimer component is required. Tracked as open question in `COACH_SURFACE_SPEC.md` §9.
+- `CoachPatternCard` (article-level card for `/coach` route) — obsolete in v1.3 (route removed). Dot + popover take its place. See §10.5 update below.
+- `CoachWeekAnchor` (`<h2>` week section divider) — obsolete (no dedicated coach surface to anchor).
+- `CoachEmptyState` (Path A / Path B full-surface variants) — obsolete. Empty states now live inside bell-dropdown (`COACH_SURFACE_SPEC.md` §6).
+- `LockedPatternCard` (Free-tier full locked card variant) — obsolete. Locked teaser lives in popover instead (`COACH_SURFACE_SPEC.md` §4.2).
+- `CategoryPill` — retained as popover/dropdown element; no longer used in a dedicated coach surface.
+
+**New v1.3 primitives:**
+
+- **`CoachDot`** — 6px/8px filled circle with category-colored semantic token, optional pulse animation, wrapped in a `<button>` for keyboard + screen-reader accessibility. Mount point: any attachment-point element per `COACH_SURFACE_SPEC.md` §1.
+- **`CoachPopover`** — dialog anchored to a CoachDot (desktop) or full-width bottom sheet (mobile). Two content variants: full detail (Plus/Pro) and teaser (Free). Reuses existing Dialog + Skeleton + Button primitives.
+
+**Content-lead coordination:** every pattern category needs a narrative template (popover summary body). Product-designer owns the dot + popover shape; content-lead owns copy variants (headline templates, observational closer, teaser headline framing, dashboard conversion-nudge banner). See `COACH_SURFACE_SPEC.md` §13 for full list of copy hooks.
+
+**Legal-advisor coordination:** in-context AI disclaimer format is still open per positioning lock 2026-04-23 Q6. Product-designer's candidate recommendation in v1.3 remains **inline observational closer on every popover summary** (not tooltip) plus a one-time first-interaction modal on first dot-click («Memoro shows patterns based on your trade history, not advice. This is educational, not investment guidance.» — Acknowledge). Legal-advisor to confirm whether inline closer satisfies EU/UK requirement. Tracked in `COACH_SURFACE_SPEC.md` §17 Q1.
+
+### 14.7 BellDropdown pattern — hub for «Memoro noticed» notifications
+
+Purpose: single always-on-screen aggregation surface for every «Memoro noticed» notification — including Coach patterns, weekly digest, price alerts, billing, security events.
+
+Extension of the `BellDropdown` primitive from §10.3 and behavior notes in §16.2.
+
+**Visual behavior:**
+
+- Lucide `bell` icon in top-bar right group (left of PlanBadge), 20px, `text.primary` at rest.
+- Unread count badge: small circle overlay top-right of bell, `semantic.info` fill (sky-600), `text.onAccent` text, `text-xs` Semibold. Shows 1-9 or `9+`.
+- **Coach-unread differentiator:** when at least one unread coach pattern is present in the dropdown, the bell icon gains a subtle 1px `accent.primary` (violet-700) ring at the icon's outer radius. Differentiates coach-present from generic-product-notifications-only. Disappears when all coach patterns read.
+- **First-coach-of-session pulse:** the first time a new coach pattern lands in a session, the bell pulses ONCE (scale 1.0→1.15→1.0 over 1200ms). Subsequent coach patterns in the same session: badge count increments silently. User-agency principle — one attention-grab per session. Reduced motion: no pulse.
+
+**Dropdown structure (see `COACH_SURFACE_SPEC.md` §7.2 / §7.3 for full layouts):**
+
+Sections in order:
+
+1. **Coach · This week** — coach patterns from the current weekly cycle (Sunday 00:00 UTC – Sat 23:59 UTC).
+2. **Coach · Earlier** — coach patterns from older cycles, not yet read / dismissed. Collapsed by default if >3 items.
+3. **Other notifications** — non-coach types (digest emails, price alerts, billing, etc.).
+
+Footer: «Mark all read» + «Notification settings» link (→ `/settings/notifications`, includes per-Coach-category mute toggles).
+
+**Free vs Plus/Pro:**
+
+- Plus/Pro: coach rows show pattern-name teaser text. Click opens full popover.
+- Free: coach rows show «🔒 Locked preview» label. Click opens teaser popover. Footer gains «Upgrade to Plus for full pattern reads ▸» link.
+
+**Keyboard shortcut:**
+
+- `Cmd/Ctrl+Shift+B` toggles the bell-dropdown from anywhere in the app. `Cmd/Ctrl+B` NOT used — conflicts with browser bookmark-bar toggle on Chrome/Firefox.
+- Hint shown in bell hover tooltip.
+
+**Accessibility (extends §10.3 TD-005):**
+
+- `<button aria-label="Notifications — N unread" aria-haspopup="menu" aria-expanded="[bool]">` on the bell.
+- Dropdown `role="menu"` (minimal arrow-nav remains tech-debt TD-005; Enter/Space + Tab suffice for alpha).
+- Coach rows `role="menuitem"` with context-specific `aria-label` per `COACH_SURFACE_SPEC.md` §7.6.
+- Reduced motion: dropdown opens/closes instantly (no scale/opacity transition); bell first-session pulse disabled.
+
+**Empty state variants (Path A warm-start, Path B cold-start, post-gate quiet):** see `COACH_SURFACE_SPEC.md` §6. Bell icon shows without badge during all empty states (count = 0).
+
+**Integration contract:** BellDropdown receives its feed from a single notifications API endpoint (tech-lead to confirm — payload must include notification type discriminant so Coach rows can be grouped separately from other types). Coach rows consume insights-type payload with `type = 'coach_weekly'` (per `CC_KICKOFF_option4_coach_adr.md`). Mutation actions on Coach rows (dismiss, snooze) reuse Slice 6b insights-mutation endpoints.
 
 ---
 
@@ -596,7 +674,13 @@ Top-right `PlanBadge`. Click → dropdown:
 
 ### 16.2 In-app
 
-`BellDropdown` in top bar. Unread count as `slate-700` dot, violet-700 when high-priority. Grouping: today / earlier this week / older.
+`BellDropdown` in top bar. Unread count as `slate-700` dot, violet-700 when high-priority. Grouping updated in v1.3 — see §14.7 for full spec:
+
+- Coach · This week
+- Coach · Earlier
+- Other notifications
+
+When a Coach pattern is unread, bell icon gains a 1px `accent.primary` outer ring. First-coach-of-session bell pulse (1200ms scale, disabled on `prefers-reduced-motion`). Keyboard shortcut `Cmd/Ctrl+Shift+B`.
 
 ### 16.3 Email design
 
@@ -694,6 +778,15 @@ Negative references (what we avoid):
   - **§14.2 Insights cadence honesty** — Free tier = weekly (not daily); aligned with positioning + landing.
   - **§14.6 Coach surface** — new subsection; delegates detailed spec to `docs/design/COACH_SURFACE_SPEC.md`; coach integration contract (mutation reuse, category taxonomy, cold-start gating, regulatory guardrail, legal-advisor coordination for in-context AI disclaimer format).
   - No token changes. Token system remains metaphor-neutral; v1.1 palette + semantic mapping survives v1.2 unchanged.
+- **v1.2 → v1.3 (2026-04-23):** Coach UX PO lock — contextual-icon + bell-hub model supersedes dedicated-route model. Changes:
+  - **§10.4 Monetization** — `LockedPatternCard` marked OBSOLETE (replaced by CoachPopover teaser variant in §10.5).
+  - **§10.5 Coach primitives** — rewritten. `CoachDot` + `CoachPopover` added. v1.2 primitives (`CoachPatternCard`, `CoachWeekAnchor`, `CoachEmptyState`, `LockedPatternCard`) marked obsolete. `CategoryPill` retained.
+  - **§11.6 Dashboard architecture pointer** — updated primary routes count (5, not 6); removed Coach teaser row from top-of-fold; updated iOS tab-bar (4 tabs, Coach contextual).
+  - **§14.2 Insights categories** — behavioral insights note updated (no longer «routes to Coach»; coach surfaces contextually).
+  - **§14.6 Coach surface** — major rewrite. Contextual-layer architecture: dot on attachment-points + bell-dropdown hub. Legal-advisor coordination carried forward. Detailed spec now in `COACH_SURFACE_SPEC.md` v2.0.
+  - **§14.7 BellDropdown pattern (new)** — single hub for all «Memoro noticed» notifications including Coach. Coach-unread violet ring differentiator, first-session pulse, keyboard shortcut `Cmd/Ctrl+Shift+B`, three-section grouping (Coach · This week / Coach · Earlier / Other).
+  - **§16.2 In-app notifications** — BellDropdown grouping updated (points to §14.7).
+  - No token changes. Existing semantic tokens (warning / info / positive / accent.primary) cover Coach dot colors. Palette and mapping unchanged.
 
 ---
 
