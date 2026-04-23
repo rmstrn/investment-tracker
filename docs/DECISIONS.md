@@ -771,3 +771,30 @@ Narrows the 2026-04-23 «global multi-market» lock (earlier same-day ADR): US +
 
 **Owner.** Navigator (name lock + doc sweep). PO (decision source + future domain registration).
 **Revisit.** If `memoro.co` registration blocked for any reason when PO attempts it (unlikely — ICANN AVAILABLE signal is strong, but registrars occasionally surface last-minute conflicts), fall back to `.app` / `.io` / `.money` — all showed possibly-free WebFetch signals in Round 5 domain check. If broader trademark conflict surfaces post-launch, Q4 lock accepts the rebrand cost.
+
+## 2026-04-23 — Trial + Free tier + Coach UX + brand commitment (4 locks)
+
+PO 4 decisions from post-specialist-dispatch session:
+
+### Trial: 14-day Plus, card required
+Standard SaaS pattern. Free-tier user signs up → 14 days of Plus access → card charged OR auto-downgrade to Free. Card required at signup (better trial→paid conversion; worse trial uptake, acceptable trade-off). Plus (not Pro) gives «real product experience» without over-promising.
+
+### Free tier: 50 messages/month, NO daily limit
+PO rejected finance-advisor's 3/day + 60/month combo; monthly cap only. User can burst 10 messages in one day and be silent the next — more retail-friendly. 50/mo is tighter than proposed 60/mo — better unit economics. **Use Haiku (not Sonnet) for Free-tier AI responses** per finance-advisor recommendation (5x cheaper, sufficient quality for Free).
+
+### Coach UX: contextual — NOT dedicated route, NOT filter-chip
+- **Blinking icons on contextual elements** (position cards, dashboard widgets, relevant chat threads) when Memoro notices a pattern tied to that element. Icon click → teaser message.
+- **Bell-dropdown in top-bar** with unread count. Click → list of all current coach patterns (hub for discovery).
+- **No `/coach` route** — contrary to product-designer's earlier recommendation. Contrary also to tech-lead's filter-chip proposal.
+- **Free tier paywall teaser:** reveals pattern subject but not substance. Example: «Memoro noticed a pattern in your NVDA trades — upgrade to Plus to see detail». Creates curiosity without Lane A violation.
+- **No dedicated surface for Coach** as category-claim — AI woven into existing surfaces per Q3 dashboard-primary lock.
+
+### «Free is always Free» — permanent brand commitment
+PO confirms Free tier stays free forever. Content-lead built landing + paywall copy around this («no last chance nonsense», «cancel is one click», «Free is always Free»). Brand promise — if later reneged, significant brand damage. PO confirms understanding and commits.
+
+**Owner.** Navigator (decisions log) + content-lead (copy) + product-designer (coach UX spec rewrite) + finance-advisor (cost model + tier validation).
+**Revisit.** Each separately:
+- Trial: measure trial→paid conversion at 90 days post-launch; optimize terms if conversion weak.
+- Free cap: measure actual Free burn at 1K / 10K / 100K users; adjust cap if unit economics break.
+- Coach UX: A/B test contextual vs dedicated route post-alpha if engagement weak.
+- Free-forever: anchor commitment — do NOT revisit under normal product-market pressure; only reconsider if company existential risk.
