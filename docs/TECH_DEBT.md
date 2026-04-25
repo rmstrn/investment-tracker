@@ -14,6 +14,42 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-098 — broker logos visual treatment in Aggregation section
+
+**Added:** 2026-04-26 (Slice-LP2 Provedo landing v2).
+**Priority:** P3.
+**Source:** `ProvedoAggregationSection.tsx` uses text-abbreviation placeholder cards (e.g. «IBKR», «Schwab») instead of actual SVG brand logos. Real logos require (a) tech-lead verification of SnapTrade/Plaid/CCXT coverage list, (b) brand-permission review or licensed icon set.
+**Desired state:** replace text placeholders with monochrome slate-700 SVG logos on white card bg, once coverage data verified (TD-095 trigger) and logo asset permissions confirmed.
+**Owner:** CC (web) + product-designer (brand permission).
+**Trigger:** same as TD-095 — broker count verification. Bundle broker logos delivery as part of that slice.
+
+### TD-097 — pre-alpha testimonial real quotes
+
+**Added:** 2026-04-26 (Slice-LP2 Provedo landing v2).
+**Priority:** P2.
+**Source:** `ProvedoTestimonialCards.tsx` ships Option B — «Coming Q2 2026» badge with builder (PO) quotes. Content is labeled honestly as pre-alpha builder quotes, not real user testimonials. Real alpha-tester quotes should replace when closed alpha cohort N≥3 live testers available.
+**Desired state:** swap 3 builder-quote cards for 3 real alpha-tester quotes (Option A per content v2 §S7). Update section header to «What alpha testers are noticing.» and caption to «From the closed alpha cohort, [date].» Remove «Coming Q2 2026» badge.
+**Owner:** CC (web) + content-lead (quote collection from alpha users).
+**Trigger:** closed alpha ships + N≥3 real testers willing to attribute quote.
+
+### TD-096 — Plus tier price placeholder «$X/month»
+
+**Added:** 2026-04-26 (Slice-LP2 Provedo landing v2).
+**Priority:** P3.
+**Source:** `ProvedoFAQ.tsx` Q4 answer contains «Plus tier ($X/month)» literal placeholder. PO has not confirmed final Plus pricing.
+**Desired state:** replace «$X/month» with real price once PO + finance-advisor confirm Plus tier price point. Single grep+replace in `ProvedoFAQ.tsx`.
+**Owner:** CC (web).
+**Trigger:** PO confirms Plus tier pricing (separate pricing slice).
+
+### TD-095 — broker count swap «100s» → «1000+»
+
+**Added:** 2026-04-26 (Slice-LP2 Provedo landing v2).
+**Priority:** P3.
+**Source:** `ProvedoNumericProofBar.tsx` ships with `coverage="100s"` fallback per content v2 §S2 tech-lead verification flag. `ProvedoAggregationSection.tsx` copy also uses «Hundreds of brokers».
+**Desired state:** once tech-lead verifies actual broker/exchange count through SnapTrade + Plaid + CCXT coverage data, update: (1) `<ProvedoNumericProofBar coverage="1000+" />` in `page.tsx`; (2) `ProvedoAggregationSection.tsx` copy «1000+ brokers and exchanges»; (3) `ProvedoFAQ.tsx` Q3 answer «1000+ brokers». Three mechanical find+replace; no logic change.
+**Owner:** CC (web).
+**Trigger:** tech-lead provides verified coverage number (≥1000 confirmed → use «1000+»; else keep «100s»).
+
 ### TD-093 — restore Clerk auth redirect on marketing landing for provedo.ai migration
 
 **Added:** 2026-04-25 (Slice-LP1 Provedo first-pass landing).
