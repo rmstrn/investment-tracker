@@ -14,6 +14,33 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-093 — restore Clerk auth redirect on marketing landing for provedo.ai migration
+
+**Added:** 2026-04-25 (Slice-LP1 Provedo first-pass landing).
+**Priority:** P2.
+**Source:** Clerk `await auth()` + `redirect('/dashboard')` stripped from `(marketing)/page.tsx` to allow static first-pass deploy on staging without Clerk runtime. Signed-in users hitting memoro.co will see the landing instead of redirecting.
+**Desired state:** Restore `await auth()` guard when memoro.co transitions to provedo.ai production — or when Clerk env vars are confirmed available in Vercel deploy env.
+**Owner:** CC (web).
+**Trigger:** provedo.ai migration slice (post-PO comparison review of first-pass landing).
+
+### TD-092 — full v1.4 token migration across apps/web (replace Memoro-era tokens)
+
+**Added:** 2026-04-25 (Slice-LP1 Provedo first-pass landing).
+**Priority:** P3.
+**Source:** `(marketing)/layout.tsx` uses inline CSS variables (`--provedo-bg-page`, `--provedo-accent`, etc.) scoped to marketing route only, to avoid touching Memoro-era tokens (`bg-background-primary`, `text-text-primary`, `ring-brand-500`) in `(app)/*` and `(auth)/*` routes. Full migration spec lives in `packages/design-tokens/MIGRATION_PROVEDO_v1.4.md`.
+**Desired state:** 14-step Phase A-E migration executed: tokens updated in `packages/design-tokens/tokens/semantic/{light,dark}.json`, `brand.json`, `theme.css`; inline overrides in `(marketing)/layout.tsx` deleted in single PR.
+**Owner:** CC (web) + product-designer (design system token naming).
+**Trigger:** Separate migration slice post-first-pass PO review sign-off.
+
+### TD-091 — replace text-based Provedo wordmark with SVG Logo component
+
+**Added:** 2026-04-25 (Slice-LP1 Provedo first-pass landing).
+**Priority:** P3.
+**Source:** `MarketingHeader.tsx` renders «Provedo» as inline `<span>` with Inter Semibold tracking-tight. `packages/ui/src/brand/Logo.tsx` still references Memoro-era SVG. SVG wordmark for Provedo = product-designer follow-up artefact (separate slice per kickoff §2.17).
+**Desired state:** product-designer delivers SVG wordmark asset; Logo.tsx updated; `MarketingHeader.tsx` switches from text span to `<Logo variant="full" />`.
+**Owner:** product-designer (SVG asset) + CC (web, integration).
+**Trigger:** product-designer SVG artefact delivery.
+
 ### TD-090 — typed action_url for insights (oneOf discriminated union)
 
 **Added:** 2026-04-22 (Slice 6a post-merge, PR #64).
