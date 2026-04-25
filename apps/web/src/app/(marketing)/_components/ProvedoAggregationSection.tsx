@@ -1,9 +1,10 @@
-// ProvedoAggregationSection — §4 copy verbatim from docs/content/landing-provedo-v1.md v2
-// Uses fallback copy "Hundreds of brokers and exchanges" (NOT "1000+") per kickoff §4 acceptance.
-// Broker logos = labeled placeholder rectangles for first-pass (per kickoff §2.3 Notes).
-// CSS-only infinite-scroll marquee with prefers-reduced-motion respected.
+'use client';
 
-// Broker/exchange placeholder entries — first-pass labeled blocks
+// ProvedoAggregationSection — §S8 broker marquee (v3)
+// V3.5: scroll-into-view fade-in for header + sub
+// Uses fallback copy «Hundreds of brokers and exchanges» per TD-095 (1000+ needs tech-lead verify)
+// CSS-only infinite-scroll marquee with prefers-reduced-motion respected
+
 const BROKER_PLACEHOLDERS: ReadonlyArray<{ label: string; abbr: string }> = [
   { label: 'Interactive Brokers', abbr: 'IBKR' },
   { label: 'Charles Schwab', abbr: 'Schwab' },
@@ -18,6 +19,8 @@ const BROKER_PLACEHOLDERS: ReadonlyArray<{ label: string; abbr: string }> = [
   { label: 'Kraken', abbr: 'Kraken' },
   { label: 'Hargreaves Lansdown', abbr: 'HL' },
 ] as const;
+
+import { ScrollFadeIn } from './ScrollFadeIn';
 
 function BrokerCard({ label, abbr }: { label: string; abbr: string }) {
   return (
@@ -47,31 +50,26 @@ export function ProvedoAggregationSection() {
       className="overflow-hidden px-4 py-16 md:py-24"
       style={{ backgroundColor: 'var(--provedo-bg-page)' }}
     >
-      <div className="mx-auto max-w-4xl text-center">
-        {/* Section header — verbatim §4 */}
-        <h2
-          id="aggregation-heading"
-          className="text-2xl font-semibold tracking-tight md:text-4xl"
-          style={{ color: 'var(--provedo-text-primary)' }}
-        >
-          One chat holds everything.
-        </h2>
-        {/* Using fallback A copy — "1000+" verification flag still open per content v2 §11.2 */}
-        <p
-          className="mt-4 text-base leading-relaxed md:text-lg"
-          style={{ color: 'var(--provedo-text-secondary)' }}
-        >
-          Hundreds of brokers and exchanges, in one place — Provedo reads them all.
-        </p>
-      </div>
+      <ScrollFadeIn>
+        <div className="mx-auto max-w-4xl text-center">
+          <h2
+            id="aggregation-heading"
+            className="text-2xl font-semibold tracking-tight md:text-4xl"
+            style={{ color: 'var(--provedo-text-primary)' }}
+          >
+            One chat holds everything.
+          </h2>
+          <p
+            className="mt-4 text-base leading-relaxed md:text-lg"
+            style={{ color: 'var(--provedo-text-secondary)' }}
+          >
+            Hundreds of brokers and exchanges, in one place — Provedo reads them all.
+          </p>
+        </div>
+      </ScrollFadeIn>
 
-      {/* Marquee — CSS animation, prefers-reduced-motion: static fallback */}
-      <div
-        className="relative mt-12 md:mt-16"
-        aria-label="Supported brokers and exchanges"
-        aria-hidden="false"
-      >
-        {/* Fade masks on left/right for clean scroll edges */}
+      {/* Marquee */}
+      <div className="relative mt-12 md:mt-16" aria-label="Supported brokers and exchanges">
         <div
           className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16"
           style={{
@@ -85,7 +83,6 @@ export function ProvedoAggregationSection() {
           }}
         />
 
-        {/* Scrolling track */}
         <div className="overflow-hidden">
           <div
             className="flex gap-4 provedo-marquee"
@@ -96,7 +93,6 @@ export function ProvedoAggregationSection() {
               } as React.CSSProperties
             }
           >
-            {/* Duplicate set for seamless loop */}
             {[...BROKER_PLACEHOLDERS, ...BROKER_PLACEHOLDERS].map((broker, i) => (
               <BrokerCard key={`${broker.abbr}-${i}`} label={broker.label} abbr={broker.abbr} />
             ))}
@@ -104,7 +100,6 @@ export function ProvedoAggregationSection() {
         </div>
       </div>
 
-      {/* Inline keyframes + reduced-motion override */}
       <style>{`
         @keyframes provedo-scroll {
           from { transform: translateX(0); }

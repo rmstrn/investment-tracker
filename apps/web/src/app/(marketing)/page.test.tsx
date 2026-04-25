@@ -65,14 +65,12 @@ describe('MarketingHomePage v2', () => {
     expect(
       screen.getByRole('region', { name: /this is what provedo is not/i }),
     ).toBeInTheDocument();
-    // S4 Demo tabs — «Ask on your actual holdings»
-    expect(
-      screen.getByRole('region', { name: /ask on your actual holdings/i }),
-    ).toBeInTheDocument();
-    // S5 Insights — «A few minutes a week»
-    expect(screen.getByRole('region', { name: /a few minutes a week/i })).toBeInTheDocument();
-    // S6 Editorial — «One brain. One feed. One chat.»
-    expect(screen.getByRole('region', { name: /one brain/i })).toBeInTheDocument();
+    // S4 Demo tabs — «Ask anything.» (v3 Patch C)
+    expect(screen.getByRole('region', { name: /ask anything/i })).toBeInTheDocument();
+    // S5 Insights — «A few minutes a day» (v3 Patch B)
+    expect(screen.getByRole('region', { name: /a few minutes a day/i })).toBeInTheDocument();
+    // S6 Editorial — «One place. One feed. One chat.» (v3)
+    expect(screen.getByRole('region', { name: /one place/i })).toBeInTheDocument();
     // S7 Testimonials — «What testers will be noticing.»
     expect(
       screen.getByRole('region', { name: /what testers will be noticing/i }),
@@ -91,11 +89,12 @@ describe('MarketingHomePage v2', () => {
 // ─── S2 Numeric proof bar ──────────────────────────────────────────────────
 
 describe('ProvedoNumericProofBar', () => {
-  it('renders 3 proof cells', () => {
+  it('renders 3 proof cells (v3 Patch A)', () => {
     render(<ProvedoNumericProofBar />);
     expect(screen.getByText('brokers and exchanges')).toBeInTheDocument();
     expect(screen.getByText('observation cited')).toBeInTheDocument();
-    expect(screen.getByText('free forever')).toBeInTheDocument();
+    // Cell 3 is now Lane A — «information not advice» (Patch A)
+    expect(screen.getByText(/lane a — information not advice/i)).toBeInTheDocument();
   });
 
   it('uses "100s" fallback by default', () => {
@@ -108,10 +107,10 @@ describe('ProvedoNumericProofBar', () => {
     expect(screen.getByText('1000+')).toBeInTheDocument();
   });
 
-  it('renders $0/month free forever cell', () => {
+  it('renders Lane A «100%» cell (v3 Patch A — replaces $0/month)', () => {
     render(<ProvedoNumericProofBar />);
-    expect(screen.getByText('$0/month')).toBeInTheDocument();
-    expect(screen.getByText('no card required')).toBeInTheDocument();
+    // Cell 3: animated count-up target = 100% — renders as 0 initially (count starts on scroll)
+    expect(screen.getByText(/no robo-advisor, no brokerage/i)).toBeInTheDocument();
   });
 
   it('section has correct aria-label', () => {
@@ -138,9 +137,11 @@ describe('ProvedoNegationSection', () => {
     expect(container.textContent).toMatch(/not a brokerage/i);
   });
 
-  it('contains «will not tell you what to buy» negation line', () => {
+  it('contains «not advice» column (v3 visual rebuild)', () => {
     const { container } = render(<ProvedoNegationSection />);
-    expect(container.textContent).toMatch(/will not tell you what to buy/i);
+    // v3: 3-column grid with «Not advice» label + «tells you what to buy» sub-label
+    expect(container.textContent).toMatch(/not advice/i);
+    expect(container.textContent).toMatch(/tells you what to buy/i);
   });
 
   it('renders affirmation closer with allowlist verbs', () => {
@@ -160,9 +161,9 @@ describe('ProvedoDemoTabsV2', () => {
     expect(screen.getByRole('tab', { name: /aggregate/i })).toBeInTheDocument();
   });
 
-  it('renders v2 section sub «Four answers Provedo finds»', () => {
+  it('renders v3 section sub «Four real questions» (Patch C)', () => {
     render(<ProvedoDemoTabsV2 />);
-    expect(screen.getByText(/four answers provedo finds/i)).toBeInTheDocument();
+    expect(screen.getByText(/four real questions/i)).toBeInTheDocument();
   });
 
   it('shows Why? tab content by default', () => {
@@ -272,10 +273,10 @@ describe('AllocationPieBar', () => {
 // ─── S5 Insights bullets ──────────────────────────────────────────────────
 
 describe('ProvedoInsightsBullets', () => {
-  it('renders section heading', () => {
+  it('renders section heading (v3 Patch B: week → day)', () => {
     render(<ProvedoInsightsBullets />);
     expect(
-      screen.getByRole('heading', { level: 2, name: /a few minutes a week/i }),
+      screen.getByRole('heading', { level: 2, name: /a few minutes a day/i }),
     ).toBeInTheDocument();
   });
 
@@ -295,10 +296,10 @@ describe('ProvedoInsightsBullets', () => {
 // ─── S6 Editorial narrative ───────────────────────────────────────────────
 
 describe('ProvedoEditorialNarrative', () => {
-  it('renders section heading «One brain. One feed. One chat.»', () => {
+  it('renders section heading «One place. One feed. One chat.» (v3)', () => {
     render(<ProvedoEditorialNarrative />);
     expect(
-      screen.getByRole('heading', { level: 2, name: /one brain. one feed. one chat./i }),
+      screen.getByRole('heading', { level: 2, name: /one place. one feed. one chat./i }),
     ).toBeInTheDocument();
   });
 

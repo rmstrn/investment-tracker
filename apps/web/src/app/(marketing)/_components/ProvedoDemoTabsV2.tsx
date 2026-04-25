@@ -1,16 +1,16 @@
 'use client';
 
-// ProvedoDemoTabsV2 — §S4 demo tabs with real inline SVG charts (Slice-LP2)
-// Spec: visual spec §2 — replaces ChartSkeleton with 4 distinct SVG charts
-// Copy: verbatim from landing-provedo-v2.md §S4
-// Accessibility: Tabs primitive keyboard nav, charts with role="img"
-// Lane A: Tab 3 patterns section audited — «no judgment, no advice» disclaim
+// ProvedoDemoTabsV2 — §S4 demo tabs with animated inline SVG charts (v3)
+// V3.2: all 4 charts replaced with animated versions (PnlSparklineAnimated etc.)
+// Patch C: section header reframed «Ask anything.» + sub «Four real questions on your actual holdings. Notice what you'd miss.»
+// Patch B: «week» → «day» not applicable in this section (week refs are in S5)
+// Lane A: Tab 3 patterns section audited — «no judgment, no advice» disclaim retained
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@investment-tracker/ui';
-import { AllocationPieBar } from './charts/AllocationPieBar';
-import { DividendCalendar } from './charts/DividendCalendar';
-import { PnlSparkline } from './charts/PnlSparkline';
-import { TradeTimeline } from './charts/TradeTimeline';
+import { AllocationPieBarAnimated } from './charts/AllocationPieBarAnimated';
+import { DividendCalendarAnimated } from './charts/DividendCalendarAnimated';
+import { PnlSparklineAnimated } from './charts/PnlSparklineAnimated';
+import { TradeTimelineAnimated } from './charts/TradeTimelineAnimated';
 
 // ─── Chat bubble primitives ──────────────────────────────────────────────────
 
@@ -91,20 +91,20 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
       style={{ backgroundColor: 'var(--provedo-bg-page)' }}
     >
       <div className="mx-auto max-w-3xl">
-        {/* Section header — verbatim §S4 v2 */}
+        {/* Section header — Patch C: reframed */}
         <div className="mb-10 text-center md:mb-14">
           <h2
             id="demo-v2-heading"
             className="text-2xl font-semibold tracking-tight md:text-3xl"
             style={{ color: 'var(--provedo-text-primary)' }}
           >
-            Ask on your actual holdings.
+            Ask anything.
           </h2>
           <p
             className="mt-3 text-base leading-relaxed md:text-lg"
             style={{ color: 'var(--provedo-text-secondary)' }}
           >
-            Four answers Provedo finds in your real positions. Every answer cites its source.
+            Four real questions on your actual holdings. Notice what you&apos;d miss.
           </p>
         </div>
 
@@ -134,7 +134,7 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
             })}
           </TabsList>
 
-          {/* Tab 1 — Why? — P&L Sparkline */}
+          {/* Tab 1 — Why? — Animated P&L Sparkline */}
           <TabsContent value="why">
             <div className="space-y-4">
               <UserBubble>Why is my portfolio down this month?</UserBubble>
@@ -145,12 +145,12 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>Tesla (−8%, TSLA delivery miss)</Mono>. The rest of your portfolio is
                   roughly flat.
                 </p>
-                <PnlSparkline />
+                <PnlSparklineAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
 
-          {/* Tab 2 — Dividends — Calendar */}
+          {/* Tab 2 — Dividends — Animated Calendar */}
           <TabsContent value="dividends">
             <div className="space-y-4">
               <UserBubble>When are dividends coming this quarter?</UserBubble>
@@ -161,7 +161,7 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>Oct 7 ($74)</Mono>, <Mono>MSFT</Mono> ex-div <Mono>Nov 19 ($61)</Mono>.
                   Three smaller payments after that.
                 </p>
-                <DividendCalendar />
+                <DividendCalendarAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
@@ -177,15 +177,12 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   Each time, <Mono>AAPL</Mono> recovered above your sell price within{' '}
                   <Mono>8 weeks</Mono>.
                 </p>
-                <p className="mt-2 text-xs" style={{ color: 'var(--provedo-text-tertiary)' }}>
-                  Provedo notices — no judgment, no advice.
-                </p>
-                <TradeTimeline />
+                <TradeTimelineAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
 
-          {/* Tab 4 — Aggregate — Donut + Bar */}
+          {/* Tab 4 — Aggregate — Animated Donut + Bar */}
           <TabsContent value="aggregate">
             <div className="space-y-4">
               <UserBubble>How much tech am I holding across IBKR + Schwab?</UserBubble>
@@ -197,7 +194,7 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>GOOG ($3k)</Mono> and <Mono>AMZN ($2k)</Mono>. For context, US retail median
                   tech allocation is around <Mono>34%</Mono>.
                 </p>
-                <AllocationPieBar />
+                <AllocationPieBarAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>

@@ -1,9 +1,9 @@
-// ProvedoTestimonialCards — §S7 pre-alpha testimonials (Slice-LP2)
-// Spec: visual spec §5 — 3-card horizontal row
-// PO lock: Option B — «Coming Q2 2026» badge + structurally-real placeholder (NO fake quotes)
-// Content: builder quotes from content-lead §S7 (Roman M., builder at Provedo)
-// Accessibility: <section><figure><blockquote><figcaption>, AAA contrast
-// Reduced-motion: static, no entrance animation
+'use client';
+
+// ProvedoTestimonialCards — §S7 pre-alpha testimonials (v3)
+// V3.5: scroll fade-in on cards (stagger)
+// Content: builder quotes (Option B — «builder» badge, honest pre-alpha framing)
+// Accessibility: <section><figure><blockquote><figcaption>
 
 interface TestimonialCard {
   quote: string;
@@ -22,7 +22,7 @@ const BUILDER_CARDS: ReadonlyArray<TestimonialCard> = [
   },
   {
     quote:
-      "I check the weekly feed for five minutes Sunday morning. Everything that moved is in one place. That's the whole product for me.",
+      "I check the feed for five minutes Sunday morning. Everything that moved is in one place. That's the whole product for me.",
     name: 'Roman M.',
     tier: 'Free',
     surface: 'weekly insights',
@@ -35,6 +35,8 @@ const BUILDER_CARDS: ReadonlyArray<TestimonialCard> = [
     surface: 'pattern recognition',
   },
 ] as const;
+
+import { ScrollFadeIn } from './ScrollFadeIn';
 
 function TierBadge({ tier }: { tier: 'Plus' | 'Free' }): React.ReactElement {
   return (
@@ -67,128 +69,127 @@ export function ProvedoTestimonialCards(): React.ReactElement {
     >
       <div className="mx-auto max-w-5xl">
         {/* Section header */}
-        <div className="mb-10 text-center md:mb-14">
-          {/* Coming Q2 2026 badge */}
-          <span
-            style={{
-              display: 'inline-block',
-              backgroundColor: 'var(--provedo-accent-subtle)',
-              color: 'var(--provedo-accent)',
-              fontSize: '11px',
-              fontFamily: 'var(--provedo-font-mono)',
-              fontWeight: 500,
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              padding: '4px 12px',
-              borderRadius: '100px',
-              marginBottom: '16px',
-            }}
-            aria-label="Alpha testing starts Q2 2026"
-          >
-            Coming Q2 2026
-          </span>
-
-          <h2
-            id="testimonials-heading"
-            className="text-2xl font-semibold tracking-tight md:text-3xl"
-            style={{ color: 'var(--provedo-text-primary)' }}
-          >
-            What testers will be noticing.
-          </h2>
-          <p
-            className="mx-auto mt-3 max-w-xl text-sm leading-relaxed"
-            style={{ color: 'var(--provedo-text-tertiary)' }}
-          >
-            Provedo enters closed alpha Q2 2026. Below: quotes from the team building the product.
-          </p>
-        </div>
-
-        {/* 3-card grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {BUILDER_CARDS.map((card) => (
-            <figure
-              key={card.surface}
+        <ScrollFadeIn>
+          <div className="mb-10 text-center md:mb-14">
+            <span
               style={{
-                backgroundColor: 'var(--provedo-bg-elevated)',
-                border: '1px solid var(--provedo-border-subtle)',
-                borderRadius: '12px',
-                padding: '32px',
-                boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
-                minHeight: '240px',
-                display: 'flex',
-                flexDirection: 'column',
+                display: 'inline-block',
+                backgroundColor: 'var(--provedo-accent-subtle)',
+                color: 'var(--provedo-accent)',
+                fontSize: '11px',
+                fontFamily: 'var(--provedo-font-mono)',
+                fontWeight: 500,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                padding: '4px 12px',
+                borderRadius: '100px',
+                marginBottom: '16px',
               }}
+              aria-label="Alpha testing starts Q2 2026"
             >
-              {/* Decorative quote-mark */}
-              <span
-                aria-hidden="true"
+              Coming Q2 2026
+            </span>
+
+            <h2
+              id="testimonials-heading"
+              className="text-2xl font-semibold tracking-tight md:text-3xl"
+              style={{ color: 'var(--provedo-text-primary)' }}
+            >
+              What testers will be noticing.
+            </h2>
+            <p
+              className="mx-auto mt-3 max-w-xl text-sm leading-relaxed"
+              style={{ color: 'var(--provedo-text-tertiary)' }}
+            >
+              Provedo enters closed alpha Q2 2026. Below: quotes from the team building the product.
+            </p>
+          </div>
+        </ScrollFadeIn>
+
+        {/* 3-card grid — staggered fade-in */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {BUILDER_CARDS.map((card, i) => (
+            <ScrollFadeIn key={card.surface} delay={i * 100}>
+              <figure
                 style={{
-                  fontFamily: 'var(--provedo-font-mono)',
-                  fontSize: '32px',
-                  color: 'var(--provedo-accent)',
-                  opacity: 0.4,
-                  lineHeight: 1,
-                  marginBottom: '8px',
-                  display: 'block',
+                  backgroundColor: 'var(--provedo-bg-elevated)',
+                  border: '1px solid var(--provedo-border-subtle)',
+                  borderRadius: '12px',
+                  padding: '32px',
+                  boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
+                  minHeight: '240px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  height: '100%',
                 }}
               >
-                &ldquo;
-              </span>
+                <span
+                  aria-hidden="true"
+                  style={{
+                    fontFamily: 'var(--provedo-font-mono)',
+                    fontSize: '32px',
+                    color: 'var(--provedo-accent)',
+                    opacity: 0.4,
+                    lineHeight: 1,
+                    marginBottom: '8px',
+                    display: 'block',
+                  }}
+                >
+                  &ldquo;
+                </span>
 
-              {/* Quote body */}
-              <blockquote
-                style={{
-                  fontFamily: 'var(--provedo-font-sans)',
-                  fontWeight: 400,
-                  fontSize: '16px',
-                  color: 'var(--provedo-text-secondary)',
-                  lineHeight: 1.55,
-                  marginBottom: 'auto',
-                  paddingBottom: '24px',
-                  quotes: 'none',
-                }}
-              >
-                {card.quote}
-              </blockquote>
-
-              {/* Divider */}
-              <hr
-                style={{
-                  border: 'none',
-                  borderTop: '1px solid var(--provedo-border-subtle)',
-                  marginBottom: '16px',
-                }}
-              />
-
-              {/* Attribution */}
-              <figcaption>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    style={{
-                      fontFamily: 'var(--provedo-font-sans)',
-                      fontWeight: 500,
-                      fontSize: '14px',
-                      color: 'var(--provedo-text-primary)',
-                    }}
-                  >
-                    {card.name}
-                  </span>
-                  <TierBadge tier={card.tier} />
-                </div>
-                <p
+                <blockquote
                   style={{
                     fontFamily: 'var(--provedo-font-sans)',
                     fontWeight: 400,
-                    fontSize: '13px',
-                    color: 'var(--provedo-text-muted)',
-                    marginTop: '4px',
+                    fontSize: '16px',
+                    color: 'var(--provedo-text-secondary)',
+                    lineHeight: 1.55,
+                    marginBottom: 'auto',
+                    paddingBottom: '24px',
+                    quotes: 'none',
                   }}
                 >
-                  <span style={{ fontWeight: 500 }}>builder</span> at Provedo ·{' '}
-                  <span style={{ fontFamily: 'var(--provedo-font-mono)' }}>{card.surface}</span>
-                </p>
-              </figcaption>
-            </figure>
+                  {card.quote}
+                </blockquote>
+
+                <hr
+                  style={{
+                    border: 'none',
+                    borderTop: '1px solid var(--provedo-border-subtle)',
+                    marginBottom: '16px',
+                  }}
+                />
+
+                <figcaption>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span
+                      style={{
+                        fontFamily: 'var(--provedo-font-sans)',
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        color: 'var(--provedo-text-primary)',
+                      }}
+                    >
+                      {card.name}
+                    </span>
+                    <TierBadge tier={card.tier} />
+                  </div>
+                  <p
+                    style={{
+                      fontFamily: 'var(--provedo-font-sans)',
+                      fontWeight: 400,
+                      fontSize: '13px',
+                      color: 'var(--provedo-text-muted)',
+                      marginTop: '4px',
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>builder</span> at Provedo ·{' '}
+                    <span style={{ fontFamily: 'var(--provedo-font-mono)' }}>{card.surface}</span>
+                  </p>
+                </figcaption>
+              </figure>
+            </ScrollFadeIn>
           ))}
         </div>
 
