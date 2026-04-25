@@ -1,4 +1,4 @@
-# Expenses Log — Memoro
+# Expenses Log — Provedo (formerly Memoro)
 
 Tracks every dollar spent on the project. Updated by PO (purchases) and finance-advisor (categorization, totals, monthly roll-up).
 
@@ -14,8 +14,8 @@ Tracks every dollar spent on the project. Updated by PO (purchases) and finance-
 
 | Metric | Value |
 |---|---|
-| **Total spent to date** | **$250 USD** |
-| **Entries** | 1 |
+| **Total spent to date** | **$420 USD** |
+| **Entries** | 3 |
 | **First expense** | 2026-04-23 |
 | **Categories touched** | Domain |
 
@@ -25,7 +25,9 @@ Tracks every dollar spent on the project. Updated by PO (purchases) and finance-
 
 | # | Date | Category | Description | Amount | Currency | USD equiv | Status | Notes |
 |---|---|---|---|---|---|---|---|---|
-| 1 | 2026-04-23 | Domain | Domain purchase (Memoro) | 250 | USD | $250 | Paid | First domain for product. Registrar/TLD details TBD from PO. |
+| 1 | 2026-04-23 | Domain | Domain purchase (Memoro.co — pre-rebrand sunk cost) | 250 | USD | $250 | Paid | Memoro brand rejected 2026-04-25; domain release/sell decision deferred. |
+| 2 | 2026-04-25 | Domain | Provedo.ai (primary brand domain, 2yr min) | ~140 | USD | ~$140 | Paid | Per Spaceship/Porkbun pricing. PO authorized after R32 multi-agent Rule 3 validation. |
+| 3 | 2026-04-25 | Domain | Provedo.app (protective TLD) | ~30 | USD | ~$30 | Paid | Squatter-prevention. |
 
 ---
 
@@ -53,8 +55,8 @@ Tracks every dollar spent on the project. Updated by PO (purchases) and finance-
 ## Monthly roll-up (add when month closes)
 
 ### 2026-04
-- Domain: $250
-- **Total April: $250**
+- Domain: $420 ($250 Memoro.co sunk cost + $170 Provedo.ai+.app rebrand)
+- **Total April: $420**
 
 ---
 

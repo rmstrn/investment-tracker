@@ -17,6 +17,7 @@ developer syncs them into their local runtime.
 | Agent | Role | Model |
 |---|---|---|
 | `brand-strategist.md` | Naming, brand archetype, tone, taglines, brand foundation | opus |
+| `brand-voice-curator.md` | Living taste-reference log + derived voice profile; fixes the 17-round «no positive anchor» root cause | opus |
 | `product-designer.md` | UX flows, wireframes, surface design, Design Brief | opus |
 | `user-researcher.md` | ICP validation, interviews, JTBD, opportunity mapping | opus |
 | `content-lead.md` | Landing copy, email sequences, microcopy, paywall copy | opus |
@@ -66,10 +67,11 @@ file lives outside git and your edits will be lost on the next sync.
 
 Each agent lists "Primary skills" in its body. Plugin sources:
 
-### Installed plugins (verified 2026-04-23, full coverage)
+### Installed plugins (verified 2026-04-23, expanded 2026-04-24)
 
 - **`superpowers@claude-plugins-official`** (obra/superpowers, v5.0.7) — process discipline: `brainstorming`, `using-superpowers`, `writing-plans`, `verification-before-completion`, `dispatching-parallel-agents`, `subagent-driven-development`, `test-driven-development`, `systematic-debugging`, `requesting-code-review`, `receiving-code-review`, `finishing-a-development-branch`, `using-git-worktrees`, `writing-skills`, `executing-plans`
 - **`everything-claude-code@everything-claude-code`** (v1.10.0) — strategy, research, content, design: `council`, `brand-voice`, `content-engine`, `design-system`, `frontend-design`, `accessibility`, `market-research`, `deep-research`, `exa-search`, `product-lens`, `prp-prd`, `prp-plan`, `plan`, `blueprint`, `evolve`, `click-path-audit`, `ui-demo`, `liquid-glass-design`, `article-writing`, `crosspost`, `investor-materials`, `investor-outreach`, `save-session`, `resume-session`, `ck`, + ~180 more
+- **`ui-ux-pro-max@nextlevelbuilder`** (v2.5.0, added 2026-04-24) — design intelligence searchable via Python CLI. 161 industry reasoning rules, 67 UI styles, 161 color palettes, 57 font pairings, 99 UX guidelines, 25 chart types, stack-specific rules for 15+ stacks (Next.js, React, shadcn, SwiftUI, Flutter, etc.). Flagship: `--design-system` generates complete design system (pattern + style + colors + typography + effects + anti-patterns + pre-delivery checklist). Also bundles `ckm:brand` sub-skill (brand voice template, asset organization, logo usage). **Primary consumers:** product-designer (core), frontend-engineer (stack + pre-delivery checklist). **Deferred consumer:** brand-strategist (for `04_BRAND.md` scope after name lock). Invocation via Bash: `python3 ~/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/src/ui-ux-pro-max/scripts/search.py "<query>" --domain <domain>`.
 - **`strategy-growth@wondelai-skills`** (v1.0.0) — `crossing-the-chasm`, `blue-ocean-strategy`, `traction-eos`, `obviously-awesome`
 - **`product-strategy@wondelai-skills`** (v1.0.0) — `jobs-to-be-done`, `mom-test`, `negotiation`
 - **`ux-design@wondelai-skills`** (v1.0.0) — `refactoring-ui`, `ios-hig-design`, `ux-heuristics`, `hooked-ux`, `improve-retention`, `web-typography`, `top-design`, `design-everyday-things`, `lean-ux`, `microinteractions`

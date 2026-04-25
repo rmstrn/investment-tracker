@@ -1,57 +1,62 @@
-# 04 — Design Brief v1.3
+# 04 — Design Brief v1.4
 
-Source of truth for the visual, interaction, and content design of Memoro. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
+Source of truth for the visual, interaction, and content design of **Provedo**. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
 
 **Version history**
 - v1.0 — initial brief, foundations only
 - v1.1 — added freemium UX (§13), AI module UI (§14), tier-specific screens (§15), notifications (§16), security UI (§17), account management (§18), KPI coverage map (§19)
 - v1.2 — added §0 anti-pattern list (Memoro brand-metaphor guard); §2.2 Insights tone row changed «actionable» → «observational»; §14.2 Insights cadence honesty (weekly, not daily); new §14.6 Coach surface subsection referencing `docs/design/COACH_SURFACE_SPEC.md`; new §11.6 reference to `docs/design/DASHBOARD_ARCHITECTURE.md`; updated principles commentary for dashboard-primary architecture (positioning lock 2026-04-23)
 - v1.3 — rewrote §14.6 Coach surface to contextual-icon + bell-hub model per PO lock 2026-04-23; added new §14.7 BellDropdown pattern (extension of §10.3 + §16.2); updated §15 tier-specific screens to remove Coach-route references; no token changes
+- **v1.4 (2026-04-25)** — full Provedo rebrand. **Direction A — Modern AI-Tool Minimalist** locked by PO 2026-04-25 after 3-direction dispatch. Major changes: name Memoro → Provedo across entire brief; §3 Color system rewritten — slate-violet replaced with warm-neutral `#FAFAF7` bg + deep slate `#0F172A` text + sky-blue `#0EA5E9` accent (default — see §3.6 open question); §4 Typography rewritten — Geist replaced with Inter + JetBrains Mono pairing (Google Fonts, free); §0 anti-pattern list updated for Provedo (brain/neural patterns retained as banned — Sage register; AI-purple/pink gradients explicitly added per ui-ux-pro-max anti-pattern); §6 Shadows refined to 3-tier flat-with-borders system; §7 Radius unchanged; §8 Motion duration reaffirmed 150–200ms primary; §10 Components updated for accent swap (focus rings, CTAs); §11 layout patterns retained (no surface architecture change); Memoro-era Coach contextual-dot model carried forward unchanged.
 
 ---
 
-## 0. Anti-pattern list — Memoro brand-metaphor guard
+## 0. Anti-pattern list — Provedo brand-archetype guard
 
-Memoro's tagline is «Second Brain for Your Portfolio». The metaphor carries well-known aesthetic gravity that directly conflicts with the «calm over busy» principle and the Magician + Sage + Everyman archetype. This section is an explicit NO list. Designers and engineers MUST reject these patterns during design review and code review.
+Provedo's archetype is **Magician + Sage primary · Everyman modifier**. Etymology: Italian *provedere* «I provide for / I foresee». The product surfaces patterns observationally — no advice, no gamification, no AI-aesthetic noise. This section is an explicit NO list. Designers and engineers MUST reject these patterns during design review and code review.
 
 ### 0.1 Banned visual tropes
 
-The following are forbidden in Memoro's UI — at any tier, on any surface, on any platform (web and iOS):
+The following are forbidden in Provedo's UI — at any tier, on any surface, on any platform (web and iOS):
 
 - **AI-sparkle visuals.** Gradient halos around AI output, animated sparkles on AI-generated content, «generating…» starbursts. The AI is the behavior, not the chrome.
-- **Neural-network / synapse imagery.** Glowing node constellations, animated synapse lines, brain-pulse loaders, neuron dot-grids, connectome graphs. Every second-brain productivity app defaults to this; we do not.
-- **Brain icons in persistent UI chrome.** No Lucide `brain` / `brain-cog` / `brain-circuit` in tab bars, nav, top bar, card headers, loading states. No SF Symbols `brain` / `brain.head.profile` / `brain.filled.head.profile` on iOS. The word «Memoro» carries the memory semantics; icons do not need to repeat it.
-- **«Thinking» / «memorizing» animations.** No pulsing dots indicating the brain is thinking during a non-streaming state. Streaming indicators in chat are allowed (`aria-live="polite"` text indicator); decorative brain-pulses outside streaming are not.
-- **«Memory indicator» progress bars.** No timelines showing «brain is learning», no accumulating-memory meters. Coach's 30-day cold-start IS a day-count progress (see `COACH_SURFACE_SPEC.md` §3), but that's a functional progress toward a named threshold — not decorative memory-chrome.
+- **AI-cliché purple/pink gradients.** No violet-to-pink gradient backgrounds, no purple glow rings on AI buttons, no pink/magenta accent colors. v1.3 used violet-700 as primary brand; v1.4 explicitly rejects this register (per ui-ux-pro-max anti-pattern «AI purple/pink gradients» — Direction A locks sky-blue accent specifically to avoid this trope).
+- **Neural-network / synapse imagery.** Glowing node constellations, animated synapse lines, neuron dot-grids, connectome graphs. Every AI productivity app defaults to this; Provedo does not.
+- **Brain / cognition icons in persistent UI chrome.** No Lucide `brain` / `brain-cog` / `brain-circuit` in tab bars, nav, top bar, card headers, loading states. No SF Symbols `brain` / `brain.head.profile` on iOS. The word «Provedo» carries the foresight semantics; icons do not need to repeat or amplify it.
+- **«Thinking» / «processing» decorative animations.** No pulsing orbs indicating the AI is thinking during a non-streaming state. Streaming indicators in chat are allowed (`aria-live="polite"` text indicator); decorative AI-pulses outside streaming are not.
 - **Liquid Glass effects on AI content.** iOS 26 Liquid Glass is ALLOWED on chrome (tab-bar blur, nav background). It is FORBIDDEN on AI-generated cards (insight cards, coach cards, chat bubbles). Those surfaces stay opaque with standard `background.elevated`.
 - **Gradient meshes / blobs / glow effects.** No vaporwave gradients, no glowing orbs, no generative-AI-aesthetic meshes. Solid backgrounds and flat tokens only.
-- **Dashboard-jazz.** No confetti on gains. No animated celebrations. No particle effects. No haptic-visual fireworks. Robinhood is the anti-reference; we are not Robinhood.
+- **Dashboard-jazz.** No confetti on gains. No animated celebrations. No particle effects. No haptic-visual fireworks. Robinhood is the anti-reference; Provedo is not Robinhood.
+- **Cream-paper / Italianate-warm visual register.** Direction B (warm cream `#FAF7F2` + serif headlines + paper grain) was explored and rejected by PO 2026-04-25. Provedo does NOT lean Italian-editorial in visual; etymology lives in name + voice, not chrome. v1.4 uses warm-neutral `#FAFAF7` (Claude.ai-style off-white), NOT cream paper — bg is calm not stylized.
 
 ### 0.2 Banned copy-level patterns
 
 Copy and microcopy must also avoid:
 
-- **«Your brain noticed…»** / **«Your second brain…»** as persistent UI narration voice. The agent's name is **Memoro** — that's what copy says. Screen readers amplify personification awkwardly; «Your brain noticed X» reads strangely on screen readers. Use «Memoro noticed X» or verb-led framing («Noticed this week: X»).
-- **Imperative action language from AI.** Lane A LOCKED. AI never says «buy X», «sell Y», «rebalance», «reduce your exposure». Only `notice / observe / flag / surface / explain / show / summarize`. This applies to chat, insights, coach, and dashboard AI badges.
+- **«Your AI noticed…»** / first-person AI narration. The agent's name is **Provedo** — that's what copy says. Use «Provedo noticed X» or verb-led framing («Noticed this week: X»). Screen readers amplify personification awkwardly.
+- **Memoro-era «Your brain noticed…» / «Your second brain…».** Banned. Memoro brand-metaphor is fully retired. Provedo is foresight + observation, not memory.
+- **Imperative action language from AI.** Lane A LOCKED. AI never says «buy X», «sell Y», «rebalance», «reduce your exposure», «we recommend», «we advise». Only `notice / observe / flag / surface / explain / show / summarize / read / map`. This applies to chat, insights, coach, and dashboard AI badges. EN co-occurrence guardrail: «Provedo» + advice/recommend/strategy/suggest/tells-you-to → forbidden in same sentence (see `04_BRAND.md` §6.5).
+- **«Provedo guides your decision».** Use «Provedo walks you through» or «Provedo provides clarity» — «guides» is FCA/FINRA-borderline (advice-adjacent). See `04_BRAND.md` §6.2 «Guidance splitter rule».
 
 ### 0.3 Aesthetic reference — what we ARE
 
-Memoro belongs to the **editorial knowledge-work** visual tradition:
+Provedo belongs to the **modern AI-tool minimalist** visual tradition (Direction A — locked 2026-04-25):
 
-- **Positive references (intonation):** Stripe, Linear, Ramp, Notion (product UI), Obsidian's restraint side. Calm typographic hierarchy, generous whitespace, restrained use of accent color, information density without visual noise, source citation treated as first-class content.
-- **Negative references (what we avoid):** Robinhood, eToro, most crypto-aesthetic fintech, 2025-era AI-consumer apps with sparkle-heavy interiors.
+- **Positive references (intonation):** Claude.ai, Anthropic, Cursor, Linear, Vercel, Stripe Docs, Raycast, Notion (product UI side). Calm typographic hierarchy, generous whitespace, restrained use of one accent color, information density without visual noise, source citation treated as first-class content. Sage-pure expression: the lack of decoration IS the trust signal.
+- **Negative references (what we avoid):** Robinhood / eToro (gamified, social-maxxed), most crypto-aesthetic fintech (neon + dark-luxury maxxed), 2025-era AI-consumer apps with sparkle-heavy interiors, advisor-coded dashboards (PortfolioPilot density), corporate-cold legacy fintech (Mint/Empower).
 
 ### 0.4 Enforcement
 
 - Design review: every new surface spec must reference this anti-pattern list and declare compliance.
-- Code review: `code-reviewer` agent flags violations — brain icons in UI chrome, sparkle animations, gradient meshes in CSS, violate-able copy (see §0.2).
-- Token audit: `packages/design-tokens/` must not contain tokens named for brain/neural/sparkle imagery. If a need arises, raise through Navigator before token add.
+- Code review: `code-reviewer` agent flags violations — brain icons in UI chrome, sparkle animations, purple/pink AI gradients in CSS, gradient meshes, violate-able copy (see §0.2).
+- Token audit: `packages/design-tokens/` must not contain tokens named for brain/neural/sparkle imagery, nor purple/pink AI-gradient values. If a need arises, raise through Navigator before token add.
+- Brand-name audit: every appearance of «Memoro» in code/docs is a v1.4 migration debt — replace with «Provedo» per `04_BRAND.md` §6 capitalization rule (capital P, lowercase remainder; never PROVEDO, never provedo).
 
 ---
 
 ## 1. Overview & principles
 
-Memoro is an AI-native portfolio tracker — a «Second Brain for Your Portfolio» — not a brokerage, not an advisor (Lane A LOCKED). The design has to feel premium and calm — people trust us with a read-only view of their financial life, and the AI layer is the reason they come back. Architecture is dashboard-primary with AI woven (LOCKED 2026-04-23); see §11.6 and `docs/design/DASHBOARD_ARCHITECTURE.md`.
+Provedo is an AI-native portfolio tracker — «Notice what you'd miss» — not a brokerage, not an advisor (Lane A LOCKED). The design has to feel premium and calm — people trust us with a read-only view of their financial life, and the AI layer is the reason they come back. Architecture is dashboard-primary with AI woven (LOCKED 2026-04-23); see §11.6 and `docs/design/DASHBOARD_ARCHITECTURE.md`.
 
 Six principles, in priority order:
 
@@ -60,7 +65,7 @@ Six principles, in priority order:
 3. **Trust through transparency.** We show sources. We label estimates. We never hide uncertainty behind a friendly number.
 4. **Data-first, then decoration.** Numbers are the hero. Typography supports them. Color is used sparingly and with intent.
 5. **Consistent across surfaces.** Web and iOS share tokens, patterns, and voice. They diverge only where platform conventions demand it (navigation, gestures, share sheets).
-6. **Accessibility is table stakes.** WCAG 2.1 AA minimum; 2.2 targets where practical. No contrast shortcuts, no keyboard dead-ends, no reliance on color alone.
+6. **Accessibility is table stakes.** WCAG 2.2 AA minimum on every surface. No contrast shortcuts, no keyboard dead-ends, no reliance on color alone.
 
 Not-goals: gamification, social feeds, leaderboards, push-notification maximization, dark patterns for upgrades.
 
@@ -88,142 +93,275 @@ Not-goals: gamification, social feeds, leaderboards, push-notification maximizat
 
 ### 2.3 Naming
 
-Product name LOCKED 2026-04-23: **Memoro** (Latin 1st-person-singular «I remember»). Tagline: **«Second Brain for Your Portfolio»** (v3.1 positioning lock). Hero: imperative «Ask your portfolio» / «Спроси свой портфель» (bilingual-ready; English day-1 launch).
+Product name LOCKED 2026-04-25: **Provedo** (Italian *provedere* «I provide for / I foresee / I take care of»; RU «прове́до» phonetically decodes to «проведу» — «I will lead through»). Pronunciation: EN /proh-VEH-doh/ · RU «прове́до» — three syllables, stress on second.
+
+Tagline LOCKED 2026-04-25 by PO: **EN «Notice what you'd miss» · RU «Замечает то, что ты упустил бы»** (global primary). Secondary RU-market: «Provedo проведёт через твой портфель». Hero (locked v3.1 positioning): imperative «Ask your portfolio» / «Спроси свой портфель» (bilingual-ready; English day-1 launch).
 
 In-product references:
-- Product name: **Memoro** (never «the tracker», «the app», «Investment Tracker»).
-- Agent self-reference in copy: **Memoro** (third-person). «Memoro noticed…» / «Memoro is learning…». Never «your brain…», «your second brain…», or «I…» (no AI first-person).
+- Product name: **Provedo** (never «the tracker», «the app», «Investment Tracker», «Memoro»). Capitalization: capital P, lowercase remainder. Never PROVEDO (shouting), never provedo (URL-fragment look).
+- Latin script primary in EN and RU contexts both. Cyrillic «Прове́до» appears ONLY in pronunciation guides with explicit stress mark, never in body copy.
+- Agent self-reference in copy: **Provedo** (third-person). «Provedo noticed…» / «Provedo сейчас читает твой портфель…». Never «your AI…», «your brain…», «your second brain…», or «I…» (no AI first-person except in scoped onboarding persona declarations — see `04_BRAND.md` §6.4).
 - Tagline use: sparingly in marketing surfaces; not persistent UI chrome.
+- Verb-form rules (binding for microcopy + AI system prompts): see `04_BRAND.md` §6.2 EN allowlist + banned list. Provedo «provides clarity / context / observation / foresight», «notices / explains / surfaces / reads patterns». Provedo NEVER «provides advice / recommendations / strategy / suggestions», NEVER «advises / recommends / suggests / tells you to».
 
-See §0.2 banned copy-level patterns.
+See §0.2 banned copy-level patterns and `04_BRAND.md` §6 brand-name usage rules (mandatory).
 
 ---
 
 ## 3. Color system
 
-### 3.1 Neutral scale — Slate
+**Locked 2026-04-25 — Direction A — Modern AI-Tool Minimalist.** PO selection after 3-direction dispatch (`docs/design/2026-04-25-provedo-visual-direction-options.md`). Aesthetic anchor: stripped-back monochrome with one high-precision accent. References: Claude.ai, Anthropic, Cursor, Linear, Vercel, Stripe Docs, Raycast.
 
-We chose Tailwind's `slate` over `zinc` because slate reads slightly warmer on white backgrounds and has better perceived depth in dark mode.
+Key swap from v1.3:
+- **Background:** slate-50 `#F8FAFC` → **warm-neutral `#FAFAF7`** (Claude.ai-style off-white; teplee than clinical white, calmer than slate-cool).
+- **Accent:** violet-700 `#6D28D9` → **muted teal `#0D9488` (LOCKED by PO 2026-04-25 per §3.6 calibration — A2 option chosen over A1 sky-blue default)**. Sage-archetype reinforcement, less cliché than ubiquitous sky-blue в AI-tool category, no portfolio-color conflict. v1.3 violet was AI-cliche purple/pink register; v1.4 explicitly rejects per anti-pattern §0.1.
+- **Text primary:** slate-900 `#0F172A` retained.
+- **Neutral scale:** slate retained (warm enough on `#FAFAF7`, full Cyrillic-rendering compatible across all weights).
 
-```
-slate-50   #f8fafc
-slate-100  #f1f5f9
-slate-200  #e2e8f0
-slate-300  #cbd5e1
-slate-400  #94a3b8
-slate-500  #64748b
-slate-600  #475569
-slate-700  #334155
-slate-800  #1e293b
-slate-900  #0f172a
-slate-950  #020617
-```
+### 3.1 Background scale — warm-neutral + slate
 
-### 3.2 Accent — Violet
-
-Primary brand accent: **violet-700 `#6D28D9`**.
-
-Rationale: reads as premium without being fintech-cliché (no deep-blue-and-gold), distinctive among competitors (Finary orange, Getquin blue), calm enough to live alongside positive/negative portfolio colors without creating a rainbow.
+The page background is a single load-bearing token: warm-neutral `#FAFAF7`. It replaces clinical white and slate-50; it's the calmest bg in the modern-AI-tool register (Claude.ai uses a near-identical value).
 
 ```
-violet-50   #f5f3ff
-violet-100  #ede9fe
-violet-500  #8b5cf6   ← hover state
-violet-600  #7c3aed   ← pressed state
-violet-700  #6d28d9   ← primary accent
-violet-800  #5b21b6
-violet-900  #4c1d95
+warm-bg-page         #FAFAF7   ← page background (light)  — Claude.ai vibe
+warm-bg-elevated     #FFFFFF   ← cards, popovers, modals — clean white against warm bg
+warm-bg-muted        #F5F5F1   ← secondary surfaces, striped rows, code blocks
+warm-bg-subtle       #F1F1ED   ← hover surfaces, tonal separation
 ```
 
-Use sparingly: primary CTAs, active nav, focus rings, key data-viz accent. **Never** for body text or large surfaces.
+Slate scale (text + borders + secondary surfaces — full scale retained):
+
+```
+slate-50   #f8fafc   ← retained for cool-tone surfaces (rare, e.g. data-viz grids)
+slate-100  #f1f5f9   ← muted blocks (cool-tone variant)
+slate-200  #e2e8f0   ← subtle borders
+slate-300  #cbd5e1   ← default borders
+slate-400  #94a3b8   ← muted text on dark / strong borders on light
+slate-500  #64748b   ← muted text (4.83:1 on warm-bg-page — passes WCAG AA)
+slate-600  #475569   ← secondary text (8.86:1 on warm-bg-page — AAA)
+slate-700  #334155   ← strong secondary
+slate-800  #1e293b   ← elevated bg (dark)
+slate-900  #0F172A   ← primary text (light) / card bg (dark)  — 16.7:1 on warm-bg-page (AAA)
+slate-950  #020617   ← deepest dark mode bg
+```
+
+### 3.2 Accent — Muted teal (LOCKED by PO 2026-04-25)
+
+Primary brand accent: **teal-600 `#0D9488`** (PO calibration §3.6 resolved 2026-04-25 — A2 chosen over A1 sky-blue default).
+
+Rationale: Sage-archetype register strongest match for Provedo's *provedere* etymology («I provide for / I foresee»), avoids the sky-blue cliché ubiquitous в 2025-26 AI-tool category, no conflict с portfolio.gain emerald, passes WCAG AA on warm-bg-page (4.62:1 on `#FAFAF7`). Mediterranean register subtly nods to Italian etymology без over-committing к full Italian-warm direction.
+
+```
+teal-50    #f0fdfa
+teal-100   #ccfbf1
+teal-300   #5eead4   ← dark-mode hover
+teal-400   #2dd4bf   ← dark-mode primary accent (better contrast on near-black)
+teal-500   #14b8a6   ← warm light-mode hover
+teal-600   #0d9488   ← LIGHT-MODE PRIMARY ACCENT
+teal-700   #0f766e   ← active / pressed state on light
+teal-800   #115e59
+teal-900   #134e4a
+```
+
+Use sparingly: primary CTAs, active nav, focus rings, key data-viz accent, AI-active state indicator (chat streaming, command palette open). **Never** for body text or large surfaces. **Never** in gradient form (anti-pattern §0.1).
 
 ### 3.3 Semantic colors
 
-Muted, not ER-saturated:
+Muted, not ER-saturated. All pass 4.5:1 on their respective surface backgrounds.
 
 ```
-positive  emerald-600  #059669  (on light) / emerald-400 #34d399 (on dark)
-negative  rose-600     #e11d48  (on light) / rose-400    #fb7185 (on dark)
-warning   amber-600    #d97706  (on light) / amber-400   #fbbf24 (on dark)
-info      sky-600      #0284c7  (on light) / sky-400     #38bdf8 (on dark)
+positive  emerald-600  #059669  (on light, 4.55:1 on warm-bg-page) / emerald-400 #34d399 (on dark)
+negative  red-600      #DC2626  (on light, 5.16:1 on warm-bg-page) / red-400    #f87171 (on dark)
+warning   amber-600    #D97706  (on light, 4.52:1 on warm-bg-page) / amber-400  #fbbf24 (on dark)
+info      teal-600     #0d9488  (on light) / teal-400    #2dd4bf (on dark)  — same family as accent (Provedo «notices» informational, not warning)
 ```
 
-All four pass 4.5:1 on their respective surface backgrounds.
+Note: `info` shares the accent family on purpose — Provedo's «Provedo noticed» chrome is informational, not warning. Distinguishing info from primary accent is done via context (icon variant, text-label) not color shift.
 
 ### 3.4 Portfolio gain/loss
 
-Deliberately distinct from generic positive/negative:
+Deliberately distinct from generic positive/negative — slightly deeper, more financial-traditional.
 
 ```
-gain     emerald-700   #047857   (on light) / emerald-400 (on dark)
-loss     rose-700      #be123c   (on light) / rose-400    (on dark)
-neutral  slate-500     #64748b
+gain     emerald-700  #047857  (on light, 6.34:1 on warm-bg-page) / emerald-400 (on dark)
+loss     red-700      #B91C1C  (on light, 7.05:1 on warm-bg-page) / red-400     (on dark)
+neutral  slate-500    #64748B
 ```
 
-Numbers only. Charts use the same hues at reduced saturation for fills, full saturation for strokes.
+Numbers only. Charts use the same hues at reduced saturation for fills, full saturation for strokes. Sparklines: 1.5px strokes, no fills, no gradients (per §0.1).
 
 ### 3.5 Semantic tokens (mapping)
 
-Tokens live in `packages/design-tokens/tokens/semantic/{light,dark}.json` and are consumed via Style Dictionary. Current values reflect the WCAG audit fix merged in PR #31.
+Tokens live in `packages/design-tokens/tokens/semantic/{light,dark}.json` and are consumed via Style Dictionary. **Migration spec:** `packages/design-tokens/MIGRATION_PROVEDO_v1.4.md`.
 
-Light:
+**Light (Direction A — locked):**
 ```
-background.page       slate-50
-background.elevated   white
-background.muted      slate-100
-text.primary          slate-900
-text.secondary        slate-700
-text.muted            slate-500     ← 4.76:1 on white
-border.subtle         slate-200
-border.default        slate-300     ← visible contours, 1.48:1 on white (intentional)
-border.strong         slate-400
+background.page       warm-bg-page       (#FAFAF7)
+background.elevated   warm-bg-elevated   (#FFFFFF)
+background.muted      warm-bg-muted      (#F5F5F1)
+background.subtle     warm-bg-subtle     (#F1F1ED)
+background.inverse    slate-900          (#0F172A)
+background.overlay    rgba(15,23,42,0.55)
+text.primary          slate-900          (16.7:1 on bg-page  — AAA)
+text.secondary        slate-700          (12.1:1 on bg-page  — AAA)
+text.tertiary         slate-600          (8.86:1 on bg-page  — AAA)
+text.muted            slate-500          (4.83:1 on bg-page  — AA pass)
+text.brand            sky-700            (5.93:1 on bg-page  — AA pass)
+text.onBrand          warm-bg-elevated   (#FFFFFF on sky-500 — 4.51:1)
+border.subtle         slate-200          (decorative — 1.42:1, intentional)
+border.default        slate-300          (visible — 1.94:1, intentional)
+border.strong         slate-400          (interactive — 2.84:1)
+border.focus          sky-500            (focus rings — 3.02:1 from bg-page)
+state.positive        emerald-600
+state.negative        red-600
+state.warning         amber-600
+state.info            sky-600
+portfolio.gain        emerald-700
+portfolio.loss        red-700
+portfolio.neutral     slate-500
+interactive.primary       sky-500        (CTAs, links default)
+interactive.primaryHover  sky-600
+interactive.primaryActive sky-700
 ```
 
-Dark:
+**Dark (Direction A — locked):**
 ```
-background.page       slate-950
-background.elevated   slate-900
-background.muted      slate-800
-text.primary          slate-50
-text.secondary        slate-300
-text.muted            slate-400
-border.subtle         slate-800
-border.default        slate-700
-border.strong         slate-600
+background.page       neutral-950        (#0A0A0A — warmer than slate-950)
+background.elevated   neutral-900        (#171717)
+background.muted      neutral-800        (#262626)
+background.inverse    warm-bg-elevated   (#FFFFFF)
+background.overlay    rgba(0,0,0,0.7)
+text.primary          warm-bg-elevated   (#FAFAFA on near-black — 19.3:1, AAA)
+text.secondary        slate-300          (12.1:1)
+text.muted            slate-400          (6.62:1)
+text.brand            sky-400
+text.onBrand          slate-900          (#0F172A on sky-400 — 7.27:1)
+border.subtle         neutral-800        (1.18:1)
+border.default        neutral-700        (1.97:1)
+border.strong         neutral-600        (3.65:1)
+border.focus          sky-400
+state.positive        emerald-400
+state.negative        red-400
+state.warning         amber-400
+state.info            sky-400
+portfolio.gain        emerald-400
+portfolio.loss        red-400
+portfolio.neutral     slate-400
+interactive.primary       sky-400
+interactive.primaryHover  sky-300
+interactive.primaryActive sky-500
 ```
 
-Rationale for `border.default` compromise (1.48:1, below strict 3:1 for UI components): strict compliance produced a harsh fintech look. We keep 1.48 for decorative containment, use `border.strong` wherever the border carries interactive meaning (buttons, focused inputs). Tracked in `TECH_DEBT.md`.
+Rationale for `border.subtle` (1.42:1) and `border.default` (1.94:1) compromises (below strict 3:1 for UI components): strict compliance produced a harsh fintech look. Decorative containment uses subtle/default; interactive/focused borders use `border.strong` (2.84:1) and `border.focus` (3.02:1) which both meet 3:1. Tracked in `TECH_DEBT.md`.
+
+### 3.6 Accent color calibration — RESOLVED (PO 2026-04-25)
+
+**Decision:** **A2 muted teal `#0D9488`** locked by PO 2026-04-25 per product-designer recommendation. Sky-blue default rejected (cliché). All sky-500 references in v1.4 spec to be read as teal-600 `#0D9488` until token migration completes; sky-400 dark mode references = teal-400 `#2DD4BF`. Frontend-engineer Phase A starts с teal tokens (см. `MIGRATION_PROVEDO_v1.4.md`).
+
+**Calibration options что были рассмотрены:**
+
+| Option | Hex | WCAG on `#FAFAF7` | Register | Risk |
+|---|---|---|---|---|
+| **A1: sky-blue (default)** | `#0EA5E9` | 4.51:1 AA | Linear / Cursor / Anthropic-familiar; «modern AI tool» instantly | Cliché in AI-tool category; everyone uses sky/blue |
+| A2: muted teal | `#0D9488` | 4.62:1 AA | Less cliché; sage-trust signal stronger; «considered observation» | Slightly «health/wellness» drift if not balanced with cool neutrals |
+| A3: sophisticated coral | `#C2410C` | 6.51:1 AAA | Subtle Italian etymology nod (terracotta-warm); rare in fintech | High differentiation but high risk — coral CTAs in financial software unprecedented |
+| A4: sage green | `#65A30D` | 4.53:1 AA | Calm wisdom register; matches «foresight» semantics; modern | Could read as «positive/gain» visually, conflicting with portfolio.gain emerald-700 |
+
+**product-designer recommendation:** **A2 muted teal `#0D9488`**. Reasoning:
+1. Sage register strongest of the four — Provedo's archetype is Sage-primary, accent should reinforce
+2. Avoids sky-blue cliché while staying recognizably AI-tool-modern
+3. Meaningfully differentiated from emerald-700 (gain) and red-700 (loss) — no portfolio-color conflict (unlike A4 sage)
+4. WCAG 4.62:1 — comfortable margin over AA threshold
+5. Italian etymology resonance: muted teal evokes Mediterranean / aged-bronze register; honors *provedere* without going Italianate-cream like Direction B
+6. Implementation cost: identical to A1 (single color swap; no token-shape change)
+
+**RESOLVED 2026-04-25:** PO selected **A2 muted teal `#0D9488`**. Sky-500 default superseded throughout v1.4. Migration spec (`MIGRATION_PROVEDO_v1.4.md`) ships с teal tokens; frontend-engineer Phase A consumes final calibration.
 
 ---
 
 ## 4. Typography
 
+**Locked 2026-04-25 — Direction A pairing.** Single sans-serif family (Inter) for all text + dedicated mono family (JetBrains Mono) for numbers/data/code. Both Google Fonts (free, Rule 1 compliant — `https://fonts.google.com/specimen/Inter` + `https://fonts.google.com/specimen/JetBrains+Mono`).
+
+Why these two: Inter is geometric humanist with full Cyrillic support across all weights — «Прове́до» renders cleanly with no glyph-mismatch. Used on Linear, Stripe, Notion-like products (modern-AI-tool register lineage). JetBrains Mono has tabular-by-default monospace that aligns columns cleanly in dashboards/tables and brings developer-tool register signal that ICP A (Notion/Linear cohort) recognizes immediately.
+
 ### 4.1 Families
 
-- **Sans:** Inter (web + iOS fallback to SF Pro on Apple platforms)
-- **Mono:** Geist Mono (tabular numbers in tables, code, data-dense lists)
+- **Headline / Display:** Inter 600/700, tracking -0.02em (geometric humanist; neutral; infinitely scalable)
+- **Body:** Inter 400/500, tracking 0
+- **Mono (data, numbers, code):** JetBrains Mono 400/500 (tabular-nums by default; tickers, percentages, currency, code blocks)
+- **iOS fallback:** SF Pro on Apple platforms (system font; preserves platform feel) — Inter loaded as web font on iOS only when SF Pro doesn't fit a specific marketing surface
+
+Font loading strategy (per `~/.claude/rules/web/performance.md`):
+- `font-display: swap` on both families
+- Preload only Inter 400 + Inter 600 (most common weights) — defer 500/700 to avoid render-blocking
+- Subset to Latin + Cyrillic where build pipeline supports it
+- Total budget: <80kb gzipped both families combined (well within app-page budget)
 
 ### 4.2 Scale
 
+Responsive type scale via `clamp()`. Mobile-first, scales up gracefully through 1920 viewport. `viewport-min: 320px`, `viewport-max: 1440px` for clamp interpolation.
+
 ```
-text-xs     12 / 16   captions, metadata
-text-sm     14 / 20   secondary UI, table cells
-text-base   16 / 24   body, default
-text-lg     18 / 28   emphasized body, card titles
-text-xl     20 / 28   section headings
-text-2xl    24 / 32   page sub-headings
-text-3xl    30 / 36   page titles, big numbers
-text-4xl    36 / 40   hero numbers (total portfolio value)
-text-5xl    48 / 48   marketing only
+caption      clamp(0.75rem, 0.7rem + 0.15vw, 0.8125rem)    /* 12-13px  — metadata, timestamps */
+body-sm      clamp(0.8125rem, 0.78rem + 0.15vw, 0.875rem)  /* 13-14px  — captions, labels */
+body-md      clamp(0.875rem, 0.84rem + 0.18vw, 0.9375rem)  /* 14-15px  — tables, secondary body */
+body-lg      clamp(1rem, 0.96rem + 0.2vw, 1.0625rem)       /* 16-17px  — primary body, inputs */
+heading-md   clamp(1.0625rem, 1rem + 0.3vw, 1.125rem)      /* 17-18px  — sub-sections */
+heading-lg   clamp(1.125rem, 1rem + 0.5vw, 1.25rem)        /* 18-20px  — card titles */
+display-sm   clamp(1.5rem, 1.3rem + 1vw, 1.75rem)          /* 24-28px  — sub-heroes */
+display-md   clamp(1.75rem, 1.4rem + 1.6vw, 2.25rem)       /* 28-36px  — section heroes */
+display-lg   clamp(2.25rem, 1.8rem + 2.2vw, 3rem)          /* 36-48px  — page titles, KPI values */
+display-xl   clamp(3rem, 2rem + 5vw, 4.5rem)               /* 48-72px  — hero portfolio value */
 ```
 
 ### 4.3 Weights
 
-Regular 400, Medium 500, Semibold 600. No bold (700). Numbers that need visual weight use Semibold + tabular-nums.
+- **Regular 400** — body text, default
+- **Medium 500** — emphasized body, table headers, button labels (default), input labels
+- **Semibold 600** — headings (display-sm through display-xl), CTA button text, important numbers
+- **Bold 700** — display-xl hero only (sparingly, marketing surfaces); not used in product UI chrome
 
-### 4.4 Numbers
+Numbers that need visual weight use Semibold 600 + tabular-nums; full Bold 700 reserved for marketing display.
 
-All currency and quantity numbers use `font-variant-numeric: tabular-nums`. Gain/loss percentages include a leading sign (`+2.3%`, `-1.1%`).
+### 4.4 Line-heights
+
+```
+leading-none    1.0    /* display-xl hero */
+leading-tight   1.1    /* display-lg, display-md */
+leading-snug    1.25   /* display-sm */
+leading-normal  1.5    /* body default — UI text */
+leading-relaxed 1.625  /* longform reading (insight detail body) */
+```
+
+### 4.5 Letter-spacing
+
+```
+tracking-tightest  -0.04em  /* display-xl hero — wordmark + landing */
+tracking-tighter   -0.03em  /* display-lg */
+tracking-tight     -0.02em  /* display-md/sm, all heading levels — Inter looks best slightly tightened */
+tracking-normal    0        /* body */
+tracking-wide      0.025em  /* caption / all-caps labels */
+tracking-wider     0.06em   /* eyebrow labels (rare) */
+```
+
+### 4.6 Numbers
+
+All currency, quantity, percentage, and timestamp numbers use **JetBrains Mono** with `font-variant-numeric: tabular-nums`. Gain/loss percentages include a leading sign (`+2.3%`, `-1.1%`). Currency symbols stay in mono ($, €, £, ¥). Tickers (AAPL, NVDA) in mono — column-alignment in tables critical.
+
+Body numbers (text-flow, not column-aligned) may stay in Inter with `font-variant-numeric: tabular-nums` if mono visual weight is excessive — design review judges per surface. Default: mono.
+
+### 4.7 Bilingual budget
+
+EN + RU character budget retained. Hero examples:
+- EN «Ask your portfolio.» = 19 chars
+- RU «Спроси свой портфель.» = 21 chars
+- Both fit within 64-72px Inter 600 hero on 720px container at all breakpoints down to 375px.
+
+«Прове́до» specifically:
+- 7 Cyrillic chars · 3 syllables · stress mark optional (only in pronunciation guides)
+- Inter Cyrillic glyphs balance with Latin equally — no mixed-rendering visual jolt at any weight
+- JetBrains Mono Cyrillic equally clean for any RU mono-rendered string
 
 ---
 
@@ -245,16 +383,30 @@ Top bar 56. Side nav 240 (collapsible to 56). Content padding 32 desktop, 16 mob
 
 ## 6. Elevation & shadows
 
-Four levels. Subtle — we rely on borders more than shadows in light mode, flipped in dark mode.
+**Direction A — flat-with-borders.** Cards are flat with 1px border, not floating. We rely on borders more than shadows in light mode (Linear/Vercel pattern), flipped in dark mode. Three tiers replace v1.3 four-level system.
 
 ```
-shadow-sm   0 1px 2px rgba(15,23,42,0.04)
-shadow-md   0 2px 6px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)
-shadow-lg   0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04)
-shadow-xl   0 16px 48px rgba(15,23,42,0.12)
+shadow-subtle    0 1px 2px rgba(15,23,42,0.04)
+                 → default cards, list rows, input fields at rest
+                 (almost imperceptible; visual signal is the border, not the shadow)
+
+shadow-medium    0 2px 6px rgba(15,23,42,0.06), 0 1px 3px rgba(15,23,42,0.04)
+                 → dropdowns, popovers, tooltips, hover-elevated cards
+
+shadow-elevated  0 8px 24px rgba(15,23,42,0.08), 0 2px 6px rgba(15,23,42,0.04)
+                 → modals, sheets, command palette, floating chat input on mobile
 ```
 
-Dark mode: reduce opacity by ~40%; compensate with `ring-1 ring-white/5` for edge definition.
+**Removed v1.3 token:** `shadow-ai` (violet glow at 25% alpha) — banned per §0.1 (AI-cliché purple/pink + AI-glow trope). AI surfaces use the same `shadow-subtle` as any other card; AI-active state is signaled by the streaming text indicator + accent border on focus, not a glow.
+
+**Removed v1.3 token:** `shadow-xl` (rare 16px-blur layer) — folded into `shadow-elevated` at lower intensity; deeper levels not needed at Direction A's flat-with-borders register.
+
+**Dark mode:** reduce all shadow opacities by ~40%; compensate with `ring-1 ring-white/5` for edge definition. In dark mode, border tokens carry more visual weight than shadows (warm-bg-elevated swap to neutral-900 makes shadows nearly invisible).
+
+Border-first treatment (light mode):
+- Cards: `border: 1px solid {border.subtle}` + `shadow-subtle`
+- Hovered cards: `border: 1px solid {border.default}` + `shadow-medium`
+- Focused interactive: `border: 1px solid {border.focus}` + 2px sky-500 outer ring (focus-visible)
 
 ---
 
@@ -273,30 +425,84 @@ radius-full  9999 avatars, pills, fab
 
 ## 8. Motion
 
-Principles: **short, confident, directional**. Never bouncy.
+**Direction A principles: short, confident, directional, transform-only.** Never bouncy. Transform + opacity properties only (compositor-friendly per `~/.claude/rules/web/coding-style.md`); never animate width/height/top/left/margin/padding/font-size.
+
+**Duration scale (locked v1.4):**
 
 ```
-duration-fast    120ms   micro-interactions (hover, focus)
-duration-normal  200ms   most transitions
-duration-slow    300ms   page-level, dialogs
-duration-xslow   500ms   rare (onboarding, success confirmations)
-
-easing-default   cubic-bezier(0.2, 0, 0, 1)
-easing-in        cubic-bezier(0.4, 0, 1, 1)
-easing-out       cubic-bezier(0, 0, 0.2, 1)
-easing-inout     cubic-bezier(0.4, 0, 0.2, 1)
+duration-fast      150ms   /* hover states, button press, focus ring fade  — Direction A primary */
+duration-base      200ms   /* most transitions, tooltip enter, dropdown reveal — Direction A primary */
+duration-medium    250ms   /* major UI transitions: modal enter, sheet slide */
+duration-slow      300ms   /* page-level transitions, dialog enter */
+duration-count-up  800ms   /* number tween (KPI hero only) */
+duration-shimmer  1500ms   /* loading skeleton sweep loop */
 ```
 
-Numbers that change animate with `count-up` (tween over 600ms, ease-out). Never animate a delta that the user didn't cause themselves.
+**Easing scale (locked v1.4):**
+
+```
+easing-default   cubic-bezier(0.4, 0, 0.2, 1)    /* in-out cubic — most UI */
+easing-out       cubic-bezier(0, 0, 0.2, 1)      /* enter motions, reveals */
+easing-in        cubic-bezier(0.4, 0, 1, 1)      /* exit motions, dismiss */
+easing-out-expo  cubic-bezier(0.16, 1, 0.3, 1)   /* count-up, hero reveal — exponential settle */
+```
+
+**Removed v1.3 token:** `easing-spring` (cubic-bezier(0.34, 1.56, 0.64, 1) — bouncy/playful). Direction A is Sage-pure register; no spring physics anywhere.
+
+Numbers that change animate with `count-up` (tween over 800ms, easing-out-expo). Never animate a delta that the user didn't cause themselves (no auto-tweening on background data refresh).
+
+### 8.1 Reduced-motion variant (mandatory per WCAG 2.2 AA)
+
+When `@media (prefers-reduced-motion: reduce)`:
+
+- Disable all transitions on transform / opacity (instant state changes)
+- Disable count-up — show final number immediately
+- Disable shimmer loops — replace with static `background.muted` skeleton
+- Disable Coach dot pulse animation (per `COACH_SURFACE_SPEC.md` §1.4) — static dot only
+- Disable BellDropdown first-session pulse (per §14.7) — static bell only
+- Keep functional state changes instant (focus rings still appear, but with no fade-in)
+- Keep streaming text indicators in chat (`aria-live="polite"` text indicator is content, not motion)
+
+Implementation pattern:
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+```
 
 ---
 
 ## 9. Iconography
 
-- Web: **Lucide** (currentColor, stroke-width 1.5, size 16/20/24)
-- iOS: **SF Symbols** (regular weight, scale medium)
+- **Web:** [Lucide](https://lucide.dev) (open-source, ISC licensed; via `lucide-react` package). Default: `currentColor` stroke, `stroke-width="1.5"`, sizes 16/20/24. Direction A-locked default size: **16px** in dense surfaces (table rows, chips), **20px** in nav and bell-dropdown, **24px** in hero CTAs. Lucide is consistent with the modern-AI-tool register (Linear/Cursor/Vercel use compatible icon sets).
+- **iOS:** SF Symbols (regular weight, scale medium). Bridges naturally to Apple platform conventions.
 
-Custom icons only for brand marks or asset class glyphs we genuinely need (stock, ETF, crypto) and Lucide doesn't cover cleanly.
+**Banned per §0.1:** `brain`, `brain-cog`, `brain-circuit`, any sparkle/star/wand glyph used for AI-decoration. These icons are forbidden in persistent UI chrome — no exceptions.
+
+**Lucide icons used regularly in Provedo (allowlist non-exhaustive):**
+
+| Use case | Lucide icon |
+|---|---|
+| Notifications hub | `bell` |
+| Chat / Ask Provedo | `message-circle`, `send` |
+| Settings | `settings`, `sliders-horizontal` |
+| Search | `search` |
+| Filter | `filter` |
+| Sort | `arrow-up-down` |
+| Lock (paywall) | `lock` |
+| Info / explainer | `info`, `help-circle` |
+| Trust marker | `shield-check`, `circle-check` |
+| Account / broker | `landmark`, `wallet` |
+| Trend up/down | `trending-up`, `trending-down` |
+| Coach pattern category | colored dot — NO Lucide icon (per `COACH_SURFACE_SPEC.md` §1) |
+
+Custom icons only for brand marks or asset class glyphs we genuinely need (stock, ETF, crypto) and Lucide doesn't cover cleanly. Custom additions must be reviewed against §0.1 (no brain/sparkle/AI-aesthetic drift).
 
 ---
 
@@ -319,13 +525,14 @@ Button, Input, Select, Combobox, Checkbox, Radio, Switch, Slider, Badge, Chip, T
 
 ### 10.3 AI-specific primitives
 
-- **ChatInputPill** — grounded single-line input with expanding textarea behavior
-- **ToolUseCard** — shows what tool the AI invoked (e.g., "Fetched your AAPL transactions"), collapsible
-- **TrustRow** — "Based on: N transactions across M accounts • Updated X min ago"
-- **SuggestedPrompt** — dismissable chip with example question
-- **ExplainerTooltip** — used in-place to decompose a number ("this 5.2% = $2,100 / $40,384")
-- **InsightCard** — headline + body + source + two CTAs (`View` / `Dismiss`)
-- **BellDropdown** — notifications center; `<li>` with inner `<div role="menuitem" tabIndex="0">` for correct a11y semantics
+- **ChatInputPill** — grounded single-line input with expanding textarea behavior. Border 1px `border.default` at rest, `border.focus` (sky-500) on focus, 2px outer ring. Radius `radius-full`. Send button: ghost variant until input has content, then `interactive.primary` filled.
+- **ToolUseCard** — shows what tool Provedo invoked (e.g., «Fetched your AAPL transactions»), collapsible. `background.muted` bg, `border.subtle` 1px, `radius-md`, mono ticker references.
+- **TrustRow** — «Based on: N transactions across M accounts • Updated X min ago» (EN) / «Источник: N транзакций по M счетам • Обновлено N мин назад» (RU). `text.tertiary` color, `body-sm` size, `tracking-wide`.
+- **SuggestedPrompt** — dismissable chip with example question. Pill-shaped (`radius-full`), `background.muted` bg, hover `background.subtle`. Always preceded by «Try asking:» header.
+- **ExplainerTooltip** — used in-place to decompose a number («this 5.2% = $2,100 / $40,384»). Triggered by `?` icon hover/focus or long-press on mobile. Popover with `shadow-medium`.
+- **InsightCard** — headline (verb-led, «Provedo noticed…»), body (2-4 lines observational), source (which positions/dates), two CTAs (`View` / `Dismiss`). `radius-lg`, `border.subtle` 1px, `shadow-subtle`.
+- **BellDropdown** — notifications center; `<li>` with inner `<div role="menuitem" tabIndex="0">` for correct a11y semantics. See §14.7 full spec.
+- **ChatBubble** — user vs Provedo response variants. **User:** right-aligned, `background.muted` bg (`#F5F5F1`), no border, `radius-lg`. **Provedo:** left-aligned, `background.elevated` bg (white), 1px `border.subtle`, `radius-lg`. v1.3 used violet-50 tint on Provedo response bubbles — REMOVED in v1.4 (no AI-purple tint per §0.1).
 
 ### 10.4 Monetization
 
@@ -335,17 +542,19 @@ Button, Input, Select, Combobox, Checkbox, Radio, Switch, Slider, Badge, Chip, T
 - **FeatureLockRow** — inline lock icon + one-line reason + CTA
 - ~~**LockedPatternCard**~~ — **OBSOLETE in v1.3.** Was a teaser variant of the v1.2 `CoachPatternCard` (dedicated-route model). Replaced by CoachPopover teaser variant in v1.3 (contextual-dot model). See §10.5 and `COACH_SURFACE_SPEC.md` §4.2.
 
-### 10.5 Coach primitives (v1.3 — contextual model)
+### 10.5 Coach primitives (v1.3 — contextual model — retained in v1.4 with token swaps)
 
-v1.3 **supersedes v1.2** Coach primitives. PO 2026-04-23 locked Coach as contextual (not dedicated route); primitives redesigned accordingly.
+v1.3 **supersedes v1.2** Coach primitives. PO 2026-04-23 locked Coach as contextual (not dedicated route); primitives redesigned accordingly. **v1.4 carries v1.3 architecture forward unchanged** but with token swaps for the multi-category color (no longer violet-700).
 
-**New (v1.3 — used):**
+**Used in v1.4:**
 
-- **CoachDot** — 6px (desktop) / 8px (mobile) filled circle, categorical semantic color (amber-600 Concentration, sky-600 Timing / Contrarian, emerald-600 Dividends / Cost-averaging, violet-700 multi-category). Wrapped in a `<button>` for keyboard + a11y. Optional bounded pulse animation (scale 1.0→1.15→1.0, 1200ms, every 2.5s, max 5min active-page-time, `prefers-reduced-motion` → static). Mount point: any of 5 attachment types per `COACH_SURFACE_SPEC.md` §1.
+- **CoachDot** — 6px (desktop) / 8px (mobile) filled circle, categorical semantic color (amber-600 Concentration, sky-600 Timing / Contrarian, emerald-600 Dividends / Cost-averaging, **`interactive.primary` (sky-500 default; teal-600 if PO calibrates per §3.6)** for multi-category on same element). Wrapped in a `<button>` for keyboard + a11y. Optional bounded pulse animation (scale 1.0→1.15→1.0, 1200ms, every 2.5s, max 5min active-page-time, `prefers-reduced-motion` → static). Mount point: any of 5 attachment types per `COACH_SURFACE_SPEC.md` §1.
 - **CoachPopover** — dialog anchored to a CoachDot (desktop, max 480px) or full-width bottom sheet (mobile). Two content variants:
-  - **Full detail (Plus/Pro):** category pill + read date + verb-led headline + observational summary + evidence block (monospaced tabular-nums transaction list) + dismiss/snooze actions.
+  - **Full detail (Plus/Pro):** category pill + read date + verb-led headline + observational summary + evidence block (JetBrains Mono tabular-nums transaction list) + dismiss/snooze actions.
   - **Teaser (Free):** category pill + subject-only headline + skeleton shimmer body + locked evidence + «Upgrade to Plus» CTA.
-- **CategoryPill** — retained; categorical (not evaluative) pill with token-colored outline + text label. Used inside CoachPopover and bell-dropdown rows. Never color-only signal.
+- **CategoryPill** — retained; categorical (not evaluative) pill with token-colored outline + text label. Used inside CoachPopover and bell-dropdown rows. Never color-only signal (always paired with text label per WCAG 2.2 1.4.1).
+
+**v1.4 notes:** v1.3 spec referenced `accent.primary` = violet-700 for multi-category Coach dots. v1.4 maps multi-category to `interactive.primary` (sky-500 default), maintaining the «accent color» semantic role across the rebrand. `COACH_SURFACE_SPEC.md` v2.0 spec is otherwise unchanged.
 
 **Removed (v1.2 primitives obsoleted by v1.3):**
 
@@ -396,14 +605,16 @@ Illustration-free by default. Icon + short line + single CTA. Example: "No posit
 
 ### 11.6 Dashboard architecture — detailed spec
 
-`docs/design/DASHBOARD_ARCHITECTURE.md` owns the full home-screen spec for Memoro:
+`docs/design/DASHBOARD_ARCHITECTURE.md` owns the full home-screen spec for Provedo:
 
-- Top-of-fold hierarchy (hero → insight of the week → charts → positions → activity). Coach has no dedicated dashboard tile; coach dots surface on position rows + widget headers instead (v1.3 contextual model).
-- AI-woven pattern (how «Memoro noticed» badges surface on cards without AI-sparkle chrome; coach dots are a distinct primitive).
+- Top-of-fold hierarchy (hero → insight of the week → charts → positions → activity). Coach has no dedicated dashboard tile; coach dots surface on position rows + widget headers instead (v1.3 contextual model — retained in v1.4).
+- AI-woven pattern (how «Provedo noticed» badges surface on cards without AI-sparkle chrome; coach dots are a distinct primitive).
 - Primary routes + tab structure (Dashboard / Positions / Insights / Chat / Settings — 5 routes, Coach is contextual, not a route).
 - Web side-nav + iOS bottom tab-bar mapping (4 tabs on iOS: Dashboard / Insights / Chat / Settings).
 - Responsive behavior across 320/375/768/1024/1440/1920.
 - Per-ICP daily-use patterns (ICP A / ICP B / mid-career post-mistake).
+
+**v1.4 token migration note:** `DASHBOARD_ARCHITECTURE.md` references `accent.primary` (was violet-700 in v1.3) — these references should be re-read as `interactive.primary` (sky-500 default; subject to §3.6 PO calibration). Spec architecture unchanged.
 
 ASCII layout in §11.1 above is retained as a quick-reference; `DASHBOARD_ARCHITECTURE.md` is the authoritative source for dashboard design.
 
@@ -421,11 +632,14 @@ First-value-moment design handles both warm-start (backfill-triggered) and cold-
 
 ## 12. Accessibility
 
+WCAG 2.2 AA mandatory on every surface; AAA targeted for body text and critical financial numbers where achievable.
+
 ### 12.1 Contrast
 
 - Text: 4.5:1 minimum (WCAG AA for body), 7:1 target for critical financial numbers
-- UI components: 3:1 minimum (WCAG AA), with the documented compromise on `border.default` (§3.5)
+- UI components: 3:1 minimum (WCAG AA), with the documented compromise on `border.subtle` and `border.default` (§3.5) — interactive borders use `border.strong` (2.84:1) and `border.focus` (3.02:1) which both meet 3:1
 - Never convey gain/loss through color alone — always sign + number
+- Never convey Coach category through color alone — always paired with category text label
 
 ### 12.2 Keyboard
 
@@ -433,7 +647,9 @@ First-value-moment design handles both warm-start (backfill-triggered) and cold-
 - Escape closes dialogs, sheets, popovers
 - Enter / Space activate buttons and menu items
 - Arrow keys within menus, tabs, segmented controls (minimal arrow-nav in BellDropdown is tech-debt, Enter/Space suffice for now)
-- Focus ring always visible, 2px violet-700 outside, 2px white inside (ring offset)
+- **Focus ring always visible: 2px `border.focus` (sky-500 default; or PO-calibrated accent per §3.6) with 2px outer offset.** Implementation: `outline: 2px solid {border.focus}; outline-offset: 2px;` on `:focus-visible`. v1.3 used violet-700 — REPLACED in v1.4.
+- `Cmd/Ctrl+K` opens command palette (Linear/Cursor pattern; familiar to ICP A)
+- `Cmd/Ctrl+Shift+B` opens BellDropdown (per §14.7)
 
 ### 12.3 Screen readers
 
@@ -441,10 +657,11 @@ First-value-moment design handles both warm-start (backfill-triggered) and cold-
 - Decorative icons `aria-hidden="true"`
 - Live regions for AI streaming responses (`aria-live="polite"`)
 - Charts have adjacent data-table alternative
+- Brand-name pronunciation hints in settings («Provedo — /proh-VEH-doh/ EN» / «прове́до RU»)
 
 ### 12.4 Motion
 
-Respect `prefers-reduced-motion`. Disable count-up, cross-fades, and decorative transitions. Keep functional state changes instant.
+Respect `prefers-reduced-motion`. Per §8.1: disable count-up, cross-fades, decorative transitions, Coach pulse, BellDropdown first-session pulse. Keep functional state changes instant.
 
 ---
 
@@ -491,19 +708,19 @@ We have five AI surfaces. Each gets its own visual identity within the system.
 Purpose: free-form Q&A about the user's portfolio.
 
 UI:
-- Message bubbles: user right-aligned slate-100, AI left-aligned with subtle violet-50 tint in light mode, slate-800 in dark
-- Streaming: token-by-token, cursor indicator
-- ToolUseCard collapses below the message when the AI used a tool
-- TrustRow appears under every AI response
-- SuggestedPrompt chips appear in empty state
+- Message bubbles: user right-aligned `background.muted` (`#F5F5F1`); Provedo response left-aligned `background.elevated` (`#FFFFFF`) with 1px `border.subtle`. v1.3 used a violet-50 tint on the AI bubble — REMOVED in v1.4 (anti-pattern §0.1, no AI-purple). Dark mode: user bubble `background.tertiary` (neutral-800), Provedo bubble `background.elevated` (neutral-900) with `border.subtle`.
+- Streaming: token-by-token, cursor indicator. `aria-live="polite"` on the response container per §12.3.
+- ToolUseCard collapses below the message when Provedo used a tool.
+- TrustRow appears under every Provedo response.
+- SuggestedPrompt chips appear in empty state.
 
 Free tier: 5 messages/day counter visible in input area. Plus/Pro: hidden unless approaching limit.
 
 ### 14.2 Proactive insights
 
-Purpose: Memoro notices things without being asked.
+Purpose: Provedo notices things without being asked.
 
-**Cadence honesty (LOCKED 2026-04-23):** weekly-default, not daily. Free tier = 1 insight/week (weekly digest). Plus tier = daily (1 per day max). Pro tier = real-time as-found. Earlier «daily» framing for Free tier is rejected — daily pressure breaks the «calm over busy» principle and positions Memoro as push-driven notification stream, which it is not. Landing and in-product copy align on «weekly» for Free tier messaging.
+**Cadence honesty (LOCKED 2026-04-23):** weekly-default, not daily. Free tier = 1 insight/week (weekly digest). Plus tier = daily (1 per day max). Pro tier = real-time as-found. Earlier «daily» framing for Free tier is rejected — daily pressure breaks the «calm over busy» principle and positions Provedo as push-driven notification stream, which it is not. Landing and in-product copy align on «weekly» for Free tier messaging.
 
 UI:
 - InsightCard in a vertical feed on dedicated page (`/insights`)
@@ -511,7 +728,7 @@ UI:
 - Categories: concentration, behavioral (Coach surfaces contextually via dots on related elements — see §14.6 v1.3 contextual model), dividend, performance, observational (NOT rebalance — rebalance is imperative; Lane A lock forbids imperative framing)
 - Each card: headline (one line, verb-led), body (2-4 lines, observational voice), source (which positions/dates), CTAs (View details / Dismiss / Snooze)
 - Dismissed insights never return; snoozed return in 7 days if still valid
-- Headline framing: **«Memoro noticed…»**, **«Flagged this week:…»**, **«Surfaced:…»**. Never «Your brain noticed…». See §0.2.
+- Headline framing: **«Provedo noticed…»**, **«Flagged this week:…»**, **«Surfaced:…»**. Never «Your AI noticed…», never «Your brain noticed…». See §0.2.
 
 ### 14.3 Behavioral coach
 
@@ -545,11 +762,11 @@ UI:
 
 ### 14.6 Coach — contextual behavioral pattern reads
 
-Purpose: Memoro surfaces patterns in user's trade history — observationally, never as advice.
+Purpose: Provedo surfaces patterns in user's trade history — observationally, never as advice.
 
 **Architecture (LOCKED 2026-04-23 by PO, supersedes earlier dedicated-route and filter-chip proposals):** Coach is a **contextual layer**, not a primary route. Coach is surfaced via:
 
-1. **Dot indicator primitive** on attachment-point elements — position rows, dashboard widget headers, chat thread previews, insight cards, transaction rows. A small (6px desktop / 8px mobile) categorical-colored filled circle signals «Memoro noticed a pattern concerning this element».
+1. **Dot indicator primitive** on attachment-point elements — position rows, dashboard widget headers, chat thread previews, insight cards, transaction rows. A small (6px desktop / 8px mobile) categorical-colored filled circle signals «Provedo noticed a pattern concerning this element».
 2. **Top-bar bell-dropdown** as the aggregation hub — see §14.7.
 
 Coach is NOT a primary route. Coach is NOT a nav item. Coach is woven into existing surfaces.
@@ -557,7 +774,7 @@ Coach is NOT a primary route. Coach is NOT a nav item. Coach is woven into exist
 **Detailed spec:** `docs/design/COACH_SURFACE_SPEC.md` v2.0 — owns attachment-point taxonomy, dot primitive, pulse motion spec, hover/focus/active states, popover (Plus/Pro full detail + Free teaser), bell-dropdown hub, empty states (Path A warm-start, Path B cold-start, post-gate quiet), accessibility. Supersedes v1.0 `/coach` route spec.
 
 **Integration contract with this design brief:**
-- Coach dot primitive uses existing semantic color tokens — `semantic.warning` (Concentration), `semantic.info` (Timing / Contrarian-signal), `semantic.positive` (Dividends / Cost-averaging), `accent.primary` (multi-category on same element). No new tokens required.
+- Coach dot primitive uses existing semantic color tokens — `state.warning` (Concentration), `state.info` (Timing / Contrarian-signal), `state.positive` (Dividends / Cost-averaging), `interactive.primary` (multi-category on same element — was `accent.primary`/violet-700 in v1.3; v1.4 maps to sky-500 default per §3.6 PO calibration). No new tokens required.
 - Coach popover content (both Plus/Pro detail variant and Free teaser variant) reuses existing primitives: Skeleton (locked state shimmer), Dialog (popover), Button (CTA), Lucide `lock` icon, existing dismiss/snooze mutation buttons.
 - Coach patterns flow through the same mutation contract as insights (dismiss + snooze via existing insights backend, per Slice 6b pattern) — no new mutation primitives needed.
 - Coach has its own category taxonomy (Concentration / Timing / Dividends / Cost-averaging / Contrarian-signal). Dot colors + popover category pills are categorical, NOT evaluative (no red-for-bad, green-for-good).
@@ -581,19 +798,19 @@ Coach is NOT a primary route. Coach is NOT a nav item. Coach is woven into exist
 
 **Content-lead coordination:** every pattern category needs a narrative template (popover summary body). Product-designer owns the dot + popover shape; content-lead owns copy variants (headline templates, observational closer, teaser headline framing, dashboard conversion-nudge banner). See `COACH_SURFACE_SPEC.md` §13 for full list of copy hooks.
 
-**Legal-advisor coordination:** in-context AI disclaimer format is still open per positioning lock 2026-04-23 Q6. Product-designer's candidate recommendation in v1.3 remains **inline observational closer on every popover summary** (not tooltip) plus a one-time first-interaction modal on first dot-click («Memoro shows patterns based on your trade history, not advice. This is educational, not investment guidance.» — Acknowledge). Legal-advisor to confirm whether inline closer satisfies EU/UK requirement. Tracked in `COACH_SURFACE_SPEC.md` §17 Q1.
+**Legal-advisor coordination:** in-context AI disclaimer format is still open per positioning lock 2026-04-23 Q6. Product-designer's candidate recommendation in v1.3 (carried into v1.4) remains **inline observational closer on every popover summary** (not tooltip) plus a one-time first-interaction modal on first dot-click («Provedo shows patterns based on your trade history, not advice. This is educational, not investment guidance.» — Acknowledge). Legal-advisor to confirm whether inline closer satisfies EU/UK requirement. Tracked in `COACH_SURFACE_SPEC.md` §17 Q1.
 
-### 14.7 BellDropdown pattern — hub for «Memoro noticed» notifications
+### 14.7 BellDropdown pattern — hub for «Provedo noticed» notifications
 
-Purpose: single always-on-screen aggregation surface for every «Memoro noticed» notification — including Coach patterns, weekly digest, price alerts, billing, security events.
+Purpose: single always-on-screen aggregation surface for every «Provedo noticed» notification — including Coach patterns, weekly digest, price alerts, billing, security events.
 
 Extension of the `BellDropdown` primitive from §10.3 and behavior notes in §16.2.
 
 **Visual behavior:**
 
 - Lucide `bell` icon in top-bar right group (left of PlanBadge), 20px, `text.primary` at rest.
-- Unread count badge: small circle overlay top-right of bell, `semantic.info` fill (sky-600), `text.onAccent` text, `text-xs` Semibold. Shows 1-9 or `9+`.
-- **Coach-unread differentiator:** when at least one unread coach pattern is present in the dropdown, the bell icon gains a subtle 1px `accent.primary` (violet-700) ring at the icon's outer radius. Differentiates coach-present from generic-product-notifications-only. Disappears when all coach patterns read.
+- Unread count badge: small circle overlay top-right of bell, `state.info` fill (sky-600), `text.onBrand` text, `caption` size Semibold. Shows 1-9 or `9+`.
+- **Coach-unread differentiator:** when at least one unread coach pattern is present in the dropdown, the bell icon gains a subtle 1px `interactive.primary` (sky-500 default; or PO-calibrated accent per §3.6) ring at the icon's outer radius. v1.3 used violet-700 — replaced in v1.4. Differentiates coach-present from generic-product-notifications-only. Disappears when all coach patterns read.
 - **First-coach-of-session pulse:** the first time a new coach pattern lands in a session, the bell pulses ONCE (scale 1.0→1.15→1.0 over 1200ms). Subsequent coach patterns in the same session: badge count increments silently. User-agency principle — one attention-grab per session. Reduced motion: no pulse.
 
 **Dropdown structure (see `COACH_SURFACE_SPEC.md` §7.2 / §7.3 for full layouts):**
@@ -674,13 +891,13 @@ Top-right `PlanBadge`. Click → dropdown:
 
 ### 16.2 In-app
 
-`BellDropdown` in top bar. Unread count as `slate-700` dot, violet-700 when high-priority. Grouping updated in v1.3 — see §14.7 for full spec:
+`BellDropdown` in top bar. Unread count as `state.info` dot (sky-600), `interactive.primary` (sky-500 default; PO-calibrated accent per §3.6) when high-priority. Grouping updated in v1.3 — see §14.7 for full spec:
 
 - Coach · This week
 - Coach · Earlier
 - Other notifications
 
-When a Coach pattern is unread, bell icon gains a 1px `accent.primary` outer ring. First-coach-of-session bell pulse (1200ms scale, disabled on `prefers-reduced-motion`). Keyboard shortcut `Cmd/Ctrl+Shift+B`.
+When a Coach pattern is unread, bell icon gains a 1px `interactive.primary` outer ring. First-coach-of-session bell pulse (1200ms scale, disabled on `prefers-reduced-motion`). Keyboard shortcut `Cmd/Ctrl+Shift+B`.
 
 ### 16.3 Email design
 
@@ -751,15 +968,21 @@ How the design system supports business KPIs. Useful as a sanity check when addi
 
 ## Appendix A — Reference competitors
 
-Positive references (what we're learning from):
-- **Linear** — information density + calm
-- **Raycast** — keyboard-first polish
-- **Lunchmoney** — financial UX done well
-- **Arc** — unexpected but unobtrusive moments
+Positive references — Direction A (modern AI-tool minimalist) cluster:
+- **Claude.ai / Anthropic** — warm-neutral bg, Sage-pure restraint, AI-as-interface (the visual benchmark for v1.4)
+- **Cursor** — AI-tool register without sparkle chrome; chat + command palette pattern
+- **Linear** — information density + calm; sky-blue accent precedent
+- **Vercel / Stripe Docs** — typographic restraint, mono for code/data, single-accent system
+- **Raycast** — keyboard-first polish, command palette
+- **Notion (product UI side)** — accessible information density
+- **Lunchmoney** — financial UX done well, restrained palette
 
 Negative references (what we avoid):
-- **Robinhood** — gamified, confetti
+- **Robinhood** — gamified, confetti, dashboard-jazz
 - **eToro** — cluttered, social-maxxed
+- **PortfolioPilot dashboard** — advisor-coded density, imperative UX
+- **Mint / Empower** — corporate-stiff legacy fintech
+- 2025-era AI-consumer apps with sparkle-heavy interiors and purple/pink AI gradients
 - Most retail broker apps — cluttered, ad-driven
 
 ---

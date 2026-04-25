@@ -116,6 +116,87 @@ SaaS product for personal portfolio tracking + AI insights. Pre-alpha. Two value
 - `everything-claude-code:documentation-lookup` — current library docs via Context7
 - `everything-claude-code:ui-demo` — record polished demo videos
 
+## ui-ux-pro-max (added 2026-04-24) — searchable implementation-quality rules
+
+Plugin with Next.js/React/shadcn stack-specific best practices + 99 UX guidelines + pre-delivery checklist. Invoke via Bash CLI (Python script).
+
+### Stack-specific search (use before implementing new pattern)
+
+```bash
+# Next.js performance / bundling / suspense
+python3 ~/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/src/ui-ux-pro-max/scripts/search.py \
+  "<query>" --stack nextjs
+
+# React performance (rerender, memo, list virtualization)
+... --stack react
+
+# shadcn/ui component patterns
+... --stack shadcn
+```
+
+### Domain search during implementation
+
+```bash
+# Accessibility rules for specific concern
+... search.py "focus-states keyboard-nav aria-labels" --domain ux
+
+# Animation timing and perf constraints
+... search.py "duration-timing transform-performance reduced-motion" --domain ux
+
+# Form UX
+... search.py "input-labels error-placement inline-validation" --domain ux
+```
+
+### Pre-delivery checklist (run BEFORE requesting code review)
+
+From ui-ux-pro-max quick-reference §«Pre-Delivery Checklist». Apply to each new surface/component:
+
+**Visual quality:**
+- [ ] No emojis as icons — SVG from Lucide/Heroicons
+- [ ] Icons from ONE consistent family (stroke width, corner radius)
+- [ ] Pressed states do NOT shift layout bounds
+- [ ] Semantic design tokens used (no ad-hoc hex in components)
+
+**Interaction:**
+- [ ] All tappable elements have pressed feedback within 80-150ms
+- [ ] Touch targets ≥44×44pt (use hitSlop if smaller visual)
+- [ ] Micro-interaction timing 150-300ms, native-feeling easing
+- [ ] Disabled states visually clear + non-interactive
+- [ ] Screen-reader focus order matches visual order
+- [ ] No gesture conflicts (tap/drag/back-swipe)
+
+**Light/Dark mode:**
+- [ ] Primary text contrast ≥4.5:1 in BOTH modes
+- [ ] Secondary text contrast ≥3:1 in BOTH modes
+- [ ] Dividers/borders visible in BOTH modes
+- [ ] Interaction states (hover/focus/active) distinguishable in BOTH modes
+- [ ] Both themes tested (not inferred from single theme)
+
+**Layout:**
+- [ ] Safe areas respected (no content under notch, status bar, gesture bar)
+- [ ] Scroll content not hidden behind fixed bars
+- [ ] Tested on 320/375/768/1024/1440/1920
+- [ ] 4/8px spacing rhythm maintained
+- [ ] Long-form text readable on large devices (no edge-to-edge)
+
+**Accessibility:**
+- [ ] All meaningful images/icons have a11y labels
+- [ ] Form fields have labels, hints, clear error messages
+- [ ] Color is NOT the only indicator
+- [ ] `prefers-reduced-motion` respected
+- [ ] Dynamic text size supported without layout breakage
+
+### When to use ui-ux-pro-max vs ECC skills
+
+| Task | Tool |
+|---|---|
+| Next.js performance best practice check | **ui-ux-pro-max** `--stack nextjs` |
+| shadcn/ui component convention lookup | **ui-ux-pro-max** `--stack shadcn` |
+| Accessibility rule lookup (specific) | **ui-ux-pro-max** `--domain ux` |
+| Broad a11y audit | ECC `accessibility` |
+| Component design quality | ECC `frontend-design` + ui-ux-pro-max pre-delivery checklist |
+| Turbopack-specific pattern | ECC `nextjs-turbopack` |
+
 Slash commands:
 - `/everything-claude-code:code-review`
 - `/everything-claude-code:tdd`
