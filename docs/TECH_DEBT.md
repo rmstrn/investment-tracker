@@ -14,6 +14,16 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-099 — complexity refactor for PnlSparklineAnimated + DividendCalendarAnimated
+
+**Added:** 2026-04-25 (Slice-LP3 Provedo landing v3).
+**Priority:** P3.
+**Source:** `PnlSparklineAnimated.tsx` (complexity 29) and `DividendCalendarAnimated.tsx` (complexity 30) exceed Biome max (15). Both are animated SVG components with inline conditional rendering, animation phase logic and prefers-reduced-motion branches that inflate cognitive complexity.
+**Root cause:** animated SVG components necessarily carry multiple conditional render paths (idle/drawing/dots/label/done phases + prefersReduced branch). Extracting sub-renders would split logic artificially.
+**Desired state:** extract `DividendGridCells` and `PnlAnimatedLine` sub-components to reduce complexity below 15. Should be a pure refactor with no visual/behavior change.
+**Trigger:** next chart-related slice or cleanup sprint.
+**Owner:** CC (web).
+
 ### TD-098 — broker logos visual treatment in Aggregation section
 
 **Added:** 2026-04-26 (Slice-LP2 Provedo landing v2).
