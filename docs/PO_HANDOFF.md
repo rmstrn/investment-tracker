@@ -2,7 +2,103 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-24 — end-of-session snapshot after full pre-alpha product spec landed.
+**Last updated:** 2026-04-26 — end-of-session snapshot after Provedo rebrand + landing v1→v3 evolution + finance/legal landing reviews.
+
+---
+
+## Session 2026-04-25/26 — What happened (CURRENT — read this first)
+
+**MASSIVE 2-day session.** Memoro lock reopened, 32-round naming workshop with brand-voice-curator + Rule 3 6-specialist validation → Provedo locked. Domains owned: provedo.ai + provedo.app ($170). Brand foundation v1.0 + Design Brief v1.4 (Direction A — Modern AI-Tool Minimalist, teal accent #0D9488) + content suite EN-first + creative-team subteam (.agents/creative-team/) + landing v1→v2→v3 build → Vercel preview → finance + legal reviews.
+
+### Key locked decisions 2026-04-25/26
+
+- **Product name: Provedo** (LOCKED 2026-04-25). Italian *provedere* «I provide for / I foresee» + bilingual RU «прове́до» = «проведу» (I will lead through). 32 rounds + 6-specialist Rule 3 validation evidence.
+- **Tagline:** «Notice what you'd miss»
+- **Hero:** «Provedo will lead you through your portfolio» / sub «Notice what you'd miss across all your brokers» / CTA «Ask Provedo»
+- **Mid-page editorial line:** «You hold the assets. Provedo holds the context.»
+- **Visual direction:** A — Modern AI-Tool Minimalist (warm-neutral `#FAFAF7` + slate-900 + teal-600 `#0D9488`). Inter + JetBrains Mono.
+- **Domains owned:** provedo.ai (primary, $140 2yr) + provedo.app ($30/yr). $170 total per Rule 1 PO authorization.
+- **Memoro.co $250 sunk cost** — decision deferred (release/resell/redirect).
+- **Total spent to date:** **$420** ($250 Memoro sunk + $170 Provedo).
+
+### Engineering deliverables 2026-04-25/26
+
+- **Slice-LP1 (v1)** — first-pass landing built (`apps/web/src/app/(marketing)/`)
+- **Slice-LP2 (v2)** — 10-section structure + stacked hero + SVG charts + dark editorial
+- **Slice-LP3 (v3)** — animated charts + negation visual rebuild + hero typing + count-up + scroll fade-in + copy patches
+- **PR #65** open: https://github.com/rmstrn/investment-tracker/pull/65 на ветке `feat/lp-provedo-first-pass`
+- **Vercel preview:** auto-deploys на push (Vercel Git integration → staging.investment-tracker.app target)
+- **Tests:** 175/175 passing, 0 TS errors, 0 lint errors, build green
+- **Bundle:** 139kB First Load JS на `/` (под бюджетом 220kB)
+
+### Pending для next session — CRITICAL
+
+**v3.1 — apply 7 patches от finance + legal reviews 2026-04-26 (НЕ applied):**
+
+1. **CRITICAL Tab 3 framing rewrite** (legal — implicit recommendation risk):
+   «AAPL recovered above your sell price within 8 weeks» → «AAPL's price returned above your sell level within 8 weeks each time. Common pattern across retail investors. This is a retrospective observation about past trades; not a recommendation about future trading decisions, and past patterns do not predict future results.»
+
+2. **CRITICAL Tab 4 sourced benchmark** (finance — UNSOURCED flag from BENCHMARKS_SOURCED.md row 8):
+   «US retail median tech allocation 34%» → «about 2x the sector's weight in S&P 500 (~28%)»
+
+3. **CRITICAL Tab 3 simultaneous animation** (legal):
+   Sell points + recovery points показываются ОДНОВРЕМЕННО, не sequentially (избежать «if you hadn't sold» narrative).
+
+4. **HIGH FAQ Q4 pricing + register** (finance):
+   «$X/month» → **«$9/month»** (per PRICING_TIER_VALIDATION.md). «daily insights» → «insights when they matter».
+
+5. **HIGH Footer disclaimer tightening** (legal):
+   39 → 75 words. Add «not broker-dealer» + «no personalized recommendations» + Investment Advisers Act / MiFID II / FSMA 2000 explicit citations + «consult licensed advisor» close.
+
+6. **MEDIUM Proof bar S2 cell #3 swap** (finance — better than current «100% Lane A»):
+   «100% / Lane A — information not advice» → «**5 minutes a day** / to see everything that moved» (decision-fatigue savings — actual JTBD).
+
+7. **MEDIUM Animation Compliance Guardrails** (legal — codify 5 rules в design spec): red/green only for gain/loss · sell+recovery simultaneously · equal motion weight · auto-replay disabled · reduced-motion respected.
+
+**Other pending:**
+- PO Vercel preview review of v3 build (apply v3.1 patches OR proceed with merge)
+- PR #65 merge → main → staging.investment-tracker.app deploy
+- Manual TM checks (USPTO TESS / DPMA остальные 4 hits / Provedo Security NL KvK 88563421 / PROVIDA phonetic) — PO ~30-45 min, free
+- Attorney opinion $900-6K across 3 jurisdictions (US SEC + EU MiFID II + UK FCA) — Rule 1 PO greenlight pre-launch
+- Memoro.co $250 sunk cost decision (release / resell / 90-day redirect)
+- Logo wordmark SVG product-designer dispatch (TD-091)
+- Full v1.4 token migration через apps/web (TD-092 — separate slice)
+
+### Reference docs (current state)
+
+- `docs/product/03_NAMING.md` — LOCKED Provedo header
+- `docs/product/04_BRAND.md` v1.0 — brand foundation (5 tagline candidates, #1 locked)
+- `docs/product/BRAND_VOICE/{VOICE_PROFILE,REFERENCES_LIVING}.md` — voice fingerprint + 5-item EN guardrails
+- `docs/04_DESIGN_BRIEF.md` v1.4 — Direction A locked palette/typography
+- `docs/content/landing-provedo-v2.md` — final EN-first copy (basis for v3 patches)
+- `docs/design/2026-04-25-provedo-visual-direction-options.md` + `2026-04-26-provedo-landing-v2-visual-spec.md`
+- `docs/reviews/2026-04-25-*-provedo-*.md` — 6 specialist Rule 3 validation reports (lock evidence)
+- `docs/reviews/2026-04-26-{strong-competitor-landing-audit,finance-advisor-landing-review,legal-advisor-landing-review}.md` — landing review trail
+- `docs/kickoffs/2026-04-25-provedo-landing.md` — tech-lead Slice-LP1 kickoff
+- `docs/RUNBOOK_provedo_landing_staging.md` — Vercel staging deploy procedure
+- `packages/design-tokens/MIGRATION_PROVEDO_v1.4.md` — token migration spec
+- `.agents/creative-team/` — creative team subteam (creative-director + 7 specialists)
+- `EXPENSES.md` — $420 total
+
+### TD entries филed 2026-04-25/26
+
+- TD-091 P3 — Provedo SVG wordmark (when product-designer delivers)
+- TD-092 P3 — Full v1.4 token migration через apps/web
+- TD-093 P2 — Restore Clerk auth() для production migration
+- TD-094 P3 — X-Robots-Tag HTTP header via Vercel config
+- TD-095 P3 — broker count «100s» → «1000+» swap after tech-lead verifies
+- TD-096 P3 — Plus tier price (LOCKED $9/month per finance — apply на v3.1)
+- TD-097 P2 — pre-alpha testimonials when alpha N≥3
+- TD-098 P3 — broker logos SVG with brand permission
+- TD-099 — animated chart components complexity refactor (warnings, не blocking)
+
+### Next-session entry point
+
+Открыть PR #65 → review v3 Vercel preview → принять решение про v3.1 (apply 7 patches?) → merge to main → staging.investment-tracker.app live → next slice (logo SVG OR full token migration OR alpha cohort onboarding).
+
+---
+
+## Session 2026-04-23/24 — What happened (HISTORICAL — superseded by 2026-04-25/26)
 
 ## Session 2026-04-23/24 — What happened
 
