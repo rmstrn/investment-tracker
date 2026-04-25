@@ -1,47 +1,59 @@
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+// Smoke tests — Provedo first-pass landing (Slice-LP1)
+// Covers: hero render, DemoTabs tab switching, metadata robots noindex.
 
-const auth = vi.hoisted(() => vi.fn());
-const redirect = vi.hoisted(() =>
-  vi.fn((path: string) => {
-    throw new Error(`NEXT_REDIRECT:${path}`);
-  }),
-);
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it } from 'vitest';
 
-vi.mock('@clerk/nextjs/server', () => ({ auth }));
-vi.mock('next/navigation', () => ({ redirect }));
+import { ProvedoDemoTabs } from './_components/ProvedoDemoTabs';
+import MarketingHomePage, { metadata } from './page';
 
-import LandingPage from './page';
-
-describe('LandingPage', () => {
-  beforeEach(() => {
-    auth.mockReset();
-    redirect.mockClear();
-  });
-
-  it('redirects authenticated users to /dashboard', async () => {
-    auth.mockResolvedValue({ userId: 'user_abc' });
-    await expect(LandingPage()).rejects.toThrow('NEXT_REDIRECT:/dashboard');
-    expect(redirect).toHaveBeenCalledWith('/dashboard');
-  });
-
-  it('renders hero + CTAs for anonymous users', async () => {
-    auth.mockResolvedValue({ userId: null });
-    const element = await LandingPage();
-    render(element as React.ReactElement);
-
+describe('MarketingHomePage', () => {
+  it('renders hero h1 with locked Provedo headline', () => {
+    render(<MarketingHomePage />);
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: /what you actually own\. why it moved\. what to do next\./i,
+        name: /provedo will lead you through your portfolio/i,
       }),
     ).toBeInTheDocument();
+  });
 
-    expect(screen.getByRole('link', { name: /get started — free/i })).toHaveAttribute(
-      'href',
-      '/sign-up',
-    );
-    expect(screen.getByRole('link', { name: /see pricing/i })).toHaveAttribute('href', '/pricing');
-    expect(redirect).not.toHaveBeenCalled();
+  it('renders primary CTA linking to #demo anchor', () => {
+    render(<MarketingHomePage />);
+    const askCta = screen.getByRole('link', { name: /ask provedo/i });
+    expect(askCta).toHaveAttribute('href', '#demo');
+  });
+
+  it('sets robots noindex for staging deploy', () => {
+    expect(metadata.robots).toEqual({ index: false, follow: false });
+  });
+});
+
+describe('ProvedoDemoTabs', () => {
+  it('renders all four tab triggers', () => {
+    render(<ProvedoDemoTabs />);
+    expect(screen.getByRole('tab', { name: /why\?/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /dividends/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /patterns/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /aggregate/i })).toBeInTheDocument();
+  });
+
+  it('shows Why? tab content by default', () => {
+    render(<ProvedoDemoTabs />);
+    expect(screen.getByText(/why is my portfolio down this month/i)).toBeInTheDocument();
+  });
+
+  it('switches to Dividends tab content on click', () => {
+    render(<ProvedoDemoTabs />);
+    const dividendsTab = screen.getByRole('tab', { name: /dividends/i });
+    fireEvent.click(dividendsTab);
+    expect(screen.getByText(/when are dividends coming this quarter/i)).toBeInTheDocument();
+  });
+
+  it('switches to Patterns tab and shows "no judgment, no advice" disclaim', () => {
+    render(<ProvedoDemoTabs />);
+    const patternsTab = screen.getByRole('tab', { name: /patterns/i });
+    fireEvent.click(patternsTab);
+    expect(screen.getByText(/no judgment, no advice/i)).toBeInTheDocument();
   });
 });
