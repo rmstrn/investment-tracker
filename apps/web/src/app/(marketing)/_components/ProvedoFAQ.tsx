@@ -1,6 +1,9 @@
+'use client';
+
 // ProvedoFAQ — §S10 FAQ accordion (Slice-LP2)
 // Content: verbatim from landing-provedo-v2.md §S10 — 6 Q&A
 // Accessibility: details/summary native HTML (keyboard navigable, no JS required)
+// 'use client' directive required for inline onFocus/onBlur event handlers (Next.js 15 RSC boundary)
 // Lane A: Q1 explicit disclaim register, all answers audited per 5-item guardrails
 // TD-096: FAQ Q4 Plus price «$X/month» placeholder — update when finance-advisor confirms
 
