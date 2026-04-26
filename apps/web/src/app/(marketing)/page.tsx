@@ -1,11 +1,11 @@
-// Provedo landing v2 — Slice-LP2
-// 10-section structure per visual spec + content v2.
+// Provedo landing — Slice-LP5-A picture-first hero + S4 teasers + S2 bento.
+// 10-section structure preserved minus S7 testimonials (PO directive 2026-04-27).
 // TD-091: restore Clerk auth redirect for provedo.ai migration (production cutover).
 // Copy verbatim from docs/content/landing-provedo-v2.md across all sections.
 
 import type { Metadata } from 'next';
 import { ProvedoAggregationSection } from './_components/ProvedoAggregationSection';
-import { ProvedoDemoTabsV2 } from './_components/ProvedoDemoTabsV2';
+import { ProvedoDemoTeasersBento } from './_components/ProvedoDemoTeasersBento';
 import { ProvedoEditorialNarrative } from './_components/ProvedoEditorialNarrative';
 import { ProvedoFAQ } from './_components/ProvedoFAQ';
 import { ProvedoHeroV2 } from './_components/ProvedoHeroV2';
@@ -13,7 +13,6 @@ import { ProvedoInsightsBullets } from './_components/ProvedoInsightsBullets';
 import { ProvedoNegationSection } from './_components/ProvedoNegationSection';
 import { ProvedoNumericProofBar } from './_components/ProvedoNumericProofBar';
 import { ProvedoRepeatCTAV2 } from './_components/ProvedoRepeatCTAV2';
-import { ProvedoTestimonialCards } from './_components/ProvedoTestimonialCards';
 
 // SEO meta + OG — verbatim from content v2 §S12.
 // og:description updated: drops trial mention (matches v2 dual-CTA collapse).
@@ -47,14 +46,14 @@ export default function MarketingHomePage() {
   // (WCAG 1.3.1 Info and Relationships A + 4.1.2 Name, Role, Value A).
   return (
     <>
-      {/* S1 — Hero (stacked 3-mockup, dual CTA) */}
+      {/* S1 — Picture-first hero (Slice-LP5-A §K.1)
+          Atmosphere layer (radial gradients + bespoke synthesis-glyph SVG)
+          + ChatAppShell-wrapped chat surface, no inline chart in bubble. */}
       <ProvedoHeroV2 />
 
-      {/* S2 — Numeric proof bar
-          Slice-LP3.7-A: «100s» → «Hundreds» so Cell I copy aligns with §S8
-          header «Hundreds of brokers and exchanges, in one place». Both
-          surfaces ship the same register until TD-095 lands the verified
-          «1000+» upgrade.
+      {/* S2 — Numeric proof bar (Slice-LP5-A §C.S2 bento)
+          4-cell bento grid; cell #4 «Sources / for every answer» is the
+          teal-tinted hero cell. Dividers dropped. Copy verbatim.
           TD-095 (P3): swap coverage="Hundreds" → coverage="1000+" once
           tech-lead verifies SnapTrade + Plaid + CCXT broker coverage count */}
       <ProvedoNumericProofBar coverage="Hundreds" />
@@ -62,8 +61,14 @@ export default function MarketingHomePage() {
       {/* S3 — Problem-negation positioning («This is what Provedo is not.») */}
       <ProvedoNegationSection />
 
-      {/* S4 — Demo tabs with real inline SVG charts */}
-      <ProvedoDemoTabsV2 />
+      {/* S4 — Demo teasers bento (Slice-LP5-A §K.2)
+          Replaces ProvedoDemoTabsV2's 4-tab ProductTabBar with two side-by-
+          side bento teaser cards (Why? + Aggregate). Both reuse the same
+          ChatAppShell chrome from §S1. ProvedoDemoTabsV2 + chart components
+          (DividendCalendarAnimated, TradeTimelineAnimated, AllocationPieBar
+          Animated) stay in the codebase dormant for possible reuse on a
+          future expanded-demo route — see PD §K.3 for disposition. */}
+      <ProvedoDemoTeasersBento />
 
       {/* S5 — Insights proof bullets (white elevated bg) */}
       <ProvedoInsightsBullets />
@@ -71,8 +76,11 @@ export default function MarketingHomePage() {
       {/* S6 — Editorial mid-page narrative (dark slate-900 full-bleed) */}
       <ProvedoEditorialNarrative />
 
-      {/* S7 — Pre-alpha testimonials («Coming Q2 2026» builder quotes) */}
-      <ProvedoTestimonialCards />
+      {/* S7 — Pre-alpha testimonials — UNMOUNTED (Slice-LP5-A PO directive)
+          Component file ProvedoTestimonialCards.tsx stays in codebase but is
+          no longer rendered on the landing. Section pre-loads social-proof
+          expectations the product cannot back; PD §S7 recommendation HIDE
+          accepted by PO 2026-04-27. */}
 
       {/* S8 — Aggregation marquee (broker logos)
           Using fallback copy «Hundreds of brokers» — same TD-095 trigger */}

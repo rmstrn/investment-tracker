@@ -1,21 +1,39 @@
 'use client';
 
-// ChatMockup — extracted from ProvedoHeroV2 (Slice-LP3.6 §9.1 step 1).
+// ChatMockup — picture-first hero chat surface (Slice-LP5-A §K.1.a)
 //
-// Behavior is preserved verbatim from the shipped slice-LP3.4 chat surface:
-//   - typing animation timing knobs (jittered base + sentence pauses)
-//   - replay-on-intersection via useInView (triggerOnce:false)
-//   - reduced-motion fallback (full text rendered statically)
-//   - Sources primitive (Slice-LP3.5 extraction kept intact)
+// Slice-LP5-A picture-first correction:
+//   - DROP the inline P&L sparkline from the response bubble (PD §K.1.a). The
+//     hero answer stays text-led with mono-token pills only. The sparkline
+//     remains shipped via §S4 Teaser 1 (one «mention charts exist» beat) per
+//     PD §K.2.
+//   - WRAP the chat surface in the new <ChatAppShell> chrome (header bar with
+//     avatar + status pill, three-layer drop shadow + mandatory 120px outer
+//     teal-glow halo, layout-shift min-height lock).
+//   - ADD a TypingDots indicator that bridges the user-pause → response
+//     transition so the empty area never «freezes» between bubbles.
+//   - PROMOTE inline mono tokens to JBM-mono pill styling (slate-100 bg,
+//     slate-700 text, 11px, rounded-md, px-1.5 py-0.5) per PD §K.1.a so the
+//     answer reads as «product data» without competing with a chart.
 //
-// Slice-LP3.6 adds a single new prop — `onPhaseChange` — so the parent can
-// learn when typing reaches the `done` phase. The parent uses that signal to
-// fade in the CitationChip below the receipt (per PD spec §4.3 — entrance
-// fires after L1 typing completes, replays on scroll-back).
+// What stays identical (regression contract):
+//   - Typing speed knobs (TYPING_BASE_MS_PER_CHAR, jitter, sentence pauses).
+//   - Replay-on-intersection via useInView (triggerOnce: false).
+//   - Reduced-motion fallback (full text rendered statically).
+//   - Sources primitive (Slice-LP3.5 extraction kept intact).
+//   - HERO_USER_MESSAGE + HERO_RESPONSE_SEGMENTS + HERO_SOURCES_ITEMS exports
+//     (re-exported from ProvedoHeroV2 so existing content-invariant tests +
+//     downstream consumers keep their shipped import paths).
+//
+// `onPhaseChange` is preserved so tests + future consumers keep the wiring
+// surface, but Slice-LP5-A removes the CitationChip / DigestHeader siblings
+// that previously consumed it (§K.1 first-impression simplification).
 
 import { useEffect, useRef, useState } from 'react';
 import { Sources } from '../Sources';
 import { useInView } from '../hooks/useInView';
+import { ChatAppShell } from './ChatAppShell';
+import { TypingDots } from './TypingDots';
 
 // ─── Content invariants (verbatim per brand-voice §2.5 — DO NOT paraphrase) ───
 
@@ -54,7 +72,7 @@ export const HERO_SOURCES_LINE = `Sources: ${HERO_SOURCES_ITEMS.join(' · ')}.`;
 const RESPONSE_TOTAL_LENGTH = HERO_RESPONSE_SEGMENTS.reduce((acc, seg) => acc + seg.text.length, 0);
 const RESPONSE_FULL_TEXT = HERO_RESPONSE_SEGMENTS.map((s) => s.text).join('');
 
-// Typing-speed knobs — slice-LP3.4 motion polish (Proposal A).
+// Typing-speed knobs — slice-LP3.4 motion polish (Proposal A) preserved.
 const TYPING_BASE_MS_PER_CHAR = 35;
 const TYPING_JITTER_MS = 10;
 const SENTENCE_PUNCTUATION_PAUSE_MS = 180;
@@ -70,6 +88,7 @@ interface UseTypingSequenceReturn {
   isTypingResponse: boolean;
   phase: ChatPhase;
   showResponseBubble: boolean;
+  showTypingDots: boolean;
 }
 
 function nextDelayForChar(char: string): number {
@@ -116,6 +135,12 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
       idx += 1;
       setUserText(HERO_USER_MESSAGE.slice(0, idx));
       if (idx >= HERO_USER_MESSAGE.length) {
+        // Slice-LP5-A: enter the explicit `pause` phase once the user message
+        // finishes typing. The pause window is what powers the new typing-
+        // dots indicator below — we still transition to `response` after
+        // INTER_BUBBLE_PAUSE_MS so timing matches the previous shipped
+        // behavior bit-for-bit.
+        setPhase('pause');
         localTimer = setTimeout(() => {
           if (!cancelled) setPhase('response');
         }, INTER_BUBBLE_PAUSE_MS);
@@ -163,8 +188,20 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
   const isTypingUser = phase === 'user';
   const isTypingResponse = phase === 'response';
   const showResponseBubble = phase === 'response' || phase === 'done' || prefersReduced;
+  // Typing dots show during the explicit pause phase that bridges the user
+  // bubble → response bubble transition. Hidden under reduced-motion (the
+  // response renders synchronously so there is no pause to bridge).
+  const showTypingDots = !prefersReduced && phase === 'pause';
 
-  return { userText, responseIndex, isTypingUser, isTypingResponse, phase, showResponseBubble };
+  return {
+    userText,
+    responseIndex,
+    isTypingUser,
+    isTypingResponse,
+    phase,
+    showResponseBubble,
+    showTypingDots,
+  };
 }
 
 // ─── Cursor + token primitives ────────────────────────────────────────────────
@@ -186,11 +223,24 @@ function TypingCursor({ visible }: { visible: boolean }): React.ReactElement | n
   );
 }
 
+// MonoToken — Slice-LP5-A §K.1.a inline pill upgrade.
+//   Token-pill chrome: slate-100 bg, slate-700 text, 11px, rounded-md,
+//   px-1.5 py-0.5. Reads as «product-grade data anchor» without needing a
+//   chart inside the response bubble.
 function MonoToken({ children }: { children: React.ReactNode }): React.ReactElement {
   return (
     <span
       data-testid="hero-mono-token"
-      style={{ fontFamily: 'var(--provedo-font-mono)', color: 'var(--provedo-text-primary)' }}
+      style={{
+        fontFamily: 'var(--provedo-font-mono)',
+        fontWeight: 500,
+        fontSize: '12px',
+        color: 'var(--provedo-text-secondary)',
+        backgroundColor: 'var(--provedo-bg-subtle)',
+        padding: '1px 6px',
+        borderRadius: '4px',
+        whiteSpace: 'nowrap',
+      }}
     >
       {children}
     </span>
@@ -201,7 +251,16 @@ function NegToken({ children }: { children: React.ReactNode }): React.ReactEleme
   return (
     <span
       data-testid="hero-neg-token"
-      style={{ fontFamily: 'var(--provedo-font-mono)', color: 'var(--provedo-negative)' }}
+      style={{
+        fontFamily: 'var(--provedo-font-mono)',
+        fontWeight: 500,
+        fontSize: '12px',
+        color: 'var(--provedo-negative)',
+        backgroundColor: 'rgba(220, 38, 38, 0.08)',
+        padding: '1px 6px',
+        borderRadius: '4px',
+        whiteSpace: 'nowrap',
+      }}
     >
       {children}
     </span>
@@ -235,63 +294,6 @@ function renderResponseSegments(revealedChars: number): React.ReactElement[] {
   return out;
 }
 
-// ─── Inline P&L sparkline ─────────────────────────────────────────────────────
-
-function InlinePnlSparkline({
-  visible,
-  prefersReduced,
-}: {
-  visible: boolean;
-  prefersReduced: boolean;
-}): React.ReactElement {
-  return (
-    <svg
-      viewBox="0 0 200 36"
-      width="200"
-      height="36"
-      role="img"
-      aria-label="P&L trend line showing decline"
-      style={{
-        marginTop: '8px',
-        display: 'block',
-        opacity: visible || prefersReduced ? 1 : 0.4,
-        transition: 'opacity 400ms ease',
-      }}
-    >
-      <line
-        x1="0"
-        y1="8"
-        x2="200"
-        y2="8"
-        stroke="var(--provedo-border-subtle)"
-        strokeWidth="0.5"
-        strokeDasharray="2,2"
-      />
-      <polyline
-        fill="none"
-        stroke="var(--provedo-accent)"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        points="0,8 30,10 60,14 80,20 100,26 130,28 160,30 200,30"
-      />
-      <circle cx="80" cy="20" r="3" fill="var(--provedo-negative)" />
-      <circle cx="130" cy="28" r="3" fill="var(--provedo-negative)" />
-      <text
-        x="196"
-        y="29"
-        fontSize="11"
-        fontFamily="var(--provedo-font-mono)"
-        fill="var(--provedo-negative)"
-        fontWeight="600"
-        textAnchor="end"
-      >
-        −4.2%
-      </text>
-    </svg>
-  );
-}
-
 // ─── Provedo response bubble ──────────────────────────────────────────────────
 
 interface ProvedoResponseBubbleProps {
@@ -308,46 +310,46 @@ function ProvedoResponseBubble({
   prefersReduced,
 }: ProvedoResponseBubbleProps): React.ReactElement {
   return (
-    <>
-      <p
-        className="mb-1.5 text-xs font-semibold uppercase tracking-widest"
-        style={{ color: 'var(--provedo-accent)' }}
-      >
-        Provedo
-      </p>
-      <div
-        className="rounded-xl rounded-tl-sm border px-4 py-3 text-sm leading-relaxed"
-        style={{
-          backgroundColor: 'var(--provedo-bg-elevated)',
-          borderColor: 'var(--provedo-border-subtle)',
-          color: 'var(--provedo-text-primary)',
-          minHeight: '4rem',
-        }}
-        aria-live="polite"
-        aria-label="Provedo response"
-      >
-        <p>
-          {responseElements}
-          <TypingCursor visible={isTypingResponse} />
+    <div className="flex justify-start">
+      <div className="max-w-full">
+        <p
+          className="mb-1.5 text-xs font-semibold uppercase tracking-widest"
+          style={{ color: 'var(--provedo-accent)' }}
+        >
+          Provedo
         </p>
+        <div
+          className="rounded-2xl rounded-tl-sm border px-4 py-3 text-sm leading-relaxed"
+          style={{
+            backgroundColor: 'var(--provedo-bg-elevated)',
+            borderColor: 'var(--provedo-border-subtle)',
+            color: 'var(--provedo-text-primary)',
+            minHeight: '4rem',
+          }}
+          aria-live="polite"
+          aria-label="Provedo response"
+        >
+          <p>
+            {responseElements}
+            <TypingCursor visible={isTypingResponse} />
+          </p>
 
-        {(isComplete || prefersReduced) && (
-          <div
-            className="mt-2"
-            style={{
-              opacity: prefersReduced ? 1 : 0,
-              animation: prefersReduced
-                ? 'none'
-                : 'provedo-sources-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
-            }}
-          >
-            <Sources items={HERO_SOURCES_ITEMS} />
-          </div>
-        )}
-
-        <InlinePnlSparkline visible={isComplete} prefersReduced={prefersReduced} />
+          {(isComplete || prefersReduced) && (
+            <div
+              className="mt-2"
+              style={{
+                opacity: prefersReduced ? 1 : 0,
+                animation: prefersReduced
+                  ? 'none'
+                  : 'provedo-sources-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              }}
+            >
+              <Sources items={HERO_SOURCES_ITEMS} />
+            </div>
+          )}
+        </div>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -357,12 +359,20 @@ interface ChatMockupProps {
   prefersReduced: boolean;
   /**
    * Fires whenever the typing sequence transitions to a new phase. Parent uses
-   * this to drive sibling primitives (Slice-LP3.6: CitationChip entrance fires
-   * when phase reaches `done`; resets when intersection-replay restarts the
-   * sequence).
+   * this to drive sibling primitives (kept for API stability — Slice-LP5-A no
+   * longer mounts the CitationChip / DigestHeader siblings that originally
+   * consumed it).
    */
   onPhaseChange?: (phase: ChatPhase) => void;
 }
+
+// Layout-shift lock per PD §K.1.c. The new picture-first variant drops the
+// inline chart from the bubble, so the recalculated min-heights are tighter:
+//   - Hero variant: 320px mobile / 360px md+ for the message area.
+//   - Outer ChatAppShell adds the 48px header bar + padding, landing at
+//     ~440px md+ / ~400px mobile (matches PD §K.1.c).
+const MESSAGE_MIN_HEIGHT_MOBILE = '320px';
+const MESSAGE_MIN_HEIGHT_DESKTOP = '360px';
 
 export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.4, triggerOnce: false });
@@ -376,8 +386,15 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
     wasInViewRef.current = inView;
   }, [inView]);
 
-  const { userText, responseIndex, isTypingUser, isTypingResponse, phase, showResponseBubble } =
-    useTypingSequence(prefersReduced, replayKey);
+  const {
+    userText,
+    responseIndex,
+    isTypingUser,
+    isTypingResponse,
+    phase,
+    showResponseBubble,
+    showTypingDots,
+  } = useTypingSequence(prefersReduced, replayKey);
 
   // Notify parent on every phase transition. The dependency on `onPhaseChange`
   // is captured by ref so callers can pass an inline arrow without retriggering.
@@ -404,41 +421,52 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
           'opacity 200ms cubic-bezier(0.16, 1, 0.3, 1), transform 200ms cubic-bezier(0.16, 1, 0.3, 1)',
       };
 
-  return (
-    <article
-      ref={ref}
-      aria-label="Provedo demo conversation"
-      className="rounded-xl border p-4"
-      style={{
-        backgroundColor: 'var(--provedo-bg-elevated)',
-        borderColor: 'var(--provedo-border-subtle)',
-        boxShadow: '0 8px 24px rgba(15,23,42,0.06), 0 2px 4px rgba(15,23,42,0.04)',
-      }}
-    >
-      <div className="mb-4 flex justify-end" aria-label="User message">
-        <div
-          className="max-w-[85%] rounded-xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed"
-          style={{
-            backgroundColor: 'var(--provedo-bg-subtle)',
-            color: 'var(--provedo-text-secondary)',
-            minHeight: '2.25rem',
-          }}
-        >
-          {userText || <span style={{ opacity: 0.3 }}>Why is my portfolio…</span>}
-          <TypingCursor visible={isTypingUser} />
-        </div>
-      </div>
+  // The CSS clamp lets responsive viewports pick the lock from the spec
+  // (mobile vs desktop). Inline so we do not need a new media-query hook.
+  const messageMinHeight = `clamp(${MESSAGE_MIN_HEIGHT_MOBILE}, 100vw, ${MESSAGE_MIN_HEIGHT_DESKTOP})`;
 
-      {showResponseBubble && (
-        <div style={responseEntranceStyle}>
-          <ProvedoResponseBubble
-            responseElements={responseElements}
-            isTypingResponse={isTypingResponse}
-            isComplete={phase === 'done'}
-            prefersReduced={prefersReduced}
-          />
+  return (
+    <div ref={ref}>
+      <ChatAppShell
+        ariaLabel="Provedo demo conversation"
+        headerTitle="Provedo"
+        statusLabel="live"
+        messageMinHeight={messageMinHeight}
+      >
+        <div className="mb-4 flex justify-end" aria-label="User message">
+          <div
+            className="max-w-[85%] rounded-2xl rounded-tr-sm px-4 py-3 text-sm leading-relaxed"
+            style={{
+              backgroundColor: 'var(--provedo-bg-subtle)',
+              color: 'var(--provedo-text-secondary)',
+              minHeight: '2.25rem',
+            }}
+          >
+            {userText || <span style={{ opacity: 0.3 }}>Why is my portfolio…</span>}
+            <TypingCursor visible={isTypingUser} />
+          </div>
         </div>
-      )}
-    </article>
+
+        {/* Typing dots bridge the user-pause → response transition. Renders
+            only during the `pause` phase; under reduced-motion the response
+            bubble appears synchronously and the pause is skipped. */}
+        {showTypingDots && (
+          <div className="mb-3 flex justify-start">
+            <TypingDots prefersReduced={prefersReduced} />
+          </div>
+        )}
+
+        {showResponseBubble && (
+          <div style={responseEntranceStyle}>
+            <ProvedoResponseBubble
+              responseElements={responseElements}
+              isTypingResponse={isTypingResponse}
+              isComplete={phase === 'done'}
+              prefersReduced={prefersReduced}
+            />
+          </div>
+        )}
+      </ChatAppShell>
+    </div>
   );
 }

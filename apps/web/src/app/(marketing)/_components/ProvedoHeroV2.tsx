@@ -1,37 +1,36 @@
 'use client';
 
-// ProvedoHeroV2 — §S1 hero (slice-LP3.6 — receipt-system composition)
+// ProvedoHeroV2 — §S1 picture-first hero (Slice-LP5-A §K.1)
 //
-// Slice-LP3.6 «Hero L2/L3 Retire» (PD spec docs/design/slice-lp3-6-hero-retire-spec.md):
-//   - RETIRED L2 InsightFeedMockup (orphan AI-tool feed → DigestHeader typographic primitive)
-//   - RETIRED L3 BrokerPieMockup (orphan donut at 0.6 opacity → CitationChip typographic primitive)
-//   - DROPPED parallax scroll handler + scrollY state (no consumers after L2/L3 retire)
-//   - DROPPED heroRef (was only used by parallax getBoundingClientRect)
-//   - L1 ChatMockup KEPT-AS-SHIPPED, extracted to hero/ChatMockup.tsx (behavior-preserving
-//     extraction — same content, same typing animation, same Sources primitive, same
-//     replay-on-intersection)
-//   - Right column wrapped in <aside aria-label="Provedo demo receipt"> per spec §6.1 with
-//     <header> (DigestHeader) + <article> (ChatMockup) + <footer> (CitationChip) so screen-
-//     readers read the digest → conversation → citation in semantic-receipt order
+// PO pivot 2026-04-27: «первое впечатление = картинки, мы не показываем чарты,
+// можем упомянуть пару». PD spec §K binds the picture-first composition.
 //
-// Composition (PD §1): the three elements compose as ONE receipt-system, not three
-// independent surfaces. Reading order: weekly cadence → specific observation with sources →
-// broker scope. Single narrative arc.
+// Slice-LP5-A changes vs Slice-LP3.6:
+//   - Atmosphere layer (Layer 1 + Layer 2 from §K.1.b) painted full-bleed
+//     behind the hero region. Two compositor-friendly radial gradients
+//     (top-right teal-cream + bottom-left warm-cream) plus a bespoke abstract
+//     «portfolio brain» SVG synthesis-glyph (1 source → 3 brokers → 1 Provedo
+//     node, opacity 0.10, draw-on stroke-dasharray reveal ≤ 700ms).
+//   - DROP the DigestHeader + CitationChip siblings. The picture-first hero
+//     is the chat-app-shell floating in the atmosphere — no orphan typographic
+//     primitives competing with it. (Component files stay in the codebase
+//     dormant for possible reuse but are no longer mounted on the landing.)
+//   - The ChatMockup itself drops the inline P&L sparkline and wraps in the
+//     new <ChatAppShell> chrome (header bar with avatar + status pill, three-
+//     layer drop shadow + mandatory 120px outer teal-glow halo, layout-shift
+//     min-height lock at 360px desktop / 320px mobile).
 //
-// Mobile (<768px) (PD §6): DigestHeader + CitationChip both hidden via `hidden md:block`.
-// L1 ChatMockup-only on mobile carries the chat-first-wedge positioning. Brand promises
-// (cadence + multi-broker scope) are carried elsewhere on mobile by §S5 InsightsBullets +
-// §S2 proof-bar + the in-receipt sources line.
-//
-// Slice-LP3.4 ChatMockup polish (Proposal A) — preserved verbatim inside hero/ChatMockup.tsx.
-// Slice-LP3.5 Sources primitive — preserved.
-// Hero head + sub + CTA + small-print copy — LOCKED, not modified.
+// What stays unchanged:
+//   - Hero head + sub + CTA copy LOCKED, not modified.
+//   - Re-export of HERO_RESPONSE_SEGMENTS / HERO_SOURCES_ITEMS / HERO_USER_MESSAGE
+//     so existing content-invariant tests + downstream consumers keep their
+//     shipped import paths.
+//   - prefers-reduced-motion fallback (full text rendered statically + glyph
+//     stays drawn at rest).
 
-import { useState } from 'react';
 import { ProvedoButton } from './ProvedoButton';
-import { ChatMockup, type ChatPhase } from './hero/ChatMockup';
-import { CitationChip } from './hero/CitationChip';
-import { DigestHeader } from './hero/DigestHeader';
+import { ChatMockup } from './hero/ChatMockup';
+import { HeroAtmosphere } from './hero/HeroAtmosphere';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
 // Re-export the chat-content invariants from the new module so existing
@@ -45,15 +44,6 @@ export {
 
 export function ProvedoHeroV2(): React.ReactElement {
   const prefersReduced = usePrefersReducedMotion();
-  // Tracks ChatMockup typing-completion. Drives the CitationChip entrance
-  // animation (PD §4.3 — 240ms fade + translateY fired 120ms after L1 sources
-  // line begins). Reset to false on intersection re-entry so scroll-back
-  // replays the chip alongside the typing animation.
-  const [isReceiptComplete, setIsReceiptComplete] = useState(false);
-
-  function handleChatPhaseChange(phase: ChatPhase): void {
-    setIsReceiptComplete(phase === 'done');
-  }
 
   return (
     <>
@@ -76,7 +66,12 @@ export function ProvedoHeroV2(): React.ReactElement {
         className="relative px-4 pb-20 pt-20 md:pb-28 md:pt-28"
         style={{ backgroundColor: 'var(--provedo-bg-page)', overflow: 'hidden' }}
       >
-        <div className="mx-auto max-w-7xl">
+        {/* Layer 1 + Layer 2 — atmospheric gradient mesh + bespoke synthesis
+            glyph SVG. Sits absolute behind the hero content, clipped by the
+            section's overflow:hidden so the wash does not bleed into S2. */}
+        <HeroAtmosphere />
+
+        <div className="relative mx-auto max-w-7xl" style={{ zIndex: 1 }}>
           <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-8">
             {/* Left — text column (LOCKED copy) */}
             <div className="flex-shrink-0 text-center lg:max-w-xl lg:text-left">
@@ -106,31 +101,18 @@ export function ProvedoHeroV2(): React.ReactElement {
               </p>
             </div>
 
-            {/* Right — receipt-system column (slice-LP3.6 §1 composition).
-                Vertically centered (PD §2.2 adjustment 5: drop the legacy
-                marginTop:48px L1 offset; column now centers its content). */}
+            {/* Right — picture-first chat surface column.
+                The ChatMockup owns the ChatAppShell chrome (header + body +
+                min-height lock) and the typing-state machine + replay-on-
+                intersection. Wrapped in <aside> so screen-readers read the
+                conversation as supplementary to the locked headline copy. */}
             <aside
               aria-label="Provedo demo receipt"
-              className="flex w-full flex-1 flex-col items-stretch justify-center gap-3 min-h-[320px]"
+              className="flex w-full flex-1 flex-col items-stretch justify-center min-h-[400px] md:min-h-[440px]"
             >
-              {/* DigestHeader — md+ only (PD §6 mobile collapse) */}
-              <DigestHeader className="mx-auto hidden w-full max-w-[420px] md:block" />
-
-              {/* L1 ChatMockup — always visible. The chat surface owns its own
-                  typing-state machine + replay-on-intersection; we subscribe to
-                  phase transitions to drive the CitationChip entrance below. */}
-              <div className="mx-auto w-full max-w-[420px]">
-                <ChatMockup prefersReduced={prefersReduced} onPhaseChange={handleChatPhaseChange} />
+              <div className="mx-auto w-full max-w-[480px]">
+                <ChatMockup prefersReduced={prefersReduced} />
               </div>
-
-              {/* CitationChip — md+ only (PD §6 mobile collapse).
-                  isComplete is driven by ChatMockup's phase callback so the
-                  240ms entrance fires after the L1 sources line settles. */}
-              <CitationChip
-                isComplete={isReceiptComplete}
-                prefersReduced={prefersReduced}
-                className="mx-auto hidden w-full max-w-[420px] md:flex md:justify-center"
-              />
             </aside>
           </div>
         </div>

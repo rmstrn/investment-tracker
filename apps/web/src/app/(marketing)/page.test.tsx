@@ -71,7 +71,7 @@ describe('MarketingHomePage v2', () => {
     expect(ogDesc).toMatch(/free tier/i);
   });
 
-  it('renders all 10 landmark sections (via headings)', () => {
+  it('renders the 9 active landmark sections (Slice-LP5-A: S7 testimonials unmounted)', () => {
     render(<MarketingHomePage />);
     // S1 Hero — h1
     expect(
@@ -83,16 +83,21 @@ describe('MarketingHomePage v2', () => {
     expect(
       screen.getByRole('region', { name: /this is what provedo is not/i }),
     ).toBeInTheDocument();
-    // S4 Demo tabs — «Ask anything.» (v3 Patch C)
-    expect(screen.getByRole('region', { name: /ask anything/i })).toBeInTheDocument();
+    // S4 Demo teasers bento — «Two answers. Same shape on every question.» (Slice-LP5-A §K.2)
+    expect(
+      screen.getByRole('region', { name: /two answers. same shape on every question/i }),
+    ).toBeInTheDocument();
     // S5 Insights — «A few minutes a day» (v3 Patch B)
     expect(screen.getByRole('region', { name: /a few minutes a day/i })).toBeInTheDocument();
     // S6 Editorial — «One place. One feed. One chat.» (v3)
     expect(screen.getByRole('region', { name: /one place/i })).toBeInTheDocument();
-    // S7 Testimonials — «What testers will be noticing.»
+    // S7 Testimonials — UNMOUNTED in Slice-LP5-A (PO directive 2026-04-27, PD §S7
+    // recommendation HIDE accepted). The component file is preserved in the
+    // codebase for possible future reuse but is no longer rendered on the
+    // landing — pre-loaded social-proof expectations the product can't yet back.
     expect(
-      screen.getByRole('region', { name: /what testers will be noticing/i }),
-    ).toBeInTheDocument();
+      screen.queryByRole('region', { name: /what testers will be noticing/i }),
+    ).not.toBeInTheDocument();
     // S8 Aggregation — «One chat holds everything.»
     expect(screen.getByRole('region', { name: /one chat holds everything/i })).toBeInTheDocument();
     // S9 FAQ — «Questions you'd ask» (v3.2 Slice-LP3.2 rename)
@@ -1324,27 +1329,28 @@ describe('Slice-LP3.4 — Hero ChatMockup typography baseline', () => {
     expect(userBubble?.className).not.toMatch(/text-xs/);
   });
 
-  it('inline P&L sparkline end-label uses 11pt JBM-mono floor (was 9pt)', async () => {
+  it('Slice-LP5-A §K.1.a: hero response bubble does NOT render an inline P&L sparkline', async () => {
+    // PO pivot: «мы не показываем чарты». The hero bubble stays text-led —
+    // the «mention charts exist» beat moves to §S4 Teaser 1 (PD §K.2). This
+    // test guards the picture-first contract: no chart inside the bubble.
     const { container } = render(<ProvedoHeroV2 />);
     await screen.findByLabelText(/provedo response/i);
     const sparkline = container.querySelector('svg[aria-label*="trend line"]');
-    expect(sparkline).not.toBeNull();
-    const endLabel = sparkline?.querySelector('text[text-anchor="end"]');
-    expect(endLabel).not.toBeNull();
-    // 11pt floor matches Slice-LP3.3 chart upgrade typography baseline.
-    expect(endLabel?.getAttribute('font-size')).toBe('11');
-    expect(endLabel?.textContent).toBe('−4.2%');
+    expect(sparkline).toBeNull();
   });
 
-  it('inline P&L sparkline line stroke is brand teal 2px (matches chart upgrade §A)', async () => {
+  it('Slice-LP5-A §K.1.a: mono-token pills carry the JBM-mono pill chrome (slate-100 bg, rounded)', async () => {
     const { container } = render(<ProvedoHeroV2 />);
     await screen.findByLabelText(/provedo response/i);
-    const sparkline = container.querySelector('svg[aria-label*="trend line"]');
-    expect(sparkline).not.toBeNull();
-    const polyline = sparkline?.querySelector('polyline[stroke]');
-    expect(polyline).not.toBeNull();
-    expect(polyline?.getAttribute('stroke')).toBe('var(--provedo-accent)');
-    expect(polyline?.getAttribute('stroke-width')).toBe('2');
+    const monoTokens = container.querySelectorAll<HTMLElement>('[data-testid="hero-mono-token"]');
+    expect(monoTokens.length).toBeGreaterThan(0);
+    // First mono pill carries the upgraded chrome contract — the answer
+    // reads as «product data» without needing a chart inside the bubble.
+    const first = monoTokens[0] as HTMLElement;
+    const inline = first.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-family:\s*var\(--provedo-font-mono\)/);
+    expect(inline).toMatch(/background-color:\s*var\(--provedo-bg-subtle\)/);
+    expect(inline).toMatch(/border-radius:\s*4px/);
   });
 });
 
@@ -1517,36 +1523,27 @@ describe('Slice-LP3.6 — Hero receipt-system composition', () => {
     }
   });
 
-  it('right column is wrapped in <aside aria-label="Provedo demo receipt"> per PD spec §6.1', async () => {
+  it('Slice-LP5-A §K.1: right column is wrapped in <aside> + only the ChatAppShell-wrapped ChatMockup (no Digest/Citation siblings)', async () => {
     render(<ProvedoHeroV2 />);
     const aside = await screen.findByLabelText('Provedo demo receipt');
     expect(aside.tagName.toLowerCase()).toBe('aside');
-    // The aside contains the receipt-system: DigestHeader (header), ChatMockup
-    // (article), CitationChip (footer) — verify children are present in DOM
-    // order so screen-readers read digest → conversation → citation.
-    expect(within(aside).getByTestId('hero-digest-header')).toBeInTheDocument();
+    // The picture-first hero drops the DigestHeader (header) + CitationChip
+    // (footer) siblings. Only the ChatAppShell-wrapped ChatMockup remains.
     expect(within(aside).getByLabelText('Provedo demo conversation')).toBeInTheDocument();
-    expect(within(aside).getByTestId('hero-citation-chip')).toBeInTheDocument();
+    // Anti-test: the retired siblings MUST NOT mount on the hero.
+    expect(within(aside).queryByTestId('hero-digest-header')).not.toBeInTheDocument();
+    expect(within(aside).queryByTestId('hero-citation-chip')).not.toBeInTheDocument();
   });
 
-  it('mobile collapse: DigestHeader + CitationChip wrappers carry `hidden md:block` / `md:flex` Tailwind classes (PD §7)', async () => {
+  it('Slice-LP5-A §K.1: hero column carries the layout-shift min-height lock (≥ 320px mobile / ≥ 440px md+)', async () => {
     render(<ProvedoHeroV2 />);
     const aside = await screen.findByLabelText('Provedo demo receipt');
-    // PD §7.2 — both DigestHeader and CitationChip are hidden below 768px so
-    // mobile gets a single full-width L1 receipt. We assert via the Tailwind
-    // class contract rather than computed style (happy-dom does not run
-    // responsive media queries reliably).
-    const digestHeader = within(aside).getByTestId('hero-digest-header');
-    expect(digestHeader.className).toMatch(/\bhidden\b/);
-    expect(digestHeader.className).toMatch(/\bmd:block\b/);
-
-    // The CitationChip exposes `data-testid` on the inner <span>; the
-    // responsive class lives on the <footer> wrapper that the parent passes.
-    const chipSpan = within(aside).getByTestId('hero-citation-chip');
-    const chipWrapper = chipSpan.closest('footer');
-    expect(chipWrapper).not.toBeNull();
-    expect(chipWrapper?.className).toMatch(/\bhidden\b/);
-    expect(chipWrapper?.className).toMatch(/\bmd:flex\b/);
+    // PD §K.1.c lock — the picture-first variant tightens the recalculated
+    // min-height to 320px / 440px (vs prior 380/480 with chart in bubble).
+    // We assert via Tailwind class contract because happy-dom does not run
+    // responsive media queries reliably.
+    expect(aside.className).toContain('min-h-[400px]');
+    expect(aside.className).toContain('md:min-h-[440px]');
   });
 });
 
@@ -1705,5 +1702,353 @@ describe('Slice-LP3.7-A — CitationChip aria-label semantic correction (LOW)', 
     // already lists the citations. SR readout now matches what the chip means.
     expect(footer?.getAttribute('aria-label')).toBe('Brokers covered');
     expect(footer?.getAttribute('aria-label')).not.toBe('Sources');
+  });
+});
+
+// ─── Slice-LP5-A — picture-first hero atmosphere + ChatAppShell + S4 teasers + S2 bento ─
+
+import { ProvedoDemoTeasersBento } from './_components/ProvedoDemoTeasersBento';
+import { ChatAppShell } from './_components/hero/ChatAppShell';
+import { HeroAtmosphere } from './_components/hero/HeroAtmosphere';
+import { TypingDots } from './_components/hero/TypingDots';
+
+describe('Slice-LP5-A — ChatAppShell shared chrome primitive', () => {
+  it('renders an <article> wrapper with the caller-provided aria-label', () => {
+    render(
+      <ChatAppShell ariaLabel="custom shell label" headerTitle="Provedo">
+        <p>body</p>
+      </ChatAppShell>,
+    );
+    const shell = screen.getByLabelText('custom shell label');
+    expect(shell.tagName.toLowerCase()).toBe('article');
+    expect(shell).toHaveAttribute('data-testid', 'chat-app-shell');
+  });
+
+  it('renders a header bar with the «Provedo» title + status pill (default «live»)', () => {
+    render(
+      <ChatAppShell ariaLabel="x" headerTitle="Provedo">
+        <p>body</p>
+      </ChatAppShell>,
+    );
+    const header = screen.getByTestId('chat-app-shell-header');
+    expect(header).toBeInTheDocument();
+    expect(header.textContent).toMatch(/Provedo/);
+    const statusPill = screen.getByTestId('chat-app-shell-status-pill');
+    expect(statusPill.textContent).toMatch(/live/i);
+  });
+
+  it('status dot carries an aria-label so SR users hear the live status', () => {
+    render(
+      <ChatAppShell ariaLabel="x" headerTitle="Provedo" statusLabel="live">
+        <p>body</p>
+      </ChatAppShell>,
+    );
+    const statusLive = screen.getByLabelText('status: live');
+    expect(statusLive).toBeInTheDocument();
+  });
+
+  it('mandatory 120px outer teal-glow halo is present on the shell box-shadow (PD §K.1.b)', () => {
+    render(
+      <ChatAppShell ariaLabel="x" headerTitle="Provedo">
+        <p>body</p>
+      </ChatAppShell>,
+    );
+    const shell = screen.getByTestId('chat-app-shell') as HTMLElement;
+    const inline = shell.getAttribute('style') ?? '';
+    // 120px ambient teal halo is the picture-first signature — without it the
+    // shell reads as «dropped on top of» the atmosphere instead of «sitting in»
+    // it. The inline check is a forgiving pattern (accepts whitespace + the
+    // teal-tinted rgba alpha).
+    expect(inline).toMatch(/box-shadow/);
+    expect(inline).toMatch(/120px rgba\(13,\s*148,\s*136/);
+  });
+
+  it('messageMinHeight prop locks the inner body min-height (CLS guard)', () => {
+    render(
+      <ChatAppShell ariaLabel="x" headerTitle="Provedo" messageMinHeight="360px">
+        <p>body</p>
+      </ChatAppShell>,
+    );
+    const body = screen.getByTestId('chat-app-shell-body') as HTMLElement;
+    expect(body.style.minHeight).toBe('360px');
+  });
+});
+
+describe('Slice-LP5-A — TypingDots indicator', () => {
+  it('renders 3 dots with aria-hidden so SR users do not loop the wave', () => {
+    const { container } = render(<TypingDots prefersReduced={false} />);
+    const wrapper = screen.getByTestId('hero-typing-dots');
+    expect(wrapper.getAttribute('aria-hidden')).toBe('true');
+    // 3 dot spans inside the wrapper (each dot is its own <span>).
+    const dotSpans = wrapper.querySelectorAll('span[aria-hidden="true"]');
+    expect(dotSpans.length).toBe(3);
+    // Sanity: no chart svg leaks into the typing indicator.
+    expect(container.querySelector('svg')).toBeNull();
+  });
+
+  it('respects prefers-reduced-motion (animation: none on each dot)', () => {
+    render(<TypingDots prefersReduced={true} />);
+    const wrapper = screen.getByTestId('hero-typing-dots');
+    const dots = wrapper.querySelectorAll<HTMLElement>('span[aria-hidden="true"]');
+    for (const dot of dots) {
+      const inline = dot.getAttribute('style') ?? '';
+      // Each dot's animation must be «none» in reduced-motion mode.
+      expect(inline).toMatch(/animation:\s*none/);
+    }
+  });
+});
+
+describe('Slice-LP5-A — HeroAtmosphere (Layer 1 + Layer 2)', () => {
+  it('renders the atmosphere wrapper with two radial gradients painted via background-image', async () => {
+    // Happy-dom does not consistently surface `background-image` longhand on
+    // inline `style.backgroundImage`. Use renderToString to assert against the
+    // serialized SSR HTML, which preserves the gradient strings verbatim.
+    const { renderToString } = await import('react-dom/server');
+    const html = renderToString(<HeroAtmosphere />);
+    expect(html).toMatch(/radial-gradient/);
+    expect(html).toMatch(/rgba\(13, ?148, ?136/);
+    expect(html).toMatch(/rgba\(250, ?240, ?220/);
+    // Smoke-mount for the aria + testid contract.
+    render(<HeroAtmosphere />);
+    const atmosphere = screen.getByTestId('hero-atmosphere');
+    expect(atmosphere.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('renders the bespoke synthesis-glyph SVG (1 source → 3 brokers → 1 Provedo node) at opacity 0.10', () => {
+    render(<HeroAtmosphere />);
+    const glyph = screen.getByTestId('hero-synthesis-glyph');
+    expect(glyph).toBeInTheDocument();
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+    const inline = glyph.getAttribute('style') ?? '';
+    expect(inline).toMatch(/opacity:\s*0\.1\b/);
+    // 5 nodes total — top source + 3 brokers + bottom Provedo synthesis.
+    const circles = glyph.querySelectorAll('circle');
+    expect(circles.length).toBe(5);
+    // The accent-stroked synthesis path carries the teal accent line.
+    const accentStroke = screen.getByTestId('hero-synthesis-accent-stroke');
+    expect(accentStroke.getAttribute('stroke')).toBe('var(--provedo-accent)');
+  });
+
+  it('glyph SVG is decorative (no role="img") so it does not pollute SR landmark output', () => {
+    render(<HeroAtmosphere />);
+    const glyph = screen.getByTestId('hero-synthesis-glyph');
+    // PD §K.1.b — the glyph is purely atmospheric. Picking it up as an
+    // image landmark would announce «graphic» to SR users for no signal.
+    expect(glyph.getAttribute('role')).toBeNull();
+  });
+});
+
+describe('Slice-LP5-A — Hero ChatAppShell composition', () => {
+  // Reuse the reduced-motion mock pattern so the surface mounts synchronously.
+  let originalMatchMedia: typeof window.matchMedia | undefined;
+
+  beforeEach(() => {
+    originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  });
+
+  afterEach(() => {
+    if (originalMatchMedia) {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    }
+  });
+
+  it('hero ChatMockup is wrapped in the ChatAppShell chrome (header bar + body slot)', async () => {
+    render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const shell = screen.getByTestId('chat-app-shell');
+    expect(shell).toBeInTheDocument();
+    // The shell carries the «Provedo» header title with the status pill.
+    const header = within(shell).getByTestId('chat-app-shell-header');
+    expect(header.textContent).toMatch(/Provedo/);
+    expect(within(shell).getByTestId('chat-app-shell-status-pill')).toBeInTheDocument();
+  });
+
+  it('hero ChatAppShell carries the message-area min-height lock (CLS guard)', async () => {
+    render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const body = screen.getByTestId('chat-app-shell-body') as HTMLElement;
+    // The lock is a CSS clamp() with the mobile floor + desktop ceiling;
+    // happy-dom preserves the inline value so we can assert presence of
+    // the clamp-with-px units string.
+    expect(body.style.minHeight).toMatch(/clamp\(320px,/);
+    expect(body.style.minHeight).toMatch(/360px\)/);
+  });
+
+  it('Slice-LP5-A §K.1.a: hero response bubble does NOT include an inline chart of any kind', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    const responseBubble = await screen.findByLabelText(/provedo response/i);
+    // No SVG chart inside the response bubble (anti-regression: prior
+    // shipped sparkline lived here; PD §K.1.a removes it).
+    expect(responseBubble.querySelector('svg')).toBeNull();
+    // Nor anywhere else in the chat-app-shell body wrapper.
+    const body = container.querySelector('[data-testid="chat-app-shell-body"]');
+    expect(body).not.toBeNull();
+    expect(body?.querySelector('svg[aria-label*="trend line"]')).toBeNull();
+  });
+});
+
+describe('Slice-LP5-A — ProvedoNumericProofBar bento layout (PD §C.S2)', () => {
+  it('renders the 4-cell bento grid (no divide-x / divide-y dividers)', () => {
+    const { container } = render(<ProvedoNumericProofBar />);
+    const grid = screen.getByTestId('proof-bar-bento-grid');
+    expect(grid).toBeInTheDocument();
+    // Bento grid uses CSS grid, NOT the prior divide-x flat strip.
+    expect(grid.className).toMatch(/\bgrid\b/);
+    // Anti-test: divide-x / divide-y must be gone (PO «скучные»).
+    expect(container.innerHTML).not.toMatch(/divide-x\b/);
+    expect(container.innerHTML).not.toMatch(/divide-y\b/);
+  });
+
+  it('cell #4 is the teal-tinted hero cell (PD §C.S2: Sources reads as dominant claim)', () => {
+    render(<ProvedoNumericProofBar />);
+    const heroCell = screen.getByTestId('proof-bar-cell-sources-hero');
+    const inline = heroCell.getAttribute('style') ?? '';
+    // Teal-tinted bg per PD §C.S2 verbatim — rgba(13, 148, 136, 0.04).
+    expect(inline).toMatch(/background-color:\s*rgba\(13,\s*148,\s*136,\s*0\.04\)/);
+    // Teal-200 hairline border on the hero cell.
+    expect(inline).toMatch(/border-color:\s*rgba\(13,\s*148,\s*136,\s*0\.25\)/);
+  });
+
+  it('the three supporting cells sit on warm-bg-muted with subtle hairline borders', () => {
+    render(<ProvedoNumericProofBar />);
+    for (const id of [
+      'proof-bar-cell-coverage',
+      'proof-bar-cell-cited',
+      'proof-bar-cell-time',
+    ] as const) {
+      const cell = screen.getByTestId(id);
+      const inline = cell.getAttribute('style') ?? '';
+      expect(inline).toMatch(/background-color:\s*var\(--provedo-bg-muted\)/);
+      expect(inline).toMatch(/border-color:\s*var\(--provedo-border-subtle\)/);
+    }
+  });
+
+  it('cell #4 number stays slate-900 (PD §C.S2: accent moved to bg, NOT the number)', () => {
+    render(<ProvedoNumericProofBar />);
+    const heroCell = screen.getByTestId('proof-bar-cell-sources-hero');
+    const sourcesNumber = within(heroCell).getByText('Sources') as HTMLElement;
+    // The big-number style sets `color: var(--provedo-text-primary)` — anti-
+    // regression for the prior version which used `var(--provedo-accent)` on
+    // the number itself (created accent-on-accent washed contrast).
+    expect(sourcesNumber.style.color).toBe('var(--provedo-text-primary)');
+  });
+});
+
+describe('Slice-LP5-A — ProvedoDemoTeasersBento (S4 picture-first reduction §K.2)', () => {
+  it('renders the new section heading + sub copy verbatim', () => {
+    render(<ProvedoDemoTeasersBento />);
+    expect(
+      screen.getByRole('heading', { level: 2, name: /two answers. same shape on every question/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/these are two of the questions provedo answers daily/i),
+    ).toBeInTheDocument();
+  });
+
+  it('renders 2 teaser surfaces in a side-by-side bento grid (mobile stacks 1-col)', () => {
+    render(<ProvedoDemoTeasersBento />);
+    const grid = screen.getByTestId('demo-teasers-grid');
+    expect(grid).toBeInTheDocument();
+    // 2-col grid at lg+, single column on mobile.
+    expect(grid.className).toMatch(/\bgrid-cols-1\b/);
+    expect(grid.className).toMatch(/\blg:grid-cols-2\b/);
+  });
+
+  it('Teaser 1 «Why?» reuses the ChatAppShell chrome with a dedicated header title', () => {
+    render(<ProvedoDemoTeasersBento />);
+    const teaser = screen.getByLabelText('Provedo answer · Why?');
+    expect(teaser).toBeInTheDocument();
+    expect(teaser.getAttribute('data-testid')).toBe('chat-app-shell');
+    const header = within(teaser).getByTestId('chat-app-shell-header');
+    expect(header.textContent).toMatch(/Why\?/);
+  });
+
+  it('Teaser 1 «Why?» includes ONE small inline PnlSparkline (the «mention charts exist» beat)', () => {
+    render(<ProvedoDemoTeasersBento />);
+    const teaser = screen.getByLabelText('Provedo answer · Why?');
+    const sparklineSlot = within(teaser).getByTestId('teaser-why-sparkline');
+    expect(sparklineSlot).toBeInTheDocument();
+    // The inline sparkline carries an svg with the trend-line aria-label
+    // (PnlSparklineAnimated component contract).
+    const svg = within(sparklineSlot).getByRole('img');
+    expect(svg.getAttribute('aria-label')).toMatch(/p&l/i);
+  });
+
+  it('Teaser 2 «Aggregate» renders ZERO inline charts (text-led + italic pull-quote)', () => {
+    render(<ProvedoDemoTeasersBento />);
+    const teaser = screen.getByLabelText('Provedo answer · Aggregate');
+    expect(teaser).toBeInTheDocument();
+    // The teaser must not include any svg chart — the «no chart on this one»
+    // beat per PD §K.2 reinforces the picture-first pivot.
+    expect(within(teaser).queryByRole('img')).toBeNull();
+    // The italic Provedo-voice pull-quote carries the «here's the shape»
+    // beat without needing a visualization.
+    const pullquote = within(teaser).getByTestId('teaser-aggregate-pullquote');
+    expect(pullquote.textContent).toMatch(
+      /your tech exposure is about 2× the index['']s — driven by ibkr/i,
+    );
+  });
+
+  it('both teasers carry their own Sources line below the response bubble', () => {
+    const { container } = render(<ProvedoDemoTeasersBento />);
+    const sources = container.querySelectorAll('[data-testid="provedo-sources"]');
+    // 2 teasers × 1 sources each = 2 mounts.
+    expect(sources.length).toBe(2);
+    // Each one carries its own cite items — Teaser 1 cites AAPL/TSLA;
+    // Teaser 2 cites the cross-broker statement + S&P methodology.
+    const allText = Array.from(sources)
+      .map((s) => s.textContent ?? '')
+      .join('\n');
+    expect(allText).toMatch(/aapl q3 earnings 2025-10-31/i);
+    expect(allText).toMatch(/s&p 500 sector weights via s&p dji methodology 2025-q3/i);
+  });
+
+  it('mono-token pills (slate-100 bg, rounded) are used across both teasers (matches §K.1.a hero)', () => {
+    const { container } = render(<ProvedoDemoTeasersBento />);
+    const pills = container.querySelectorAll<HTMLElement>('[data-testid="teaser-mono-token"]');
+    expect(pills.length).toBeGreaterThan(0);
+    const first = pills[0] as HTMLElement;
+    const inline = first.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-family:\s*var\(--provedo-font-mono\)/);
+    expect(inline).toMatch(/background-color:\s*var\(--provedo-bg-subtle\)/);
+    expect(inline).toMatch(/border-radius:\s*4px/);
+  });
+});
+
+describe('Slice-LP5-A — ProvedoDemoTabsV2 unmount + S7 testimonials unmount on landing', () => {
+  it('landing page no longer mounts the 4-tab ProductTabBar (deferred)', () => {
+    render(<MarketingHomePage />);
+    // The legacy 4-tab pill switcher carried these tab triggers. They MUST
+    // NOT render on the landing — the section is now the 2-teaser bento.
+    expect(screen.queryByRole('tab', { name: /^why\?$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^dividends$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^patterns$/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: /^aggregate$/i })).not.toBeInTheDocument();
+  });
+
+  it('landing page no longer mounts the testimonials section (Slice-LP5-A PO directive)', () => {
+    render(<MarketingHomePage />);
+    // PD §S7 recommendation HIDE accepted by PO 2026-04-27 — the section
+    // pre-loaded social-proof expectations the product cannot back yet.
+    expect(screen.queryByText(/^coming q2 2026$/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/alpha quotes coming q2 2026/i)).not.toBeInTheDocument();
   });
 });

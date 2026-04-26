@@ -1,40 +1,46 @@
 'use client';
 
-// ProvedoNumericProofBar — §S2 numeric proof bar (Slice-LP3.5)
+// ProvedoNumericProofBar — §S2 numeric proof bar (Slice-LP5-A §C.S2 bento)
 //
-// Slice-LP3.5 chrome polish (PD re-evaluation §3.3 + brand-voice §4):
-//   - Move «information, not advice» from Cell IV body to italic footer line
-//     BELOW the proof-bar cells. Lane A signal stays present, no longer
-//     occupies a peer cell.
-//   - Replace freed Cell IV with epistemic-claim «Sources / for every answer»
-//     (NOT «<2s» — brand-voice REJECT as Hero/Outlaw perf-marketing register
-//     + Lane A side-door).
-//   - Audience-whisper italic line stays SEPARATE from the disclaimer
-//     (brand-voice REJECT-WITH-EDIT on combined run-on).
+// Slice-LP5-A bento conversion (PD spec §C.S2):
+//   - Replace the divide-x flat strip with a 4-cell CSS grid bento.
+//   - Cell #4 «Sources / for every answer» becomes the HERO cell — teal-tinted
+//     bg (rgba(13,148,136,0.04)) + teal-200 hairline border. Visually pulls.
+//   - The other three cells sit on warm-bg-muted with subtle hairline borders
+//     and a shared rounded-lg + 1px border treatment.
+//   - Big-number color discipline: Cell #4 number stays slate-900 (the accent
+//     moved to the cell-bg, not the number); the «for every answer» eyebrow
+//     stays teal-600.
+//   - Hover states on all 4 cells: subtle border deepens 150ms ease.
+//   - Drop the in-section divide-y / divide-x dividers (PO «скучные»).
 //
-// Earlier history (v3.x):
-//   - 4-cell layout (was 3) — adds time-anchor cell #3 «5 min / a week / the whole habit»
-//   - Audience-whisper micro-line below cells per PD spec V2
-//   - max-w-4xl → max-w-5xl for 4-cell breathing room (PD spec)
+// Preserved from prior shipped state:
+//   - All copy verbatim (Hundreds / brokers and exchanges; Every / observation
+//     cited; 5 min / a week / the whole habit; Sources / for every answer).
+//   - ARIA: <section><dl><dt><dd> + role="region" via aria-label.
+//   - Disclaimer footer «Information, not advice.» as italic line below the
+//     bento. Audience-whisper line stays SEPARATE from the disclaimer per the
+//     prior brand-voice REJECT-WITH-EDIT (combined run-on rejected).
+//   - TD-095 swap: coverage="Hundreds" (default) ↔ coverage="1000+".
 //
-// Slice-LP3.7-A: align Cell I copy with §S8 header «Hundreds of brokers and
-// exchanges». Was «100s» (mono-numeric register) — read as inconsistent one
-// viewport apart from §S8 «Hundreds» (sans-narrative register). Both surfaces
-// now use «Hundreds» until TD-095 lands the verified «1000+» upgrade.
-//
-// Accessibility: <section><dl><dt><dd>, AAA contrast verified.
-// TD-095: swap coverage="Hundreds" → coverage="1000+" once tech-lead verifies coverage.
+// What's NOT in this slice:
+//   - PD spec §C.S2 also recommended moving the audience-whisper to the §S1
+//     hero. We KEEP both in this section for now — that move is part of the
+//     §S1 hero microcopy reshuffle which lives in Slice-LP5-B alongside the
+//     other small-print rearrangements. Until then both lines stay here so we
+//     do not lose the audience signal mid-slice.
+
+import type { CSSProperties, ReactElement, ReactNode } from 'react';
 
 interface ProvedoNumericProofBarProps {
   /** Broker count copy — 'Hundreds' (fallback) or '1000+' (post-verification) */
   coverage?: 'Hundreds' | '1000+';
 }
 
-// Per-breakpoint big-number font-size clamp (PD spec V1, slightly tighter for 4-cell layout)
+// Per-breakpoint big-number font-size clamp. Slightly tighter for bento cells.
 const BIG_NUMBER_CLAMP = 'clamp(2.25rem, 1.6rem + 1.6vw, 3.25rem)';
 
-// Shared cell typography (PD spec V1)
-const CELL_BIG_STYLE: React.CSSProperties = {
+const CELL_BIG_STYLE: CSSProperties = {
   fontFamily: 'var(--provedo-font-mono)',
   fontWeight: 500,
   fontSize: BIG_NUMBER_CLAMP,
@@ -43,7 +49,7 @@ const CELL_BIG_STYLE: React.CSSProperties = {
   marginBottom: '8px',
 };
 
-const CELL_EYEBROW_STYLE: React.CSSProperties = {
+const CELL_EYEBROW_STYLE: CSSProperties = {
   fontFamily: 'var(--provedo-font-sans)',
   fontWeight: 500,
   fontSize: '13px',
@@ -53,40 +59,86 @@ const CELL_EYEBROW_STYLE: React.CSSProperties = {
   marginBottom: '4px',
 };
 
-const CELL_SUB_STYLE: React.CSSProperties = {
+const CELL_SUB_STYLE: CSSProperties = {
   fontFamily: 'var(--provedo-font-sans)',
   fontWeight: 400,
   fontSize: '13px',
   color: 'var(--provedo-text-muted)',
 };
 
+// ─── Bento cell primitive ──────────────────────────────────────────────────
+
+interface BentoCellProps {
+  /** When true, applies the teal-tinted hero treatment (cell #4 only). */
+  isHero?: boolean;
+  /** Optional data-testid for cell-targeted assertions. */
+  testId?: string;
+  children: ReactNode;
+}
+
+const CELL_BASE_CLASSES =
+  'flex flex-col items-center rounded-lg border p-6 text-center transition-colors duration-150';
+
+function BentoCell({ isHero = false, testId, children }: BentoCellProps): ReactElement {
+  // Inline style so the hero cell carries its teal-tinted bg + teal-200
+  // hairline. Both treatments stay within the Provedo palette — no new
+  // color families introduced.
+  const cellStyle: CSSProperties = isHero
+    ? {
+        backgroundColor: 'rgba(13, 148, 136, 0.04)',
+        borderColor: 'rgba(13, 148, 136, 0.25)',
+      }
+    : {
+        backgroundColor: 'var(--provedo-bg-muted)',
+        borderColor: 'var(--provedo-border-subtle)',
+      };
+
+  // Hover deepens the border one notch. Inline handlers keep us off a
+  // tailwind-arbitrary-value escape hatch and match the existing
+  // ProvedoButton hover pattern.
+  function handleMouseEnter(e: React.MouseEvent<HTMLDivElement>): void {
+    e.currentTarget.style.borderColor = isHero
+      ? 'rgba(13, 148, 136, 0.45)'
+      : 'var(--provedo-border-default)';
+  }
+  function handleMouseLeave(e: React.MouseEvent<HTMLDivElement>): void {
+    e.currentTarget.style.borderColor = isHero
+      ? 'rgba(13, 148, 136, 0.25)'
+      : 'var(--provedo-border-subtle)';
+  }
+
+  return (
+    <div
+      data-testid={testId}
+      className={CELL_BASE_CLASSES}
+      style={cellStyle}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {children}
+    </div>
+  );
+}
+
+// ─── Section composer ──────────────────────────────────────────────────────
+
 export function ProvedoNumericProofBar({
   coverage = 'Hundreds',
-}: ProvedoNumericProofBarProps): React.ReactElement {
-  // Wave 2.6 a11y HIGH-2: text-only cells render visible from SSR with no
-  // opacity fade. Slice-LP3.5: Cell IV count-up dropped (cell now carries
-  // static «Sources / for every answer» — epistemic claim, not numeric).
-
+}: ProvedoNumericProofBarProps): ReactElement {
   return (
     <section
       aria-label="Proof points"
       style={{
-        backgroundColor: 'var(--provedo-bg-muted)',
-        borderTop: '1px solid var(--provedo-border-subtle)',
-        borderBottom: '1px solid var(--provedo-border-subtle)',
+        backgroundColor: 'var(--provedo-bg-page)',
       }}
     >
-      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
+      <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
         <dl
-          className="flex flex-col divide-y lg:flex-row lg:divide-x lg:divide-y-0"
-          style={
-            {
-              '--tw-divide-color': 'var(--provedo-border-subtle)',
-            } as React.CSSProperties
-          }
+          data-testid="proof-bar-bento-grid"
+          className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6"
         >
           {/* Cell 1 — Broker coverage */}
-          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
+          <BentoCell testId="proof-bar-cell-coverage">
             <dd
               className="leading-none tracking-tight"
               style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
@@ -97,11 +149,10 @@ export function ProvedoNumericProofBar({
             <dd style={CELL_SUB_STYLE}>
               {coverage === 'Hundreds' ? 'every major one' : 'in one place'}
             </dd>
-          </div>
+          </BentoCell>
 
-          {/* Cell 2 — Every observation cited
-              Wave 2.6 HIGH-2: opacity fade dropped — text content always visible. */}
-          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
+          {/* Cell 2 — Every observation cited */}
+          <BentoCell testId="proof-bar-cell-cited">
             <dd
               className="leading-none tracking-tight"
               style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
@@ -110,12 +161,10 @@ export function ProvedoNumericProofBar({
             </dd>
             <dt style={CELL_EYEBROW_STYLE}>observation cited</dt>
             <dd style={CELL_SUB_STYLE}>with sources inline</dd>
-          </div>
+          </BentoCell>
 
-          {/* Cell 3 — Time anchor «5 min / a week» (v3.2 NEW)
-              Static token, no count-up (PD spec — count-up reads gimmicky on time-anchor)
-              Wave 2.6 HIGH-2: opacity fade dropped — text content always visible. */}
-          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
+          {/* Cell 3 — Time anchor «5 min / a week» */}
+          <BentoCell testId="proof-bar-cell-time">
             <dd
               className="leading-none tracking-tight"
               style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
@@ -124,29 +173,27 @@ export function ProvedoNumericProofBar({
             </dd>
             <dt style={CELL_EYEBROW_STYLE}>a week</dt>
             <dd style={CELL_SUB_STYLE}>the whole habit</dd>
-          </div>
+          </BentoCell>
 
-          {/* Cell 4 — Sources / for every answer (Slice-LP3.5)
-              Replaces the «100% / information not advice» count-up cell. The
-              disclaimer moves to the italic footer line below the proof bar
-              (still visually present, no longer occupies a peer cell). The
-              freed cell now carries the epistemic claim that anchors
-              Provedo's load-bearing trust signal. */}
-          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
+          {/* Cell 4 — HERO «Sources / for every answer» (teal-tinted bento card)
+              The number stays slate-900 (PD §C.S2: accent moved to cell-bg, NOT
+              the number). The eyebrow «for every answer» keeps the teal accent. */}
+          <BentoCell isHero testId="proof-bar-cell-sources-hero">
             <dd
               className="leading-none tracking-tight"
-              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-accent)' }}
+              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
             >
               Sources
             </dd>
-            <dt style={CELL_EYEBROW_STYLE}>for every answer</dt>
+            <dt style={{ ...CELL_EYEBROW_STYLE, color: 'var(--provedo-accent)' }}>
+              for every answer
+            </dt>
             <dd style={CELL_SUB_STYLE}>cited inline, dated, traceable</dd>
-          </div>
+          </BentoCell>
         </dl>
 
-        {/* Disclaimer footer — Slice-LP3.5 (replaces Cell IV body).
-            Single italic line, plain text, max-width matched to audience-whisper
-            below. Stays SEPARATE from the audience-whisper line per brand-voice
+        {/* Disclaimer footer — italic line below the bento.
+            Stays SEPARATE from the audience-whisper per brand-voice
             REJECT-WITH-EDIT on combined run-on. */}
         <p
           className="mx-auto mt-8 px-4 text-center"
@@ -164,8 +211,9 @@ export function ProvedoNumericProofBar({
           Information, not advice.
         </p>
 
-        {/* Audience-whisper — v3.2 (PD spec V2: proof-bar small-print placement).
-            Kept SEPARATE from the disclaimer footer per brand-voice REJECT-WITH-EDIT. */}
+        {/* Audience-whisper — kept SEPARATE from the disclaimer footer per
+            brand-voice REJECT-WITH-EDIT. PD §C.S2 recommends moving this to
+            §S1 hero in a follow-up slice; for Slice-LP5-A it stays here. */}
         <p
           className="mx-auto mt-3 px-4 text-center"
           style={{
