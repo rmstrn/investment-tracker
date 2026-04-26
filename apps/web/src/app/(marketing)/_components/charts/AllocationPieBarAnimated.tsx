@@ -1,10 +1,17 @@
 'use client';
 
-// AllocationPieBarAnimated — Tab 4 «Aggregate» animated donut + stacked bar (v3)
-// Animation: pie slices expand with stroke-dasharray arc animation (stagger 200ms/slice)
-//            stacked bars grow from left (stagger), labels fade in last
-// Fallback: prefers-reduced-motion → static immediately
-// Accessibility: role="img" + aria-label + visible data table fallback
+// AllocationPieBarAnimated — Tab 4 «Aggregate» — REBUILT as 2-cell bento (Slice-LP3.3 §B)
+// Spec: Slice-LP3.3 chart upgrade Proposal B §B —
+//   - DROP packed donut+stacked-bar combo (was 280×150 with 26 items / 0.62 items/px²)
+//   - Cell A (left): standalone donut, larger, with breathing room. Center «$231k» 22pt.
+//   - Cell B (right): broker-table card. 3 rows, brand-voice approved verbatim phrasing
+//     («IBKR · $186k across 5 positions» — review §3.3 — DO NOT paraphrase).
+//   - Replace `width` animation with compositor-friendly opacity + transform: translateY()
+//   - Total entrance budget ≤600ms (was 1.5s):
+//     · 0–500ms: 4 donut slices reveal via stroke-dashoffset (combined)
+//     · 200–500ms: broker rows stagger in (translateY + opacity, 80ms steps)
+// Fallback: prefers-reduced-motion → static immediately.
+// Accessibility: each card has its own role="img" + aria-label + visible data table fallback.
 
 import { useEffect, useRef, useState } from 'react';
 import { useInView } from '../hooks/useInView';
@@ -13,14 +20,28 @@ import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion';
 interface Slice {
   label: string;
   pct: number;
+  amount: string;
   color: string;
 }
 
 const SLICES: ReadonlyArray<Slice> = [
-  { label: 'Tech', pct: 58, color: 'var(--provedo-accent)' },
-  { label: 'Financials', pct: 18, color: 'var(--provedo-text-secondary)' },
-  { label: 'Healthcare', pct: 14, color: 'var(--provedo-text-tertiary)' },
-  { label: 'Other', pct: 10, color: 'var(--provedo-border-default)' },
+  { label: 'Tech', pct: 58, amount: '$134k', color: 'var(--provedo-accent)' },
+  { label: 'Financials', pct: 18, amount: '$42k', color: 'var(--provedo-accent-hover)' },
+  { label: 'Healthcare', pct: 14, amount: '$32k', color: 'var(--provedo-text-secondary)' },
+  { label: 'Other', pct: 10, amount: '$23k', color: 'var(--provedo-border-default)' },
+] as const;
+
+interface BrokerRow {
+  name: string;
+  amount: string;
+  positions: number;
+}
+
+// Brand-voice approved exact phrasing (review §3.3) — DO NOT paraphrase.
+const BROKER_ROWS: ReadonlyArray<BrokerRow> = [
+  { name: 'IBKR', amount: '$186k', positions: 5 },
+  { name: 'Schwab', amount: '$94k', positions: 8 },
+  { name: 'Coinbase', amount: '$32k', positions: 12 },
 ] as const;
 
 function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
@@ -38,293 +59,311 @@ function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle
   return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
 }
 
-const CX = 70;
-const CY = 70;
-const OUTER_R = 60;
-const INNER_R = 36;
+const CX = 80;
+const CY = 80;
+const OUTER_R = 64;
+const INNER_R = 44;
+const ARC_R = (OUTER_R + INNER_R) / 2;
 const STROKE_W = OUTER_R - INNER_R;
+const CIRCUMFERENCE = 2 * Math.PI * ARC_R;
 
-// Full circumference for stroke-dasharray animation
-const CIRCUMFERENCE = 2 * Math.PI * ((OUTER_R + INNER_R) / 2);
+interface ArcSlice extends Slice {
+  startAngle: number;
+  endAngle: number;
+  arcLen: number;
+}
 
-const ibkrPositions = [
-  { label: 'AAPL', w: 54, color: 'var(--provedo-accent-active)' },
-  { label: 'MSFT', w: 35, color: 'var(--provedo-accent)' },
-  { label: 'NVDA', w: 31, color: 'var(--provedo-accent-hover)' },
-] as const;
-
-const schwabPositions = [
-  { label: 'GOOG', w: 22, color: 'var(--provedo-accent-light)' },
-  { label: 'AMZN', w: 16, color: 'var(--provedo-border-default)' },
-] as const;
+function buildArcs(slices: ReadonlyArray<Slice>): ReadonlyArray<ArcSlice> {
+  let cumulativePct = 0;
+  return slices.map((slice) => {
+    const startAngle = cumulativePct * 3.6;
+    cumulativePct += slice.pct;
+    const endAngle = cumulativePct * 3.6;
+    const arcLen = (slice.pct / 100) * CIRCUMFERENCE;
+    return { ...slice, startAngle, endAngle, arcLen };
+  });
+}
 
 export function AllocationPieBarAnimated(): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.25 });
   const prefersReduced = usePrefersReducedMotion();
-  const [visibleSlices, setVisibleSlices] = useState(0);
-  const [barsVisible, setBarsVisible] = useState(false);
-  const [labelsVisible, setLabelsVisible] = useState(false);
+  const [slicesRevealed, setSlicesRevealed] = useState(false);
+  const [legendVisible, setLegendVisible] = useState(false);
+  const [rowsVisible, setRowsVisible] = useState(false);
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     if (!inView) return;
     if (prefersReduced) {
-      setVisibleSlices(SLICES.length);
-      setBarsVisible(true);
-      setLabelsVisible(true);
+      setSlicesRevealed(true);
+      setLegendVisible(true);
+      setRowsVisible(true);
       return;
     }
 
-    // Slices appear one by one: 0ms, 200ms, 400ms, 600ms
-    const sliceTimers = SLICES.map((_, i) => setTimeout(() => setVisibleSlices(i + 1), i * 200));
-    // Bars grow from left after all slices: 800ms
-    const t4 = setTimeout(() => setBarsVisible(true), 800);
-    // Labels fade in last: 1100ms
-    const t5 = setTimeout(() => setLabelsVisible(true), 1100);
-    timerRefs.current = [...sliceTimers, t4, t5];
+    // Compressed sequence — total entrance ≤600ms (audit budget):
+    // - 0–500ms: 4 slices reveal in parallel via stroke-dashoffset (combined, no per-slice stagger)
+    // - 200ms: broker rows + legend trigger (translateY + opacity transition: 300ms)
+    // - 500–600ms: ramps complete
+    const t1 = setTimeout(() => setSlicesRevealed(true), 0);
+    const t2 = setTimeout(() => {
+      setLegendVisible(true);
+      setRowsVisible(true);
+    }, 200);
+    timerRefs.current = [t1, t2];
 
     return () => timerRefs.current.forEach(clearTimeout);
   }, [inView, prefersReduced]);
 
-  // Build arc paths
-  let cumulativePct = 0;
-  const arcs = SLICES.map((slice, i) => {
-    const startAngle = cumulativePct * 3.6;
-    cumulativePct += slice.pct;
-    const endAngle = cumulativePct * 3.6;
-    const arcLen = (slice.pct / 100) * CIRCUMFERENCE;
-    const isVisible = prefersReduced || visibleSlices > i;
-    return { ...slice, startAngle, endAngle, arcLen, isVisible };
-  });
+  const arcs = buildArcs(SLICES);
 
   return (
     <div ref={ref} style={{ marginTop: '12px' }}>
-      <svg
-        viewBox="0 0 280 150"
-        width="100%"
-        height="150"
-        role="img"
-        aria-label="Allocation across IBKR and Schwab: Tech 58% (AAPL $14k, MSFT $9k, NVDA $8k on IBKR; GOOG $3k, AMZN $2k on Schwab), Financials 18%, Healthcare 14%, Other 10%. Total $231k."
-        style={{ display: 'block' }}
+      <div
+        style={{
+          display: 'grid',
+          gap: '12px',
+          gridTemplateColumns: '1fr',
+        }}
+        className="allocation-bento"
       >
-        {/* Donut arcs — animated per-slice */}
-        {arcs.map((arc) => (
-          <path
-            key={arc.label}
-            d={arcPath(CX, CY, (OUTER_R + INNER_R) / 2, arc.startAngle, arc.endAngle)}
-            fill="none"
-            stroke={arc.color}
-            strokeWidth={STROKE_W}
-            strokeLinecap="butt"
-            style={
-              prefersReduced
-                ? {}
-                : {
-                    strokeDasharray: `${arc.arcLen} ${CIRCUMFERENCE}`,
-                    strokeDashoffset: arc.isVisible ? 0 : arc.arcLen,
-                    transition: arc.isVisible
-                      ? 'stroke-dashoffset 400ms cubic-bezier(0.16,1,0.3,1)'
-                      : 'none',
-                  }
-            }
-          />
-        ))}
-
-        {/* Center label */}
-        <text
-          x={CX}
-          y={CY - 6}
-          fontSize="13"
-          fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-primary)"
-          textAnchor="middle"
-          fontWeight="500"
+        {/* CELL A — Donut card */}
+        <div
           style={{
-            opacity: labelsVisible || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+            backgroundColor: 'var(--provedo-bg-elevated)',
+            border: '1px solid var(--provedo-border-subtle)',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
           }}
         >
-          $231k
-        </text>
-        <text
-          x={CX}
-          y={CY + 8}
-          fontSize="9"
-          fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-tertiary)"
-          textAnchor="middle"
-          style={{
-            opacity: labelsVisible || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 300ms ease',
-          }}
-        >
-          total
-        </text>
-
-        {/* Slice labels */}
-        {[
-          { label: 'Tech 58%', y: 22, color: 'var(--provedo-accent)', fw: '500' },
-          { label: 'Fin. 18%', y: 36, color: 'var(--provedo-text-secondary)', fw: 'normal' },
-          { label: 'Health 14%', y: 50, color: 'var(--provedo-text-tertiary)', fw: 'normal' },
-          { label: 'Other 10%', y: 64, color: 'var(--provedo-border-default)', fw: 'normal' },
-        ].map((l) => (
-          <text
-            key={l.label}
-            x="140"
-            y={l.y}
-            fontSize="9"
-            fontFamily="var(--provedo-font-mono)"
-            fill={l.color}
-            fontWeight={l.fw}
+          <p
             style={{
-              opacity: labelsVisible || prefersReduced ? 1 : 0,
-              transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+              fontFamily: 'var(--provedo-font-mono)',
+              fontSize: '11px',
+              color: 'var(--provedo-text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              margin: 0,
             }}
           >
-            {l.label}
-          </text>
-        ))}
+            By sector
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <svg
+              viewBox="0 0 160 160"
+              width="140"
+              height="140"
+              role="img"
+              aria-label="Sector allocation: Tech 58% ($134k), Financials 18% ($42k), Healthcare 14% ($32k), Other 10% ($23k). Total $231k."
+              style={{ flexShrink: 0 }}
+            >
+              {arcs.map((arc) => {
+                const isVisible = prefersReduced || slicesRevealed;
+                return (
+                  <path
+                    key={arc.label}
+                    d={arcPath(CX, CY, ARC_R, arc.startAngle, arc.endAngle)}
+                    fill="none"
+                    stroke={arc.color}
+                    strokeWidth={STROKE_W}
+                    strokeLinecap="butt"
+                    style={
+                      prefersReduced
+                        ? {}
+                        : {
+                            strokeDasharray: `${arc.arcLen} ${CIRCUMFERENCE}`,
+                            strokeDashoffset: isVisible ? 0 : arc.arcLen,
+                            transition: isVisible
+                              ? 'stroke-dashoffset 500ms cubic-bezier(0.16,1,0.3,1)'
+                              : 'none',
+                          }
+                    }
+                  />
+                );
+              })}
 
-        {/* Stacked bars header */}
-        <text
-          x="140"
-          y="86"
-          fontSize="10"
-          fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-tertiary)"
-          fontWeight="500"
-          style={{
-            opacity: barsVisible || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 200ms ease',
-          }}
-        >
-          By broker
-        </text>
+              {/* Center: $231k at 22pt */}
+              <text
+                x={CX}
+                y={CY - 2}
+                fontSize="22"
+                fontFamily="var(--provedo-font-mono)"
+                fill="var(--provedo-text-primary)"
+                textAnchor="middle"
+                fontWeight="600"
+                style={{
+                  opacity: legendVisible || prefersReduced ? 1 : 0,
+                  transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+                }}
+              >
+                $231k
+              </text>
+              <text
+                x={CX}
+                y={CY + 16}
+                fontSize="11"
+                fontFamily="var(--provedo-font-mono)"
+                fill="var(--provedo-text-tertiary)"
+                textAnchor="middle"
+                style={{
+                  opacity: legendVisible || prefersReduced ? 1 : 0,
+                  transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+                }}
+              >
+                total
+              </text>
+            </svg>
 
-        {/* IBKR row label */}
-        <text
-          x="140"
-          y="100"
-          fontSize="9"
-          fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-secondary)"
-          style={{
-            opacity: barsVisible || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 200ms ease',
-          }}
-        >
-          IBKR
-        </text>
-
-        {/* IBKR bars — grow from left */}
-        {(() => {
-          let x = 170;
-          return ibkrPositions.map((pos, i) => {
-            const rect = (
-              <g key={pos.label}>
-                <rect
-                  x={x}
-                  y="92"
-                  width={barsVisible || prefersReduced ? pos.w : 0}
-                  height="11"
-                  rx="1"
-                  fill={pos.color}
+            {/* Slice legend — fades in once with the center label */}
+            <ul
+              style={{
+                listStyle: 'none',
+                padding: 0,
+                margin: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+                fontFamily: 'var(--provedo-font-mono)',
+                fontSize: '12px',
+                color: 'var(--provedo-text-secondary)',
+                minWidth: '140px',
+                opacity: legendVisible || prefersReduced ? 1 : 0,
+                transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+              }}
+            >
+              {SLICES.map((s) => (
+                <li
+                  key={s.label}
                   style={{
-                    transition: prefersReduced
-                      ? 'none'
-                      : `width 300ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-                  }}
-                />
-                <text
-                  x={x + pos.w / 2}
-                  y="101"
-                  fontSize="7"
-                  fontFamily="var(--provedo-font-mono)"
-                  fill="white"
-                  textAnchor="middle"
-                  style={{
-                    opacity: labelsVisible || prefersReduced ? 1 : 0,
-                    transition: prefersReduced ? 'none' : 'opacity 200ms ease',
-                  }}
-                >
-                  {pos.label}
-                </text>
-              </g>
-            );
-            x += pos.w + 1;
-            return rect;
-          });
-        })()}
-
-        {/* Schwab row label */}
-        <text
-          x="140"
-          y="116"
-          fontSize="9"
-          fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-secondary)"
-          style={{
-            opacity: barsVisible || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 200ms ease 100ms',
-          }}
-        >
-          Schwab
-        </text>
-
-        {/* Schwab bars */}
-        {(() => {
-          let x = 170;
-          return schwabPositions.map((pos, i) => {
-            const rect = (
-              <g key={pos.label}>
-                <rect
-                  x={x}
-                  y="108"
-                  width={barsVisible || prefersReduced ? pos.w : 0}
-                  height="11"
-                  rx="1"
-                  fill={pos.color}
-                  style={{
-                    transition: prefersReduced
-                      ? 'none'
-                      : `width 300ms cubic-bezier(0.16,1,0.3,1) ${100 + i * 80}ms`,
-                  }}
-                />
-                <text
-                  x={x + pos.w / 2}
-                  y="117"
-                  fontSize="7"
-                  fontFamily="var(--provedo-font-mono)"
-                  fill="white"
-                  textAnchor="middle"
-                  style={{
-                    opacity: labelsVisible || prefersReduced ? 1 : 0,
-                    transition: prefersReduced ? 'none' : 'opacity 200ms ease 100ms',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
                   }}
                 >
-                  {pos.label}
-                </text>
-              </g>
-            );
-            x += pos.w + 1;
-            return rect;
-          });
-        })()}
-      </svg>
+                  <span
+                    aria-hidden="true"
+                    style={{
+                      width: '10px',
+                      height: '10px',
+                      borderRadius: '2px',
+                      backgroundColor: s.color,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span style={{ flex: 1 }}>
+                    {s.label} {s.pct}% · {s.amount}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
 
-      {/* Visible data table — WCAG */}
+        {/* CELL B — Broker-table card */}
+        <div
+          style={{
+            backgroundColor: 'var(--provedo-bg-elevated)',
+            border: '1px solid var(--provedo-border-subtle)',
+            borderRadius: '12px',
+            padding: '16px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '12px',
+          }}
+        >
+          <p
+            style={{
+              fontFamily: 'var(--provedo-font-mono)',
+              fontSize: '11px',
+              color: 'var(--provedo-text-tertiary)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              margin: 0,
+            }}
+          >
+            By broker
+          </p>
+          <ul
+            aria-label="Allocation by broker"
+            style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+            }}
+          >
+            {BROKER_ROWS.map((row, i) => (
+              <li
+                key={row.name}
+                style={{
+                  fontFamily: 'var(--provedo-font-mono)',
+                  fontSize: '14px',
+                  color: 'var(--provedo-text-primary)',
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  gap: '6px',
+                  flexWrap: 'wrap',
+                  // Compositor-friendly entrance: opacity + translateY (NOT width).
+                  // Per-row stagger 0/80/160ms — fits within the 600ms budget.
+                  opacity: rowsVisible || prefersReduced ? 1 : 0,
+                  transform: rowsVisible || prefersReduced ? 'translateY(0)' : 'translateY(8px)',
+                  transition: prefersReduced
+                    ? 'none'
+                    : `opacity 300ms ease ${i * 80}ms, transform 300ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
+                }}
+              >
+                {/* Brand-voice approved verbatim phrasing (review §3.3 — DO NOT paraphrase):
+                    «IBKR · $186k across 5 positions» */}
+                <span style={{ fontWeight: 600 }}>{row.name}</span>
+                <span aria-hidden="true" style={{ color: 'var(--provedo-text-tertiary)' }}>
+                  ·
+                </span>
+                <span style={{ fontWeight: 600, color: 'var(--provedo-accent-hover)' }}>
+                  {row.amount}
+                </span>
+                <span style={{ color: 'var(--provedo-text-secondary)' }}>
+                  across {row.positions} positions
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {/* Visible data caption — WCAG color-not-only. */}
       <p
         style={{
-          fontSize: '10px',
+          fontSize: '11px',
           fontFamily: 'var(--provedo-font-mono)',
           color: 'var(--provedo-text-tertiary)',
-          marginTop: '4px',
-          lineHeight: '1.4',
+          marginTop: '8px',
+          lineHeight: '1.5',
         }}
         aria-label="Allocation breakdown"
       >
         Tech 58% · Financials 18% · Healthcare 14% · Other 10%
       </p>
+
+      {/* Responsive: switch to 2-column above 640px container width. */}
+      <style>{`
+        @media (min-width: 640px) {
+          .allocation-bento {
+            grid-template-columns: 1fr 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

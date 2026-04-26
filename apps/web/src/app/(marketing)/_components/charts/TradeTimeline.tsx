@@ -1,12 +1,15 @@
 // TradeTimeline — Tab 3 «Patterns» inline SVG trade timeline
 // Spec: visual spec §2.3 — 12-month axis, 3 sell-points + 8-week-after marks
+// Slice-LP3.3 chart upgrade Proposal B §D: typography polish only
+//   - All text lifted to 11pt floor (was 8-9pt)
+//   - Visual vocabulary unchanged — preserves v3.1 finance/legal patch
 // Accessibility: role="img" + aria-label + <details> fallback table
 // Colors: CSS variables only — no hardcoded hex
 // Lane A: observational only — no advice, no prescriptive annotations
 
 const AXIS_Y = 60;
 const SVG_W = 280;
-const SVG_H = 120;
+const SVG_H = 124;
 
 // 3 sell-points with their 8-week-after marks
 // x coordinates derived from month positions (Jan=0, Dec=260 → step=260/11≈23.6)
@@ -63,22 +66,22 @@ export function TradeTimeline(): React.ReactElement {
         {SELL_POINTS.map((sp) => (
           <polygon
             key={`sell-${sp.month}`}
-            points={`${sp.xSell - 5},${AXIS_Y - 12} ${sp.xSell + 5},${AXIS_Y - 12} ${sp.xSell},${AXIS_Y - 2}`}
-            fill="var(--provedo-accent)"
+            points={`${sp.xSell - 6},${AXIS_Y - 14} ${sp.xSell + 6},${AXIS_Y - 14} ${sp.xSell},${AXIS_Y - 2}`}
+            fill="var(--provedo-negative)"
           />
         ))}
 
-        {/* Sell labels */}
+        {/* Sell labels — 11pt floor */}
         {SELL_POINTS.map((sp) => (
           <text
             key={`label-${sp.month}`}
             x={sp.xSell}
-            y={AXIS_Y - 16}
-            fontSize="9"
+            y={AXIS_Y - 18}
+            fontSize="11"
             fontFamily="var(--provedo-font-mono)"
-            fill="var(--provedo-accent)"
+            fill="var(--provedo-negative)"
             textAnchor="middle"
-            fontWeight="500"
+            fontWeight="600"
           >
             {sp.month}
           </text>
@@ -90,22 +93,22 @@ export function TradeTimeline(): React.ReactElement {
             key={`after-${sp.month}`}
             cx={sp.xAfter}
             cy={AXIS_Y}
-            r="4"
+            r="5"
             fill="none"
-            stroke="var(--provedo-text-tertiary)"
+            stroke="var(--provedo-accent)"
             strokeWidth="1.5"
           />
         ))}
 
-        {/* Month axis labels */}
+        {/* Month axis labels — 11pt floor */}
         {MONTH_LABELS.map((m, i) => {
           const xPos = MONTH_LABEL_XS[i] ?? 0;
           return (
             <text
               key={m}
               x={xPos}
-              y={AXIS_Y + 16}
-              fontSize="9"
+              y={AXIS_Y + 18}
+              fontSize="11"
               fontFamily="var(--provedo-font-mono)"
               fill="var(--provedo-text-tertiary)"
             >
@@ -114,30 +117,30 @@ export function TradeTimeline(): React.ReactElement {
           );
         })}
 
-        {/* Legend */}
-        <g transform={`translate(0,${SVG_H - 14})`}>
-          <polygon points="0,8 6,8 3,0" fill="var(--provedo-accent)" />
+        {/* Legend — 11pt floor (was 8pt) */}
+        <g transform={`translate(0,${SVG_H - 12})`}>
+          <polygon points="0,10 8,10 4,0" fill="var(--provedo-negative)" />
           <text
-            x="10"
-            y="8"
-            fontSize="8"
+            x="13"
+            y="10"
+            fontSize="11"
             fontFamily="var(--provedo-font-mono)"
             fill="var(--provedo-text-tertiary)"
           >
             sell point
           </text>
           <circle
-            cx="70"
-            cy="4"
-            r="3"
+            cx="92"
+            cy="5"
+            r="4"
             fill="none"
-            stroke="var(--provedo-text-tertiary)"
-            strokeWidth="1"
+            stroke="var(--provedo-accent)"
+            strokeWidth="1.5"
           />
           <text
-            x="77"
-            y="8"
-            fontSize="8"
+            x="100"
+            y="10"
+            fontSize="11"
             fontFamily="var(--provedo-font-mono)"
             fill="var(--provedo-text-tertiary)"
           >
@@ -150,7 +153,7 @@ export function TradeTimeline(): React.ReactElement {
       <details style={{ marginTop: '6px' }}>
         <summary
           style={{
-            fontSize: '9px',
+            fontSize: '11px',
             fontFamily: 'var(--provedo-font-mono)',
             color: 'var(--provedo-text-tertiary)',
             cursor: 'pointer',
@@ -160,7 +163,7 @@ export function TradeTimeline(): React.ReactElement {
         </summary>
         <table
           style={{
-            fontSize: '9px',
+            fontSize: '11px',
             fontFamily: 'var(--provedo-font-mono)',
             color: 'var(--provedo-text-tertiary)',
             borderCollapse: 'collapse',

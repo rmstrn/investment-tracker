@@ -282,9 +282,9 @@ function BrokerPieMockup(): React.ReactElement {
         Across IBKR + Schwab
       </p>
       <svg
-        viewBox="0 0 160 100"
+        viewBox="0 0 160 110"
         width="160"
-        height="100"
+        height="110"
         role="img"
         aria-label="Cross-broker allocation: Tech 58%, Financials 18%, Healthcare 14%, Other 10%"
       >
@@ -328,21 +328,22 @@ function BrokerPieMockup(): React.ReactElement {
           strokeDasharray="18.8 170.8"
           strokeDashoffset="-169.9"
         />
+        {/* Slice-LP3.3 §E typography lift: primary numeral 18pt, supporting at 11pt floor */}
         <text
           x="50"
-          y="47"
-          fontSize="10"
+          y="48"
+          fontSize="18"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-primary)"
           textAnchor="middle"
-          fontWeight="500"
+          fontWeight="600"
         >
           $231k
         </text>
         <text
           x="50"
-          y="58"
-          fontSize="8"
+          y="62"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-tertiary)"
           textAnchor="middle"
@@ -352,17 +353,17 @@ function BrokerPieMockup(): React.ReactElement {
         <text
           x="100"
           y="28"
-          fontSize="9"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-accent)"
-          fontWeight="500"
+          fontWeight="600"
         >
           Tech 58%
         </text>
         <text
           x="100"
-          y="40"
-          fontSize="9"
+          y="44"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-secondary)"
         >
@@ -370,8 +371,8 @@ function BrokerPieMockup(): React.ReactElement {
         </text>
         <text
           x="100"
-          y="52"
-          fontSize="9"
+          y="60"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-tertiary)"
         >
@@ -379,8 +380,8 @@ function BrokerPieMockup(): React.ReactElement {
         </text>
         <text
           x="100"
-          y="64"
-          fontSize="9"
+          y="76"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-border-default)"
         >

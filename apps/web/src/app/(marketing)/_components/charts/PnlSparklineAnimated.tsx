@@ -1,8 +1,15 @@
 'use client';
 
-// PnlSparklineAnimated — Tab 1 «Why?» animated SVG chart (v3)
-// Animation: stroke-dashoffset line draw on IntersectionObserver trigger (1.5s ease-out)
-// Two emphasis dots pulse ×2 after line completes; −4.2% label fades in last
+// PnlSparklineAnimated — Tab 1 «Why?» animated SVG chart (v3 → Slice-LP3.3)
+// Animation: stroke-dashoffset line draw on IntersectionObserver trigger
+// Slice-LP3.3 chart upgrade Proposal B:
+//   - Line stroke promoted from slate-700 1.5px → brand teal 2px
+//   - Filled-area gradient teal at 12% opacity (was border-subtle ramp)
+//   - End label lifted to 20pt JBM-mono (the headline number on this chart)
+//   - Motion budget compressed to 600ms total entrance (was 2.6s)
+//     · 0–500ms: line draw
+//     · 500–700ms: dots + emphasis labels appear together
+//     · 600–900ms: end-label fade-in (overlaps tail of dot reveal)
 // Fallback: prefers-reduced-motion → static (no animation, same visual)
 // Accessibility: role="img" + descriptive aria-label (WCAG 2.2 AA)
 
@@ -19,7 +26,7 @@ const LINE_POINTS =
 // Calculated: sum of segment distances ≈ 470px
 const PATH_LENGTH = 470;
 
-type AnimPhase = 'idle' | 'drawing' | 'dots' | 'label' | 'done';
+type AnimPhase = 'idle' | 'drawing' | 'emphasis' | 'done';
 
 export function PnlSparklineAnimated(): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.3 });
@@ -35,19 +42,19 @@ export function PnlSparklineAnimated(): React.ReactElement {
       return;
     }
 
-    // Phase sequence: drawing (0ms) → dots (1600ms) → label (2000ms) → done (2600ms)
+    // Compressed sequence — 600ms total entrance budget per Slice-LP3.3 audit:
+    // drawing (0ms, 500ms transition) → emphasis (500ms) → done (600ms)
     setPhase('drawing');
 
-    const t1 = setTimeout(() => setPhase('dots'), 1600);
-    const t2 = setTimeout(() => setPhase('label'), 2000);
-    const t3 = setTimeout(() => setPhase('done'), 2600);
-    timerRefs.current = [t1, t2, t3];
+    const t1 = setTimeout(() => setPhase('emphasis'), 500);
+    const t2 = setTimeout(() => setPhase('done'), 600);
+    timerRefs.current = [t1, t2];
 
     return () => timerRefs.current.forEach(clearTimeout);
   }, [inView, prefersReduced]);
 
-  const showDots = phase === 'dots' || phase === 'label' || phase === 'done';
-  const showLabel = phase === 'label' || phase === 'done';
+  const showEmphasis = phase === 'emphasis' || phase === 'done';
+  const showLabel = phase === 'emphasis' || phase === 'done';
 
   return (
     <div ref={ref} style={{ marginTop: '12px' }}>
@@ -61,8 +68,9 @@ export function PnlSparklineAnimated(): React.ReactElement {
       >
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="var(--provedo-border-subtle)" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="var(--provedo-border-subtle)" stopOpacity="0" />
+            {/* Brand teal at 12% opacity — Slice-LP3.3 §A */}
+            <stop offset="0%" stopColor="var(--provedo-accent)" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="var(--provedo-accent)" stopOpacity="0" />
           </linearGradient>
         </defs>
 
@@ -77,24 +85,23 @@ export function PnlSparklineAnimated(): React.ReactElement {
           strokeDasharray="2,3"
         />
 
-        {/* Gradient fill — visible once line drawn */}
-        {(showDots || prefersReduced) && (
-          <polyline
-            fill={`url(#${gradientId})`}
-            stroke="none"
-            points={`0,120 ${LINE_POINTS} 279,120`}
-            style={{
-              opacity: showDots ? 1 : 0,
-              transition: 'opacity 400ms ease',
-            }}
-          />
-        )}
+        {/* Gradient fill — fades in alongside the line draw, so it tracks the
+            line's progress visually rather than popping in after */}
+        <polyline
+          fill={`url(#${gradientId})`}
+          stroke="none"
+          points={`0,120 ${LINE_POINTS} 279,120`}
+          style={{
+            opacity: phase === 'idle' && !prefersReduced ? 0 : 1,
+            transition: prefersReduced ? 'none' : 'opacity 500ms ease',
+          }}
+        />
 
-        {/* Animated P&L line */}
+        {/* Animated P&L line — brand teal 2px (was slate-700 1.5px) */}
         <polyline
           fill="none"
-          stroke="var(--provedo-text-secondary)"
-          strokeWidth="1.5"
+          stroke="var(--provedo-accent)"
+          strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
           points={LINE_POINTS}
@@ -106,21 +113,21 @@ export function PnlSparklineAnimated(): React.ReactElement {
                   strokeDashoffset: phase === 'idle' ? PATH_LENGTH : 0,
                   transition:
                     phase === 'drawing'
-                      ? 'stroke-dashoffset 1.5s cubic-bezier(0.16,1,0.3,1)'
+                      ? 'stroke-dashoffset 500ms cubic-bezier(0.16,1,0.3,1)'
                       : 'none',
                 }
           }
         />
 
-        {/* AAPL emphasis dot — pulses when visible */}
+        {/* AAPL emphasis dot — appears together with TSLA at the end of line draw */}
         <circle
           cx="77"
           cy="52"
           r="4"
           fill="var(--provedo-negative)"
           style={{
-            opacity: showDots || prefersReduced ? 1 : 0,
-            transform: showDots || prefersReduced ? 'scale(1)' : 'scale(0)',
+            opacity: showEmphasis || prefersReduced ? 1 : 0,
+            transform: showEmphasis || prefersReduced ? 'scale(1)' : 'scale(0)',
             transformOrigin: '77px 52px',
             transition: prefersReduced
               ? 'none'
@@ -129,71 +136,73 @@ export function PnlSparklineAnimated(): React.ReactElement {
         />
         <text
           x="77"
-          y="46"
-          fontSize="9"
+          y="44"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-tertiary)"
+          fill="var(--provedo-text-secondary)"
           textAnchor="middle"
+          fontWeight="500"
           style={{
-            opacity: showDots || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 200ms ease 100ms',
+            opacity: showEmphasis || prefersReduced ? 1 : 0,
+            transition: prefersReduced ? 'none' : 'opacity 200ms ease',
           }}
         >
           AAPL
         </text>
 
-        {/* TSLA emphasis dot — appears 200ms after AAPL */}
+        {/* TSLA emphasis dot — same trigger as AAPL (no stagger) */}
         <circle
           cx="182"
           cy="92"
           r="4"
           fill="var(--provedo-negative)"
           style={{
-            opacity: showDots || prefersReduced ? 1 : 0,
-            transform: showDots || prefersReduced ? 'scale(1)' : 'scale(0)',
+            opacity: showEmphasis || prefersReduced ? 1 : 0,
+            transform: showEmphasis || prefersReduced ? 'scale(1)' : 'scale(0)',
             transformOrigin: '182px 92px',
             transition: prefersReduced
               ? 'none'
-              : 'opacity 200ms ease 200ms, transform 200ms cubic-bezier(0.34,1.56,0.64,1) 200ms',
+              : 'opacity 200ms ease, transform 200ms cubic-bezier(0.34,1.56,0.64,1)',
           }}
         />
         <text
           x="182"
-          y="86"
-          fontSize="9"
+          y="84"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
-          fill="var(--provedo-text-tertiary)"
+          fill="var(--provedo-text-secondary)"
           textAnchor="middle"
+          fontWeight="500"
           style={{
-            opacity: showDots || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 200ms ease 300ms',
+            opacity: showEmphasis || prefersReduced ? 1 : 0,
+            transition: prefersReduced ? 'none' : 'opacity 200ms ease',
           }}
         >
           TSLA
         </text>
 
-        {/* −4.2% label — fades in last */}
+        {/* −4.2% end label — 20pt headline numeral (Slice-LP3.3 §A) */}
         <text
           x="276"
-          y="90"
-          fontSize="11"
+          y="100"
+          fontSize="20"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-negative)"
           textAnchor="end"
-          fontWeight="500"
+          fontWeight="600"
           style={{
             opacity: showLabel || prefersReduced ? 1 : 0,
-            transition: prefersReduced ? 'none' : 'opacity 400ms ease',
+            transition: prefersReduced ? 'none' : 'opacity 300ms ease 100ms',
           }}
         >
           −4.2%
         </text>
 
-        {/* X-axis labels */}
+        {/* X-axis labels — lifted to 11pt floor */}
         <text
           x="0"
-          y="114"
-          fontSize="9"
+          y="116"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-tertiary)"
         >
@@ -201,8 +210,8 @@ export function PnlSparklineAnimated(): React.ReactElement {
         </text>
         <text
           x="240"
-          y="114"
-          fontSize="9"
+          y="116"
+          fontSize="11"
           fontFamily="var(--provedo-font-mono)"
           fill="var(--provedo-text-tertiary)"
           textAnchor="end"

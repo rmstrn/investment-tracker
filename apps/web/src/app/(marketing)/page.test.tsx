@@ -292,6 +292,94 @@ describe('AllocationPieBar', () => {
   });
 });
 
+// ─── Slice-LP3.3 chart upgrade Proposal B — regression suite ────────────────
+
+describe('Slice-LP3.3 — PnlSparkline brand-color upgrade (§A)', () => {
+  // The headline P&L line MUST render in brand teal (var(--provedo-accent)),
+  // not in slate-secondary text color. Closes the largest brand-alignment gap
+  // identified by the chart upgrade audit.
+  it('primary line stroke uses var(--provedo-accent), not text-secondary', () => {
+    const { container } = render(<PnlSparkline />);
+    const polylines = container.querySelectorAll('polyline');
+    // The P&L line is the polyline whose stroke is set (not the gradient-fill polyline).
+    const lineWithStroke = Array.from(polylines).find(
+      (p) => (p.getAttribute('stroke') ?? 'none') !== 'none',
+    );
+    expect(lineWithStroke).toBeDefined();
+    expect(lineWithStroke?.getAttribute('stroke')).toBe('var(--provedo-accent)');
+    // Slate fallback MUST NOT be used for the primary line.
+    expect(lineWithStroke?.getAttribute('stroke')).not.toBe('var(--provedo-text-secondary)');
+  });
+
+  it('end label −4.2% renders at 20pt JBM-mono (was 11pt)', () => {
+    render(<PnlSparkline />);
+    const endLabel = screen.getByText('−4.2%');
+    expect(endLabel.getAttribute('font-size')).toBe('20');
+  });
+});
+
+describe('Slice-LP3.3 — AllocationPieBar 2-cell bento (§B)', () => {
+  // Tab 4 was rebuilt: donut card + broker-table card. The packed stacked-bar
+  // (which forced 7pt white-on-teal-light contrast failures + width animations)
+  // is gone.
+  it('renders two bento cells (sector donut + broker table)', () => {
+    const { container } = render(<AllocationPieBar />);
+    // «By sector» eyebrow — donut card
+    expect(container.textContent).toMatch(/by sector/i);
+    // «By broker» eyebrow — broker-table card
+    expect(container.textContent).toMatch(/by broker/i);
+  });
+
+  it('does NOT render the dropped stacked-bar with in-bar ticker labels', () => {
+    const { container } = render(<AllocationPieBar />);
+    // The old chart used <text fill="white"> 7pt labels INSIDE bars (e.g. AMZN, GOOG).
+    // After the rebuild the broker breakdown is rendered as readable HTML rows,
+    // not as illegible white-on-teal-light bars.
+    const whiteText = container.querySelector('text[fill="white"]');
+    expect(whiteText).toBeNull();
+    // The dropped «accent-light» (undefined token) MUST NOT be referenced anywhere.
+    expect(container.innerHTML).not.toMatch(/--provedo-accent-light/);
+  });
+
+  it('renders broker rows using brand-voice approved «across N positions» phrasing', () => {
+    render(<AllocationPieBar />);
+    // Verbatim from brand-voice review §3.3 — DO NOT paraphrase.
+    expect(screen.getByText(/across 5 positions/i)).toBeInTheDocument();
+    expect(screen.getByText(/across 8 positions/i)).toBeInTheDocument();
+    expect(screen.getByText(/across 12 positions/i)).toBeInTheDocument();
+  });
+
+  it('center numeral $231k renders at 22pt (was 13pt)', () => {
+    render(<AllocationPieBar />);
+    const centerLabel = screen.getByText('$231k');
+    expect(centerLabel.getAttribute('font-size')).toBe('22');
+  });
+});
+
+describe('Slice-LP3.3 — DividendCalendar polish (§C)', () => {
+  it('cell borders are 1px (was 0.5px — invisible at 100% scaling)', () => {
+    const { container } = render(<DividendCalendar />);
+    const rects = container.querySelectorAll('rect');
+    expect(rects.length).toBeGreaterThan(0);
+    // EVERY cell rect uses strokeWidth=1 — no half-pixel borders left.
+    for (const rect of rects) {
+      const sw = rect.getAttribute('stroke-width');
+      expect(sw).not.toBe('0.5');
+      expect(Number(sw)).toBeGreaterThanOrEqual(1);
+    }
+  });
+
+  it('counter renders statically at 16pt (no count-up animation)', () => {
+    render(<DividendCalendar />);
+    // The counter is a static <p> with «$312 expected this quarter» — no rAF tick.
+    const counter = screen.getByText(/\$312 expected this quarter/i);
+    expect(counter).toBeInTheDocument();
+    // 16px = 16pt headline numeral per audit §C.
+    const computedFontSize = (counter as HTMLElement).style.fontSize;
+    expect(computedFontSize).toBe('16px');
+  });
+});
+
 // ─── S5 Insights bullets ──────────────────────────────────────────────────
 
 describe('ProvedoInsightsBullets', () => {

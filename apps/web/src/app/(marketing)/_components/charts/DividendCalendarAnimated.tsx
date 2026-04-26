@@ -1,8 +1,15 @@
 'use client';
 
-// DividendCalendarAnimated — Tab 2 «Dividends» animated calendar (v3)
-// Animation: empty grid fades in, then dividend dots appear sequentially (200ms stagger)
-// Counter animates from $0 → $312 after dots appear
+// DividendCalendarAnimated — Tab 2 «Dividends» animated calendar (v3 → Slice-LP3.3)
+// Animation: empty grid fades in, then dividend dots appear sequentially (compressed)
+// Slice-LP3.3 chart upgrade Proposal B §C polish:
+//   - Borders 0.5px → 1px (visible at every DPR)
+//   - Ticker label floor 8pt → 11pt
+//   - Month gap 8 → 24px
+//   - DROP counter animation — render «$312» instantly at 16pt
+//   - Compress motion budget from 1.8s → ≤600ms total
+//     · 0–250ms: grid fade-in
+//     · 250–550ms: 3 dots reveal simultaneously (no per-dot stagger)
 // Fallback: prefers-reduced-motion → static, all visible immediately
 // Accessibility: role="img" + aria-label + visible caption (WCAG color-not-only)
 
@@ -17,7 +24,7 @@ interface DividendEvent {
   amount: string;
   col: number;
   row: number;
-  value: number; // numeric for counter
+  value: number; // numeric for sum reference (no longer animated)
 }
 
 const DIVIDEND_EVENTS: ReadonlyArray<DividendEvent> = [
@@ -29,11 +36,11 @@ const DIVIDEND_EVENTS: ReadonlyArray<DividendEvent> = [
 const MONTHS = ['Sep', 'Oct', 'Nov'] as const;
 const CELL_W = 28;
 const CELL_H = 24;
-const MONTH_GAP = 8;
+const MONTH_GAP = 24; // was 8 — Slice-LP3.3 §C
 const DAYS = 7;
 const WEEKS = 4;
 const MONTH_W = DAYS * CELL_W; // 196
-const TOTAL_W = MONTHS.length * MONTH_W + (MONTHS.length - 1) * MONTH_GAP; // 604
+const TOTAL_W = MONTHS.length * MONTH_W + (MONTHS.length - 1) * MONTH_GAP; // 636
 
 interface GridCell {
   weekIdx: number;
@@ -58,78 +65,53 @@ export function DividendCalendarAnimated(): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.25 });
   const prefersReduced = usePrefersReducedMotion();
   const [gridVisible, setGridVisible] = useState(false);
-  const [visibleDots, setVisibleDots] = useState(0); // 0, 1, 2, 3
-  const [counter, setCounter] = useState(0);
+  const [dotsVisible, setDotsVisible] = useState(false);
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (!inView) return;
     if (prefersReduced) {
       setGridVisible(true);
-      setVisibleDots(DIVIDEND_EVENTS.length);
-      setCounter(TOTAL_DIVIDENDS);
+      setDotsVisible(true);
       return;
     }
 
-    // Sequence: grid fades in (0ms) → dot 1 (400ms) → dot 2 (600ms) → dot 3 (800ms) → counter (1000ms)
+    // Compressed sequence — 600ms total entrance budget per Slice-LP3.3 audit:
+    // grid fade-in (0–250ms) → 3 dots simultaneous (250ms trigger, 300ms transition)
     const t0 = setTimeout(() => setGridVisible(true), 0);
-    const t1 = setTimeout(() => setVisibleDots(1), 400);
-    const t2 = setTimeout(() => setVisibleDots(2), 600);
-    const t3 = setTimeout(() => setVisibleDots(3), 800);
-    const t4 = setTimeout(() => {
-      // Animate counter 0 → 312 over 800ms
-      const start = performance.now();
-      const duration = 800;
+    const t1 = setTimeout(() => setDotsVisible(true), 250);
+    timerRefs.current = [t0, t1];
 
-      function tick(now: number) {
-        const elapsed = now - start;
-        const progress = Math.min(elapsed / duration, 1);
-        // Ease-out cubic
-        const eased = 1 - (1 - progress) ** 3;
-        setCounter(Math.round(eased * TOTAL_DIVIDENDS));
-        if (progress < 1) {
-          rafRef.current = requestAnimationFrame(tick);
-        }
-      }
-      rafRef.current = requestAnimationFrame(tick);
-    }, 1000);
-
-    timerRefs.current = [t0, t1, t2, t3, t4];
-
-    return () => {
-      timerRefs.current.forEach(clearTimeout);
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
+    return () => timerRefs.current.forEach(clearTimeout);
   }, [inView, prefersReduced]);
 
   return (
     <div ref={ref} style={{ marginTop: '12px' }}>
-      {/* Counter */}
+      {/* Static counter — 16pt headline numeral, no count-up animation
+          (Slice-LP3.3 §C: 3× motion budget reduction came from dropping the rAF tick) */}
       <p
         style={{
           fontFamily: 'var(--provedo-font-mono)',
-          fontSize: '11px',
+          fontSize: '16px',
           color: 'var(--provedo-positive)',
-          fontWeight: 500,
+          fontWeight: 600,
           marginBottom: '8px',
-          opacity: visibleDots > 0 || prefersReduced ? 1 : 0,
-          transition: prefersReduced ? 'none' : 'opacity 300ms ease',
         }}
       >
-        ${counter} expected this quarter
+        ${TOTAL_DIVIDENDS} expected this quarter
       </p>
 
       <svg
-        viewBox={`0 0 ${TOTAL_W} ${WEEKS * CELL_H + 20}`}
+        viewBox={`0 0 ${TOTAL_W} ${WEEKS * CELL_H + 28}`}
         width="100%"
         height="120"
         role="img"
         aria-label="Dividend calendar: KO ex-div Sept 14 ($87), VZ ex-div Oct 7 ($74), MSFT ex-div Nov 19 ($61). Three smaller payments after."
+        preserveAspectRatio="xMidYMid meet"
         style={{
           display: 'block',
           opacity: gridVisible || prefersReduced ? 1 : 0,
-          transition: prefersReduced ? 'none' : 'opacity 300ms ease',
+          transition: prefersReduced ? 'none' : 'opacity 250ms ease',
         }}
       >
         {MONTHS.map((month, mIdx) => {
@@ -137,11 +119,11 @@ export function DividendCalendarAnimated(): React.ReactElement {
 
           return (
             <g key={month} transform={`translate(${offsetX},0)`}>
-              {/* Month label */}
+              {/* Month label — 11pt floor */}
               <text
                 x={MONTH_W / 2}
-                y="12"
-                fontSize="10"
+                y="14"
+                fontSize="11"
                 fontFamily="var(--provedo-font-mono)"
                 fill="var(--provedo-text-muted)"
                 textAnchor="middle"
@@ -152,13 +134,12 @@ export function DividendCalendarAnimated(): React.ReactElement {
 
               {GRID_CELLS.map(({ weekIdx, dayIdx, cellKey }) => {
                 const x = dayIdx * CELL_W;
-                const y = weekIdx * CELL_H + 16;
+                const y = weekIdx * CELL_H + 18;
 
-                const eventIdx = DIVIDEND_EVENTS.findIndex(
+                const event = DIVIDEND_EVENTS.find(
                   (e) => e.month === month && e.col === dayIdx && e.row === weekIdx,
                 );
-                const event = eventIdx >= 0 ? DIVIDEND_EVENTS[eventIdx] : null;
-                const isDotVisible = event !== null && visibleDots > eventIdx;
+                const isDotVisible = event !== null && (dotsVisible || prefersReduced);
 
                 return (
                   <g key={`${month}-${cellKey}`}>
@@ -174,7 +155,7 @@ export function DividendCalendarAnimated(): React.ReactElement {
                           : 'transparent'
                       }
                       stroke="var(--provedo-border-subtle)"
-                      strokeWidth="0.5"
+                      strokeWidth="1"
                       style={{
                         transition: prefersReduced ? 'none' : 'fill 200ms ease',
                       }}
@@ -192,20 +173,20 @@ export function DividendCalendarAnimated(): React.ReactElement {
                             transformOrigin: `${x + CELL_W / 2}px ${y + CELL_H / 2}px`,
                             transition: prefersReduced
                               ? 'none'
-                              : 'opacity 200ms ease, transform 200ms cubic-bezier(0.34,1.56,0.64,1)',
+                              : 'opacity 200ms ease, transform 250ms cubic-bezier(0.34,1.56,0.64,1)',
                           }}
                         />
                         <text
                           x={x + CELL_W / 2}
                           y={y + CELL_H + 12}
-                          fontSize="8"
+                          fontSize="11"
                           fontFamily="var(--provedo-font-mono)"
                           fill="var(--provedo-accent)"
                           textAnchor="middle"
-                          fontWeight="500"
+                          fontWeight="600"
                           style={{
                             opacity: isDotVisible || prefersReduced ? 1 : 0,
-                            transition: prefersReduced ? 'none' : 'opacity 200ms ease 100ms',
+                            transition: prefersReduced ? 'none' : 'opacity 200ms ease 50ms',
                           }}
                         >
                           {event.ticker} {event.amount}
@@ -220,14 +201,14 @@ export function DividendCalendarAnimated(): React.ReactElement {
         })}
       </svg>
 
-      {/* Visible caption — WCAG */}
+      {/* Visible caption — WCAG. Carries the data when the SVG compresses on mobile. */}
       <p
         style={{
-          fontSize: '10px',
+          fontSize: '11px',
           fontFamily: 'var(--provedo-font-mono)',
           color: 'var(--provedo-text-tertiary)',
-          marginTop: '4px',
-          lineHeight: '1.4',
+          marginTop: '6px',
+          lineHeight: '1.5',
         }}
       >
         KO Sept 14 ($87) · VZ Oct 7 ($74) · MSFT Nov 19 ($61)
