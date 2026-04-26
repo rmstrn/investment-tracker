@@ -1,11 +1,20 @@
-'use client';
+// ProvedoAggregationSection — §S8 broker list (Slice-LP3.5)
+//
+// Slice-LP3.5 chrome polish (PD re-evaluation §3.5 + brand-voice §8):
+//   - DROP the keyframe marquee animation entirely (Linear-changelog pattern
+//     is calmer and more honest than animated scroll, which asks the reader
+//     to wait-and-watch for proof).
+//   - Replace with a static 3-column mono list of broker abbreviations.
+//   - Closing line: «— and growing» (brand-voice EDIT — NOT «100s more»,
+//     which would conflict with proof-bar Cell I «100s»).
+//
+// Reduces the page motion budget (was the most kinetic surface). No
+// animation here at all by design.
 
-// ProvedoAggregationSection — §S8 broker marquee (v3)
-// V3.5: scroll-into-view fade-in for header + sub
-// Uses fallback copy «Hundreds of brokers and exchanges» per TD-095 (1000+ needs tech-lead verify)
-// CSS-only infinite-scroll marquee with prefers-reduced-motion respected
+import type { ReactElement } from 'react';
+import { ScrollFadeIn } from './ScrollFadeIn';
 
-const BROKER_PLACEHOLDERS: ReadonlyArray<{ label: string; abbr: string }> = [
+const BROKERS: ReadonlyArray<{ label: string; abbr: string }> = [
   { label: 'Interactive Brokers', abbr: 'IBKR' },
   { label: 'Charles Schwab', abbr: 'Schwab' },
   { label: 'Fidelity', abbr: 'Fidelity' },
@@ -20,34 +29,11 @@ const BROKER_PLACEHOLDERS: ReadonlyArray<{ label: string; abbr: string }> = [
   { label: 'Hargreaves Lansdown', abbr: 'HL' },
 ] as const;
 
-import { ScrollFadeIn } from './ScrollFadeIn';
-
-function BrokerCard({ label, abbr }: { label: string; abbr: string }) {
-  return (
-    <div
-      className="flex h-12 w-28 flex-shrink-0 items-center justify-center rounded-lg border"
-      style={{
-        borderColor: 'var(--provedo-border-subtle)',
-        backgroundColor: 'var(--provedo-bg-elevated)',
-      }}
-      aria-label={label}
-      role="img"
-    >
-      <span
-        className="text-xs font-medium tracking-tight"
-        style={{ color: 'var(--provedo-text-tertiary)' }}
-      >
-        {abbr}
-      </span>
-    </div>
-  );
-}
-
-export function ProvedoAggregationSection() {
+export function ProvedoAggregationSection(): ReactElement {
   return (
     <section
       aria-labelledby="aggregation-heading"
-      className="overflow-hidden px-4 py-16 md:py-24"
+      className="px-4 py-16 md:py-24"
       style={{ backgroundColor: 'var(--provedo-bg-page)' }}
     >
       <ScrollFadeIn>
@@ -68,52 +54,47 @@ export function ProvedoAggregationSection() {
         </div>
       </ScrollFadeIn>
 
-      {/* Marquee */}
-      <div className="relative mt-12 md:mt-16" aria-label="Supported brokers and exchanges">
+      {/* Static typeset list — replaces v3 marquee animation */}
+      <ScrollFadeIn delay={120}>
         <div
-          className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16"
-          style={{
-            background: 'linear-gradient(to right, var(--provedo-bg-page), transparent)',
-          }}
-        />
-        <div
-          className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16"
-          style={{
-            background: 'linear-gradient(to left, var(--provedo-bg-page), transparent)',
-          }}
-        />
-
-        <div className="overflow-hidden">
-          <div
-            className="flex gap-4 provedo-marquee"
-            style={
-              {
-                width: 'max-content',
-                animation: 'provedo-scroll 30s linear infinite',
-              } as React.CSSProperties
-            }
+          className="mx-auto mt-12 md:mt-16"
+          style={{ maxWidth: '640px' }}
+          data-testid="broker-typeset-list"
+        >
+          <ul
+            aria-label="Supported brokers and exchanges"
+            className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3"
+            style={{
+              listStyle: 'none',
+              padding: 0,
+              margin: 0,
+              fontFamily: 'var(--provedo-font-mono)',
+              fontSize: '13px',
+              color: 'var(--provedo-text-secondary)',
+              letterSpacing: '0.01em',
+            }}
           >
-            {[...BROKER_PLACEHOLDERS, ...BROKER_PLACEHOLDERS].map((broker, i) => (
-              <BrokerCard key={`${broker.abbr}-${i}`} label={broker.label} abbr={broker.abbr} />
+            {BROKERS.map((b) => (
+              <li key={b.abbr} aria-label={b.label}>
+                {b.abbr}
+              </li>
             ))}
-          </div>
-        </div>
-      </div>
+          </ul>
 
-      <style>{`
-        @keyframes provedo-scroll {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .provedo-marquee {
-            animation: none !important;
-            flex-wrap: wrap;
-            justify-content: center;
-            width: auto !important;
-          }
-        }
-      `}</style>
+          <p
+            className="mt-6 text-center"
+            style={{
+              fontFamily: 'var(--provedo-font-mono)',
+              fontSize: '13px',
+              color: 'var(--provedo-text-tertiary)',
+              fontStyle: 'italic',
+            }}
+            data-testid="broker-list-tail"
+          >
+            — and growing
+          </p>
+        </div>
+      </ScrollFadeIn>
     </section>
   );
 }

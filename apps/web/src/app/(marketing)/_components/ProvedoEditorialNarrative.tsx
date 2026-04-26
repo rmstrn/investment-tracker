@@ -7,6 +7,7 @@
 // PO lock: closing line = candidate #2 «You hold the assets. Provedo holds the context.»
 // Accessibility: WCAG AAA contrast (#FAFAF7 on slate-900 = 19.3:1)
 
+import { Sources } from './Sources';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
@@ -110,6 +111,28 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
           <span style={{ color: '#FAFAF7' }}>You hold the assets. </span>
           <span style={{ color: '#2DD4BF' }}>Provedo holds the context.</span>
         </p>
+
+        {/* Sources mount (Slice-LP3.5) — drops CD's specific cohort-N citations
+            per brand-voice REJECT §6.3 (manifestos do not cite their own JTBD
+            interview sample sizes — performative-Sage anti-pattern). Carries
+            the source-anchor signal in restrained form. */}
+        <div
+          style={{
+            marginTop: '32px',
+            maxWidth: '60ch',
+            ...(prefersReduced
+              ? {}
+              : {
+                  opacity: inView ? 1 : 0,
+                  transition: 'opacity 800ms ease 600ms',
+                }),
+          }}
+        >
+          <Sources
+            theme="dark"
+            items={['Pre-alpha JTBD interviews 2026-Q1', 'ICP cohort signals']}
+          />
+        </div>
       </div>
     </section>
   );

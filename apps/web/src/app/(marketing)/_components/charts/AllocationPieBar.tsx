@@ -1,287 +1,253 @@
-// AllocationPieBar — Tab 4 «Aggregate» — REBUILT as 2-cell bento (Slice-LP3.3 §B)
-// Spec: Slice-LP3.3 chart upgrade Proposal B §B —
-//   - DROP packed donut+stacked-bar combo (was 280×150 with 26 items / 0.62 items/px²)
-//   - Cell A (left): standalone donut, larger, with breathing room. Center «$231k» 22pt.
-//     Slice labels OUTSIDE donut, each on its own row with $-amount inline.
-//   - Cell B (right): broker-table card. 3 rows, brand-voice approved exact phrasing
-//     («IBKR · $186k across 5 positions» — verbatim from brand-voice review §3.3).
-//   - DROP stacked bars entirely + DROP --provedo-accent-light (undefined token).
-// Lane A: pure observation tokens — no advice, no recommendation register.
-// Accessibility: each card has its own role="img" + aria-label. Mandatory data caption.
-// Colors: CSS variables only.
+// AllocationPieBar — Tab 4 «Aggregate» — comparison-bars (Slice-LP3.5)
+//
+// Slice-LP3.5 chrome polish (Phase 2.5 PD re-evaluation §2 + brand-voice §7):
+//   - DROP the 2-cell bento (donut + broker-table) shipped in Slice-LP3.3.
+//     The donut + broker table did not serve the chat answer's load-bearing
+//     claim («about 2x S&P 500 sector weight») — the comparison was implied,
+//     not visualized. The bento also created a data-coherence problem
+//     (donut total vs broker subtotals vs chat-named positions).
+//   - NEW: TWO horizontal comparison-bars on the SAME scale, so the visual
+//     gap «58 vs 28» reads as literal length difference. Top bar: Provedo
+//     portfolio sector mix (tech 58% highlighted in teal). Bottom bar: S&P
+//     500 sector weights 2025-Q3 benchmark (tech 28%).
+//   - Below the comparison: mono-set accounts ledger («IBKR · AAPL · MSFT
+//     · NVDA · $31k» / «Schwab · GOOG · AMZN · $5k») — keeps the cross-
+//     broker proof visible without re-introducing the donut total.
+//   - Below the ledger: italic «Provedo notices: Your tech weight is about
+//     2× the index's — driven by IBKR.» (brand-voice approved preamble).
+//   - Below the notice: <Sources> primitive citing Holdings + S&P 500
+//     methodology (Slice-LP3.5 system-primitive mount).
+//
+// Lane A: pure observation — no recommendation register.
+// Accessibility: each bar carries role="img" + aria-label; mandatory data
+// caption preserved for color-not-only compliance.
+// Colors: CSS variables only (no ad-hoc hex).
 
-interface Slice {
-  label: string;
+import type { CSSProperties, ReactElement } from 'react';
+import { Sources } from '../Sources';
+
+// ─── Comparison-bar data ─────────────────────────────────────────────────────
+
+interface BarSegment {
+  /** Short label inside the bar (mono). Optional. */
+  label?: string;
+  /** Percentage 0-100. */
   pct: number;
-  amount: string;
+  /** Fill color (CSS variable token). */
   color: string;
+  /** When true, this segment is the highlight (Provedo tech). */
+  highlight?: boolean;
 }
 
-const SLICES: ReadonlyArray<Slice> = [
-  { label: 'Tech', pct: 58, amount: '$134k', color: 'var(--provedo-accent)' },
-  { label: 'Financials', pct: 18, amount: '$42k', color: 'var(--provedo-accent-hover)' },
-  { label: 'Healthcare', pct: 14, amount: '$32k', color: 'var(--provedo-text-secondary)' },
-  { label: 'Other', pct: 10, amount: '$23k', color: 'var(--provedo-border-default)' },
+interface ComparisonBar {
+  /** Series label (left-aligned eyebrow above bar). */
+  series: string;
+  /** Sub-label (right-aligned, shows the headline %). */
+  headline: string;
+  /** Segments rendered left-to-right. Sum should be 100. */
+  segments: ReadonlyArray<BarSegment>;
+  /** Aria description for the whole bar. */
+  ariaLabel: string;
+}
+
+const BARS: ReadonlyArray<ComparisonBar> = [
+  {
+    series: 'Your portfolio',
+    headline: 'Tech 58%',
+    ariaLabel: 'Your portfolio sector mix: Tech 58%, Financials 18%, Healthcare 14%, Other 10%.',
+    segments: [
+      { label: 'tech 58%', pct: 58, color: 'var(--provedo-accent)', highlight: true },
+      { label: 'fin 18%', pct: 18, color: 'var(--provedo-accent-hover)' },
+      { label: 'hth 14%', pct: 14, color: 'var(--provedo-text-secondary)' },
+      { label: '10%', pct: 10, color: 'var(--provedo-border-default)' },
+    ],
+  },
+  {
+    series: 'S&P 500 · 2025-Q3',
+    headline: 'Tech 28%',
+    ariaLabel: 'S&P 500 sector weights 2025 third quarter: Tech 28%, remaining sectors 72%.',
+    segments: [
+      { label: 'tech 28%', pct: 28, color: 'var(--provedo-text-secondary)' },
+      { label: 'remaining 72%', pct: 72, color: 'var(--provedo-border-default)' },
+    ],
+  },
 ] as const;
 
-// Brand-voice approved exact phrasing (review §3.3) — DO NOT paraphrase.
-// «across N positions» pattern foreclosed the «is this a dashboard or a sentence?» ambiguity.
-interface BrokerRow {
-  name: string;
+// ─── Accounts ledger data ────────────────────────────────────────────────────
+
+interface LedgerRow {
+  broker: string;
+  tickers: ReadonlyArray<string>;
   amount: string;
-  positions: number;
 }
 
-const BROKER_ROWS: ReadonlyArray<BrokerRow> = [
-  { name: 'IBKR', amount: '$186k', positions: 5 },
-  { name: 'Schwab', amount: '$94k', positions: 8 },
-  { name: 'Coinbase', amount: '$32k', positions: 12 },
+const LEDGER_ROWS: ReadonlyArray<LedgerRow> = [
+  { broker: 'IBKR', tickers: ['AAPL', 'MSFT', 'NVDA'], amount: '$31k' },
+  { broker: 'Schwab', tickers: ['GOOG', 'AMZN'], amount: '$5k' },
 ] as const;
 
-// Donut geometry helpers
-function polarToCartesian(cx: number, cy: number, r: number, angleDeg: number) {
-  const angleRad = ((angleDeg - 90) * Math.PI) / 180;
-  return {
-    x: cx + r * Math.cos(angleRad),
-    y: cy + r * Math.sin(angleRad),
-  };
+// ─── Bar primitive ───────────────────────────────────────────────────────────
+
+const BAR_HEIGHT_PX = 24;
+const SEGMENT_LABEL_MIN_PCT = 18; // Only render in-bar label for segments wider than this
+
+interface BarProps {
+  bar: ComparisonBar;
+  /** Optional reveal width (0-1) for entrance animation. */
+  reveal?: number;
 }
 
-function arcPath(cx: number, cy: number, r: number, startAngle: number, endAngle: number): string {
-  const start = polarToCartesian(cx, cy, r, endAngle);
-  const end = polarToCartesian(cx, cy, r, startAngle);
-  const largeArc = endAngle - startAngle > 180 ? 1 : 0;
-  return `M ${start.x} ${start.y} A ${r} ${r} 0 ${largeArc} 0 ${end.x} ${end.y}`;
-}
-
-// Donut — larger center + breathing room. viewBox 0 0 160 160; r=64 outer, r=44 inner.
-const CX = 80;
-const CY = 80;
-const OUTER_R = 64;
-const INNER_R = 44;
-const ARC_R = (OUTER_R + INNER_R) / 2;
-const STROKE_W = OUTER_R - INNER_R;
-
-interface ArcSlice extends Slice {
-  startAngle: number;
-  endAngle: number;
-}
-
-function buildArcs(slices: ReadonlyArray<Slice>): ReadonlyArray<ArcSlice> {
-  let cumulativePct = 0;
-  return slices.map((slice) => {
-    const startAngle = cumulativePct * 3.6;
-    cumulativePct += slice.pct;
-    const endAngle = cumulativePct * 3.6;
-    return { ...slice, startAngle, endAngle };
-  });
-}
-
-export function AllocationPieBar(): React.ReactElement {
-  const arcs = buildArcs(SLICES);
-
+function ComparisonBarRow({ bar, reveal = 1 }: BarProps): ReactElement {
   return (
-    <div style={{ marginTop: '12px' }}>
-      {/* Bento: 2 cells. Stacks below md (chat bubble ~340px → cells stack); 2-col above. */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
       <div
         style={{
-          display: 'grid',
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
           gap: '12px',
-          gridTemplateColumns: '1fr',
         }}
-        className="allocation-bento"
       >
-        {/* CELL A — Donut card */}
-        <div
+        <span
           style={{
-            backgroundColor: 'var(--provedo-bg-elevated)',
-            border: '1px solid var(--provedo-border-subtle)',
-            borderRadius: '12px',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
+            fontFamily: 'var(--provedo-font-mono)',
+            fontSize: '11px',
+            color: 'var(--provedo-text-tertiary)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
           }}
         >
-          <p
-            style={{
-              fontFamily: 'var(--provedo-font-mono)',
-              fontSize: '11px',
-              color: 'var(--provedo-text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              margin: 0,
-            }}
-          >
-            By sector
-          </p>
+          {bar.series}
+        </span>
+        <span
+          style={{
+            fontFamily: 'var(--provedo-font-mono)',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: bar.segments[0]?.highlight
+              ? 'var(--provedo-accent)'
+              : 'var(--provedo-text-secondary)',
+          }}
+        >
+          {bar.headline}
+        </span>
+      </div>
+      <div
+        role="img"
+        aria-label={bar.ariaLabel}
+        style={{
+          display: 'flex',
+          height: `${BAR_HEIGHT_PX}px`,
+          width: `${reveal * 100}%`,
+          borderRadius: '4px',
+          overflow: 'hidden',
+          backgroundColor: 'var(--provedo-bg-subtle)',
+          transition: 'width 500ms cubic-bezier(0.16,1,0.3,1)',
+        }}
+      >
+        {bar.segments.map((seg, i) => (
           <div
+            key={`${bar.series}-${i}-${seg.pct}`}
             style={{
+              flex: `${seg.pct} 0 0`,
+              backgroundColor: seg.color,
               display: 'flex',
               alignItems: 'center',
-              gap: '20px',
-              flexWrap: 'wrap',
-            }}
-          >
-            <svg
-              viewBox="0 0 160 160"
-              width="140"
-              height="140"
-              role="img"
-              aria-label="Sector allocation: Tech 58% ($134k), Financials 18% ($42k), Healthcare 14% ($32k), Other 10% ($23k). Total $231k."
-              style={{ flexShrink: 0 }}
-            >
-              {arcs.map((arc) => (
-                <path
-                  key={arc.label}
-                  d={arcPath(CX, CY, ARC_R, arc.startAngle, arc.endAngle)}
-                  fill="none"
-                  stroke={arc.color}
-                  strokeWidth={STROKE_W}
-                  strokeLinecap="butt"
-                />
-              ))}
-              {/* Center: $231k at 22pt — the chart's primary observation */}
-              <text
-                x={CX}
-                y={CY - 2}
-                fontSize="22"
-                fontFamily="var(--provedo-font-mono)"
-                fill="var(--provedo-text-primary)"
-                textAnchor="middle"
-                fontWeight="600"
-              >
-                $231k
-              </text>
-              <text
-                x={CX}
-                y={CY + 16}
-                fontSize="11"
-                fontFamily="var(--provedo-font-mono)"
-                fill="var(--provedo-text-tertiary)"
-                textAnchor="middle"
-              >
-                total
-              </text>
-            </svg>
-
-            {/* Slice legend — one row per slice, $-amount inline (review §3.3) */}
-            <ul
-              style={{
-                listStyle: 'none',
-                padding: 0,
-                margin: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '8px',
-                fontFamily: 'var(--provedo-font-mono)',
-                fontSize: '12px',
-                color: 'var(--provedo-text-secondary)',
-                minWidth: '140px',
-              }}
-            >
-              {SLICES.map((s) => (
-                <li
-                  key={s.label}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                  }}
-                >
-                  <span
-                    aria-hidden="true"
-                    style={{
-                      width: '10px',
-                      height: '10px',
-                      borderRadius: '2px',
-                      backgroundColor: s.color,
-                      flexShrink: 0,
-                    }}
-                  />
-                  <span style={{ flex: 1 }}>
-                    {s.label} {s.pct}% · {s.amount}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* CELL B — Broker table card */}
-        <div
-          style={{
-            backgroundColor: 'var(--provedo-bg-elevated)',
-            border: '1px solid var(--provedo-border-subtle)',
-            borderRadius: '12px',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px',
-          }}
-        >
-          <p
-            style={{
+              justifyContent: 'flex-start',
+              paddingLeft: seg.pct >= SEGMENT_LABEL_MIN_PCT ? '8px' : '0',
               fontFamily: 'var(--provedo-font-mono)',
               fontSize: '11px',
-              color: 'var(--provedo-text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              margin: 0,
+              color:
+                seg.highlight || seg.pct >= 50
+                  ? 'var(--provedo-bg-page)'
+                  : 'var(--provedo-text-secondary)',
+              fontWeight: seg.highlight ? 600 : 500,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
             }}
           >
-            By broker
-          </p>
-          <ul
-            aria-label="Allocation by broker"
-            style={{
-              listStyle: 'none',
-              padding: 0,
-              margin: 0,
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '10px',
-            }}
-          >
-            {BROKER_ROWS.map((row) => (
-              <li
-                key={row.name}
-                style={{
-                  fontFamily: 'var(--provedo-font-mono)',
-                  fontSize: '14px',
-                  color: 'var(--provedo-text-primary)',
-                  display: 'flex',
-                  alignItems: 'baseline',
-                  gap: '6px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                {/* Brand-voice approved verbatim phrasing (review §3.3 — DO NOT paraphrase):
-                    «IBKR · $186k across 5 positions» */}
-                <span style={{ fontWeight: 600 }}>{row.name}</span>
-                <span aria-hidden="true" style={{ color: 'var(--provedo-text-tertiary)' }}>
-                  ·
-                </span>
-                <span style={{ fontWeight: 600, color: 'var(--provedo-accent-hover)' }}>
-                  {row.amount}
-                </span>
-                <span style={{ color: 'var(--provedo-text-secondary)' }}>
-                  across {row.positions} positions
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+            {seg.pct >= SEGMENT_LABEL_MIN_PCT ? seg.label : ''}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Ledger primitive ────────────────────────────────────────────────────────
+
+const LEDGER_ROW_STYLE: CSSProperties = {
+  fontFamily: 'var(--provedo-font-mono)',
+  fontSize: '12px',
+  color: 'var(--provedo-text-secondary)',
+  letterSpacing: '0.01em',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  gap: '4px',
+};
+
+function AccountsLedger(): ReactElement {
+  return (
+    <ul
+      aria-label="Tech holdings by broker"
+      style={{
+        listStyle: 'none',
+        padding: '12px 0 0',
+        margin: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '6px',
+      }}
+    >
+      {LEDGER_ROWS.map((row) => (
+        <li key={row.broker} style={LEDGER_ROW_STYLE}>
+          <span style={{ color: 'var(--provedo-text-primary)', fontWeight: 600 }}>
+            {row.broker}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>{row.tickers.join(' · ')}</span>
+          <span aria-hidden="true">·</span>
+          <span style={{ color: 'var(--provedo-text-primary)', fontWeight: 600 }}>
+            {row.amount}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// ─── Main component ──────────────────────────────────────────────────────────
+
+const PROVEDO_NOTICES_LINE =
+  "Provedo notices: Your tech weight is about 2× the index's — driven by IBKR.";
+
+const TAB4_SOURCES: ReadonlyArray<string> = [
+  'Holdings via Schwab statement 2025-11-01',
+  'S&P 500 sector weights via S&P DJI methodology 2025-Q3',
+] as const;
+
+export function AllocationPieBar(): ReactElement {
+  return (
+    <div
+      style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '14px' }}
+      data-testid="allocation-comparison-bars"
+    >
+      {/* Two stacked comparison bars on the same horizontal scale */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {BARS.map((bar) => (
+          <ComparisonBarRow key={bar.series} bar={bar} />
+        ))}
       </div>
 
-      {/* Mandatory visible data caption — WCAG: color-not-only.
+      {/* Mandatory visible data caption — WCAG color-not-only.
           Carries the data when JS or CSS is unavailable. */}
       <p
         style={{
           fontSize: '11px',
           fontFamily: 'var(--provedo-font-mono)',
           color: 'var(--provedo-text-tertiary)',
-          marginTop: '8px',
+          margin: 0,
           lineHeight: '1.5',
         }}
         aria-label="Allocation breakdown"
@@ -289,16 +255,26 @@ export function AllocationPieBar(): React.ReactElement {
         Tech 58% · Financials 18% · Healthcare 14% · Other 10%
       </p>
 
-      {/* Responsive: switch to 2-column above 640px container width. We can't use
-          a media query here (no CSS module), so we attach a class and rely on a
-          shared global rule. The default single-column stack stays mobile-friendly. */}
-      <style>{`
-        @media (min-width: 640px) {
-          .allocation-bento {
-            grid-template-columns: 1fr 1fr !important;
-          }
-        }
-      `}</style>
+      {/* Accounts ledger — kept smaller, mono-set, not in card chrome */}
+      <AccountsLedger />
+
+      {/* «Provedo notices:» preamble line — brand-voice §7 approved form */}
+      <p
+        style={{
+          fontFamily: 'var(--provedo-font-sans)',
+          fontStyle: 'italic',
+          fontWeight: 400,
+          fontSize: '14px',
+          lineHeight: 1.5,
+          color: 'var(--provedo-text-secondary)',
+          margin: 0,
+        }}
+      >
+        {PROVEDO_NOTICES_LINE}
+      </p>
+
+      {/* Sources primitive — Slice-LP3.5 system-primitive mount */}
+      <Sources items={TAB4_SOURCES} />
     </div>
   );
 }

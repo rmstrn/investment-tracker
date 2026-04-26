@@ -1,99 +1,28 @@
 'use client';
 
-// ProvedoNumericProofBar — §S2 numeric proof bar (v3.2)
-// V3.4: count-up animation on scroll-into-view
-// V3.2 patches:
+// ProvedoNumericProofBar — §S2 numeric proof bar (Slice-LP3.5)
+//
+// Slice-LP3.5 chrome polish (PD re-evaluation §3.3 + brand-voice §4):
+//   - Move «information, not advice» from Cell IV body to italic footer line
+//     BELOW the proof-bar cells. Lane A signal stays present, no longer
+//     occupies a peer cell.
+//   - Replace freed Cell IV with epistemic-claim «Sources / for every answer»
+//     (NOT «<2s» — brand-voice REJECT as Hero/Outlaw perf-marketing register
+//     + Lane A side-door).
+//   - Audience-whisper italic line stays SEPARATE from the disclaimer
+//     (brand-voice REJECT-WITH-EDIT on combined run-on).
+//
+// Earlier history (v3.x):
 //   - 4-cell layout (was 3) — adds time-anchor cell #3 «5 min / a week / the whole habit»
-//   - Cell #4 eyebrow «Lane A — information not advice» → «information not advice» (PD spec)
-//   - Audience-whisper micro-line below cells: «For investors who hold across more than one broker.»
+//   - Audience-whisper micro-line below cells per PD spec V2
 //   - max-w-4xl → max-w-5xl for 4-cell breathing room (PD spec)
-// Accessibility: <section><dl><dt><dd>, AAA contrast verified
-// TD-095: swap coverage="100s" → coverage="1000+" once tech-lead verifies coverage
-
-import { useEffect, useRef, useState } from 'react';
-import { useInView } from './hooks/useInView';
-import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+//
+// Accessibility: <section><dl><dt><dd>, AAA contrast verified.
+// TD-095: swap coverage="100s" → coverage="1000+" once tech-lead verifies coverage.
 
 interface ProvedoNumericProofBarProps {
   /** Broker count copy — '100s' (fallback) or '1000+' (post-verification) */
   coverage?: '100s' | '1000+';
-}
-
-interface AnimatedNumberProps {
-  target: number;
-  suffix?: string;
-  prefix?: string;
-  animate: boolean;
-  prefersReduced: boolean;
-  duration?: number;
-}
-
-function AnimatedNumber({
-  target,
-  suffix = '',
-  prefix = '',
-  animate,
-  prefersReduced,
-  duration = 1000,
-}: AnimatedNumberProps): React.ReactElement {
-  // Wave 2.6 a11y HIGH-2: progressive enhancement — render the FINAL value on
-  // SSR + first paint so no-JS users + early hydration phase see real content
-  // (not «0%»). The count-up animation is a JS enhancement layered on top of
-  // the static, correct, accessible value. We track `mounted` so the count-up
-  // can still play for users with motion enabled, by jumping to 0 only when
-  // the client has hydrated AND motion is enabled AND the section has not
-  // yet been scrolled into view (so we don't trigger an out-and-back flash
-  // for users who land mid-scroll on a section already in viewport).
-  const [value, setValue] = useState(target);
-  const [mounted, setMounted] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const startRef = useRef<number | null>(null);
-  const hasAnimatedRef = useRef(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    if (prefersReduced) {
-      setValue(target);
-      return;
-    }
-    if (animate && !hasAnimatedRef.current) {
-      hasAnimatedRef.current = true;
-      // Reset to 0 + start count-up in the same effect tick — single browser
-      // frame change minimizes perceptual flash from `target` → 0.
-      setValue(0);
-      startRef.current = null;
-
-      function tick(now: number) {
-        if (startRef.current === null) startRef.current = now;
-        const elapsed = now - startRef.current;
-        const progress = Math.min(elapsed / duration, 1);
-        // Ease-out cubic
-        const eased = 1 - (1 - progress) ** 3;
-        setValue(Math.round(eased * target));
-        if (progress < 1) {
-          rafRef.current = requestAnimationFrame(tick);
-        }
-      }
-
-      rafRef.current = requestAnimationFrame(tick);
-      return () => {
-        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-      };
-    }
-    return undefined;
-  }, [animate, target, duration, prefersReduced, mounted]);
-
-  return (
-    <span>
-      {prefix}
-      {value}
-      {suffix}
-    </span>
-  );
 }
 
 // Per-breakpoint big-number font-size clamp (PD spec V1, slightly tighter for 4-cell layout)
@@ -129,19 +58,12 @@ const CELL_SUB_STYLE: React.CSSProperties = {
 export function ProvedoNumericProofBar({
   coverage = '100s',
 }: ProvedoNumericProofBarProps): React.ReactElement {
-  const { ref, inView } = useInView({ threshold: 0.3 });
-  const prefersReduced = usePrefersReducedMotion();
-  // Wave 2.6 a11y HIGH-2: text-only cells (#2 «Every», #3 «5 min») render
-  // visible from SSR with no opacity fade. The previous fade-in-on-scroll
-  // hid plain-text content from no-JS users + the early hydration phase.
-  // The audit explicitly directs us to drop the destructive enhancement and
-  // keep these cells unconditionally visible. The count-up on cell #4 is
-  // preserved as a non-destructive enhancement (target value rendered on
-  // SSR; count-up only plays after hydration if motion is enabled).
+  // Wave 2.6 a11y HIGH-2: text-only cells render visible from SSR with no
+  // opacity fade. Slice-LP3.5: Cell IV count-up dropped (cell now carries
+  // static «Sources / for every answer» — epistemic claim, not numeric).
 
   return (
     <section
-      ref={ref}
       aria-label="Proof points"
       style={{
         backgroundColor: 'var(--provedo-bg-muted)',
@@ -199,28 +121,48 @@ export function ProvedoNumericProofBar({
             <dd style={CELL_SUB_STYLE}>the whole habit</dd>
           </div>
 
-          {/* Cell 4 — Information, not advice (Patch A — v3.2: «Lane A —» prefix dropped) */}
+          {/* Cell 4 — Sources / for every answer (Slice-LP3.5)
+              Replaces the «100% / information not advice» count-up cell. The
+              disclaimer moves to the italic footer line below the proof bar
+              (still visually present, no longer occupies a peer cell). The
+              freed cell now carries the epistemic claim that anchors
+              Provedo's load-bearing trust signal. */}
           <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
               style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-accent)' }}
             >
-              <AnimatedNumber
-                target={100}
-                suffix="%"
-                animate={inView}
-                prefersReduced={prefersReduced}
-                duration={1000}
-              />
+              Sources
             </dd>
-            <dt style={CELL_EYEBROW_STYLE}>information not advice</dt>
-            <dd style={CELL_SUB_STYLE}>no robo-advisor, no brokerage</dd>
+            <dt style={CELL_EYEBROW_STYLE}>for every answer</dt>
+            <dd style={CELL_SUB_STYLE}>cited inline, dated, traceable</dd>
           </div>
         </dl>
 
-        {/* Audience-whisper — v3.2 (PD spec V2: proof-bar small-print placement) */}
+        {/* Disclaimer footer — Slice-LP3.5 (replaces Cell IV body).
+            Single italic line, plain text, max-width matched to audience-whisper
+            below. Stays SEPARATE from the audience-whisper line per brand-voice
+            REJECT-WITH-EDIT on combined run-on. */}
         <p
-          className="mx-auto mt-8 px-4 text-center md:mt-8"
+          className="mx-auto mt-8 px-4 text-center"
+          style={{
+            fontFamily: 'var(--provedo-font-sans)',
+            fontStyle: 'italic',
+            fontWeight: 400,
+            fontSize: '14px',
+            lineHeight: 1.55,
+            color: 'var(--provedo-text-tertiary)',
+            maxWidth: '480px',
+          }}
+          data-testid="proof-bar-disclaimer-footer"
+        >
+          Information, not advice.
+        </p>
+
+        {/* Audience-whisper — v3.2 (PD spec V2: proof-bar small-print placement).
+            Kept SEPARATE from the disclaimer footer per brand-voice REJECT-WITH-EDIT. */}
+        <p
+          className="mx-auto mt-3 px-4 text-center"
           style={{
             fontFamily: 'var(--provedo-font-sans)',
             fontStyle: 'italic',

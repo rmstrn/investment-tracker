@@ -10,6 +10,7 @@
 // Lane A: Tab 3 patterns section audited — «not a recommendation about future trading decisions» retained
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@investment-tracker/ui';
+import { Sources } from './Sources';
 import { AllocationPieBarAnimated } from './charts/AllocationPieBarAnimated';
 import { DividendCalendarAnimated } from './charts/DividendCalendarAnimated';
 import { PnlSparklineAnimated } from './charts/PnlSparklineAnimated';
@@ -83,15 +84,10 @@ function Pos({ children }: { children: React.ReactNode }): React.ReactElement {
   );
 }
 
-// Sources footer — inline citation line for each demo tab answer (v3.2)
-// Styling matches Tab 3's existing disclaimer pattern for visual rhyme across all 4 tabs.
-function Sources({ children }: { children: React.ReactNode }): React.ReactElement {
-  return (
-    <p className="mt-2 text-xs italic" style={{ color: 'var(--provedo-text-tertiary)' }}>
-      {children}
-    </p>
-  );
-}
+// Sources primitive (Slice-LP3.5): inline citation now rendered via the
+// shared <Sources items={...}> component imported from `./Sources`. The
+// previous inline implementation is removed; tab-specific source lists live
+// alongside each tab's content below.
 
 // ─── Main component ──────────────────────────────────────────────────────────
 
@@ -158,10 +154,13 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>2025-10-31</Mono> and <Mono>Tesla (−8%)</Mono> after the{' '}
                   <Mono>2025-10-22</Mono> delivery miss. The rest of your portfolio is roughly flat.
                 </p>
-                <Sources>
-                  Sources: AAPL Q3 earnings 2025-10-31 · TSLA Q3 delivery report 2025-10-22 ·
-                  holdings via Schwab statement 2025-11-01.
-                </Sources>
+                <Sources
+                  items={[
+                    'AAPL Q3 earnings 2025-10-31',
+                    'TSLA Q3 delivery report 2025-10-22',
+                    'holdings via Schwab statement 2025-11-01',
+                  ]}
+                />
                 <PnlSparklineAnimated />
               </ProvedoBubble>
             </div>
@@ -178,10 +177,12 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>Oct 7 ($74)</Mono>, <Mono>MSFT</Mono> ex-div <Mono>Nov 19 ($61)</Mono>.
                   Three smaller payments after that.
                 </p>
-                <Sources>
-                  Sources: ex-dividend dates from issuer investor-relations announcements ·
-                  per-share amounts × your holdings of record on Schwab statement 2025-09-30.
-                </Sources>
+                <Sources
+                  items={[
+                    'ex-dividend dates from issuer investor-relations announcements',
+                    'per-share amounts × your holdings of record on Schwab statement 2025-09-30',
+                  ]}
+                />
                 <DividendCalendarAnimated />
               </ProvedoBubble>
             </div>
@@ -204,11 +205,13 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   Retrospective observation about past trades; not a recommendation about future
                   trading decisions. Past patterns do not predict future results.
                 </p>
-                <Sources>
-                  Sources: AAPL trade timestamps from your Schwab + IBKR statements 2025-01-01 to
-                  2025-12-31 · AAPL daily close from public market data · disposition-effect pattern
-                  per Shefrin &amp; Statman (1985).
-                </Sources>
+                <Sources
+                  items={[
+                    'AAPL trade timestamps from your Schwab + IBKR statements 2025-01-01 to 2025-12-31',
+                    'AAPL daily close from public market data',
+                    'disposition-effect pattern per Shefrin & Statman (1985)',
+                  ]}
+                />
                 <TradeTimelineAnimated />
               </ProvedoBubble>
             </div>
@@ -228,11 +231,10 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>MSFT ($9k)</Mono>, <Mono>NVDA ($8k)</Mono>. <Mono>Schwab</Mono> adds{' '}
                   <Mono>GOOG ($3k)</Mono> and <Mono>AMZN ($2k)</Mono>.
                 </p>
-                <Sources>
-                  Sources: position values from your IBKR + Schwab statements 2025-11-01 · S&amp;P
-                  500 sector weights from S&amp;P DJI methodology, Information Technology sector as
-                  of 2025-Q3.
-                </Sources>
+                {/* Tab 4: Sources is rendered by AllocationPieBarAnimated below
+                    (alongside the comparison-bars + accounts ledger) so the cite
+                    line sits next to the visualization it backs, not duplicated
+                    in the chat bubble. */}
                 <AllocationPieBarAnimated />
               </ProvedoBubble>
             </div>

@@ -1,148 +1,127 @@
 'use client';
 
-// ProvedoNegationSection — §S3 problem-negation visual rebuild (v3)
-// V3.1: 3-column grid with illustrated «not» concepts + cross-out animation
-// Each column: circular icon (Lucide) + red X overlay (SVG stroke-dashoffset animate on view)
-// Animation: sequential 100ms stagger per column on IntersectionObserver
-// Fallback: prefers-reduced-motion → static X marks fully visible
-// Lane A: explicit disclaimer register — «not a robo-advisor / will not tell you what to buy»
-// Accessibility: aria-labelledby h2, icons aria-hidden, alt copy in visible text
+// ProvedoNegationSection — §S3 problem-negation typeset (Slice-LP3.5)
+//
+// Typographic refactor (PD re-evaluation §3.2 + brand-voice §5):
+//   - DROP lucide icons + red Xs + green checks (over-decorated typographic
+//     moment).
+//   - SINGLE COLUMN (not 2-column — pros/cons sales register risk).
+//   - «What Provedo is not» heading, three em-dash bullets in slate-500.
+//     Brand-voice EDIT: «Does not» (declarative-Sage) NOT «Won't» (chatty).
+//   - Mirrored «What Provedo is» heading, three plus-sign bullets in slate-900,
+//     bullet glyphs in teal. Brand-voice REJECT «citer» — replaced with
+//     «source-keeper».
+//
+// Lane A: explicit disclaimer register — the negation row is the load-bearing
+// «we are not advice» surface on the page.
+// Accessibility: aria-labelledby h2; bullet glyphs aria-hidden so the SR reads
+// the sentence cleanly without «em-dash» / «plus».
 
-import { Bot, Building2, TrendingDown } from 'lucide-react';
+import type { CSSProperties, ReactElement } from 'react';
 import { ScrollFadeIn } from './ScrollFadeIn';
-import { useInView } from './hooks/useInView';
-import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
-interface NegationColumn {
-  icon: React.ElementType;
-  iconLabel: string;
-  notLabel: string;
-  subLabel: string;
-  animDelay: number;
+interface NegationItem {
+  noun: string;
+  predicate: string;
 }
 
-const NEGATION_COLUMNS: ReadonlyArray<NegationColumn> = [
-  {
-    icon: Bot,
-    iconLabel: 'Algorithm icon',
-    notLabel: 'Not a robo-advisor',
-    subLabel: 'moves money for you',
-    animDelay: 0,
-  },
-  {
-    icon: Building2,
-    iconLabel: 'Exchange icon',
-    notLabel: 'Not a brokerage',
-    subLabel: 'executes trades',
-    animDelay: 100,
-  },
-  {
-    icon: TrendingDown,
-    iconLabel: 'Action directive icon',
-    notLabel: 'Not advice',
-    subLabel: 'tells you what to buy',
-    animDelay: 200,
-  },
+const IS_NOT_ITEMS: ReadonlyArray<NegationItem> = [
+  { noun: 'A robo-advisor.', predicate: 'Does not move money for you.' },
+  { noun: 'A brokerage.', predicate: 'Does not execute trades.' },
+  { noun: 'Advice.', predicate: 'Does not tell you what to buy.' },
 ] as const;
 
-// SVG path for X mark (inside 80×80 circle, centered at 40,40)
-// Two diagonal lines: (20,20)→(60,60) and (60,20)→(20,60)
-// Path length ≈ 57px each diagonal, total ≈ 114px (dash-offset trick)
-const X_PATH_1 = 'M 20 20 L 60 60';
-const X_PATH_2 = 'M 60 20 L 20 60';
-const X_PATH_LENGTH = 57;
+const IS_ITEMS: ReadonlyArray<NegationItem> = [
+  { noun: 'A reader.', predicate: 'Holds your holdings across every broker.' },
+  { noun: 'A noticer.', predicate: 'Surfaces what would slip past.' },
+  { noun: 'A source-keeper.', predicate: 'Every observation tied to a source.' },
+] as const;
 
-function CrossOutIcon({
-  icon: Icon,
-  iconLabel,
-  animDelay,
-  animate,
-  prefersReduced,
-}: {
-  icon: React.ElementType;
-  iconLabel: string;
-  animDelay: number;
-  animate: boolean;
-  prefersReduced: boolean;
-}): React.ReactElement {
-  const shouldShow = prefersReduced || animate;
+const COLUMN_HEADING_STYLE: CSSProperties = {
+  fontFamily: 'var(--provedo-font-mono)',
+  fontWeight: 500,
+  fontSize: '12px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.1em',
+  color: 'var(--provedo-text-tertiary)',
+  margin: 0,
+  marginBottom: '16px',
+};
 
+const ITEM_LIST_STYLE: CSSProperties = {
+  listStyle: 'none',
+  padding: 0,
+  margin: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '12px',
+};
+
+const ITEM_ROW_STYLE: CSSProperties = {
+  fontFamily: 'var(--provedo-font-sans)',
+  fontWeight: 400,
+  fontSize: '17px',
+  lineHeight: 1.5,
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: '10px',
+};
+
+interface BlockProps {
+  heading: string;
+  items: ReadonlyArray<NegationItem>;
+  /** Bullet glyph («—» for negation, «+» for affirmation). */
+  glyph: string;
+  /** Glyph color (CSS var). */
+  glyphColor: string;
+  /** Predicate text color (CSS var). */
+  predicateColor: string;
+  /** Noun text weight. */
+  nounWeight: 400 | 500 | 600;
+  /** Noun text color (CSS var). */
+  nounColor: string;
+}
+
+function NegationBlock({
+  heading,
+  items,
+  glyph,
+  glyphColor,
+  predicateColor,
+  nounWeight,
+  nounColor,
+}: BlockProps): ReactElement {
   return (
-    <div
-      className="relative flex items-center justify-center"
-      style={{
-        width: '80px',
-        height: '80px',
-      }}
-    >
-      {/* Icon circle background */}
-      <div
-        className="flex items-center justify-center rounded-full"
-        style={{
-          width: '80px',
-          height: '80px',
-          backgroundColor: 'var(--provedo-bg-elevated)',
-          border: '1px solid var(--provedo-border-subtle)',
-        }}
-      >
-        <Icon
-          size={32}
-          strokeWidth={1.5}
-          aria-label={iconLabel}
-          style={{ color: 'var(--provedo-text-tertiary)' }}
-        />
-      </div>
-
-      {/* Cross-out X overlay — animated SVG stroke-dashoffset */}
-      <svg
-        viewBox="0 0 80 80"
-        width="80"
-        height="80"
-        aria-hidden="true"
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          pointerEvents: 'none',
-        }}
-      >
-        <path
-          d={X_PATH_1}
-          stroke="#EF4444"
-          strokeWidth="3"
-          strokeLinecap="round"
-          fill="none"
-          style={{
-            strokeDasharray: X_PATH_LENGTH,
-            strokeDashoffset: shouldShow ? 0 : X_PATH_LENGTH,
-            transition: prefersReduced
-              ? 'none'
-              : `stroke-dashoffset 300ms cubic-bezier(0.16,1,0.3,1) ${animDelay}ms`,
-          }}
-        />
-        <path
-          d={X_PATH_2}
-          stroke="#EF4444"
-          strokeWidth="3"
-          strokeLinecap="round"
-          fill="none"
-          style={{
-            strokeDasharray: X_PATH_LENGTH,
-            strokeDashoffset: shouldShow ? 0 : X_PATH_LENGTH,
-            transition: prefersReduced
-              ? 'none'
-              : `stroke-dashoffset 300ms cubic-bezier(0.16,1,0.3,1) ${animDelay + 80}ms`,
-          }}
-        />
-      </svg>
+    <div>
+      <p style={COLUMN_HEADING_STYLE}>{heading}</p>
+      <ul style={ITEM_LIST_STYLE}>
+        {items.map((item) => (
+          <li key={item.noun} style={ITEM_ROW_STYLE}>
+            <span
+              aria-hidden="true"
+              style={{
+                color: glyphColor,
+                fontFamily: 'var(--provedo-font-mono)',
+                fontWeight: 600,
+                fontSize: '17px',
+                flexShrink: 0,
+                width: '14px',
+              }}
+            >
+              {glyph}
+            </span>
+            <span>
+              <span style={{ color: nounColor, fontWeight: nounWeight }}>{item.noun}</span>{' '}
+              <span style={{ color: predicateColor }}>{item.predicate}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 
-export function ProvedoNegationSection(): React.ReactElement {
-  const { ref: sectionRef, inView } = useInView({ threshold: 0.2 });
-  const prefersReduced = usePrefersReducedMotion();
-
+export function ProvedoNegationSection(): ReactElement {
   return (
     <section
       aria-labelledby="negation-heading"
@@ -153,10 +132,10 @@ export function ProvedoNegationSection(): React.ReactElement {
         paddingBottom: 'clamp(5rem, 4rem + 4vw, 7rem)',
       }}
     >
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto" style={{ maxWidth: '640px' }}>
         {/* Section header */}
         <ScrollFadeIn>
-          <div className="mb-14 text-center md:mb-16">
+          <div className="mb-12 text-center md:mb-14">
             <p
               className="mb-4 text-xs font-semibold uppercase tracking-widest"
               style={{ color: 'var(--provedo-accent)' }}
@@ -179,76 +158,34 @@ export function ProvedoNegationSection(): React.ReactElement {
           </div>
         </ScrollFadeIn>
 
-        {/* 3-column negation grid */}
-        <div ref={sectionRef} className="mb-14 grid gap-10 text-center md:grid-cols-3 md:gap-6">
-          {NEGATION_COLUMNS.map((col) => {
-            const Icon = col.icon;
-            return (
-              <div
-                key={col.notLabel}
-                className="flex flex-col items-center gap-4"
-                style={{
-                  opacity: inView || prefersReduced ? 1 : 0,
-                  transform: inView || prefersReduced ? 'translateY(0)' : 'translateY(16px)',
-                  transition: prefersReduced
-                    ? 'none'
-                    : `opacity 500ms ease ${col.animDelay}ms, transform 500ms cubic-bezier(0.16,1,0.3,1) ${col.animDelay}ms`,
-                }}
-              >
-                {/* Icon with cross-out overlay */}
-                <CrossOutIcon
-                  icon={Icon}
-                  iconLabel={col.iconLabel}
-                  animDelay={col.animDelay + 200}
-                  animate={inView}
-                  prefersReduced={prefersReduced}
-                />
+        {/* «What Provedo is not» — single-column typeset */}
+        <ScrollFadeIn>
+          <div className="mb-12">
+            <NegationBlock
+              heading="What Provedo is not"
+              items={IS_NOT_ITEMS}
+              glyph="—"
+              glyphColor="var(--provedo-text-tertiary)"
+              predicateColor="var(--provedo-text-muted)"
+              nounWeight={500}
+              nounColor="var(--provedo-text-secondary)"
+            />
+          </div>
+        </ScrollFadeIn>
 
-                {/* Not label */}
-                <p
-                  style={{
-                    fontFamily: 'var(--provedo-font-sans)',
-                    fontWeight: 600,
-                    fontSize: '16px',
-                    color: 'var(--provedo-text-primary)',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {col.notLabel}
-                </p>
-
-                {/* Sub label */}
-                <p
-                  style={{
-                    fontFamily: 'var(--provedo-font-sans)',
-                    fontWeight: 400,
-                    fontSize: '13px',
-                    color: 'var(--provedo-text-tertiary)',
-                    lineHeight: 1.5,
-                  }}
-                >
-                  {col.subLabel}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Affirmation closer */}
-        <ScrollFadeIn delay={200}>
-          <p
-            className="mx-auto max-w-2xl text-center"
-            style={{
-              fontFamily: 'var(--provedo-font-sans)',
-              fontWeight: 400,
-              fontSize: '18px',
-              color: 'var(--provedo-text-secondary)',
-              lineHeight: 1.6,
-            }}
-          >
-            What Provedo does: holds your portfolio across every broker, answers what you ask,
-            surfaces what you&apos;d miss. With sources for every observation.
-          </p>
+        {/* «What Provedo is» — mirror, single-column, plus-sign bullets in teal */}
+        <ScrollFadeIn delay={150}>
+          <div>
+            <NegationBlock
+              heading="What Provedo is"
+              items={IS_ITEMS}
+              glyph="+"
+              glyphColor="var(--provedo-accent)"
+              predicateColor="var(--provedo-text-secondary)"
+              nounWeight={600}
+              nounColor="var(--provedo-text-primary)"
+            />
+          </div>
         </ScrollFadeIn>
       </div>
     </section>

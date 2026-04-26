@@ -23,6 +23,7 @@ const FEATURED_QUOTE: TestimonialCard = {
 };
 
 import { ScrollFadeIn } from './ScrollFadeIn';
+import { Sources } from './Sources';
 
 function TierBadge({ tier }: { tier: 'Plus' | 'Free' }): React.ReactElement {
   return (
@@ -172,6 +173,13 @@ export function ProvedoTestimonialCards(): React.ReactElement {
                   {FEATURED_QUOTE.surface}
                 </span>
               </p>
+
+              {/* Sources mount (Slice-LP3.5) — single dated builder-note cite,
+                  matches the cite-trail chrome carried across every observational
+                  surface on the page. */}
+              <div style={{ marginTop: '20px' }}>
+                <Sources items={['Pre-alpha builder note · 2026-Q2']} />
+              </div>
             </figcaption>
           </figure>
         </ScrollFadeIn>

@@ -5,15 +5,17 @@
 
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MarketingFooter } from './_components/MarketingFooter';
+import { ProvedoAggregationSection } from './_components/ProvedoAggregationSection';
 import { ProvedoDemoTabsV2 } from './_components/ProvedoDemoTabsV2';
 import { ProvedoEditorialNarrative } from './_components/ProvedoEditorialNarrative';
 import { ProvedoFAQ } from './_components/ProvedoFAQ';
 import {
   HERO_RESPONSE_SEGMENTS,
+  HERO_SOURCES_ITEMS,
   HERO_SOURCES_LINE,
   HERO_USER_MESSAGE,
   ProvedoHeroV2,
@@ -23,6 +25,7 @@ import { ProvedoNegationSection } from './_components/ProvedoNegationSection';
 import { ProvedoNumericProofBar } from './_components/ProvedoNumericProofBar';
 import { ProvedoRepeatCTAV2 } from './_components/ProvedoRepeatCTAV2';
 import { ProvedoTestimonialCards } from './_components/ProvedoTestimonialCards';
+import { Sources } from './_components/Sources';
 import { AllocationPieBar } from './_components/charts/AllocationPieBar';
 import { DividendCalendar } from './_components/charts/DividendCalendar';
 import { PnlSparkline } from './_components/charts/PnlSparkline';
@@ -101,17 +104,18 @@ describe('MarketingHomePage v2', () => {
 // ─── S2 Numeric proof bar ──────────────────────────────────────────────────
 
 describe('ProvedoNumericProofBar', () => {
-  it('renders 4 proof cells (v3.2: time-anchor cell added)', () => {
+  it('renders 4 proof cells (Slice-LP3.5: Cell IV swapped to «Sources / for every answer»)', () => {
     render(<ProvedoNumericProofBar />);
     expect(screen.getByText('brokers and exchanges')).toBeInTheDocument();
     expect(screen.getByText('observation cited')).toBeInTheDocument();
-    // v3.2: Cell #3 NEW — time-anchor «5 min / a week / the whole habit»
+    // Cell #3 — time-anchor «5 min / a week / the whole habit»
     expect(screen.getByText('a week')).toBeInTheDocument();
     expect(screen.getByText(/the whole habit/i)).toBeInTheDocument();
-    // v3.2: Cell #4 — «Lane A —» prefix dropped per PD spec V1
-    expect(screen.getByText(/^information not advice$/i)).toBeInTheDocument();
-    // v3.2: «Lane A —» prefix MUST be gone
-    expect(screen.queryByText(/lane a — information not advice/i)).not.toBeInTheDocument();
+    // Slice-LP3.5: Cell #4 NEW — «Sources / for every answer»
+    expect(screen.getByText(/^for every answer$/i)).toBeInTheDocument();
+    expect(screen.getByText(/cited inline, dated, traceable/i)).toBeInTheDocument();
+    // Slice-LP3.5: Cell IV body «100% / information not advice» MUST be gone
+    expect(screen.queryByText(/^information not advice$/i)).not.toBeInTheDocument();
   });
 
   it('renders «5 min» time-anchor token (v3.2 NEW)', () => {
@@ -136,9 +140,27 @@ describe('ProvedoNumericProofBar', () => {
     expect(screen.getByText('1000+')).toBeInTheDocument();
   });
 
-  it('renders «100%» information-not-advice cell sub-line', () => {
+  it('renders disclaimer footer «Information, not advice.» as italic line below cells (Slice-LP3.5)', () => {
     render(<ProvedoNumericProofBar />);
-    expect(screen.getByText(/no robo-advisor, no brokerage/i)).toBeInTheDocument();
+    const footer = screen.getByTestId('proof-bar-disclaimer-footer');
+    expect(footer).toBeInTheDocument();
+    expect(footer.textContent).toMatch(/information, not advice\./i);
+    // Disclaimer footer + audience-whisper MUST stay separate (brand-voice REJECT-WITH-EDIT
+    // on combined run-on). Footer text alone, no audience copy mixed in.
+    expect(footer.textContent).not.toMatch(/for investors who hold/i);
+  });
+
+  it('audience-whisper line stays SEPARATE from disclaimer footer', () => {
+    const { container } = render(<ProvedoNumericProofBar />);
+    const footer = screen.getByTestId('proof-bar-disclaimer-footer');
+    const audienceLine = container.querySelector('p:not([data-testid])');
+    // The audience-whisper exists and is NOT the disclaimer footer.
+    expect(
+      Array.from(container.querySelectorAll('p')).some((p) =>
+        /for investors who hold across more than one broker/i.test(p.textContent ?? ''),
+      ),
+    ).toBe(true);
+    expect(footer).not.toBe(audienceLine);
   });
 
   it('section has correct aria-label', () => {
@@ -155,26 +177,39 @@ describe('ProvedoNegationSection', () => {
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
   });
 
-  it('contains «not a robo-advisor» negation line', () => {
+  it('renders «What Provedo is not» heading + 3 em-dash items (Slice-LP3.5 typeset)', () => {
     const { container } = render(<ProvedoNegationSection />);
-    expect(container.textContent).toMatch(/not a robo-advisor/i);
+    const text = container.textContent ?? '';
+    // Slice-LP3.5: typeset block headings replace the lucide+red-X 3-column grid.
+    expect(text).toMatch(/what provedo is not/i);
+    // Brand-voice EDIT: «Does not» (declarative-Sage), NOT «Won't» (chatty).
+    expect(text).toMatch(/a robo-advisor\..*does not move money for you\./i);
+    expect(text).toMatch(/a brokerage\..*does not execute trades\./i);
+    expect(text).toMatch(/advice\..*does not tell you what to buy\./i);
   });
 
-  it('contains «not a brokerage» negation line', () => {
+  it('renders «What Provedo is» mirror block with reader/noticer/source-keeper (brand-voice REJECT «citer»)', () => {
     const { container } = render(<ProvedoNegationSection />);
-    expect(container.textContent).toMatch(/not a brokerage/i);
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/what provedo is\b/i);
+    expect(text).toMatch(/a reader\.\s*holds your holdings across every broker\./i);
+    expect(text).toMatch(/a noticer\.\s*surfaces what would slip past\./i);
+    // Brand-voice REJECT: «citer» (coined back-formation) → «source-keeper».
+    expect(text).toMatch(/a source-keeper\.\s*every observation tied to a source\./i);
+    expect(text).not.toMatch(/\ba citer\b/i);
   });
 
-  it('contains «not advice» column (v3 visual rebuild)', () => {
+  it("does NOT contain «Won't» chatty register or lucide-icon class names (Slice-LP3.5)", () => {
     const { container } = render(<ProvedoNegationSection />);
-    // v3: 3-column grid with «Not advice» label + «tells you what to buy» sub-label
-    expect(container.textContent).toMatch(/not advice/i);
-    expect(container.textContent).toMatch(/tells you what to buy/i);
-  });
-
-  it('renders affirmation closer with allowlist verbs', () => {
-    render(<ProvedoNegationSection />);
-    expect(screen.getByText(/holds your portfolio across every broker/i)).toBeInTheDocument();
+    const text = container.textContent ?? '';
+    // Brand-voice EDIT: declarative «Does not» replaces chatty «Won't».
+    expect(text).not.toMatch(/won['']t move/i);
+    expect(text).not.toMatch(/won['']t execute/i);
+    expect(text).not.toMatch(/won['']t tell/i);
+    // Lucide icons + red-X SVG overlay are dropped — no `lucide` className, no
+    // explicit `#EF4444` cross-out stroke remains in the DOM.
+    expect(container.innerHTML).not.toMatch(/lucide-/i);
+    expect(container.innerHTML).not.toMatch(/#EF4444/);
   });
 });
 
@@ -277,21 +312,28 @@ describe('TradeTimeline', () => {
 });
 
 describe('AllocationPieBar', () => {
-  it('renders with role="img" and descriptive aria-label', () => {
+  it('renders comparison-bars with descriptive aria-labels (Slice-LP3.5)', () => {
     render(<AllocationPieBar />);
-    const svg = screen.getByRole('img');
-    expect(svg).toBeInTheDocument();
-    expect(svg).toHaveAttribute('aria-label', expect.stringMatching(/allocation/i));
+    // Slice-LP3.5: 2 stacked horizontal comparison-bars (your portfolio vs S&P)
+    // each carry their own role="img". `getAllByRole` so the test does not
+    // collide on the multiple bar elements.
+    const bars = screen.getAllByRole('img');
+    expect(bars.length).toBeGreaterThanOrEqual(2);
+    expect(
+      bars.some((el) => /your portfolio sector mix/i.test(el.getAttribute('aria-label') ?? '')),
+    ).toBe(true);
+    expect(
+      bars.some((el) => /s&p 500 sector weights/i.test(el.getAttribute('aria-label') ?? '')),
+    ).toBe(true);
   });
 
-  it('renders mandatory visible data table (WCAG color-not-only)', () => {
+  it('renders mandatory visible data caption (WCAG color-not-only)', () => {
     const { container } = render(<AllocationPieBar />);
-    // Caption paragraph contains all four allocation labels
     expect(container.textContent).toMatch(/Tech 58%/);
     expect(container.textContent).toMatch(/Financials 18%/);
   });
 
-  it('labels all 4 slices', () => {
+  it('labels all 4 portfolio slices', () => {
     const { container } = render(<AllocationPieBar />);
     expect(container.textContent).toMatch(/healthcare 14%/i);
     expect(container.textContent).toMatch(/other 10%/i);
@@ -324,41 +366,61 @@ describe('Slice-LP3.3 — PnlSparkline brand-color upgrade (§A)', () => {
   });
 });
 
-describe('Slice-LP3.3 — AllocationPieBar 2-cell bento (§B)', () => {
-  // Tab 4 was rebuilt: donut card + broker-table card. The packed stacked-bar
-  // (which forced 7pt white-on-teal-light contrast failures + width animations)
-  // is gone.
-  it('renders two bento cells (sector donut + broker table)', () => {
+describe('Slice-LP3.5 — AllocationPieBar comparison-bars (§Tab 4 refactor)', () => {
+  // Slice-LP3.5: replaces the Slice-LP3.3 2-cell bento (donut + broker-table)
+  // with two stacked horizontal comparison-bars on the same scale. Bento was
+  // dropped because it didn't visualize the chat answer's load-bearing
+  // «about 2× S&P 500 sector weight» comparison + introduced data-coherence
+  // problems. Comparison-bars sidesteps both.
+
+  it('renders comparison-bars container, NOT the dropped 2-cell bento', () => {
     const { container } = render(<AllocationPieBar />);
-    // «By sector» eyebrow — donut card
-    expect(container.textContent).toMatch(/by sector/i);
-    // «By broker» eyebrow — broker-table card
-    expect(container.textContent).toMatch(/by broker/i);
+    expect(screen.getByTestId('allocation-comparison-bars')).toBeInTheDocument();
+    // Slice-LP3.3 bento markers MUST be gone.
+    expect(container.textContent).not.toMatch(/^by sector$/im);
+    expect(container.textContent).not.toMatch(/^by broker$/im);
+    expect(container.textContent).not.toMatch(/across \d+ positions/i);
   });
 
-  it('does NOT render the dropped stacked-bar with in-bar ticker labels', () => {
+  it('renders S&P 500 benchmark series labelled with 2025-Q3 reporting period', () => {
     const { container } = render(<AllocationPieBar />);
-    // The old chart used <text fill="white"> 7pt labels INSIDE bars (e.g. AMZN, GOOG).
-    // After the rebuild the broker breakdown is rendered as readable HTML rows,
-    // not as illegible white-on-teal-light bars.
-    const whiteText = container.querySelector('text[fill="white"]');
-    expect(whiteText).toBeNull();
-    // The dropped «accent-light» (undefined token) MUST NOT be referenced anywhere.
+    expect(container.textContent).toMatch(/s&p 500 · 2025-q3/i);
+    expect(container.textContent).toMatch(/tech 28%/i);
+  });
+
+  it('renders portfolio series with tech segment highlighted', () => {
+    const { container } = render(<AllocationPieBar />);
+    expect(container.textContent).toMatch(/your portfolio/i);
+    expect(container.textContent).toMatch(/tech 58%/i);
+  });
+
+  it('renders accounts ledger row for IBKR + Schwab tech holdings (mono-set, not card)', () => {
+    const { container } = render(<AllocationPieBar />);
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/IBKR.*AAPL.*MSFT.*NVDA.*\$31k/i);
+    expect(text).toMatch(/Schwab.*GOOG.*AMZN.*\$5k/i);
+  });
+
+  it('renders «Provedo notices:» preamble line (brand-voice approved form)', () => {
+    render(<AllocationPieBar />);
+    expect(
+      screen.getByText(
+        /provedo notices: your tech weight is about 2× the index's — driven by ibkr\./i,
+      ),
+    ).toBeInTheDocument();
+  });
+
+  it('mounts <Sources> primitive citing Holdings + S&P methodology (Slice-LP3.5)', () => {
+    const { container } = render(<AllocationPieBar />);
+    const sources = container.querySelector('[data-testid="provedo-sources"]');
+    expect(sources).not.toBeNull();
+    expect(sources?.textContent).toMatch(/holdings via schwab statement 2025-11-01/i);
+    expect(sources?.textContent).toMatch(/s&p 500 sector weights via s&p dji methodology 2025-q3/i);
+  });
+
+  it('does NOT introduce undefined «accent-light» token (preserves Slice-LP3.3 token discipline)', () => {
+    const { container } = render(<AllocationPieBar />);
     expect(container.innerHTML).not.toMatch(/--provedo-accent-light/);
-  });
-
-  it('renders broker rows using brand-voice approved «across N positions» phrasing', () => {
-    render(<AllocationPieBar />);
-    // Verbatim from brand-voice review §3.3 — DO NOT paraphrase.
-    expect(screen.getByText(/across 5 positions/i)).toBeInTheDocument();
-    expect(screen.getByText(/across 8 positions/i)).toBeInTheDocument();
-    expect(screen.getByText(/across 12 positions/i)).toBeInTheDocument();
-  });
-
-  it('center numeral $231k renders at 22pt (was 13pt)', () => {
-    render(<AllocationPieBar />);
-    const centerLabel = screen.getByText('$231k');
-    expect(centerLabel.getAttribute('font-size')).toBe('22');
   });
 });
 
@@ -905,18 +967,19 @@ describe('ProvedoNumericProofBar — Wave 2.6 HIGH-2 (visible on SSR)', () => {
     expect(inlineStyle).not.toMatch(/opacity:\s*0(?!\.)/);
   });
 
-  it('renders cell #4 with the final count-up target value on SSR via renderToString', async () => {
-    // Use react-dom/server so the test sees the actual SSR HTML payload
-    // (no useEffect, no client mount). The audit requires that no-JS users
-    // see «100%» — not «0%» — for the information-not-advice cell.
-    // React injects HTML comments between sibling text nodes for hydration,
-    // so we strip those before matching.
+  it('renders cell #4 «Sources / for every answer» on SSR (Slice-LP3.5: count-up dropped)', async () => {
+    // Use react-dom/server so the test sees the actual SSR HTML payload.
+    // Slice-LP3.5: Cell IV was swapped from «100% / information not advice» to
+    // «Sources / for every answer» (epistemic claim, no count-up). The «100%»
+    // count-up animation is dropped entirely. SSR must render the static cell
+    // body verbatim so no-JS users see real content.
     const { renderToString } = await import('react-dom/server');
     const html = renderToString(<ProvedoNumericProofBar />).replace(/<!--[^>]*-->/g, '');
-    expect(html).toMatch(/100%/);
-    // The pre-fix initial state was 0; ensure that exact substring is not
-    // emitted as the cell value. (We allow «100%» which contains «0%».)
-    expect(html).not.toMatch(/>0%</);
+    expect(html).toMatch(/Sources/);
+    expect(html).toMatch(/for every answer/i);
+    expect(html).toMatch(/cited inline, dated, traceable/i);
+    // Disclaimer footer line still present below the cells.
+    expect(html).toMatch(/information, not advice\./i);
   });
 });
 
@@ -1064,11 +1127,18 @@ describe('Slice-LP3.4 — Hero ChatMockup content invariants (verbatim)', () => 
     expect(fullText).not.toMatch(/delivery report/i);
   });
 
-  it('sources line is verbatim per brand-voice review §2.5 + PD audit §4', () => {
+  it('sources line is verbatim per brand-voice review §2.5 + PD audit §4 (legacy string preserved)', () => {
+    // Legacy concatenated string is preserved as a content-invariant lock.
     expect(HERO_SOURCES_LINE).toBe(
       'Sources: AAPL Q3 earnings 2025-10-31 · TSLA Q3 delivery report 2025-10-22 ·' +
         ' holdings via Schwab statement 2025-11-01.',
     );
+    // Slice-LP3.5: rendered through <Sources items={HERO_SOURCES_ITEMS} />.
+    expect(HERO_SOURCES_ITEMS).toEqual([
+      'AAPL Q3 earnings 2025-10-31',
+      'TSLA Q3 delivery report 2025-10-22',
+      'holdings via Schwab statement 2025-11-01',
+    ]);
   });
 
   it('mono-token segments exist for tickers + amounts + dates (Magician-craft register)', () => {
@@ -1141,9 +1211,15 @@ describe('Slice-LP3.4 — Hero ChatMockup render (reduced-motion fallback path)'
     expect(responseBubble.textContent).toContain(fullText);
   });
 
-  it('renders the verbatim sources line below the response bubble', async () => {
-    render(<ProvedoHeroV2 />);
-    await screen.findByText(HERO_SOURCES_LINE);
+  it('renders the verbatim sources items below the response bubble (Slice-LP3.5 <Sources>)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const sources = container.querySelector('[data-testid="provedo-sources"]');
+    expect(sources).not.toBeNull();
+    const text = sources?.textContent ?? '';
+    for (const item of HERO_SOURCES_ITEMS) {
+      expect(text).toContain(item);
+    }
   });
 
   it('renders mono-token spans for all required data points', async () => {
@@ -1263,5 +1339,107 @@ describe('Slice-LP3.4 — Hero ChatMockup typography baseline', () => {
     expect(polyline).not.toBeNull();
     expect(polyline?.getAttribute('stroke')).toBe('var(--provedo-accent)');
     expect(polyline?.getAttribute('stroke-width')).toBe('2');
+  });
+});
+
+// ─── Slice-LP3.5 — <Sources> primitive unit tests ─────────────────────────
+
+describe('Slice-LP3.5 — Sources primitive', () => {
+  it('renders nothing when items array is empty', () => {
+    const { container } = render(<Sources items={[]} />);
+    expect(container.querySelector('[data-testid="provedo-sources"]')).toBeNull();
+  });
+
+  it('renders «Sources» eyebrow + items joined with «·»', () => {
+    render(<Sources items={['AAPL Q3 earnings 2025-10-31', 'Schwab statement 2025-11-01']} />);
+    const sources = screen.getByTestId('provedo-sources');
+    expect(sources.textContent).toMatch(/Sources/);
+    expect(sources.textContent).toContain('AAPL Q3 earnings 2025-10-31');
+    expect(sources.textContent).toContain(' · ');
+    expect(sources.textContent).toContain('Schwab statement 2025-11-01');
+  });
+
+  it('carries an aria-label so SR users know the cite line context', () => {
+    render(<Sources items={['x']} />);
+    const sources = screen.getByTestId('provedo-sources');
+    expect(sources.getAttribute('aria-label')).toMatch(/sources for the preceding observation/i);
+  });
+
+  it('uses italic + dotted-top-rule styling (receipt-chrome signature)', () => {
+    render(<Sources items={['x']} />);
+    const sources = screen.getByTestId('provedo-sources') as HTMLElement;
+    const inline = sources.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-style:\s*italic/);
+    // Browsers expand `border-top: 1px dotted` to per-property longhand. Match
+    // the style + width invariants regardless of shorthand vs longhand emission.
+    expect(inline).toMatch(/border-top-style:\s*dotted/);
+    expect(inline).toMatch(/border-top-width:\s*1px/);
+  });
+
+  it('dark theme uses lighter text suitable for dark surfaces', () => {
+    render(<Sources items={['x']} theme="dark" />);
+    const sources = screen.getByTestId('provedo-sources') as HTMLElement;
+    const inline = sources.getAttribute('style') ?? '';
+    // Dark theme uses rgba(203, 213, 225, ...) for text + a faded teal eyebrow.
+    expect(inline).toMatch(/color:\s*rgba\(203,\s*213,\s*225/);
+  });
+});
+
+// ─── Slice-LP3.5 — Sources primitive system mounts ────────────────────────
+
+describe('Slice-LP3.5 — Sources mounts across the page', () => {
+  it('S6 editorial closing renders Sources with pre-alpha JTBD + ICP cohort items', () => {
+    const { container } = render(<ProvedoEditorialNarrative />);
+    const sources = container.querySelector('[data-testid="provedo-sources"]');
+    expect(sources).not.toBeNull();
+    expect(sources?.textContent).toMatch(/pre-alpha jtbd interviews 2026-q1/i);
+    expect(sources?.textContent).toMatch(/icp cohort signals/i);
+    // Brand-voice REJECT §6.3: no specific cohort-N citations on the manifesto surface.
+    expect(sources?.textContent).not.toMatch(/n=\d+/);
+  });
+
+  it('S7 testimonial renders Sources with builder-note + 2026-Q2 dating', () => {
+    const { container } = render(<ProvedoTestimonialCards />);
+    const sources = container.querySelector('[data-testid="provedo-sources"]');
+    expect(sources).not.toBeNull();
+    expect(sources?.textContent).toMatch(/pre-alpha builder note · 2026-q2/i);
+  });
+
+  it('S4 demo Tab 1 mounts Sources via the shared primitive (extracted from inline)', () => {
+    const { container } = render(<ProvedoDemoTabsV2 />);
+    // Default Why? tab is active — Sources primitive should be in DOM.
+    const sources = container.querySelectorAll('[data-testid="provedo-sources"]');
+    expect(sources.length).toBeGreaterThanOrEqual(1);
+    // First mount carries Tab 1's verbatim cite items.
+    const first = sources[0];
+    expect(first?.textContent).toMatch(/aapl q3 earnings 2025-10-31/i);
+  });
+});
+
+// ─── Slice-LP3.5 — Aggregation marquee → typeset list ─────────────────────
+
+describe('Slice-LP3.5 — ProvedoAggregationSection (marquee → typeset list)', () => {
+  it('renders broker typeset list (replaces v3 keyframe marquee)', () => {
+    render(<ProvedoAggregationSection />);
+    const list = screen.getByTestId('broker-typeset-list');
+    expect(list).toBeInTheDocument();
+    // Sample broker abbreviations rendered as <li> entries.
+    expect(within(list).getByText('IBKR')).toBeInTheDocument();
+    expect(within(list).getByText('Schwab')).toBeInTheDocument();
+    expect(within(list).getByText('Coinbase')).toBeInTheDocument();
+  });
+
+  it('renders «— and growing» tail (brand-voice EDIT — NOT «100s more»)', () => {
+    render(<ProvedoAggregationSection />);
+    const tail = screen.getByTestId('broker-list-tail');
+    expect(tail.textContent).toMatch(/—\s*and growing/i);
+    // Brand-voice §8 EDIT: «100s more» rejected (collides with proof-bar Cell I «100s»).
+    expect(tail.textContent).not.toMatch(/100s more/i);
+  });
+
+  it('does NOT render the dropped keyframe marquee animation class', () => {
+    const { container } = render(<ProvedoAggregationSection />);
+    expect(container.querySelector('.provedo-marquee')).toBeNull();
+    expect(container.innerHTML).not.toMatch(/@keyframes provedo-scroll/);
   });
 });

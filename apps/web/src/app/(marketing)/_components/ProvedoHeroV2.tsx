@@ -20,6 +20,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { ProvedoButton } from './ProvedoButton';
+import { Sources } from './Sources';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
@@ -57,8 +58,17 @@ export const HERO_RESPONSE_SEGMENTS: readonly ResponseSegment[] = [
 ];
 
 // Sources line — verbatim per brand-voice §2.5 + PD audit §4 (matches §S4 Tab 1).
-export const HERO_SOURCES_LINE =
-  'Sources: AAPL Q3 earnings 2025-10-31 · TSLA Q3 delivery report 2025-10-22 · holdings via Schwab statement 2025-11-01.';
+// Slice-LP3.5: extracted into discrete items so the shared <Sources> primitive
+// renders the cite-trail with the same chrome as every other observational
+// surface on the page. The legacy `HERO_SOURCES_LINE` string is preserved for
+// content-invariant tests (verbatim brand-voice lock).
+export const HERO_SOURCES_ITEMS: ReadonlyArray<string> = [
+  'AAPL Q3 earnings 2025-10-31',
+  'TSLA Q3 delivery report 2025-10-22',
+  'holdings via Schwab statement 2025-11-01',
+] as const;
+
+export const HERO_SOURCES_LINE = `Sources: ${HERO_SOURCES_ITEMS.join(' · ')}.`;
 
 // Concatenated response length drives the typing index.
 const RESPONSE_TOTAL_LENGTH = HERO_RESPONSE_SEGMENTS.reduce((acc, seg) => acc + seg.text.length, 0);
@@ -356,20 +366,21 @@ function ProvedoResponseBubble({
           <TypingCursor visible={isTypingResponse} />
         </p>
 
-        {/* Sources line — verbatim per brand-voice §2.5; appears after typing completes */}
+        {/* Sources primitive (Slice-LP3.5) — verbatim cite items per brand-voice
+            §2.5; appears after typing completes via fade-in container so the
+            <Sources> component itself stays animation-free. */}
         {(isComplete || prefersReduced) && (
-          <p
-            className="mt-2 text-xs italic"
+          <div
+            className="mt-2"
             style={{
-              color: 'var(--provedo-text-tertiary)',
               opacity: prefersReduced ? 1 : 0,
               animation: prefersReduced
                 ? 'none'
                 : 'provedo-sources-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
             }}
           >
-            {HERO_SOURCES_LINE}
-          </p>
+            <Sources items={HERO_SOURCES_ITEMS} />
+          </div>
         )}
 
         <InlinePnlSparkline visible={isComplete} prefersReduced={prefersReduced} />
