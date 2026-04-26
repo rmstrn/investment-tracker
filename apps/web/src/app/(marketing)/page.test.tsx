@@ -6,12 +6,18 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MarketingFooter } from './_components/MarketingFooter';
 import { ProvedoDemoTabsV2 } from './_components/ProvedoDemoTabsV2';
 import { ProvedoEditorialNarrative } from './_components/ProvedoEditorialNarrative';
 import { ProvedoFAQ } from './_components/ProvedoFAQ';
+import {
+  HERO_RESPONSE_SEGMENTS,
+  HERO_SOURCES_LINE,
+  HERO_USER_MESSAGE,
+  ProvedoHeroV2,
+} from './_components/ProvedoHeroV2';
 import { ProvedoInsightsBullets } from './_components/ProvedoInsightsBullets';
 import { ProvedoNegationSection } from './_components/ProvedoNegationSection';
 import { ProvedoNumericProofBar } from './_components/ProvedoNumericProofBar';
@@ -1022,5 +1028,240 @@ describe('Rule 4 — no rejected predecessor name in apps/web user-facing source
       );
     }
     expect(offenders).toEqual([]);
+  });
+});
+
+// ─── Slice-LP3.4 — Hero ChatMockup polish (Proposal A) ────────────────────
+//
+// Brand-voice APPROVE-AS-DRAFTED 2026-04-27 — the response text + sources line
+// must be rendered VERBATIM. These tests pin the exact strings against drift,
+// validate the mono-token typography baseline (matches §S4 Tab 1 + chart upgrade
+// 20pt JBM-mono baseline), and verify the IntersectionObserver-driven replay
+// hook is wired to the chat surface (under reduced-motion the static fallback
+// renders the full content immediately so visitors with motion preferences off
+// still see the upgraded copy on first paint + on every scroll-back).
+
+describe('Slice-LP3.4 — Hero ChatMockup content invariants (verbatim)', () => {
+  it('user message is locked to «Why is my portfolio down this month?»', () => {
+    expect(HERO_USER_MESSAGE).toBe('Why is my portfolio down this month?');
+  });
+
+  it('response text matches §S4 Tab 1 verbatim — including comma before «and Tesla»', () => {
+    const fullText = HERO_RESPONSE_SEGMENTS.map((seg) => seg.text).join('');
+    expect(fullText).toBe(
+      "You're down −4.2% this month. 62% of the drawdown is two positions:" +
+        ' Apple (−11%) after Q3 earnings on 2025-10-31, and Tesla (−8%)' +
+        ' after the 2025-10-22 delivery miss.' +
+        ' The rest of your portfolio is roughly flat.',
+    );
+  });
+
+  it('keeps «delivery miss» phrasing (brand-voice §2.5: do NOT euphemize)', () => {
+    const fullText = HERO_RESPONSE_SEGMENTS.map((seg) => seg.text).join('');
+    expect(fullText).toMatch(/delivery miss/);
+    // Anti-euphemism guardrail — neither softer alternative is allowed.
+    expect(fullText).not.toMatch(/delivery shortfall/i);
+    expect(fullText).not.toMatch(/delivery report/i);
+  });
+
+  it('sources line is verbatim per brand-voice review §2.5 + PD audit §4', () => {
+    expect(HERO_SOURCES_LINE).toBe(
+      'Sources: AAPL Q3 earnings 2025-10-31 · TSLA Q3 delivery report 2025-10-22 ·' +
+        ' holdings via Schwab statement 2025-11-01.',
+    );
+  });
+
+  it('mono-token segments exist for tickers + amounts + dates (Magician-craft register)', () => {
+    const monoTexts = HERO_RESPONSE_SEGMENTS.filter((s) => s.kind === 'mono').map((s) => s.text);
+    expect(monoTexts).toContain('62%');
+    expect(monoTexts).toContain('Apple (−11%)');
+    expect(monoTexts).toContain('Tesla (−8%)');
+    expect(monoTexts).toContain('2025-10-31');
+    expect(monoTexts).toContain('2025-10-22');
+  });
+
+  it('the headline drawdown number is in a NEG token (red mono)', () => {
+    const negTexts = HERO_RESPONSE_SEGMENTS.filter((s) => s.kind === 'neg').map((s) => s.text);
+    expect(negTexts).toEqual(['−4.2%']);
+  });
+
+  it('uses no advisor-prescriptive verbs (Lane A + verb-allowlist)', () => {
+    const fullText = HERO_RESPONSE_SEGMENTS.map((seg) => seg.text).join('');
+    // Banned per Lane A + the 5-item EN guardrail set.
+    expect(fullText).not.toMatch(/recommend/i);
+    expect(fullText).not.toMatch(/suggest/i);
+    expect(fullText).not.toMatch(/advis/i);
+    expect(fullText).not.toMatch(/strategy/i);
+    expect(fullText).not.toMatch(/you should/i);
+  });
+});
+
+describe('Slice-LP3.4 — Hero ChatMockup render (reduced-motion fallback path)', () => {
+  // Under prefers-reduced-motion: reduce, the typing animation is skipped and the
+  // chat surface renders the full final text statically on first paint. This is
+  // the deterministic path for assertions about the rendered DOM (no fake-timer
+  // brittleness, no async typing-state machine).
+  let originalMatchMedia: typeof window.matchMedia | undefined;
+
+  beforeEach(() => {
+    originalMatchMedia = window.matchMedia;
+    // Mock matchMedia to report reduced-motion preference.
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  });
+
+  afterEach(() => {
+    if (originalMatchMedia) {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    }
+  });
+
+  it('renders the full Provedo response text statically (no partial typing)', async () => {
+    render(<ProvedoHeroV2 />);
+    // Wait for hydration effect that flips reduced-motion + sets full state.
+    const responseBubble = await screen.findByLabelText(/provedo response/i);
+    const fullText = HERO_RESPONSE_SEGMENTS.map((s) => s.text).join('');
+    // `textContent` concatenates the segmented text + mono + neg children.
+    expect(responseBubble.textContent).toContain(fullText);
+  });
+
+  it('renders the verbatim sources line below the response bubble', async () => {
+    render(<ProvedoHeroV2 />);
+    await screen.findByText(HERO_SOURCES_LINE);
+  });
+
+  it('renders mono-token spans for all required data points', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    // First wait for the response bubble to appear so token spans exist.
+    await screen.findByLabelText(/provedo response/i);
+    const monoTokens = container.querySelectorAll('[data-testid="hero-mono-token"]');
+    // 5 mono segments per HERO_RESPONSE_SEGMENTS — the count must match exactly
+    // so a future paraphrase cannot silently drop a ticker / date.
+    expect(monoTokens.length).toBe(5);
+    const negTokens = container.querySelectorAll('[data-testid="hero-neg-token"]');
+    expect(negTokens.length).toBe(1);
+  });
+
+  it('renders the wordmark INLINE above the response bubble (not floating above the card)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    const responseBubble = await screen.findByLabelText(/provedo response/i);
+    // The §S4 ProvedoBubble structural pattern places the wordmark <p>Provedo</p>
+    // INSIDE the response-bubble wrapper, immediately before the bubble itself —
+    // it must NOT float at the top of the chat article (audit §2.2.1).
+    const article = container.querySelector('article[aria-label="Provedo demo conversation"]');
+    expect(article).not.toBeNull();
+    // The wordmark must NOT be the first child element of the article.
+    const firstChild = article?.firstElementChild;
+    expect(firstChild?.textContent?.trim()).not.toBe('Provedo');
+    // The wordmark must be the previous sibling of the response bubble itself,
+    // i.e. live inside the response wrapper as the bubble's header.
+    const previousSibling = responseBubble.previousElementSibling;
+    expect(previousSibling?.tagName.toLowerCase()).toBe('p');
+    expect(previousSibling?.textContent).toBe('Provedo');
+  });
+
+  it('user bubble has no border (audit §2.2.7: redundant on white card bg)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const userBubbleWrapper = container.querySelector('[aria-label="User message"]');
+    expect(userBubbleWrapper).not.toBeNull();
+    const userBubble = userBubbleWrapper?.firstElementChild as HTMLElement | null;
+    expect(userBubble).not.toBeNull();
+    const inlineStyle = userBubble?.getAttribute('style') ?? '';
+    // The previous version set `border: 1px solid var(--provedo-border-subtle)`.
+    expect(inlineStyle).not.toMatch(/border:\s*1px solid/);
+  });
+
+  it('chat surface is wrapped in an IntersectionObserver-aware ref (replay-on-intersection)', async () => {
+    // useInView assigns its ref to the article element directly. We can't observe
+    // the IO callback under happy-dom (which provides only an IO stub), but we
+    // CAN assert the article element is present so the ref attaches — the wiring
+    // surface that distinguishes this slice from the pre-3.4 single-shot version.
+    render(<ProvedoHeroV2 />);
+    const article = await screen.findByLabelText('Provedo demo conversation');
+    expect(article.tagName.toLowerCase()).toBe('article');
+  });
+});
+
+describe('Slice-LP3.4 — Hero ChatMockup typography baseline', () => {
+  // Reuses the reduced-motion mock so the response bubble renders synchronously.
+  let originalMatchMedia: typeof window.matchMedia | undefined;
+
+  beforeEach(() => {
+    originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  });
+
+  afterEach(() => {
+    if (originalMatchMedia) {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    }
+  });
+
+  it('user bubble + response bubble both lift to text-sm (was text-xs)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const userBubble = container.querySelector(
+      '[aria-label="User message"] > div',
+    ) as HTMLElement | null;
+    expect(userBubble).not.toBeNull();
+    expect(userBubble?.className).toMatch(/text-sm/);
+    expect(userBubble?.className).not.toMatch(/text-xs/);
+  });
+
+  it('inline P&L sparkline end-label uses 11pt JBM-mono floor (was 9pt)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const sparkline = container.querySelector('svg[aria-label*="trend line"]');
+    expect(sparkline).not.toBeNull();
+    const endLabel = sparkline?.querySelector('text[text-anchor="end"]');
+    expect(endLabel).not.toBeNull();
+    // 11pt floor matches Slice-LP3.3 chart upgrade typography baseline.
+    expect(endLabel?.getAttribute('font-size')).toBe('11');
+    expect(endLabel?.textContent).toBe('−4.2%');
+  });
+
+  it('inline P&L sparkline line stroke is brand teal 2px (matches chart upgrade §A)', async () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    await screen.findByLabelText(/provedo response/i);
+    const sparkline = container.querySelector('svg[aria-label*="trend line"]');
+    expect(sparkline).not.toBeNull();
+    const polyline = sparkline?.querySelector('polyline[stroke]');
+    expect(polyline).not.toBeNull();
+    expect(polyline?.getAttribute('stroke')).toBe('var(--provedo-accent)');
+    expect(polyline?.getAttribute('stroke-width')).toBe('2');
   });
 });
