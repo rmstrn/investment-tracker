@@ -27,6 +27,7 @@ import { ProvedoRepeatCTAV2 } from './_components/ProvedoRepeatCTAV2';
 import { ProvedoTestimonialCards } from './_components/ProvedoTestimonialCards';
 import { Sources } from './_components/Sources';
 import { AllocationPieBar } from './_components/charts/AllocationPieBar';
+import { AllocationPieBarAnimated } from './_components/charts/AllocationPieBarAnimated';
 import { DividendCalendar } from './_components/charts/DividendCalendar';
 import { PnlSparkline } from './_components/charts/PnlSparkline';
 import { TradeTimeline } from './_components/charts/TradeTimeline';
@@ -132,9 +133,12 @@ describe('ProvedoNumericProofBar', () => {
     ).toBeInTheDocument();
   });
 
-  it('uses "100s" fallback by default', () => {
+  it('uses "Hundreds" fallback by default (Slice-LP3.7-A: aligned with §S8 register)', () => {
     render(<ProvedoNumericProofBar />);
-    expect(screen.getByText('100s')).toBeInTheDocument();
+    expect(screen.getByText('Hundreds')).toBeInTheDocument();
+    // Anti-test: the prior «100s» mono-numeric register MUST NOT regress —
+    // it created a one-viewport copy mismatch with §S8 «Hundreds of brokers».
+    expect(screen.queryByText('100s')).not.toBeInTheDocument();
   });
 
   it('renders "1000+" when coverage prop is provided', () => {
@@ -1543,5 +1547,163 @@ describe('Slice-LP3.6 — Hero receipt-system composition', () => {
     expect(chipWrapper).not.toBeNull();
     expect(chipWrapper?.className).toMatch(/\bhidden\b/);
     expect(chipWrapper?.className).toMatch(/\bmd:flex\b/);
+  });
+});
+
+// ─── Slice-LP3.7-A — final design-review fixes ─────────────────────────────
+
+describe('Slice-LP3.7-A — Tab 4 in-segment label contrast (CRIT-A WCAG 1.4.3 AA)', () => {
+  // The prior color logic (`seg.highlight || seg.pct >= 50`) produced
+  // foreground-equals-background on at least 3 segments (e.g. tech 28% on
+  // text-secondary fill = literal 1.0:1 invisibility). Slice-LP3.7-A drives
+  // label color from `data-segment-tone`: dark fills get cream-on-dark text;
+  // light fills get slate-on-cream text. Each label must contrast with its
+  // own segment background ≥ 4.5:1.
+
+  // Pairs verified in the design-review token math:
+  //   --provedo-bg-page         = #FAFAF7 (cream)
+  //   --provedo-text-primary    = #0F172A (slate-900)
+  //   --provedo-text-secondary  = #334155 (slate-700)
+  //   --provedo-accent          = #0D9488 (teal-600)
+  //   --provedo-accent-hover    = #0F766E (teal-700)
+  //   --provedo-border-default  = #CBD5E1 (slate-300)
+  // dark fills (accent / accent-hover / text-secondary) → bg-page text     ≥ 4.7:1
+  // light fills (border-default)                        → text-primary text ≈ 12:1
+
+  for (const [Component, name] of [
+    [AllocationPieBar, 'AllocationPieBar (static)'],
+    [AllocationPieBarAnimated, 'AllocationPieBarAnimated (animated)'],
+  ] as const) {
+    it(`${name}: each in-segment label color is the inverse tone of its background`, () => {
+      const { container } = render(<Component />);
+      const segments = container.querySelectorAll<HTMLElement>('[data-segment-tone]');
+      expect(segments.length).toBeGreaterThan(0);
+
+      for (const segment of segments) {
+        const tone = segment.getAttribute('data-segment-tone');
+        const styleColor = segment.style.color;
+        const styleBg = segment.style.backgroundColor;
+
+        // Foreground MUST NOT equal background — anti-test for the
+        // exact failure mode CRIT-A flagged (#334155 text on #334155 fill).
+        expect(styleColor).not.toBe(styleBg);
+
+        if (tone === 'dark') {
+          // Dark fills carry cream/light text.
+          expect(styleColor).toBe('var(--provedo-bg-page)');
+        } else if (tone === 'light') {
+          // Light fills carry primary slate text.
+          expect(styleColor).toBe('var(--provedo-text-primary)');
+        } else {
+          throw new Error(`Unexpected tone: ${tone ?? 'null'}`);
+        }
+      }
+    });
+
+    it(`${name}: prior contrast-failing logic is gone (no «pct >= 50 picks bg-page» rule)`, () => {
+      // Anti-regression: the failing combination was that a 72%-wide segment
+      // with a LIGHT fill (border-default #CBD5E1) was getting bg-page (#FAFAF7)
+      // text — 1.36:1 ratio. After the fix, light fills must NEVER get bg-page
+      // text regardless of pct. Verify by inspecting the «remaining 72%» row.
+      const { container } = render(<Component />);
+      const lightSegments = Array.from(
+        container.querySelectorAll<HTMLElement>('[data-segment-tone="light"]'),
+      );
+      for (const segment of lightSegments) {
+        expect(segment.style.color).not.toBe('var(--provedo-bg-page)');
+      }
+    });
+  }
+});
+
+describe('Slice-LP3.7-A — §S5 InsightsBullets Sources mount (chrome-promise content backing)', () => {
+  // Brand-strategist 2026-04-27 §S5 found: bullet #3 verbatim asserts
+  // «Provedo cites every observation. Every pattern ties back to a trade,
+  // an event, or a published source.» but the surface itself shipped without
+  // a Sources mount. This test guards the close of that chrome-promise gap.
+
+  it('mounts <Sources> primitive below the 3 bullets (closes §S5 chrome-promise gap)', () => {
+    const { container } = render(<ProvedoInsightsBullets />);
+    const wrapper = container.querySelector('[data-testid="insights-sources-wrapper"]');
+    expect(wrapper).not.toBeNull();
+    const sources = wrapper?.querySelector('[data-testid="provedo-sources"]');
+    expect(sources).not.toBeNull();
+  });
+
+  it('cites methodology + per-answer items, NOT internal pre-alpha cohort references', () => {
+    const { container } = render(<ProvedoInsightsBullets />);
+    const sources = container.querySelector('[data-testid="provedo-sources"]');
+    expect(sources?.textContent).toMatch(/methodology/i);
+    expect(sources?.textContent).toMatch(/cited per observation/i);
+    // Brand-voice REJECT: do NOT cite pre-alpha JTBD interviews / ICP cohort
+    // signals on this surface. That treatment is reserved for §S6 editorial.
+    expect(sources?.textContent ?? '').not.toMatch(/jtbd interviews/i);
+    expect(sources?.textContent ?? '').not.toMatch(/icp cohort/i);
+    expect(sources?.textContent ?? '').not.toMatch(/n=\d+/);
+  });
+
+  it('uses lighter chrome (constrained max-width + opacity) to avoid Sage-stacking', () => {
+    const { container } = render(<ProvedoInsightsBullets />);
+    const wrapper = container.querySelector<HTMLElement>(
+      '[data-testid="insights-sources-wrapper"]',
+    );
+    expect(wrapper).not.toBeNull();
+    // Brand-strategist §7 ceiling note: 6 mounts is upper-bound for Everyman
+    // survival; the 7th uses muted weight rather than full chrome density.
+    expect(wrapper?.style.maxWidth).toBe('480px');
+    // Opacity in the 0.7-0.9 range — visually de-emphasized vs the other 6.
+    const opacityValue = Number.parseFloat(wrapper?.style.opacity ?? '1');
+    expect(opacityValue).toBeGreaterThanOrEqual(0.7);
+    expect(opacityValue).toBeLessThan(1);
+  });
+});
+
+describe('Slice-LP3.7-A — §S2 «Hundreds» / §S8 «Hundreds» register alignment', () => {
+  // PD final review §S2 vs §S8 mismatch: proof-bar Cell I shipped «100s»
+  // (mono-numeric register) one viewport apart from §S8 header «Hundreds»
+  // (sans-narrative register). Slice-LP3.7-A aligns both surfaces to the
+  // sans-narrative «Hundreds» until TD-095 lands the verified «1000+» upgrade.
+
+  it('proof-bar Cell I and §S8 header use the same «Hundreds» register on the live page', () => {
+    render(<MarketingHomePage />);
+    const headings = screen.getAllByText(/hundreds of brokers and exchanges/i);
+    // Cell I sub never carries the full phrase but Cell I dd carries «Hundreds»
+    // and §S8 paragraph carries «Hundreds of brokers and exchanges, in one place.»
+    expect(headings.length).toBeGreaterThanOrEqual(1);
+    // Anti-regression: «100s» as a numeric token MUST NOT regress on the
+    // landing page (it created the proof-bar / §S8 register mismatch).
+    expect(screen.queryByText(/^100s$/)).not.toBeInTheDocument();
+  });
+});
+
+describe('Slice-LP3.7-A — ProvedoFAQ focus-visible CSS migration (MED)', () => {
+  it('renders without inline onFocus/onBlur JS handlers (matches MarketingFooter pattern)', () => {
+    const { container } = render(<ProvedoFAQ />);
+    // The Wave 2.5 spec migrated MarketingFooter to CSS :focus-visible.
+    // Slice-LP3.7-A migrates ProvedoFAQ to the same pattern so both
+    // <details>/<summary> patterns converge in the design system.
+    const summaries = container.querySelectorAll('summary');
+    expect(summaries.length).toBe(6);
+    for (const summary of summaries) {
+      // Must use Tailwind focus-visible utility classes, not inline JS.
+      expect(summary.className).toMatch(/focus-visible:outline/);
+      expect(summary.className).toMatch(/focus-visible:\[outline-color/);
+    }
+    // No inline `outline: 2px solid …` style applied on initial render.
+    for (const summary of summaries) {
+      expect((summary as HTMLElement).style.outline).toBe('');
+    }
+  });
+});
+
+describe('Slice-LP3.7-A — CitationChip aria-label semantic correction (LOW)', () => {
+  it('footer aria-label reads «Brokers covered» (not «Sources»)', () => {
+    const { container } = render(<CitationChip isComplete={true} prefersReduced={true} />);
+    const footer = container.querySelector('footer');
+    expect(footer).not.toBeNull();
+    // The chip carries broker scope — the receipt's own «Sources:» line above
+    // already lists the citations. SR readout now matches what the chip means.
+    expect(footer?.getAttribute('aria-label')).toBe('Brokers covered');
+    expect(footer?.getAttribute('aria-label')).not.toBe('Sources');
   });
 });

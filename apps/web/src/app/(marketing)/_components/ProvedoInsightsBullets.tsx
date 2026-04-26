@@ -4,10 +4,24 @@
 // Patch B: «a few minutes a week» → «a few minutes a day»
 // V3.5: scroll-into-view fade-in via ScrollFadeIn wrapper
 // V3.6: copy trim — sub shortened, bullets kept concise
+// Slice-LP3.7-A: backs the chrome-promise asserted by bullet #3 («Provedo
+// cites every observation») with an actual <Sources> mount on this surface.
+// Brand-strategist 2026-04-27 §S5: closes the chrome-promise-content-mismatch
+// gap. Treatment is intentionally LIGHTER (max-width + reduced opacity wrapper)
+// than the other 6 Sources mounts — the primitive's upper bound for Everyman
+// survival was named at 6 mounts, so the 7th uses muted visual weight to
+// avoid Sage-stacking. Items reference methodology + per-answer cite, NOT
+// internal pre-alpha cohorts (brand-voice rejected performative-Sage citing).
 // Visual spec §6.2: 3-card row, white bg (ELEVATED)
 
 import { BookOpen, Search, Wifi } from 'lucide-react';
 import { ScrollFadeIn } from './ScrollFadeIn';
+import { Sources } from './Sources';
+
+const INSIGHTS_SOURCES_ITEMS: ReadonlyArray<string> = [
+  'Methodology · pattern detection runs on your transactions',
+  'Cited per observation in chat answers',
+] as const;
 
 const INSIGHT_BULLETS: ReadonlyArray<{
   icon: React.ElementType;
@@ -96,6 +110,20 @@ export function ProvedoInsightsBullets(): React.ReactElement {
             );
           })}
         </div>
+
+        {/* Slice-LP3.7-A: backs bullet #3's chrome-promise on the surface
+            that asserts it. Wrapped in a constrained, opacity-muted container
+            so the 7th Sources mount does not push Sage past Everyman parity
+            (brand-strategist §7 ceiling note). */}
+        <ScrollFadeIn delay={INSIGHT_BULLETS.length * 80}>
+          <div
+            data-testid="insights-sources-wrapper"
+            className="mx-auto mt-10 md:mt-12"
+            style={{ maxWidth: '480px', opacity: 0.85 }}
+          >
+            <Sources items={INSIGHTS_SOURCES_ITEMS} />
+          </div>
+        </ScrollFadeIn>
       </div>
     </section>
   );

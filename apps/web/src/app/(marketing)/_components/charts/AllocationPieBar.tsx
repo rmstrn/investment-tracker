@@ -37,6 +37,14 @@ interface BarSegment {
   color: string;
   /** When true, this segment is the highlight (Provedo tech). */
   highlight?: boolean;
+  /**
+   * Tonal classification of the fill — drives in-segment label color so it
+   * always contrasts ≥ 4.5:1 with its background (Slice-LP3.7-A CRIT-A fix
+   * for WCAG 1.4.3 AA). `dark` fills get cream-on-dark text; `light` fills
+   * get slate-on-cream text. Treat this as the source of truth for label
+   * contrast rather than inferring from `highlight` or `pct`.
+   */
+  tone: 'dark' | 'light';
 }
 
 interface ComparisonBar {
@@ -56,10 +64,10 @@ const BARS: ReadonlyArray<ComparisonBar> = [
     headline: 'Tech 58%',
     ariaLabel: 'Your portfolio sector mix: Tech 58%, Financials 18%, Healthcare 14%, Other 10%.',
     segments: [
-      { label: 'tech 58%', pct: 58, color: 'var(--provedo-accent)', highlight: true },
-      { label: 'fin 18%', pct: 18, color: 'var(--provedo-accent-hover)' },
-      { label: 'hth 14%', pct: 14, color: 'var(--provedo-text-secondary)' },
-      { label: '10%', pct: 10, color: 'var(--provedo-border-default)' },
+      { label: 'tech 58%', pct: 58, color: 'var(--provedo-accent)', highlight: true, tone: 'dark' },
+      { label: 'fin 18%', pct: 18, color: 'var(--provedo-accent-hover)', tone: 'dark' },
+      { label: 'hth 14%', pct: 14, color: 'var(--provedo-text-secondary)', tone: 'dark' },
+      { label: '10%', pct: 10, color: 'var(--provedo-border-default)', tone: 'light' },
     ],
   },
   {
@@ -67,8 +75,8 @@ const BARS: ReadonlyArray<ComparisonBar> = [
     headline: 'Tech 28%',
     ariaLabel: 'S&P 500 sector weights 2025 third quarter: Tech 28%, remaining sectors 72%.',
     segments: [
-      { label: 'tech 28%', pct: 28, color: 'var(--provedo-text-secondary)' },
-      { label: 'remaining 72%', pct: 72, color: 'var(--provedo-border-default)' },
+      { label: 'tech 28%', pct: 28, color: 'var(--provedo-text-secondary)', tone: 'dark' },
+      { label: 'remaining 72%', pct: 72, color: 'var(--provedo-border-default)', tone: 'light' },
     ],
   },
 ] as const;
@@ -148,6 +156,7 @@ function ComparisonBarRow({ bar, reveal = 1 }: BarProps): ReactElement {
         {bar.segments.map((seg, i) => (
           <div
             key={`${bar.series}-${i}-${seg.pct}`}
+            data-segment-tone={seg.tone}
             style={{
               flex: `${seg.pct} 0 0`,
               backgroundColor: seg.color,
@@ -157,10 +166,11 @@ function ComparisonBarRow({ bar, reveal = 1 }: BarProps): ReactElement {
               paddingLeft: seg.pct >= SEGMENT_LABEL_MIN_PCT ? '8px' : '0',
               fontFamily: 'var(--provedo-font-mono)',
               fontSize: '11px',
-              color:
-                seg.highlight || seg.pct >= 50
-                  ? 'var(--provedo-bg-page)'
-                  : 'var(--provedo-text-secondary)',
+              // Slice-LP3.7-A CRIT-A (WCAG 1.4.3 AA): label color is driven
+              // by `tone`, not by `highlight` or `pct >= 50`. Dark fills get
+              // cream-on-dark; light fills get slate-on-cream. Each label
+              // contrasts ≥ 4.5:1 with its own segment background.
+              color: seg.tone === 'dark' ? 'var(--provedo-bg-page)' : 'var(--provedo-text-primary)',
               fontWeight: seg.highlight ? 600 : 500,
               overflow: 'hidden',
               whiteSpace: 'nowrap',

@@ -36,6 +36,10 @@
 //
 // A11y: presentational, not interactive. Icon is aria-hidden. The chip text
 // is read in full as part of the receipt's <footer> per spec §6.1.
+// Slice-LP3.7-A: aria-label «Sources» → «Brokers covered». The chip carries
+// broker scope, not source citations (the receipt's own «Sources:» line above
+// already lists the citations). The semantic correction makes SR readout
+// match what the chip actually communicates.
 
 import type { ReactElement } from 'react';
 
@@ -96,7 +100,7 @@ export function CitationChip({
   };
 
   return (
-    <footer aria-label="Sources" className={className}>
+    <footer aria-label="Brokers covered" className={className}>
       <span
         data-testid="hero-citation-chip"
         className="inline-flex items-center gap-2 rounded-full border px-3 py-1.5"

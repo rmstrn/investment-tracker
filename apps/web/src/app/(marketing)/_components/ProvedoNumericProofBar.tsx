@@ -17,12 +17,17 @@
 //   - Audience-whisper micro-line below cells per PD spec V2
 //   - max-w-4xl → max-w-5xl for 4-cell breathing room (PD spec)
 //
+// Slice-LP3.7-A: align Cell I copy with §S8 header «Hundreds of brokers and
+// exchanges». Was «100s» (mono-numeric register) — read as inconsistent one
+// viewport apart from §S8 «Hundreds» (sans-narrative register). Both surfaces
+// now use «Hundreds» until TD-095 lands the verified «1000+» upgrade.
+//
 // Accessibility: <section><dl><dt><dd>, AAA contrast verified.
-// TD-095: swap coverage="100s" → coverage="1000+" once tech-lead verifies coverage.
+// TD-095: swap coverage="Hundreds" → coverage="1000+" once tech-lead verifies coverage.
 
 interface ProvedoNumericProofBarProps {
-  /** Broker count copy — '100s' (fallback) or '1000+' (post-verification) */
-  coverage?: '100s' | '1000+';
+  /** Broker count copy — 'Hundreds' (fallback) or '1000+' (post-verification) */
+  coverage?: 'Hundreds' | '1000+';
 }
 
 // Per-breakpoint big-number font-size clamp (PD spec V1, slightly tighter for 4-cell layout)
@@ -56,7 +61,7 @@ const CELL_SUB_STYLE: React.CSSProperties = {
 };
 
 export function ProvedoNumericProofBar({
-  coverage = '100s',
+  coverage = 'Hundreds',
 }: ProvedoNumericProofBarProps): React.ReactElement {
   // Wave 2.6 a11y HIGH-2: text-only cells render visible from SSR with no
   // opacity fade. Slice-LP3.5: Cell IV count-up dropped (cell now carries
@@ -86,11 +91,11 @@ export function ProvedoNumericProofBar({
               className="leading-none tracking-tight"
               style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
             >
-              {coverage === '100s' ? '100s' : '1000+'}
+              {coverage === 'Hundreds' ? 'Hundreds' : '1000+'}
             </dd>
             <dt style={CELL_EYEBROW_STYLE}>brokers and exchanges</dt>
             <dd style={CELL_SUB_STYLE}>
-              {coverage === '100s' ? 'every major one' : 'in one place'}
+              {coverage === 'Hundreds' ? 'every major one' : 'in one place'}
             </dd>
           </div>
 

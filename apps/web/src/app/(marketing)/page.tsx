@@ -51,9 +51,13 @@ export default function MarketingHomePage() {
       <ProvedoHeroV2 />
 
       {/* S2 — Numeric proof bar
-          TD-095 (P3): swap coverage="100s" → coverage="1000+" once tech-lead
-          verifies SnapTrade + Plaid + CCXT broker coverage count */}
-      <ProvedoNumericProofBar coverage="100s" />
+          Slice-LP3.7-A: «100s» → «Hundreds» so Cell I copy aligns with §S8
+          header «Hundreds of brokers and exchanges, in one place». Both
+          surfaces ship the same register until TD-095 lands the verified
+          «1000+» upgrade.
+          TD-095 (P3): swap coverage="Hundreds" → coverage="1000+" once
+          tech-lead verifies SnapTrade + Plaid + CCXT broker coverage count */}
+      <ProvedoNumericProofBar coverage="Hundreds" />
 
       {/* S3 — Problem-negation positioning («This is what Provedo is not.») */}
       <ProvedoNegationSection />

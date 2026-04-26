@@ -5,8 +5,8 @@
 //     is calmer and more honest than animated scroll, which asks the reader
 //     to wait-and-watch for proof).
 //   - Replace with a static 3-column mono list of broker abbreviations.
-//   - Closing line: «— and growing» (brand-voice EDIT — NOT «100s more»,
-//     which would conflict with proof-bar Cell I «100s»).
+//   - Closing line: «— and growing» (brand-voice EDIT — NOT «Hundreds more»,
+//     which would conflict with proof-bar Cell I «Hundreds» (Slice-LP3.7-A).
 //
 // Reduces the page motion budget (was the most kinetic surface). No
 // animation here at all by design.

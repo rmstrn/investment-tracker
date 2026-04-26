@@ -1,9 +1,9 @@
-'use client';
-
 // ProvedoFAQ — §S10 FAQ accordion (Slice-LP2)
 // Content: verbatim from landing-provedo-v2.md §S10 — 6 Q&A
 // Accessibility: details/summary native HTML (keyboard navigable, no JS required)
-// 'use client' directive required for inline onFocus/onBlur event handlers (Next.js 15 RSC boundary)
+// Slice-LP3.7-A: focus styling migrated from inline onFocus/onBlur to CSS
+// :focus-visible (matches MarketingFooter pattern shipped in Wave 2.5).
+// No `'use client'` needed — pure Server Component.
 // Lane A: Q1 explicit disclaim register, all answers audited per 5-item guardrails
 // Plus price LOCKED $9/month per finance-advisor 2026-04-26 (was TD-096 placeholder)
 
@@ -21,7 +21,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'Which brokers are supported?',
     answer:
-      '100s of brokers and exchanges via SnapTrade, Plaid, and CCXT — Fidelity, Schwab, IBKR, Robinhood, E*TRADE, Trading212, Coinbase, Binance, Kraken, and most major venues globally.',
+      'Hundreds of brokers and exchanges via SnapTrade, Plaid, and CCXT — Fidelity, Schwab, IBKR, Robinhood, E*TRADE, Trading212, Coinbase, Binance, Kraken, and most major venues globally.',
   },
   {
     question: 'What does Provedo cost?',
@@ -69,17 +69,9 @@ export function ProvedoFAQ(): React.ReactElement {
               }}
             >
               <summary
-                className="flex cursor-pointer list-none items-center justify-between py-5 text-base font-medium focus-visible:outline-none"
+                className="flex cursor-pointer list-none items-center justify-between rounded py-5 text-base font-medium outline-none focus-visible:outline-2 focus-visible:[outline-color:var(--provedo-accent)] focus-visible:[outline-offset:2px]"
                 style={{
                   color: 'var(--provedo-text-primary)',
-                  outline: 'none',
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.outline = '2px solid var(--provedo-accent)';
-                  e.currentTarget.style.outlineOffset = '2px';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.outline = '';
                 }}
               >
                 <span>{item.question}</span>
