@@ -604,6 +604,130 @@ describe('DisclosuresPage (Layer 3)', () => {
   });
 });
 
+// ─── Slice-LP3.2 Wave 2.5 — legal SIGNED-WITH-EDITS corrections ──────────
+
+describe('DisclosuresPage — legal Wave 2.5 corrections', () => {
+  it('§5 «Your decisions»: drops tax/retirement/composition qualifier (legal Required Edit 1)', () => {
+    const { container } = render(<DisclosuresPage />);
+    const text = container.textContent ?? '';
+    // Verbatim base phrase must remain (Element-5 inheritance from 75-word footer)
+    expect(text).toMatch(
+      /consult a licensed financial advisor in your jurisdiction before making investment decisions/i,
+    );
+    // Forecloser-qualifier must be GONE (creates DOL Fiduciary Rule adjacency that
+    // forecloses future Plus-tier tax-optimization + retirement-account features)
+    expect(text).not.toMatch(/tax consequences/i);
+    expect(text).not.toMatch(/retirement accounts/i);
+    expect(text).not.toMatch(/portfolio composition/i);
+  });
+
+  it('§4 «Past performance»: singular «a recommendation» for Tab-3 verbal-rhyme (legal Required Edit 2)', () => {
+    render(<DisclosuresPage />);
+    // Singular phrasing matches locked Tab-3 disclaim verbatim («not a recommendation
+    // about future trading decisions»). Use a flexible matcher because the text node
+    // can break across whitespace.
+    expect(
+      screen.getByText(/not a recommendation about future trading decisions/i),
+    ).toBeInTheDocument();
+    // Plural form must be gone
+    expect(
+      screen.queryByText(/not recommendations about future trading decisions/i),
+    ).not.toBeInTheDocument();
+  });
+
+  it('§3-UK: explicit FCA PERG 8 citation (legal Optional Edit 4 applied)', () => {
+    const { container } = render(<DisclosuresPage />);
+    expect(container.textContent ?? '').toMatch(/fca perimeter guidance manual.*perg 8/i);
+  });
+
+  it('§2 «Information»: «foresight» replaced with «perspective» (legal Optional Edit 5 applied)', () => {
+    const { container } = render(<DisclosuresPage />);
+    const text = container.textContent ?? '';
+    // /disclosures specifically — predict-coded register softened. (FAQ marketing
+    // surface keeps «foresight» — out of scope for Optional Edit 5.)
+    expect(text).toMatch(/clarity, observation, context, and perspective/i);
+    expect(text).not.toMatch(/clarity, observation, context, and foresight/i);
+  });
+});
+
+// ─── Slice-LP3.2 Wave 2.5 — a11y-architect spec corrections ──────────────
+
+describe('DisclosuresPage — a11y Wave 2.5 corrections', () => {
+  it('A2.1: page wrapper is <article> (no nested <main> inside layout <main>)', () => {
+    const { container } = render(<DisclosuresPage />);
+    const article = container.querySelector('article[aria-labelledby="disclosures-heading"]');
+    expect(article).not.toBeNull();
+    // The page itself must not introduce a second <main> landmark — the marketing
+    // layout already wraps children in <main id="main-content">.
+    const inlineMain = container.querySelector('main');
+    expect(inlineMain).toBeNull();
+  });
+
+  it('A2.2: «Last updated» date is wrapped in <time> with machine-readable dateTime', () => {
+    const { container } = render(<DisclosuresPage />);
+    const timeEls = container.querySelectorAll('time[datetime="2026-04-27"]');
+    // Header date + footer date — both wrapped
+    expect(timeEls.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('A2.4: TOC nav with all 6 sectional anchors', () => {
+    render(<DisclosuresPage />);
+    const toc = screen.getByRole('navigation', { name: /on this page/i });
+    expect(toc).toBeInTheDocument();
+    // Each TOC item is a hash link to its corresponding <h2 id>
+    expect(toc.querySelector('a[href="#who"]')).not.toBeNull();
+    expect(toc.querySelector('a[href="#what"]')).not.toBeNull();
+    expect(toc.querySelector('a[href="#per-jurisdiction"]')).not.toBeNull();
+    expect(toc.querySelector('a[href="#past-performance"]')).not.toBeNull();
+    expect(toc.querySelector('a[href="#decisions"]')).not.toBeNull();
+    expect(toc.querySelector('a[href="#contact"]')).not.toBeNull();
+  });
+
+  it('A2.4: every <h2> carries a matching id anchor for TOC jump', () => {
+    const { container } = render(<DisclosuresPage />);
+    expect(container.querySelector('h2#who')).not.toBeNull();
+    expect(container.querySelector('h2#what')).not.toBeNull();
+    expect(container.querySelector('h2#per-jurisdiction')).not.toBeNull();
+    expect(container.querySelector('h2#past-performance')).not.toBeNull();
+    expect(container.querySelector('h2#decisions')).not.toBeNull();
+    expect(container.querySelector('h2#contact')).not.toBeNull();
+  });
+});
+
+describe('MarketingFooter — Wave 2.5 cross-cutting (legal §2 + a11y O2)', () => {
+  it('Footer nav row contains ALWAYS-VISIBLE /disclosures link', () => {
+    render(<MarketingFooter />);
+    const nav = screen.getByRole('navigation', { name: /footer navigation/i });
+    expect(nav).toBeInTheDocument();
+    const disclosuresLink = screen
+      .getAllByRole('link', { name: /disclosures/i })
+      .find((link) => link.getAttribute('href') === '/disclosures');
+    expect(disclosuresLink).toBeDefined();
+    // Specifically, one of the always-visible nav links (not just inside <details>)
+    expect(nav.querySelector('a[href="/disclosures"]')).not.toBeNull();
+  });
+
+  it('Footer Layer 2 <summary> retains «Full regulatory disclosures (US, EU, UK)» text', () => {
+    render(<MarketingFooter />);
+    // Confirms phase-3 commitment §7: <summary> text matches legal-advisor recommendation
+    const summaryText = screen.getByText(/full regulatory disclosures \(us, eu, uk\)/i);
+    expect(summaryText.closest('summary')).not.toBeNull();
+  });
+});
+
+describe('ProvedoTestimonialCards — Wave 2.5 a11y A5.1', () => {
+  it('uses CSS border-top on <figcaption>, NOT <hr> between blockquote + figcaption', () => {
+    const { container } = render(<ProvedoTestimonialCards />);
+    // The single weighted card must NOT contain an <hr> divider (avoids unhelpful
+    // SR «separator» announcement between quote and attribution).
+    const figure = container.querySelector('figure');
+    expect(figure).not.toBeNull();
+    expect(figure?.querySelector('hr')).toBeNull();
+    // <figcaption> must still exist (caption preserved)
+    expect(figure?.querySelector('figcaption')).not.toBeNull();
+  });
+});
+
 // ─── Slice-LP3.2 — Demo tabs source citations ────────────────────────────
 
 describe('ProvedoDemoTabsV2 — source citations (v3.2)', () => {

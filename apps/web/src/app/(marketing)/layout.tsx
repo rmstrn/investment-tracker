@@ -38,6 +38,9 @@ export default function MarketingLayout({ children }: { children: ReactNode }) {
           '--provedo-text-primary': '#0F172A',
           '--provedo-text-secondary': '#334155',
           '--provedo-text-tertiary': '#475569',
+          // a11y A5.7 HIGH-BLOCKING (Wave 2.5): define `text-muted` token referenced by V5
+          // testimonial spec. slate-500 = #64748b → 4.6:1 on #FFFFFF (AA pass).
+          '--provedo-text-muted': '#64748B',
           '--provedo-border-subtle': '#E2E8F0',
           '--provedo-border-default': '#CBD5E1',
           '--provedo-accent': '#0D9488',

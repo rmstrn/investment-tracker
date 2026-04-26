@@ -129,22 +129,22 @@ export function ProvedoTestimonialCards(): React.ReactElement {
                 fontSize: '18px',
                 color: 'var(--provedo-text-primary)',
                 lineHeight: 1.6,
-                marginBottom: '32px',
                 quotes: 'none',
               }}
             >
               {FEATURED_QUOTE.quote}
             </blockquote>
 
-            <hr
+            {/* a11y A5.1 (Wave 2.5): visual divider via CSS border-top on <figcaption>
+                instead of <hr>. <hr> inside <figure> announces «separator» on SR which is
+                unhelpful between a quote and its attribution. */}
+            <figcaption
               style={{
-                border: 'none',
                 borderTop: '1px solid var(--provedo-border-subtle)',
-                marginBottom: '20px',
+                paddingTop: '20px',
+                marginTop: '32px',
               }}
-            />
-
-            <figcaption>
+            >
               <div className="flex flex-wrap items-center gap-2">
                 <span
                   style={{

@@ -60,6 +60,17 @@ export function MarketingFooter() {
             >
               Sign in
             </Link>
+            {/* Wave 2.5 cross-cutting (legal §2 belt-and-suspenders + a11y O2):
+                ALWAYS-VISIBLE /disclosures link, independent of Layer 2 <details> toggle.
+                Addresses AT/browser combos that hide collapsed <details> content from the
+                a11y tree, AND regulator-readability without requiring AT-toggle interaction. */}
+            <Link
+              href="/disclosures"
+              className="transition-colors duration-150"
+              style={{ color: 'var(--provedo-text-tertiary)' }}
+            >
+              Disclosures
+            </Link>
           </nav>
         </div>
 
