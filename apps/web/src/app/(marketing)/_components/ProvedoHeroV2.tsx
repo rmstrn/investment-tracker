@@ -5,20 +5,23 @@
 // Slice-LP6 fresh-eyes additions (5 outside specialists, 7 convergent gaps):
 //   §gap-1: category-tell eyebrow ABOVE the locked H1 (PD + voice + content
 //           + researcher convergence — H1 is poetic but does not name what
-//           the thing is in 5s). Eyebrow: `PORTFOLIO AI · READ-ONLY ·
-//           EVERY BROKER` — JBM-mono 11px, slate-tertiary, widened tracking.
+//           the thing is in 5s). Eyebrow: `PORTFOLIO AI · EVERY BROKER` —
+//           JBM-mono 11px, slate-tertiary, widened tracking. (Slice-LP6.1:
+//           dropped «· READ-ONLY» token to avoid 3× repetition in hero.)
 //   §gap-2: «Ask Provedo» CTA href flips from soft `#demo` scroll to the
 //           new `#prompt-picker` group (in-place chip-driven demo). The new
 //           ChatPromptPicker mounts directly below the right-column chat
 //           shell so click-through is one motion: scroll + chip = replay.
 //   §gap-3: replaces the §S2 numeric proof bar with a single mono microline
-//           below the CTA cluster (`Read-only · Every major broker · Cited
-//           per answer`). The component file `ProvedoNumericProofBar.tsx`
-//           stays in the codebase dormant — see page.tsx for the unmount.
+//           below the CTA cluster (`Every major broker · Cited per answer`).
+//           The component file `ProvedoNumericProofBar.tsx` stays in the
+//           codebase dormant — see page.tsx for the unmount. (Slice-LP6.1:
+//           dropped leading «Read-only · » token — same chrome-diet rationale.)
 //   §gap-5a: hero-adjacent read-only trust line above the CTA cluster
 //           («Read-only. Never touches a trade.»). Researcher + content:
 //           privacy story was buried in FAQ Q5 — surfaces it for the
-//           privacy-allergic ICP at first paint.
+//           privacy-allergic ICP at first paint. (Slice-LP6.1: this is now
+//           the SINGLE read-only mention in the hero.)
 //
 // What stays unchanged (PO copy lock):
 //   - H1: «Provedo will lead you through your portfolio.» (LOCKED)
@@ -45,16 +48,21 @@ export {
   HERO_USER_MESSAGE,
 } from './hero/ChatMockup';
 
-// Slice-LP6 §gap-1 — category-tell eyebrow copy. Three-word category
+// Slice-LP6 §gap-1 — category-tell eyebrow copy. Two-word category
 // descriptor with middle-dot separators (matches mono-token register used
 // throughout the page; reads as «product taxonomy», not a tagline).
-const HERO_EYEBROW_COPY = 'PORTFOLIO AI · READ-ONLY · EVERY BROKER';
+// Slice-LP6.1 chrome-diet: dropped «· READ-ONLY» token — read-only was
+// repeated 3× in hero (eyebrow + italic trust line + microline). The italic
+// trust line above the CTA stays the single source of truth in hero.
+const HERO_EYEBROW_COPY = 'PORTFOLIO AI · EVERY BROKER';
 
 // Slice-LP6 §gap-3 — single mono microline that replaces the S2 proof bar.
-// Three observable claims separated by middle dots; each is sourced or
+// Two observable claims separated by middle dots; each is sourced or
 // verifiable from the page (broker coverage = §S8 marquee; cited per answer
 // = §S1 chat sources + §S4 teaser sources).
-const HERO_PROOF_MICROLINE_COPY = 'Read-only · Every major broker · Cited per answer';
+// Slice-LP6.1 chrome-diet: dropped leading «Read-only · » token (see eyebrow
+// note above — italic trust line above CTA is the kept hero mention).
+const HERO_PROOF_MICROLINE_COPY = 'Every major broker · Cited per answer';
 
 export function ProvedoHeroV2(): React.ReactElement {
   const prefersReduced = usePrefersReducedMotion();

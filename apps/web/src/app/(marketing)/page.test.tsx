@@ -2315,11 +2315,16 @@ describe('Slice-LP5-BCD C5 — Header inner-width matches main-content max-w-7xl
 // stays load-bearing in CI failures.
 
 describe('Slice-LP6 §gap-1 — Hero category-tell eyebrow', () => {
-  it('renders the eyebrow ABOVE the locked H1 with 3-word category descriptor + middle dots', () => {
+  it('renders the eyebrow ABOVE the locked H1 with 2-word category descriptor + middle dot', () => {
+    // Slice-LP6.1 chrome-diet: dropped «· READ-ONLY» from eyebrow — read-only
+    // appeared 3× in hero (eyebrow + italic trust line + microline). Italic
+    // trust line above CTA stays the single source of truth.
     render(<ProvedoHeroV2 />);
     const eyebrow = screen.getByTestId('hero-eyebrow');
     expect(eyebrow).toBeInTheDocument();
-    expect(eyebrow.textContent).toMatch(/portfolio ai · read-only · every broker/i);
+    expect(eyebrow.textContent).toMatch(/portfolio ai · every broker/i);
+    // Anti-regression: «READ-ONLY» must NOT reappear in the eyebrow.
+    expect(eyebrow.textContent ?? '').not.toMatch(/read-only/i);
   });
 
   it('eyebrow uses JBM-mono + widened tracking + slate-tertiary color', () => {
@@ -2414,11 +2419,16 @@ describe('Slice-LP6 §gap-3 — S2 numeric proof bar UNMOUNTED + hero microline'
     expect(screen.queryByRole('region', { name: /proof points/i })).not.toBeInTheDocument();
   });
 
-  it('hero renders the single mono microline replacing S2 («Read-only · Every major broker · Cited per answer»)', () => {
+  it('hero renders the single mono microline replacing S2 («Every major broker · Cited per answer»)', () => {
+    // Slice-LP6.1 chrome-diet: dropped leading «Read-only · » token — same
+    // rationale as eyebrow (3× repetition in hero). Italic trust line above
+    // CTA remains the single hero read-only mention.
     render(<ProvedoHeroV2 />);
     const microline = screen.getByTestId('hero-proof-microline');
     expect(microline).toBeInTheDocument();
-    expect(microline.textContent).toMatch(/read-only · every major broker · cited per answer/i);
+    expect(microline.textContent).toMatch(/every major broker · cited per answer/i);
+    // Anti-regression: «Read-only» must NOT reappear in the microline.
+    expect(microline.textContent ?? '').not.toMatch(/read-only/i);
   });
 
   it('hero microline uses JBM-mono register (matches mono-token vocabulary)', () => {
@@ -2472,6 +2482,18 @@ describe('Slice-LP6 §gap-5a — Hero-adjacent read-only trust line', () => {
     const inline = trustLine.getAttribute('style') ?? '';
     expect(inline).toMatch(/font-style:\s*italic/);
     expect(inline).toMatch(/color:\s*var\(--provedo-text-tertiary\)/);
+  });
+
+  it('Slice-LP6.1 chrome-diet: «read-only» appears AT MOST ONCE in hero rendered output (case-insensitive)', () => {
+    // Anti-regression for chrome-overdose. Pre-LP6.1 the hero had 3 mentions:
+    // (1) eyebrow `READ-ONLY`, (2) italic trust line «Read-only. Never
+    // touches a trade.», (3) microline `Read-only ·`. The italic trust line
+    // is the single kept mention; the other two were dropped. Any future
+    // copy that re-introduces the term in hero will trip this guard.
+    const { container } = render(<ProvedoHeroV2 />);
+    const text = (container.textContent ?? '').toLowerCase();
+    const matches = text.match(/read-only/g) ?? [];
+    expect(matches.length).toBeLessThanOrEqual(1);
   });
 });
 

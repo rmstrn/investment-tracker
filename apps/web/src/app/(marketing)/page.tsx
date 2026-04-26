@@ -57,9 +57,11 @@ export default function MarketingHomePage() {
       {/* S2 — UNMOUNTED in Slice-LP6 §gap-3 (PD + content reviews convergent:
           proof bar had 3/4 cells that were words, only 1 figure — decoration
           pretending to be substance). The single mono microline now sits
-          under the hero CTA cluster (`Read-only · Every major broker · Cited
-          per answer`). The component file `ProvedoNumericProofBar.tsx` stays
-          in the codebase dormant for potential later restore once verified
+          under the hero CTA cluster (`Every major broker · Cited per answer`
+          — Slice-LP6.1 dropped the leading «Read-only · » token to keep the
+          italic trust line above the CTA as the single hero read-only
+          mention). The component file `ProvedoNumericProofBar.tsx` stays in
+          the codebase dormant for potential later restore once verified
           metrics are available (TD-095 ties broker count). */}
 
       {/* S3 — Problem-negation 2-card asymmetric table (Slice-LP5-BCD A1)
