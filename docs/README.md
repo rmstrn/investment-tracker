@@ -1,119 +1,133 @@
-# Investment Portfolio Tracker — Project Files
+# docs/ — Documentation Portal
 
-Набор файлов для работы с проектом через несколько параллельных чатов с Claude.
+Project: **Provedo** (investment-tracker repo) — pre-alpha Lane A portfolio AI assistant.
 
-## Структура
-
-```
-docs/
-├── README.md                    ← вы тут
-├── PO_HANDOFF.md                ← handoff между PO-сессиями (читать первым)
-├── UI_BACKLOG.md                ← canonical Web UI backlog (Slice 4+, P1/P2/P3)
-├── 00_PROJECT_BRIEF.md          ← концепция, аудитория, USP
-├── 01_TECH_STACK.md             ← весь стек технологий
-├── 02_ARCHITECTURE.md           ← архитектура + модель данных
-├── 03_ROADMAP.md                ← план MVP по месяцам + статус волн
-├── 04_DESIGN_BRIEF.md           ← дизайн-система v1.1 (source of truth)
-├── DECISIONS.md                 ← engineering decisions log (ADR)
-├── TECH_DEBT.md                 ← tech debt tracker (P1/P2/P3 legend)
-├── merge-log.md                 ← журнал merge-событий + admin-bypass policy
-├── RUNBOOK_deploy.md            ← Doppler / Fly / DNS deploy procedure
-├── RUNBOOK_ai_flip.md           ← AI Service 404-swallow → strict (после prod soak)
-├── PR_C_preflight.md            ← pre-flight GAP-анализ PR C (Fly.io deploy)
-├── CLAUDE_CODE_PROMPTS.md       ← общие шаблоны для CC сессий
-├── CC_KICKOFF_api_cors.md       ← reference template (CC owns merge+cleanup)
-├── CC_KICKOFF_b3iii.md          ← ✅ merged PR #46
-├── CC_KICKOFF_pr_c.md           ← ✅ merged PR #49
-├── CC_KICKOFF_web_root_redirect.md ← ✅ merged PR #53
-├── CC_KICKOFF_task07_slice1.md  ← ✅ merged PR #45
-├── CC_KICKOFF_task07_slice2.md  ← ✅ merged PR #48
-├── CC_KICKOFF_task07_slice3.md  ← ✅ merged PR #50
-├── TASK_01_monorepo_setup.md    ← ✅ wave 1
-├── TASK_02_design_system.md     ← ✅ wave 1
-├── TASK_03_api_contract.md      ← ✅ wave 1
-├── TASK_04_core_backend.md      ← ✅ wave 2 + CORS slice + staging deploy live
-├── TASK_05_ai_service.md        ← ✅ wave 2 + staging deploy live (TD-070 closed 2026-04-21)
-├── TASK_06_broker_integrations.md ← ⏳ wave 3 (TD-046)
-├── TASK_07_web_frontend.md      ← 🟢 wave 3 (Slice 1+2+3+7a+7b+4a+5a merged; Slice 5b/4b/4c/6/12 → UI_BACKLOG.md)
-└── TASK_08_ios_app.md           ← 🧊 wave 4 (out of MVP scope)
-```
-
-## Как пользоваться — параллельная работа в нескольких чатах
-
-### Шаг 1: Откройте новый чат в Claude
-
-### Шаг 2: Вставьте в первое сообщение этот шаблон
-
-```
-Привет. Я разрабатываю AI-инвест-трекер. Вот контекст проекта и конкретный
-таск, на котором мы сейчас работаем. Читай всё внимательно — это твой brief.
-
-=== PROJECT BRIEF ===
-[вставить содержимое 00_PROJECT_BRIEF.md]
-
-=== TECH STACK ===
-[вставить содержимое 01_TECH_STACK.md]
-
-=== ARCHITECTURE ===
-[вставить содержимое 02_ARCHITECTURE.md]
-
-=== TASK ===
-[вставить содержимое нужного TASK_XX_xxx.md]
-
-Начни с того, что подтвердишь — понял задачу, вопросов нет / вот такие есть
-вопросы. Потом приступаем к работе.
-```
-
-### Шаг 3: Работайте над таском в этом чате, а другие запускайте параллельно
-
-## Порядок выполнения тасков
-
-### Волна 1 — ✅ закрыта
-
-| Таск | Что делает | Статус |
-|---|---|---|
-| **TASK_01** | Monorepo + CI/CD | ✅ merged |
-| **TASK_02** | Дизайн-система в Figma | ✅ merged |
-| **TASK_03** | API-контракт + схема БД | ✅ merged |
-
-### Волна 2 — ✅ code-complete + staging deploy live
-
-| Таск | Зависит от | Статус |
-|---|---|---|
-| **TASK_04** (Go API) | TASK_01, TASK_03 | ✅ 10 PRs + CORS micro-slice (PR #54+#55 `fc44782`, 2026-04-21). Staging live: `api-staging.investment-tracker.app`, CORS allowlist работает. Prod cutover после 24-48h soak + PR D (TD-066). |
-| **TASK_05** (AI Service) | TASK_01, TASK_03, TASK_04 | ✅ merged (PR #34 + PR #43 cleanup). **✅ Staging deploy live (TD-070 closed 2026-04-21)** — `investment-tracker-ai-staging.fly.dev` (Fra). Slice 6a Insights UNBLOCKED. 404-swallow flip — после prod soak (`RUNBOOK_ai_flip.md`). |
-
-### Волна 3 — 🟢 in flight
-
-| Таск | Зависит от | Статус |
-|---|---|---|
-| **TASK_06** (Broker Integrations) | TASK_01, TASK_04 | ⏳ TD-046 — SnapTrade / Binance / Coinbase providers. Разблокирует Slice 4b/4c. Slice 4a (manual accounts) merged ✅. |
-| **TASK_07** (Web) | TASK_02, TASK_03, TASK_04 | 🟢 Slice 1 (PR #45) + Slice 2 (PR #48) + Slice 3 (PR #50) + root-redirect (PR #53) + Slice 7a+7b (PR #58) + Slice 4a (PR #59) + Slice 5a (PR #60) merged. Web на `staging.investment-tracker.app` включая `/accounts` manual CRUD + `/positions/[id]` transactions CRUD + `/pricing`. **Manual MVP end-to-end flow замкнут.** Остальной Slice scope — `UI_BACKLOG.md` (canonical). |
-
-### Волна 4 — отложено
-
-| Таск | Статус |
-|---|---|
-| **TASK_08** (iOS) | 🧊 out of MVP scope — нужен Mac + Xcode, отдельный репо |
-
-**Критический путь к alpha (см. UI_BACKLOG.md):** ~~Slice 4a (Manual Accounts CRUD)~~ ✅ PR #59 → ~~Slice 5a (Transactions UI)~~ ✅ PR #60 → **Slice 6a (Insights read-only, UNBLOCKED — TD-070 закрыта)** → ~~Slice 7a + 7b (Landing + Pricing)~~ ✅ PR #58 → Slice 12 (Empty + Error states). Параллельно бэк: PR D workers (TD-066), TASK_06 (TD-046).
-
-## Советы по параллельным чатам
-
-1. **Один чат — один таск.** Не смешивайте задачи, Claude теряет фокус.
-
-2. **В начале нового чата всегда давайте полный контекст** (Brief + Tech + Architecture + Task). Claude не помнит ничего между чатами.
-
-3. **Решения, принятые в одном чате, сохраняйте в эти файлы.** Если в TASK_04 приняли решение "используем такую-то библиотеку для X" — сразу обновляйте файл, чтобы другие чаты знали.
-
-4. **Для контекста между тасками используйте "Decisions Log".** В каждом таске есть секция "Decisions" — туда пишите что решили, чтобы в следующий раз не пересматривать.
-
-5. **Claude Code для реализации.** Эти файлы — для планирования и архитектуры. Когда доходит до "напиши мне эту функцию" — используйте Claude Code в терминале, он работает с файловой системой напрямую.
-
-## Поддержание актуальности
-
-Все эти файлы — живые документы. Когда принимается решение, которое их меняет — обновляйте их сразу, чтобы новые чаты не отталкивались от устаревшей информации.
+This is the docs entry point. Everything is organized into 10 top-level folders by purpose. Strategic context first, then per-domain.
 
 ---
 
-**Следующий шаг:** открыть `PO_HANDOFF.md` (актуальный handoff между сессиями), затем `UI_BACKLOG.md` для приоритетов веба. Slice 4a + 5a merged — manual MVP end-to-end flow замкнут (account → trade → portfolio). AI Service staging live (TD-070 closed 2026-04-21). Текущий фронт работ — **Slice 6a** (Insights read-only — UNBLOCKED) + **Slice 12** (Empty/Error states). Параллельно бэк: PR D workers (TD-066), TASK_06 broker integrations (TD-046, для 4b/4c). Концепция продукта — `00_PROJECT_BRIEF.md`.
+## Start here
+
+| If you're... | Open |
+|---|---|
+| **PO returning to a session** | [strategic/PO_HANDOFF.md](strategic/PO_HANDOFF.md) |
+| **A new agent / contributor** | [strategic/PROJECT_BRIEF.md](strategic/PROJECT_BRIEF.md) → [team/CODE_TEAM_BOOTSTRAP.md](team/CODE_TEAM_BOOTSTRAP.md) |
+| **Looking for current sprint state** | [strategic/ROADMAP.md](strategic/ROADMAP.md) → [engineering/UI_BACKLOG.md](engineering/UI_BACKLOG.md) |
+| **About to make an architectural decision** | [strategic/DECISIONS.md](strategic/DECISIONS.md) (read first; never duplicate) |
+
+---
+
+## Folder map
+
+```
+docs/
+├── README.md                       ← you are here (portal)
+│
+├── strategic/                      ← PO-facing & cross-domain decisions
+│   ├── PO_HANDOFF.md               ← session-to-session handoff (canonical)
+│   ├── DECISIONS.md                ← engineering + product decisions log (ADR-style)
+│   ├── ROADMAP.md                  ← MVP plan, wave status, alpha critical path
+│   ├── PROJECT_BRIEF.md            ← concept, audience, USP, scope
+│   └── PENDING_CLEANUPS.md         ← deferred doc/spec items tracker
+│
+├── product/                        ← positioning, brand, naming, research
+│   ├── DISCOVERY.md                ← user discovery, ICP, JTBD foundation
+│   ├── POSITIONING.md              ← obviously-awesome canvas (Provedo positioning)
+│   ├── NAMING.md                   ← naming history + locked Provedo decision
+│   ├── BRAND.md                    ← brand foundation v1.0 (archetype, tagline)
+│   ├── STRATEGIC_OPTIONS_v1.md     ← locked product strategy options (4 PO locks)
+│   ├── BRAND_VOICE/                ← voice profile, references log
+│   ├── USER_RESEARCH/              ← hypotheses, interview output
+│   └── competitive/                ← competitor matrices, deep dives
+│
+├── design/                         ← surface specs, design system
+│   ├── DESIGN_BRIEF.md             ← Direction A Modern AI-Tool Minimalist v1.4
+│   ├── COACH_SURFACE_SPEC.md       ← Coach UX (post-alpha)
+│   ├── DASHBOARD_ARCHITECTURE.md   ← dashboard surface spec
+│   ├── ONBOARDING_FLOW.md          ← onboarding flow spec
+│   ├── slice-lp3-2-product-designer-specs.md  ← active dispatch artifact
+│   └── historical/                 ← superseded visual specs (kept for reference)
+│
+├── content/                        ← landing copy, microcopy, paywall, email
+│   ├── microcopy-provedo.md
+│   ├── paywall-provedo.md
+│   ├── email-sequences-provedo.md
+│   └── slice-lp3-2-content-lead-deliverables.md
+│
+├── engineering/                    ← all eng-side docs
+│   ├── TECH_DEBT.md                ← living TD ledger (P1/P2/P3)
+│   ├── UI_BACKLOG.md               ← canonical Web UI backlog
+│   ├── merge-log.md                ← merge events + admin-bypass policy
+│   ├── architecture/               ← TECH_STACK, ARCHITECTURE, ENV
+│   ├── tasks/                      ← TASK_01..08 monorepo task specs + PR-preflights
+│   ├── kickoffs/                   ← slice + feature kickoffs (some date-prefixed, some CC_KICKOFF_*)
+│   │   └── task-07-slices/         ← 7 historical task07 slice kickoffs
+│   ├── runbooks/                   ← deploy, AI flip, staging procedures
+│   └── audits/                     ← backend health snapshots
+│
+├── finance/                        ← finance-advisor domain
+│   ├── EXPENSES.md
+│   ├── PRICING_TIER_VALIDATION.md
+│   ├── COACH_TIER_PLACEMENT.md
+│   ├── BENCHMARKS_SOURCED.md
+│   └── AI_CONTENT_VALIDATION_TEMPLATES.md
+│
+├── legal/                          ← legal-advisor domain
+│   ├── PRIVACY_POLICY_draft.md
+│   ├── TOS_draft.md
+│   ├── COOKIE_POLICY_draft.md
+│   ├── DPA_template.md
+│   ├── AI_DISCLAIMER_PATTERN.md
+│   └── SUBPROCESSOR_REGISTRY.md
+│
+├── reviews/                        ← multi-agent validations, syntheses, audits
+│   └── (date-prefixed: 2026-04-25-*, 2026-04-26-*, 2026-04-27-*)
+│
+├── team/                           ← team process, agent guides
+│   ├── CODE_TEAM_BOOTSTRAP.md      ← team charter + how to join
+│   ├── TEAM_ROSTER.md              ← active agent roster
+│   └── agent-guides/               ← CLAUDE_CODE_PROMPTS, CLAUDE_DESIGN_HANDOFF
+│
+└── archive/                        ← historical, superseded
+    ├── session-snapshots/          ← prior session-resume snapshots
+    └── landing-evolution/          ← old landing v1, v2 (current is in code)
+```
+
+---
+
+## Naming conventions
+
+- **Strategic / canonical living docs:** `SCREAMING_SNAKE.md` (DECISIONS.md, TECH_DEBT.md)
+- **Topic docs in subfolders:** `kebab-case.md` or `SCREAMING_SNAKE.md` per established pattern
+- **Date-prefixed snapshots/reviews:** `YYYY-MM-DD-descriptor-role.md` (used in `reviews/`, `kickoffs/`, `archive/`)
+- **Index files:** `INDEX.md` (NOT `README.md`) inside subfolders — README is reserved for repo-root + top-level entry
+- **Numeric prefixes (`01_`, `02_`)** retained ONLY where ordering matters within a folder. Dropped when moving from root into a domain folder where the file is unique.
+
+---
+
+## Living-log hygiene
+
+`PO_HANDOFF.md`, `DECISIONS.md`, `TECH_DEBT.md`, `UI_BACKLOG.md`, `merge-log.md` are edited-in-place living logs (not snapshots). Always check `git log -1 <file>` if uncertain about freshness.
+
+For session bridges that age out (>3 days), move them to `archive/session-snapshots/`.
+
+---
+
+## Ownership
+
+- `strategic/` — right-hand (cross-domain), tech-lead (DECISIONS engineering side)
+- `product/` — product-lead, brand-strategist, brand-voice-curator, user-researcher
+- `design/` — product-designer
+- `content/` — content-lead
+- `engineering/` — tech-lead (TECH_DEBT, kickoffs, tasks), devops-engineer (runbooks)
+- `finance/` — finance-advisor
+- `legal/` — legal-advisor
+- `reviews/` — multi-agent (each file's owner in title or frontmatter)
+- `team/` — right-hand
+- `archive/` — anyone (just preserves history)
+
+Right-hand is DRI for `docs/` taxonomy + naming convention.
+
+---
+
+**Last reorg:** 2026-04-27 — flattened root, grouped by domain, archived old session snapshots.
