@@ -67,7 +67,7 @@ export function ChatInputBar({
             onSubmit={handleSubmit}
             onKeyDown={handleKeyDown}
             sending={streaming || disabled}
-            placeholder={streaming ? 'Claude is responding…' : 'Ask your portfolio…'}
+            placeholder={streaming ? 'Provedo is responding…' : 'Ask your portfolio…'}
           />
         </div>
         {streaming ? (

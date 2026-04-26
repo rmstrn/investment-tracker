@@ -21,7 +21,7 @@ export function EmptyConversationState({ onPick, disabled }: EmptyConversationSt
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-text-primary">Ask your portfolio anything</h2>
         <p className="text-sm text-text-secondary">
-          Claude has read-only access to your positions, transactions, and market data. Try one of
+          Provedo has read-only access to your positions, transactions, and market data. Try one of
           these:
         </p>
       </div>

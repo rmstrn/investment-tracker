@@ -59,7 +59,7 @@ export function ConversationsSidebar({
           <div className="p-3">
             <EmptyState
               title="No conversations yet"
-              description="Start one to ask Claude about your portfolio."
+              description="Start one to ask Provedo about your portfolio."
             />
           </div>
         ) : (
