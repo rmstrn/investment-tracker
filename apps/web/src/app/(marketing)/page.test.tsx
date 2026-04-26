@@ -30,6 +30,8 @@ import { AllocationPieBar } from './_components/charts/AllocationPieBar';
 import { DividendCalendar } from './_components/charts/DividendCalendar';
 import { PnlSparkline } from './_components/charts/PnlSparkline';
 import { TradeTimeline } from './_components/charts/TradeTimeline';
+import { CitationChip } from './_components/hero/CitationChip';
+import { DigestHeader } from './_components/hero/DigestHeader';
 import DisclosuresPage, { metadata as disclosuresMetadata } from './disclosures/page';
 import MarketingHomePage, { metadata } from './page';
 
@@ -1441,5 +1443,105 @@ describe('Slice-LP3.5 — ProvedoAggregationSection (marquee → typeset list)',
     const { container } = render(<ProvedoAggregationSection />);
     expect(container.querySelector('.provedo-marquee')).toBeNull();
     expect(container.innerHTML).not.toMatch(/@keyframes provedo-scroll/);
+  });
+});
+
+// ─── Slice-LP3.6 — Hero L2/L3 retire (DigestHeader + CitationChip) ────────
+
+describe('Slice-LP3.6 — DigestHeader typographic primitive', () => {
+  it('renders «THIS WEEK» eyebrow + «3 observations across your portfolio» tagline (PD spec §3.4)', () => {
+    render(<DigestHeader />);
+    const header = screen.getByTestId('hero-digest-header');
+    expect(header).toBeInTheDocument();
+    // Eyebrow source casing is «This week» but uppercase Tailwind class
+    // produces «THIS WEEK» visually. We assert source-case content +
+    // CSS uppercase transform together.
+    const eyebrow = within(header).getByText(/this week/i);
+    expect(eyebrow).toBeInTheDocument();
+    expect(eyebrow.className).toMatch(/uppercase/);
+    // Tagline split across <span> (mono «3») + text node — assert via textContent.
+    expect(header.textContent).toMatch(/3\s+observations across your portfolio/i);
+  });
+});
+
+describe('Slice-LP3.6 — CitationChip typographic primitive', () => {
+  it('renders verbatim «IBKR · Schwab — 2 brokers» (data-coherence with chat ledger, NOT 3 brokers)', () => {
+    render(<CitationChip isComplete={true} prefersReduced={true} />);
+    const chip = screen.getByTestId('hero-citation-chip');
+    expect(chip).toBeInTheDocument();
+    // Mono ticker tokens — verbatim per PD §10.1 Option B (Coinbase intentionally
+    // dropped because it never appears in the chat answer; «2 brokers» suffix
+    // matches the IBKR + Schwab pair).
+    expect(chip.textContent).toContain('IBKR · Schwab');
+    expect(chip.textContent).toMatch(/—\s*2 brokers/);
+    // Anti-test: the legacy «3 brokers» (with Coinbase) MUST NOT regress.
+    expect(chip.textContent).not.toMatch(/3 brokers/);
+    expect(chip.textContent).not.toMatch(/coinbase/i);
+  });
+});
+
+describe('Slice-LP3.6 — Hero receipt-system composition', () => {
+  // Reuse the reduced-motion mock pattern so the receipt mounts synchronously
+  // and the <aside> is queryable on first paint.
+  let originalMatchMedia: typeof window.matchMedia | undefined;
+
+  beforeEach(() => {
+    originalMatchMedia = window.matchMedia;
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      configurable: true,
+      value: vi.fn().mockImplementation((query: string) => ({
+        matches: query === '(prefers-reduced-motion: reduce)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+  });
+
+  afterEach(() => {
+    if (originalMatchMedia) {
+      Object.defineProperty(window, 'matchMedia', {
+        writable: true,
+        configurable: true,
+        value: originalMatchMedia,
+      });
+    }
+  });
+
+  it('right column is wrapped in <aside aria-label="Provedo demo receipt"> per PD spec §6.1', async () => {
+    render(<ProvedoHeroV2 />);
+    const aside = await screen.findByLabelText('Provedo demo receipt');
+    expect(aside.tagName.toLowerCase()).toBe('aside');
+    // The aside contains the receipt-system: DigestHeader (header), ChatMockup
+    // (article), CitationChip (footer) — verify children are present in DOM
+    // order so screen-readers read digest → conversation → citation.
+    expect(within(aside).getByTestId('hero-digest-header')).toBeInTheDocument();
+    expect(within(aside).getByLabelText('Provedo demo conversation')).toBeInTheDocument();
+    expect(within(aside).getByTestId('hero-citation-chip')).toBeInTheDocument();
+  });
+
+  it('mobile collapse: DigestHeader + CitationChip wrappers carry `hidden md:block` / `md:flex` Tailwind classes (PD §7)', async () => {
+    render(<ProvedoHeroV2 />);
+    const aside = await screen.findByLabelText('Provedo demo receipt');
+    // PD §7.2 — both DigestHeader and CitationChip are hidden below 768px so
+    // mobile gets a single full-width L1 receipt. We assert via the Tailwind
+    // class contract rather than computed style (happy-dom does not run
+    // responsive media queries reliably).
+    const digestHeader = within(aside).getByTestId('hero-digest-header');
+    expect(digestHeader.className).toMatch(/\bhidden\b/);
+    expect(digestHeader.className).toMatch(/\bmd:block\b/);
+
+    // The CitationChip exposes `data-testid` on the inner <span>; the
+    // responsive class lives on the <footer> wrapper that the parent passes.
+    const chipSpan = within(aside).getByTestId('hero-citation-chip');
+    const chipWrapper = chipSpan.closest('footer');
+    expect(chipWrapper).not.toBeNull();
+    expect(chipWrapper?.className).toMatch(/\bhidden\b/);
+    expect(chipWrapper?.className).toMatch(/\bmd:flex\b/);
   });
 });
