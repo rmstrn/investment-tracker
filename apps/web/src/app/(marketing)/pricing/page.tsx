@@ -3,10 +3,13 @@ import type { Metadata } from 'next';
 import type { PlanTier } from './_components/PricingTable';
 import { PricingTable } from './_components/PricingTable';
 
+// Wave 2.6 HIGH-3 (Rule 4): title MUST mention only Provedo. The rejected
+// naming predecessor was previously rendered in the browser tab + announced
+// by screen readers on /pricing page load. Hard-rule violation removed.
 export const metadata: Metadata = {
-  title: 'Pricing — Investment Tracker',
+  title: 'Pricing — Provedo',
   description:
-    'Simple pricing. Free forever for basic tracking. Paid tiers unlock deeper AI and tax reports.',
+    'Simple pricing. Free for basic tracking. Paid tiers unlock deeper AI and tax reports.',
 };
 
 function isPlanTier(value: unknown): value is PlanTier {
@@ -28,9 +31,7 @@ export default async function PricingPage() {
         <h1 className="text-3xl font-semibold tracking-tight text-text-primary md:text-4xl">
           Simple pricing. Honest limits.
         </h1>
-        <p className="mt-4 text-base text-text-secondary md:text-lg">
-          Free forever for basic tracking. Upgrade when the AI and insights earn it.
-        </p>
+        <p className="mt-4 text-base text-text-secondary md:text-lg">Free for basic tracking.</p>
       </header>
       <div className="mt-14 md:mt-20">
         <PricingTable currentPlan={currentPlan} />

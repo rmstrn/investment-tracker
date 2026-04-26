@@ -12,7 +12,7 @@ const redirect = vi.hoisted(() =>
 vi.mock('@clerk/nextjs/server', () => ({ auth }));
 vi.mock('next/navigation', () => ({ redirect }));
 
-import PricingPage from './page';
+import PricingPage, { metadata as pricingMetadata } from './page';
 
 async function renderPricing() {
   const element = await PricingPage();
@@ -93,5 +93,27 @@ describe('PricingPage', () => {
     expect(() => fireEvent.click(firstSubscribe)).not.toThrow();
     expect(logSpy).toHaveBeenCalledWith('TODO: Stripe checkout', expect.stringMatching(/plus|pro/));
     logSpy.mockRestore();
+  });
+});
+
+// ─── Wave 2.6 HIGH-3 (Rule 4) — predecessor-name sanitization ─────────────
+
+describe('PricingPage — Wave 2.6 HIGH-3 (Rule 4)', () => {
+  it('metadata.title mentions only Provedo (no rejected predecessor name)', () => {
+    expect(pricingMetadata.title).toBeDefined();
+    const title =
+      typeof pricingMetadata.title === 'string'
+        ? pricingMetadata.title
+        : String(pricingMetadata.title);
+    // Hard rule: rejected naming predecessor must NOT appear in browser tab
+    // or screen-reader page-load announcement.
+    expect(title).not.toMatch(/investment tracker/i);
+    // Positive assertion: title surfaces the brand we DO ship under.
+    expect(title).toMatch(/provedo/i);
+  });
+
+  it('metadata.description does not contain the rejected predecessor name', () => {
+    const description = pricingMetadata.description ?? '';
+    expect(description).not.toMatch(/investment tracker/i);
   });
 });
