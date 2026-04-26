@@ -1,6 +1,6 @@
-# Memoro — Data Processing Agreement (DPA) Template
+# Provedo — Data Processing Agreement (DPA) Template
 
-**Status:** DRAFT template — first-pass internal legal-advisor output. Intended as Memoro's template for subprocessor negotiations where Memoro is the data controller and the counterparty is a data processor. Requires licensed privacy counsel review before any negotiation use. Many vendors will propose their own DPA; Memoro's template establishes a baseline for red-line comparison.
+**Status:** DRAFT template — first-pass internal legal-advisor output. Intended as Provedo's template for subprocessor negotiations where Provedo is the data controller and the counterparty is a data processor. Requires licensed privacy counsel review before any negotiation use. Many vendors will propose their own DPA; Provedo's template establishes a baseline for red-line comparison.
 **Version:** 0.1 (2026-04-23)
 **Language:** English (EU legal convention).
 **Owner:** legal-advisor (internal SME) · final sign-off: licensed privacy counsel.
@@ -10,7 +10,7 @@
 
 ## How to use this template
 
-1. This template is drafted from Memoro's perspective as **data controller**. Most subprocessors (Clerk, Plaid, SnapTrade, Anthropic, OpenAI, Fly.io, Doppler, Stripe) will present their own DPAs, usually controller-friendly for enterprise customers. In those cases, use this template as the **red-line baseline** — what we would propose if they asked — and compare their terms against ours.
+1. This template is drafted from Provedo's perspective as **data controller**. Most subprocessors (Clerk, Plaid, SnapTrade, Anthropic, OpenAI, Fly.io, Doppler, Stripe) will present their own DPAs, usually controller-friendly for enterprise customers. In those cases, use this template as the **red-line baseline** — what we would propose if they asked — and compare their terms against ours.
 2. Where the subprocessor insists on their DPA, the areas to negotiate toward this template's position are: breach notification timing (we want ≤24h; vendors often propose 72h or "without undue delay"), audit rights, sub-sub-processor authorization, data-deletion-on-termination specificity, and the SCC module selection.
 3. Integrate this template with an Annex I (processing details), Annex II (technical and organizational measures), Annex III (sub-processors approved at DPA execution) per the 2021/914 SCC structure.
 4. For the EU-Standard Contractual Clauses, incorporate **Module 2 (controller-to-processor)** from Commission Implementing Decision 2021/914 by reference and attach as an Annex. Do not re-draft SCC text; use the official version.
@@ -21,7 +21,7 @@
 
 **Between:**
 
-**`[MEMORO LEGAL ENTITY — TBD]`**, a **`[legal form]`** with its registered office at **`[ADDRESS]`**, represented by **`[AUTHORIZED SIGNATORY]`** ("Controller")
+**`[PROVEDO LEGAL ENTITY — TBD]`**, a **`[legal form]`** with its registered office at **`[ADDRESS]`**, represented by **`[AUTHORIZED SIGNATORY]`** ("Controller")
 
 **and**
 
@@ -33,7 +33,7 @@ Effective as of **`[EFFECTIVE DATE]`** (the "Effective Date").
 
 ## Recitals
 
-(A) The Controller is the operator of an AI-assisted portfolio intelligence service ("Memoro") and acts as data controller in respect of personal data processed in connection with that service.
+(A) The Controller is the operator of an AI-assisted portfolio intelligence service ("Provedo") and acts as data controller in respect of personal data processed in connection with that service.
 
 (B) The Processor provides **`[SERVICE DESCRIPTION]`** ("the Services") to the Controller pursuant to a separate agreement ("Main Agreement"). In providing the Services, the Processor processes personal data on behalf of the Controller.
 
@@ -53,7 +53,7 @@ Capitalized terms have the meanings given to them in the GDPR. In particular:
 - **Duration:** the term of the Main Agreement, unless terminated earlier.
 - **Nature and purpose:** as set out in the Main Agreement and Annex I.
 - **Types of Personal Data:** as set out in Annex I.
-- **Categories of Data Subjects:** as set out in Annex I (primarily users of Memoro: individual retail investors).
+- **Categories of Data Subjects:** as set out in Annex I (primarily users of Provedo: individual retail investors).
 
 ## 3. Controller's instructions
 
@@ -93,7 +93,7 @@ Capitalized terms have the meanings given to them in the GDPR. In particular:
 
 6.4 The Processor remains fully liable to the Controller for the performance of each Sub-processor's obligations.
 
-> `[ATTORNEY REVIEW]` — The 30-day advance notice is Memoro's preferred position. Vendors often counter with shorter windows (e.g. Clerk, Stripe enterprise DPAs offer 10-30 day windows). Acceptable floor is 10 days if the vendor provides a public sub-processor list updated in real time (allowing Memoro to monitor proactively). Shorter than 10 days should be escalated.
+> `[ATTORNEY REVIEW]` — The 30-day advance notice is Provedo's preferred position. Vendors often counter with shorter windows (e.g. Clerk, Stripe enterprise DPAs offer 10-30 day windows). Acceptable floor is 10 days if the vendor provides a public sub-processor list updated in real time (allowing Provedo to monitor proactively). Shorter than 10 days should be escalated.
 
 ## 7. Data-subject rights assistance
 
@@ -119,7 +119,7 @@ Capitalized terms have the meanings given to them in the GDPR. In particular:
 
 8.4 The Processor shall cooperate with and provide reasonable assistance to the Controller in the Controller's investigation, notification to supervisory authorities (GDPR Article 33 — 72 hours), and notification to Data Subjects (GDPR Article 34) where applicable.
 
-> `[ATTORNEY REVIEW]` — 24-hour notification is Memoro's preferred position and gives Memoro working time to meet its own 72-hour regulator-notification obligation under GDPR Article 33. Vendors often propose 48 or 72 hours or "without undue delay". Acceptable floor is 48 hours combined with a commitment to reasonable cooperation with Memoro's Article 33 timing. Below 48 hours or removal of the cooperation commitment should be escalated.
+> `[ATTORNEY REVIEW]` — 24-hour notification is Provedo's preferred position and gives Provedo working time to meet its own 72-hour regulator-notification obligation under GDPR Article 33. Vendors often propose 48 or 72 hours or "without undue delay". Acceptable floor is 48 hours combined with a commitment to reasonable cooperation with Provedo's Article 33 timing. Below 48 hours or removal of the cooperation commitment should be escalated.
 
 ## 9. Data-protection impact assessment + prior consultation
 
@@ -144,7 +144,7 @@ The Processor shall provide reasonable assistance to the Controller in complying
 
 10.4 The Processor shall promptly notify the Controller of any request from a public authority for access to Personal Data (except where prohibited by law) and of any change in law of the destination country that materially affects the Processor's ability to comply with the SCCs.
 
-> `[ATTORNEY REVIEW]` — SCC module selection must match the actual relationship. Most Memoro subprocessors are controller-to-processor (Module 2). If a subprocessor is a sub-processor to a processor-already-engaged (e.g. an AI model provider under Memoro's AI-layer vendor), the correct module may be 3 (processor-to-processor). Counsel to verify per counterparty. The Memoro entity may or may not be established in the EU at signing — if not, Clause 13 supervisory-authority selection depends on the Art. 27 EU representative appointment. Transfer Impact Assessment (TIA) per Schrems II remains mandatory even when SCCs are executed.
+> `[ATTORNEY REVIEW]` — SCC module selection must match the actual relationship. Most Provedo subprocessors are controller-to-processor (Module 2). If a subprocessor is a sub-processor to a processor-already-engaged (e.g. an AI model provider under Provedo's AI-layer vendor), the correct module may be 3 (processor-to-processor). Counsel to verify per counterparty. The Provedo entity may or may not be established in the EU at signing — if not, Clause 13 supervisory-authority selection depends on the Art. 27 EU representative appointment. Transfer Impact Assessment (TIA) per Schrems II remains mandatory even when SCCs are executed.
 
 ## 11. Audit rights
 
@@ -164,7 +164,7 @@ The Processor shall provide reasonable assistance to the Controller in complying
 
 provided such reports cover the Services and are dated within the previous 12 months. The Controller reserves the right to conduct a direct audit where such reports do not cover specific concerns raised.
 
-> `[ATTORNEY REVIEW]` — Audit rights are typically the second-most-negotiated clause after breach notification. Vendors prefer SOC 2 report delivery in lieu of direct audit; Memoro's template accepts that in Section 11.3, which is pragmatic. Direct-audit reservation in 11.3 final sentence protects against dilution.
+> `[ATTORNEY REVIEW]` — Audit rights are typically the second-most-negotiated clause after breach notification. Vendors prefer SOC 2 report delivery in lieu of direct audit; Provedo's template accepts that in Section 11.3, which is pragmatic. Direct-audit reservation in 11.3 final sentence protects against dilution.
 
 ## 12. Deletion or return of data on termination
 
@@ -198,7 +198,7 @@ The Parties' liability for matters arising under this DPA is governed by the lim
 
 **SIGNED:**
 
-For Controller (**`[MEMORO ENTITY]`**):
+For Controller (**`[PROVEDO ENTITY]`**):
 Name: `[NAME]`
 Title: `[TITLE]`
 Date: `[DATE]`
@@ -217,9 +217,9 @@ As set out at the top of this DPA.
 
 ### B. Description of processing
 
-**Purpose of processing.** `[Concise description — e.g. "Provision of authentication and session-management services enabling Controller's users to access the Memoro application"]`
+**Purpose of processing.** `[Concise description — e.g. "Provision of authentication and session-management services enabling Controller's users to access the Provedo application"]`
 
-**Categories of Data Subjects.** Users of Memoro (individual retail investors aged 18+).
+**Categories of Data Subjects.** Users of Provedo (individual retail investors aged 18+).
 
 **Categories of Personal Data processed.** `[Select and populate]`
 - Identity data (email, name)

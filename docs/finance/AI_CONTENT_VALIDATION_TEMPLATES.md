@@ -10,7 +10,7 @@
 
 ## 1. Purpose
 
-This document provides Lane A-safe language patterns for Memoro's AI output across all three surfaces (Chat, Insights, Coach). It functions as:
+This document provides Lane A-safe language patterns for Provedo's AI output across all three surfaces (Chat, Insights, Coach). It functions as:
 
 1. **Content-lead reference** — whitelist/blacklist verbs for microcopy review
 2. **Engineering reference** — system prompt skeletons for AI output enforcement (the «Engineering invariant» legal-advisor Action Item #1)
@@ -31,28 +31,28 @@ All four target jurisdictions (US SEC, EU MiFID II, UK FCA PERG 8.30A, LATAM + A
 
 ### 2.1 Observation verbs (core whitelist)
 
-- **analyzes** — «Memoro analyzes your portfolio composition over the last 12 months»
-- **highlights** — «Memoro highlights three positions above your average concentration»
-- **notices** — «Memoro noticed a pattern in your NVDA trades»
-- **remembers** — «Memoro remembers every trade you've made since you connected»
-- **surfaces** — «Memoro surfaces dividends received this month»
-- **explains** — «Memoro explains what a drawdown is and how it's calculated»
-- **shows** — «Memoro shows your position weights as a pie chart»
-- **summarizes** — «Memoro summarizes this week's portfolio activity»
+- **analyzes** — «Provedo analyzes your portfolio composition over the last 12 months»
+- **highlights** — «Provedo highlights three positions above your average concentration»
+- **notices** — «Provedo noticed a pattern in your NVDA trades»
+- **remembers** — «Provedo remembers every trade you've made since you connected»
+- **surfaces** — «Provedo surfaces dividends received this month»
+- **explains** — «Provedo explains what a drawdown is and how it's calculated»
+- **shows** — «Provedo shows your position weights as a pie chart»
+- **summarizes** — «Provedo summarizes this week's portfolio activity»
 - **reflects** — «This chart reflects your actual holdings across all connected accounts»
-- **observes** — «Memoro observes that tech sector weight has increased over six months»
-- **records** — «Memoro records trades as they appear in your broker feed»
-- **cites** — «Memoro cites sources for every factual claim in chat answers»
-- **maps** — «Memoro maps your positions to sector classifications»
-- **describes** — «Memoro describes the pattern it noticed, without judgment»
-- **reports** — «Memoro reports realized gains and losses by tax lot»
+- **observes** — «Provedo observes that tech sector weight has increased over six months»
+- **records** — «Provedo records trades as they appear in your broker feed»
+- **cites** — «Provedo cites sources for every factual claim in chat answers»
+- **maps** — «Provedo maps your positions to sector classifications»
+- **describes** — «Provedo describes the pattern it noticed, without judgment»
+- **reports** — «Provedo reports realized gains and losses by tax lot»
 
 ### 2.2 Comparison verbs (safe when factual, neutral tone)
 
-- **compares** — «Memoro compares your tech allocation to US retail median (34% per [SEC 13F aggregated data])»
+- **compares** — «Provedo compares your tech allocation to US retail median (34% per [SEC 13F aggregated data])»
 - **contrasts** — «This year's realized gains contrast with last year's»
 - **relates** — «This holding relates to the S&P 500 technology sector»
-- **measures** — «Memoro measures portfolio concentration using the Herfindahl-Hirschman Index»
+- **measures** — «Provedo measures portfolio concentration using the Herfindahl-Hirschman Index»
 
 **Caveat:** Comparison verbs become borderline if the comparison includes an implicit normative frame («above average is bad»). Pure numerical comparison is safe; comparison wrapped in evaluative language crosses the line.
 
@@ -60,15 +60,15 @@ All four target jurisdictions (US SEC, EU MiFID II, UK FCA PERG 8.30A, LATAM + A
 
 - **defines** — «Drawdown is defined as peak-to-trough decline as a percentage»
 - **illustrates** — «This example illustrates how expense ratios compound over 20 years»
-- **traces** — «Memoro traces how your cost basis was calculated for this position»
+- **traces** — «Provedo traces how your cost basis was calculated for this position»
 - **walks through** — «Let me walk through the math behind Sharpe ratio calculation»
 
 ### 2.4 Memory / state verbs (safe, internal function)
 
-- **holds** — «Memoro holds your portfolio context across sessions»
+- **holds** — «Provedo holds your portfolio context across sessions»
 - **stores** — «Your chat history is stored encrypted»
-- **indexes** — «Memoro indexes your trade history for pattern detection»
-- **reads** — «Memoro reads your trade data» (CAREFUL: «reads patterns IN YOUR TRADES» is landing bullet 3 — safe at landing level, but see §4.3 below for Coach output guardrail)
+- **indexes** — «Provedo indexes your trade history for pattern detection»
+- **reads** — «Provedo reads your trade data» (CAREFUL: «reads patterns IN YOUR TRADES» is landing bullet 3 — safe at landing level, but see §4.3 below for Coach output guardrail)
 
 ---
 
@@ -83,7 +83,7 @@ These verbs cross Lane A in all four jurisdictions. Engineering invariant: hard-
 - **advises** — explicit advice
 - **tells** — «tells you to [action]» is prescriptive
 - **urges** — pressure-laden prescription
-- **warns** — borderline (warning of factual risk OK; warning as prescription not OK — «Memoro warns: do NOT buy X» crosses)
+- **warns** — borderline (warning of factual risk OK; warning as prescription not OK — «Provedo warns: do NOT buy X» crosses)
 - **proposes** — proposal of action
 - **should** — modal verb, prescriptive («you should [action]»)
 - **must** — hardest prescription
@@ -104,7 +104,7 @@ These action verbs are the core of regulated-advice language when directed at th
 - **increase** — «increase your cash holdings» likewise
 - **diversify** — when used as imperative («diversify into emerging markets») is prescription; as factual descriptor («your portfolio is less diversified than last quarter») is OK
 - **trim** — trading verb; prescription
-- **add** — «add to your S&P position» is prescription; as factual («Memoro added [new trade] to your history») is OK
+- **add** — «add to your S&P position» is prescription; as factual («Provedo added [new trade] to your history») is OK
 - **enter** — «enter a position» is prescription
 - **exit** — «exit this position» is prescription
 - **scale in / scale out** — trading-strategy prescriptions
@@ -145,11 +145,11 @@ Same factual content can be Lane A-clean or Lane A-borderline depending on frami
 |---|---|---|
 | User has 58% tech allocation | «Your tech allocation is too high. Consider diversifying.» | «Your tech allocation is 58%. For reference, US retail median is 34% per [source].» |
 | NVDA at 52-week high, 14% of portfolio | «NVDA at 52-week high and 14% of your portfolio — you might want to trim.» | «NVDA is at its 52-week high. It currently represents 14% of your portfolio.» |
-| User sold AAPL three times at local lows | «You've sold AAPL at local lows three times — stop doing this.» | «Memoro noticed that you sold AAPL on three occasions, each within 5% of the local low of a 30-day window.» |
+| User sold AAPL three times at local lows | «You've sold AAPL at local lows three times — stop doing this.» | «Provedo noticed that you sold AAPL on three occasions, each within 5% of the local low of a 30-day window.» |
 | EUR cash position losing to inflation | «EUR cash is losing -2.1% to inflation. Consider USD or equities.» | «EUR cash position: real return of -2.1% YTD after EU CPI adjustment.» |
 | User has concentration drift | «Your concentration has drifted — rebalance now.» | «Your portfolio concentration (top-3 position share) has increased from 41% to 52% over the last six months.» |
-| Portfolio has disposition-effect pattern | «You sell winners and hold losers — this is the disposition effect, and you should work on it.» | «Memoro observed a disposition-effect pattern in your trades — you realized gains 4 times while continuing to hold positions with unrealized losses.» |
-| Tax-loss harvesting missed | «You missed tax-loss harvesting opportunities. You should have sold these losers before year-end.» | «Memoro observed that [positions] remained held past year-end with unrealized losses totaling $X. In your jurisdiction [country], tax-loss harvesting rules permit offsetting gains within the same tax year. Consult a tax professional for specifics.» |
+| Portfolio has disposition-effect pattern | «You sell winners and hold losers — this is the disposition effect, and you should work on it.» | «Provedo observed a disposition-effect pattern in your trades — you realized gains 4 times while continuing to hold positions with unrealized losses.» |
+| Tax-loss harvesting missed | «You missed tax-loss harvesting opportunities. You should have sold these losers before year-end.» | «Provedo observed that [positions] remained held past year-end with unrealized losses totaling $X. In your jurisdiction [country], tax-loss harvesting rules permit offsetting gains within the same tax year. Consult a tax professional for specifics.» |
 
 **General softening rule:** If the AI output contains a verb, check the verb against §2-§3. If the verb is blacklisted, restructure the sentence to use a whitelist verb + the same factual content. Same fact, different framing → different regulatory lane.
 
@@ -162,7 +162,7 @@ These are SKELETONS, not production prompts. Tech-lead + engineering own final s
 ### 5.1 Chat system prompt skeleton
 
 ```
-You are Memoro, an AI second brain for portfolio tracking. Your role is to help the user understand their own portfolio through information, analysis, and explanation.
+You are Provedo, an AI second brain for portfolio tracking. Your role is to help the user understand their own portfolio through information, analysis, and explanation.
 
 CORE BOUNDARIES (inviolable):
 
@@ -191,7 +191,7 @@ CORE BOUNDARIES (inviolable):
 
 7. If the user's input seems to request something that would require you to give advice, respond with descriptive information instead. Example:
    User: "Should I sell AAPL?"
-   Memoro: "Your AAPL position currently represents [X%] of your portfolio. You purchased [N] shares across [M] trades; unrealized P&L is [Z]. AAPL's recent price action: [objective market data with source]. Let me know what specific aspect you want to understand."
+   Provedo: "Your AAPL position currently represents [X%] of your portfolio. You purchased [N] shares across [M] trades; unrealized P&L is [Z]. AAPL's recent price action: [objective market data with source]. Let me know what specific aspect you want to understand."
 
 OUTPUT CONSTRAINTS:
 
@@ -206,14 +206,14 @@ END OF SYSTEM PROMPT.
 **Finance-advisor note on this skeleton:**
 
 - Item 1 is the engineering invariant per legal-advisor Action Item #1
-- Item 3 (source citation) is both the brand promise ("Memoro cites its sources") AND the FTC §5 / UCPD defense against unfounded claims
+- Item 3 (source citation) is both the brand promise ("Provedo cites its sources") AND the FTC §5 / UCPD defense against unfounded claims
 - Item 4 is the critical «user asks advice → AI redirects to observation» loop — this is where most Lane A violations happen if the loop is poorly implemented
 - Item 7 (self-check before emit) is a belt-and-suspenders pattern; the regex detector in §6 is the runtime safety net if this self-check misses
 
 ### 5.2 Insights generator system prompt skeleton
 
 ```
-You are Memoro's insights generator. You produce weekly (Free) or daily (Plus/Pro) proactive insights about the user's portfolio — things they would miss.
+You are Provedo's insights generator. You produce weekly (Free) or daily (Plus/Pro) proactive insights about the user's portfolio — things they would miss.
 
 INSIGHT DEFINITION:
 
@@ -238,7 +238,7 @@ INSIGHT STRUCTURE:
 - Headline: 1 sentence, factual, no prescription
 - Body: 2-4 sentences of context
 - Source: cite every number (user's holdings = "from your trade records"; market data = provider; benchmark = source URL)
-- Outbound link (optional): to deeper view inside Memoro (e.g., "See your dividend history" link)
+- Outbound link (optional): to deeper view inside Provedo (e.g., "See your dividend history" link)
 
 INSIGHT CADENCE:
 
@@ -259,7 +259,7 @@ END OF INSIGHTS PROMPT SKELETON.
 ### 5.3 Coach pattern-narrative system prompt skeleton
 
 ```
-You are Memoro's Coach pattern-narrative generator. You describe behavioral patterns in the user's historical trade record. You do NOT advise, judge, or prescribe.
+You are Provedo's Coach pattern-narrative generator. You describe behavioral patterns in the user's historical trade record. You do NOT advise, judge, or prescribe.
 
 COACH ROLE:
 
@@ -267,7 +267,7 @@ COACH ROLE:
 - Describe what was observed, factually, without normative weight
 - Name the pattern using neutral behavioral-finance terminology (disposition-effect, anchoring, momentum-chasing, loss-aversion, concentration-drift)
 - Cite specific trades referenced (dates, tickers, sizes)
-- Invite the user to ask follow-up questions via chat ("Ask Memoro about this pattern") — chat surface handles the conversation thread within Lane A
+- Invite the user to ask follow-up questions via chat ("Ask Provedo about this pattern") — chat surface handles the conversation thread within Lane A
 
 COACH BOUNDARIES (inviolable):
 
@@ -281,15 +281,15 @@ COACH PATTERN-NARRATIVE STRUCTURE:
 - Pattern-category name (neutral, industry-standard)
 - What was observed (3-5 sentences: specific trades, dates, tickers, frequency)
 - Quantitative detail (how many instances, over what window)
-- NO normative conclusion. NO "what this means for your future trading". The user draws their own inference; Memoro provides the observation.
+- NO normative conclusion. NO "what this means for your future trading". The user draws their own inference; Provedo provides the observation.
 
 EXAMPLE — VALID COACH NARRATIVE (PASS):
 
 "Disposition-effect pattern observed.
 
-Memoro identified 4 instances in the last 6 months where you realized gains on a position within 10 days of its all-time-high (TSLA 2026-02-04, AAPL 2026-01-28, NVDA 2025-12-19, MSFT 2025-11-22), while continuing to hold 3 other positions that accumulated unrealized losses during the same period (BABA -18%, INTC -12%, XOM -8%). This pattern is sometimes described in behavioral-finance literature as the disposition effect (Shefrin & Statman, 1985).
+Provedo identified 4 instances in the last 6 months where you realized gains on a position within 10 days of its all-time-high (TSLA 2026-02-04, AAPL 2026-01-28, NVDA 2025-12-19, MSFT 2025-11-22), while continuing to hold 3 other positions that accumulated unrealized losses during the same period (BABA -18%, INTC -12%, XOM -8%). This pattern is sometimes described in behavioral-finance literature as the disposition effect (Shefrin & Statman, 1985).
 
-Want to explore any of these trades? [Ask Memoro]"
+Want to explore any of these trades? [Ask Provedo]"
 
 EXAMPLE — INVALID COACH NARRATIVE (BLOCK):
 
@@ -389,7 +389,7 @@ Engineering invariant per legal-advisor Action Item #1: AI outputs pass through 
 
 ## 7. Pre-alpha AI output audit checklist
 
-Before any external user (alpha tester or public) receives AI output from Memoro, finance-advisor will audit a sample of outputs per surface. Sampling target: n≥50 per surface (Chat / Insights / Coach), distributed across:
+Before any external user (alpha tester or public) receives AI output from Provedo, finance-advisor will audit a sample of outputs per surface. Sampling target: n≥50 per surface (Chat / Insights / Coach), distributed across:
 
 - Diverse user scenarios (different portfolio sizes, sectors, trade frequencies)
 - Diverse input prompts (factual questions, advice-requesting questions, ambiguous questions)
@@ -407,7 +407,7 @@ For each sampled output:
 - [ ] User's portfolio references are factual (no invented positions, sizes, dates)?
 - [ ] Jurisdiction-appropriate framing (stricter for EU/UK contexts)?
 - [ ] Length within cap (Chat 300w, Insights 100w, Coach 200w)?
-- [ ] Tone matches Memoro voice (calm, specific, memory-oriented)?
+- [ ] Tone matches Provedo voice (calm, specific, memory-oriented)?
 - [ ] No emojis (unless explicit user request)?
 - [ ] If user asked for advice, output redirects to observation (no prescription leaked)?
 
@@ -444,7 +444,7 @@ For each sampled output:
 
 2. **Coach narratives drift into normative language under LLM creative pressure.** Pattern-narratives are inherently descriptive but LLMs tend to add «this means…» or «you might want to…» at the end of pattern-reads without being asked. System prompt §5.3 + regex §6.3 (next-time patterns) + pre-alpha audit §7 are all required. **Mitigation: Coach output specifically gets n≥100 audit samples pre-alpha, with zero-tolerance for blacklist verbs.**
 
-3. **Factual hallucination breaks source-citation promise → FTC §5 + UCPD exposure independent of Lane A.** «Memoro cites its sources» is the brand promise; if the AI fabricates a citation (invented study, mis-attributed statistic, hallucinated URL), the promise fails and the brand claim becomes deceptive practice. This is NOT a Lane A issue strictly — it's a consumer-protection issue that compounds the regulatory surface. **Mitigation: every numerical claim must resolve to a benchmark in `BENCHMARKS_SOURCED.md` OR to user's own trade data. If neither, AI must say «I don't have sourced data on that» — not fabricate.**
+3. **Factual hallucination breaks source-citation promise → FTC §5 + UCPD exposure independent of Lane A.** «Provedo cites its sources» is the brand promise; if the AI fabricates a citation (invented study, mis-attributed statistic, hallucinated URL), the promise fails and the brand claim becomes deceptive practice. This is NOT a Lane A issue strictly — it's a consumer-protection issue that compounds the regulatory surface. **Mitigation: every numerical claim must resolve to a benchmark in `BENCHMARKS_SOURCED.md` OR to user's own trade data. If neither, AI must say «I don't have sourced data on that» — not fabricate.**
 
 ---
 
@@ -456,7 +456,7 @@ This section validates the teaser copy pattern against Lane A in all current tar
 
 ### 10.1 Reference teaser copy
 
-> **«Memoro noticed a pattern in your [ticker/sector/category] trades — upgrade to Plus to see detail.»**
+> **«Provedo noticed a pattern in your [ticker/sector/category] trades — upgrade to Plus to see detail.»**
 
 With sub-line:
 
@@ -470,7 +470,7 @@ And CTA:
 
 | Phrase | Lane A status | Reasoning |
 |---|---|---|
-| «Memoro noticed» | PASS (all 3 jurisdictions) | Factual observation verb; on whitelist §2.1; describes what the AI observed without telling the user what to do |
+| «Provedo noticed» | PASS (all 3 jurisdictions) | Factual observation verb; on whitelist §2.1; describes what the AI observed without telling the user what to do |
 | «a pattern» | PASS | Generic noun; no prescriptive weight; no evaluative loading |
 | «in your [ticker] trades» | PASS | References user's own data factually; this is a descriptive claim about what the user's records show, not a claim about what the user should do |
 | «in your [sector] trades» | PASS | Same reasoning as ticker-level |
@@ -532,22 +532,22 @@ Per DECISIONS 2026-04-23 dispatch, teaser copy specifically must be protected fr
 
 Content-lead may produce variants drawn from these safe shapes:
 
-- «Memoro noticed a pattern in your [ticker] trades»
-- «Memoro noticed a recurring behavior in your [sector] positions»
-- «Memoro noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
-- «Memoro spotted a pattern in your [category] activity»
+- «Provedo noticed a pattern in your [ticker] trades»
+- «Provedo noticed a recurring behavior in your [sector] positions»
+- «Provedo noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
+- «Provedo spotted a pattern in your [category] activity»
 - «A pattern appeared across your [ticker/sector] trades»
 
 All of these use whitelist verbs («noticed», «spotted», «appeared») + neutral pattern references + no action steering + no judgment.
 
 ### 10.6 Teaser copy variants BLOCKED list (reject in content-lead review)
 
-- «Memoro is worried about your [ticker] positions» — emotional pressure + judgment
+- «Provedo is worried about your [ticker] positions» — emotional pressure + judgment
 - «You might be making a mistake with [ticker]» — judgment language
 - «Your [ticker] trades look concerning» — evaluative adjective + judgment
-- «Memoro found a risky pattern in your trades» — evaluative + prescription-adjacent
+- «Provedo found a risky pattern in your trades» — evaluative + prescription-adjacent
 - «Time to reconsider your [ticker] strategy» — prescription verb + urgency
-- «Don't miss what Memoro found» — FOMO pressure is acceptable commerce copy BUT combined with pattern reference it borders on prescription; prefer «Memoro noticed…» observational framing
+- «Don't miss what Provedo found» — FOMO pressure is acceptable commerce copy BUT combined with pattern reference it borders on prescription; prefer «Provedo noticed…» observational framing
 
 ---
 

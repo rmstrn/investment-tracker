@@ -1,7 +1,7 @@
 ---
 name: product-designer
 description: Owns UX flows, wireframes, surface design, visual system maintenance (Design Brief). Dispatched by creative-director (under Navigator) to translate positioning → screens, design surfaces, audit interaction flows, maintain design tokens. Produces artifacts for creative-director, never talks to PO directly. Does NOT write production frontend code (that is frontend-engineer's scope), but can produce wireframes, design specs, and token updates.
-model: opus
+model: claude-opus-4-7
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -183,7 +183,7 @@ Plugin installed 2026-04-24. Invoked via Bash CLI (Python script), not the Skill
 ```bash
 python3 ~/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/src/ui-ux-pro-max/scripts/search.py \
   "AI portfolio tracker fintech B2C chat-first minimal" \
-  --design-system -p "Memoro"
+  --design-system -p "Provedo"
 ```
 
 Returns complete design system in one query:

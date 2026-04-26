@@ -183,7 +183,7 @@ Plugin installed 2026-04-24. Invoked via Bash CLI (Python script), not the Skill
 ```bash
 python3 ~/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/src/ui-ux-pro-max/scripts/search.py \
   "AI portfolio tracker fintech B2C chat-first minimal" \
-  --design-system -p "Memoro"
+  --design-system -p "Provedo"
 ```
 
 Returns complete design system in one query:

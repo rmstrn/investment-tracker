@@ -1,4 +1,4 @@
-# Dashboard Architecture — Memoro (Home Screen Spec)
+# Dashboard Architecture — Provedo (Home Screen Spec)
 
 **Owner:** product-designer
 **Status:** draft v1.1 — Coach UX updated to contextual-icon + bell-hub model per PO lock 2026-04-23
@@ -15,9 +15,9 @@
 **Rationale (short):**
 
 - **ICP A (multi-broker millennial, 28-40, $20-100K).** Getquin/Kubera mental model is what they know. Opening the app to chat-primary is a category break users must re-learn on every login. Dashboard at login matches expectation and removes friction.
-- **ICP B (AI-native newcomer, 22-32, $2-20K).** Chat-primary initially feels right, but on day-2+ they still want «what's my portfolio worth?» at a glance. Dashboard + Ask Memoro chip entry solves both — default dashboard, chat one tap away.
-- **Metaphor preservation.** «Second Brain» is expressed through AI-woven cards (Memoro noticed X, pattern preview, insight of the day inline in dashboard), not through chat-primary chrome. The metaphor lives in the product's behavior, not its layout.
-- **Competitive differentiation holds.** Getquin dashboards are aggregator-first with AI as side-panel. Memoro dashboards are aggregator-first with AI embedded inline in every card that has reasoning to share. That's a design difference, not a layout difference.
+- **ICP B (AI-native newcomer, 22-32, $2-20K).** Chat-primary initially feels right, but on day-2+ they still want «what's my portfolio worth?» at a glance. Dashboard + Ask Provedo chip entry solves both — default dashboard, chat one tap away.
+- **Metaphor preservation.** «Second Brain» is expressed through AI-woven cards (Provedo noticed X, pattern preview, insight of the day inline in dashboard), not through chat-primary chrome. The metaphor lives in the product's behavior, not its layout.
+- **Competitive differentiation holds.** Getquin dashboards are aggregator-first with AI as side-panel. Provedo dashboards are aggregator-first with AI embedded inline in every card that has reasoning to share. That's a design difference, not a layout difference.
 - **iOS HIG compliance.** Tab-bar at the bottom of iOS demands a clear primary destination. Dashboard-as-tab-1 is legible; chat-as-tab-1 is not.
 
 **What this rejects:**
@@ -34,17 +34,17 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│ Top bar:  Memoro (logo) · / · Ask Memoro chip · Bell · Plan · Avatar │
+│ Top bar:  Provedo (logo) · / · Ask Provedo chip · Bell · Plan · Avatar │
 ├─────┬─────────────────────────────────────────────────────────────┤
 │ Nav │ ┌───────────────────────────────────────────────────────┐   │
 │     │ │ HERO                                                  │   │
 │     │ │   $148,204.12                                         │   │
 │     │ │   +$1,214 today (+0.82%) · +$12,489 all-time (+9.2%)  │   │
-│     │ │   [Ask Memoro ▸]  (secondary chip, routes to chat)    │   │
+│     │ │   [Ask Provedo ▸]  (secondary chip, routes to chat)    │   │
 │     │ └───────────────────────────────────────────────────────┘   │
 │     │                                                             │
 │     │ ┌───────────────────────────────────────────────────────┐   │
-│     │ │ INSIGHT OF THE WEEK  ·  "Memoro noticed"              │   │
+│     │ │ INSIGHT OF THE WEEK  ·  "Provedo noticed"              │   │
 │     │ │   Headline (one line)                                 │   │
 │     │ │   Body (2 lines max)                                  │   │
 │     │ │   Source · View all insights ▸                        │   │
@@ -57,7 +57,7 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 │     │                                                             │
 │     │ ┌───────────────────────────────────────────────────────┐   │
 │     │ │ POSITIONS (top 5) · "See all positions ▸"             │   │
-│     │ │   Rows may carry a Memoro dot (contextual Coach       │   │
+│     │ │   Rows may carry a Provedo dot (contextual Coach       │   │
 │     │ │   attachment point 1 — see COACH_SURFACE_SPEC §1)     │   │
 │     │ └───────────────────────────────────────────────────────┘   │
 │     │                                                             │
@@ -73,7 +73,7 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 
 - **Scale:** `text-4xl` (36/40), Semibold, tabular-nums, `text.primary`.
 - **Delta row:** `text-base` (16/24), Regular, split into two runs — today's delta · all-time delta — separated by a mid-dot. Today colored by sign (gain/loss tokens from §3.4). All-time always neutral (`text.secondary`) to prevent «doom-focus» visual noise.
-- **Ask Memoro chip:** `SuggestedPrompt`-variant with a brain-free icon (use Lucide `sparkle` once, or `message-square-dashed` — to be decided in Slice 12. No brain icon. See §0 Anti-pattern in Design Brief v1.2). Routes to `/chat` with empty session.
+- **Ask Provedo chip:** `SuggestedPrompt`-variant with a brain-free icon (use Lucide `sparkle` once, or `message-square-dashed` — to be decided in Slice 12. No brain icon. See §0 Anti-pattern in Design Brief v1.2). Routes to `/chat` with empty session.
 - **Spacing:** 32px top padding desktop, 16px mobile. Hero sits above the fold on all breakpoints (320/375/768/1024/1440/1920).
 - **Reduced-motion:** when present, count-up on total value disables. Number renders final value instantly.
 - **Empty state:** pre-first-sync shows skeleton number + «Connect your first account to see your portfolio» CTA replacing delta row.
@@ -82,7 +82,7 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 
 - Always present post-first-sync (Free tier shows 1 per week; Plus shows today's; Pro shows real-time).
 - Visual treatment: same as insights feed card but outlined with `border.subtle` + subtle `violet-50` tint in light mode to signal «AI-surfaced».
-- Headline uses verb-led framing: **«Memoro noticed…»** / **«Flagged this week:…»** — NOT «your brain noticed» (see accessibility note §5.3).
+- Headline uses verb-led framing: **«Provedo noticed…»** / **«Flagged this week:…»** — NOT «your brain noticed» (see accessibility note §5.3).
 - CTA: `View all insights` routes to `/insights`.
 - Dismiss lives here too (same pattern as feed).
 
@@ -104,7 +104,7 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 
 **Removed in v1.1.** Coach has no dedicated dashboard row. Coach surfaces contextually via the dot primitive on position rows and other attachment points (per `COACH_SURFACE_SPEC.md` v2.0 §1), plus the top-bar bell as hub. This avoids advertising a locked surface to Free users during the 30-day cold-start and aligns with the PO-locked «AI is the interface, not a feature» principle.
 
-**Conversion nudge (Free tier, conditional).** If a Free user has ≥3 unread locked coach patterns accumulated over a month, a calm one-line banner may appear above the Positions row: «Memoro has noticed 3 patterns this month. Upgrade to Plus to see them.» Max one appearance per month; dismissable. Not a persistent tile.
+**Conversion nudge (Free tier, conditional).** If a Free user has ≥3 unread locked coach patterns accumulated over a month, a calm one-line banner may appear above the Positions row: «Provedo has noticed 3 patterns this month. Upgrade to Plus to see them.» Max one appearance per month; dismissable. Not a persistent tile.
 
 ### Recent activity
 
@@ -117,22 +117,22 @@ Dashboard home loads to this, in strict vertical priority order. Each row may sp
 
 Dashboard does not shunt AI to chat. AI is embedded in the dashboard surface as a semantic layer:
 
-1. **«Memoro noticed» badges** on cards — for **non-Coach AI reasoning** (insights, explainers). Used sparingly (not on every card). Applied when AI has added reasoning to a surface that would otherwise be pure data:
+1. **«Provedo noticed» badges** on cards — for **non-Coach AI reasoning** (insights, explainers). Used sparingly (not on every card). Applied when AI has added reasoning to a surface that would otherwise be pure data:
    - Allocation donut with a non-coach insight annotation.
    - Positions row with a cost-basis insight («This position is near its 52-week high») — note: this is an insight-card badge, not a coach dot; they are distinct primitives.
    - Chart with a drawdown annotation («-8% week, driven by AAPL»).
 
    Visual: small pill, `text-xs`, `violet-700` outline + `violet-50` fill, 4px border radius, no icon. Placement: top-right corner of the card. Click opens `ExplainerTooltip` with the reasoning + source links.
 
-2. **Coach dots** — contextual pattern-read indicators on attachment points (position rows, widget headers, chat thread previews, insight cards, transaction rows). Visual: 6px filled circle, categorical color (amber / sky / emerald / violet for multi-category). Click opens teaser popover (Free) or full detail popover (Plus/Pro). Full spec: `COACH_SURFACE_SPEC.md` §1-4. **Note:** coach dot + «Memoro noticed» badge are distinct primitives. Coach dot is for pattern reads (Coach surface). Badge is for other AI annotations (Insights + Explainer surfaces). An element can carry both if both apply.
+2. **Coach dots** — contextual pattern-read indicators on attachment points (position rows, widget headers, chat thread previews, insight cards, transaction rows). Visual: 6px filled circle, categorical color (amber / sky / emerald / violet for multi-category). Click opens teaser popover (Free) or full detail popover (Plus/Pro). Full spec: `COACH_SURFACE_SPEC.md` §1-4. **Note:** coach dot + «Provedo noticed» badge are distinct primitives. Coach dot is for pattern reads (Coach surface). Badge is for other AI annotations (Insights + Explainer surfaces). An element can carry both if both apply.
 
 3. **Insight of the week** inline on dashboard (top card, above charts). Already spec'd above. This is the one persistent AI-curated slot on dashboard.
 
-4. **Ask Memoro chip** — entry point to chat from dashboard. One click. Pre-filled context: dashboard state. Chat opens with a suggested prompt derived from dashboard context («Why am I down this week?» if today's delta is negative; «What changed in my top 3 positions?» if top 3 moved >5%).
+4. **Ask Provedo chip** — entry point to chat from dashboard. One click. Pre-filled context: dashboard state. Chat opens with a suggested prompt derived from dashboard context («Why am I down this week?» if today's delta is negative; «What changed in my top 3 positions?» if top 3 moved >5%).
 
 5. **Explainer tooltips** on every financial number (hero total, positions row values, chart data points, donut slices). Always available; no tier gate. Per Design Brief §14.5.
 
-6. **Bell-dropdown hub** — top-bar aggregation surface for all «Memoro noticed» notifications, including Coach patterns. Always on screen; pulse once per session on first new coach pattern; `Cmd/Ctrl+Shift+B` keyboard shortcut. See `COACH_SURFACE_SPEC.md` §7 and Design Brief v1.3 §14.7.
+6. **Bell-dropdown hub** — top-bar aggregation surface for all «Provedo noticed» notifications, including Coach patterns. Always on screen; pulse once per session on first new coach pattern; `Cmd/Ctrl+Shift+B` keyboard shortcut. See `COACH_SURFACE_SPEC.md` §7 and Design Brief v1.3 §14.7.
 
 **What AI-woven does NOT mean:**
 
@@ -154,7 +154,7 @@ Five primary routes. Dashboard is tab 1 on all platforms. Coach has no route —
 | 1 | `/dashboard` | **Dashboard** | Home. Portfolio summary + AI-woven cards. Coach dots surface here on positions + widgets. | **Primary** | **Primary** |
 | 2 | `/positions` | **Positions** | Full holdings table, drill-in to position detail. Coach dots on rows + transactions. | **Primary** | Secondary |
 | 3 | `/insights` | **Insights** | AI-surfaced items feed. Weekly digest cadence. Coach dots on adjacent insight cards. | Secondary | **Primary** |
-| 4 | `/chat` | **Chat** | Free-form Q&A with Memoro. Coach dots on thread previews + thread heads. | Secondary | **Primary** |
+| 4 | `/chat` | **Chat** | Free-form Q&A with Provedo. Coach dots on thread previews + thread heads. | Secondary | **Primary** |
 | 5 | `/settings` | **Settings** | Account, accounts-management, notifications (incl. Coach category mute), subscription. | Utility | Utility |
 
 **Coach:** not a route. Surfaced via dot primitive on attachment-point elements across the 5 routes above + bell-dropdown hub in the top bar. See `COACH_SURFACE_SPEC.md` §1-7.
@@ -165,7 +165,7 @@ Side nav, 240px fixed width, collapsible to 56px icon-only. Top bar 56px height.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Memoro (logo) · Ask Memoro chip · Bell 🔔 · Plan · Avatar │  ← 56px top bar
+│ Provedo (logo) · Ask Provedo chip · Bell 🔔 · Plan · Avatar │  ← 56px top bar
 ├─────┬───────────────────────────────────────────────────┤
 │ 🏠  │                                                   │
 │ Das.│                                                   │
@@ -248,12 +248,12 @@ Same as ICP A primary, but Coach is the reason they're here — so bell-dropdown
 
 Daily pattern: chat (primary until they build habit) → dashboard (growing, weekly) → insights (weekly) → positions (rarely). Coach dots surface contextually once soft-gate threshold is crossed (tx_count ≥30 OR span ≥30d).
 
-- Dashboard: still home. Hero is less impactful (small portfolio). Insight of the week + Ask Memoro chip do heavy lifting.
-- Chat: primary AI interaction mode. Dashboard's Ask Memoro chip is their most-clicked element on dashboard. Coach dots can appear on chat thread previews if a thread has an associated pattern.
+- Dashboard: still home. Hero is less impactful (small portfolio). Insight of the week + Ask Provedo chip do heavy lifting.
+- Chat: primary AI interaction mode. Dashboard's Ask Provedo chip is their most-clicked element on dashboard. Coach dots can appear on chat thread previews if a thread has an associated pattern.
 - Insights: weekly check-in after first sync.
 - Coach: contextual across all surfaces. During cold-start (first 30 days), no dots appear; bell-dropdown shows cold-start empty state with progress counter (`COACH_SURFACE_SPEC.md` §6.2).
 
-**Key insight:** even for ICP B (chat-leaning), dashboard is the home. The Ask Memoro chip does the routing work chat-primary-home would have done. Dashboard-primary unifies architecture without costing ICP B their chat-first preference. Coach being contextual (not a separate route) means ICP B encounters patterns organically in their chat + dashboard flow without needing to learn a new destination.
+**Key insight:** even for ICP B (chat-leaning), dashboard is the home. The Ask Provedo chip does the routing work chat-primary-home would have done. Dashboard-primary unifies architecture without costing ICP B their chat-first preference. Coach being contextual (not a separate route) means ICP B encounters patterns organically in their chat + dashboard flow without needing to learn a new destination.
 
 ---
 
@@ -263,17 +263,17 @@ Illustration-free by default per Design Brief §11.5. Each empty state has icon 
 
 | Route | Trigger | Empty state |
 |---|---|---|
-| Dashboard | No accounts connected | Icon (broken plug) · «No portfolio yet» · «Connect your first broker to see Memoro in action» · `Connect account` CTA |
+| Dashboard | No accounts connected | Icon (broken plug) · «No portfolio yet» · «Connect your first broker to see Provedo in action» · `Connect account` CTA |
 | Dashboard | Accounts connected, zero positions | Icon · «Your accounts are connected, but we don't see positions yet. This can take a few minutes to sync» · `Check sync status` link |
 | Positions | No positions | Same as dashboard empty state |
-| Insights | No insights yet (first week) | Icon (`sparkles`) · «Memoro is learning your portfolio. First insight arrives within 7 days of your first sync» · No CTA; informational |
+| Insights | No insights yet (first week) | Icon (`sparkles`) · «Provedo is learning your portfolio. First insight arrives within 7 days of your first sync» · No CTA; informational |
 | Insights | All insights dismissed | Icon · «You're all caught up. New items arrive weekly» · No CTA |
 | Chat | Empty chat | Suggested prompts (chips), pre-filled per dashboard state |
 | Settings | Never empty | N/A |
 
 **Coach empty states live in the bell-dropdown**, not on a route. Three bell-dropdown empty variants (Path A warm-start backfill in progress, Path B cold-start, post-gate no-patterns-this-week). See `COACH_SURFACE_SPEC.md` §6.
 
-Each empty state text must be verb-led not identity-led. **Say «Memoro noticed…» / «Memoro is learning…» — never «your brain noticed…»**. See Design Brief v1.2 §0 and accessibility discussion in `COACH_SURFACE_SPEC.md` §6.
+Each empty state text must be verb-led not identity-led. **Say «Provedo noticed…» / «Provedo is learning…» — never «your brain noticed…»**. See Design Brief v1.2 §0 and accessibility discussion in `COACH_SURFACE_SPEC.md` §6.
 
 ---
 
@@ -282,10 +282,10 @@ Each empty state text must be verb-led not identity-led. **Say «Memoro noticed�
 Top bar hosts chrome-level navigation + AI entry. 56px height.
 
 **Left:**
-- Memoro logo (wordmark; square mark on mobile ≤640px).
+- Provedo logo (wordmark; square mark on mobile ≤640px).
 
 **Center-left (desktop) or hidden (mobile <640):**
-- `Ask Memoro` chip — pill-shaped, `violet-700` outline, `violet-50` fill, `text-sm`, Medium weight. Click → `/chat` new conversation with dashboard context. Keyboard shortcut: `⌘ + K` / `Ctrl + K` (hint shown on hover). On mobile, chip collapses into a floating action button at bottom-right of dashboard only.
+- `Ask Provedo` chip — pill-shaped, `violet-700` outline, `violet-50` fill, `text-sm`, Medium weight. Click → `/chat` new conversation with dashboard context. Keyboard shortcut: `⌘ + K` / `Ctrl + K` (hint shown on hover). On mobile, chip collapses into a floating action button at bottom-right of dashboard only.
 
 **Right:**
 - **Bell (notifications + Coach hub)** — `BellDropdown` primitive from Design Brief §10.3 + v1.3 §14.7 extension. Behavior:
@@ -343,11 +343,11 @@ No new tokens required for dashboard-primary architecture. Tokens remain metapho
 ## 10. Accessibility
 
 - **Contrast:** all card text meets 4.5:1 on `background.elevated`. Hero number hits 7:1 target.
-- **Keyboard flow:** Top bar (logo → Ask Memoro chip → Bell → Plan → Avatar) → Side nav (Dashboard → Positions → Insights → Chat → Settings) → Content cards in vertical order. Every card that has a CTA is focusable. Coach dots within cards/rows are tab-stops; see `COACH_SURFACE_SPEC.md` §9.4.
+- **Keyboard flow:** Top bar (logo → Ask Provedo chip → Bell → Plan → Avatar) → Side nav (Dashboard → Positions → Insights → Chat → Settings) → Content cards in vertical order. Every card that has a CTA is focusable. Coach dots within cards/rows are tab-stops; see `COACH_SURFACE_SPEC.md` §9.4.
 - **Screen reader:**
   - Hero: `<section aria-label="Portfolio summary">`. Total value is announced with its delta ("Total portfolio value: $148,204. Today: up 0.82 percent, plus 1,214 dollars. All time: up 9.2 percent").
-  - Cards with AI badges: `aria-label` includes "Memoro insight" prefix before the card content.
-  - Rows/widgets with Coach dots: dot is a `<button aria-label="Memoro noticed a [Category] pattern on [element]. Press Enter to read.">`. See `COACH_SURFACE_SPEC.md` §9.1.
+  - Cards with AI badges: `aria-label` includes "Provedo insight" prefix before the card content.
+  - Rows/widgets with Coach dots: dot is a `<button aria-label="Provedo noticed a [Category] pattern on [element]. Press Enter to read.">`. See `COACH_SURFACE_SPEC.md` §9.1.
   - Every financial number gets `aria-live="polite"` when it updates post-mount.
 - **Reduced motion:** Count-up animation disabled; number arrives at final value. Chart drawing animates only on `prefers-reduced-motion: no-preference`. Card fade-in on mount disabled. Coach dot pulse + bell first-session pulse disabled.
 - **Color-only signaling:** forbidden. All gain/loss data carries sign prefix (`+0.82%` / `-1.1%`). Coach dot color always pairs with category text in hover tooltip / popover / bell-dropdown row — never color-only.
@@ -358,7 +358,7 @@ No new tokens required for dashboard-primary architecture. Tokens remain metapho
 ## 11. What this does NOT spec
 
 - Exact chart implementation (done by frontend-engineer using shared chart lib; this spec only mandates visual treatment).
-- Ask Memoro chip click behavior when chat is mid-stream (resolved in Chat surface spec — future artifact).
+- Ask Provedo chip click behavior when chat is mid-stream (resolved in Chat surface spec — future artifact).
 - Notification center content grouping (resolved in §16 of Design Brief; unchanged here).
 - Settings subpage layout (separate spec, post-alpha).
 
@@ -379,7 +379,7 @@ No new tokens required for dashboard-primary architecture. Tokens remain metapho
 
 1. **~~Coach teaser on Free-tier dashboard~~** — RESOLVED by PO 2026-04-23. No dedicated dashboard teaser tile. Coach surfaces via contextual dots. Optional conditional banner (once per month, ≥3 unread locked patterns) is a low-pressure conversion nudge.
 2. **Accounts demotion:** moving Accounts out of primary nav into Settings is correct architecturally but changes user-learned navigation from shipped state. Recommendation: ship with both during a 30-day transition period (Accounts visible at both `/accounts` and `/settings/accounts`, with deprecation notice on `/accounts`). PO to confirm transition strategy.
-3. **Ask Memoro chip copy:** exact label — «Ask Memoro», «Ask your portfolio», «Ask»? Recommendation: «Ask Memoro» to reinforce named agent. Content-lead coordination needed.
+3. **Ask Provedo chip copy:** exact label — «Ask Provedo», «Ask your portfolio», «Ask»? Recommendation: «Ask Provedo» to reinforce named agent. Content-lead coordination needed.
 4. **Bell keyboard shortcut:** `Cmd/Ctrl+Shift+B` (recommended — no browser conflict) vs `Cmd/Ctrl+B` (potential Chrome/Firefox bookmark-bar-toggle conflict). Tech-lead / PO to confirm. Carried across from `COACH_SURFACE_SPEC.md` §17 Q4.
 
 ---

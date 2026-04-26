@@ -3,7 +3,7 @@
 **Author:** product-designer
 **Date:** 2026-04-25
 **Status:** DRAFT — awaiting PO selection via Navigator
-**Trigger:** Provedo name LOCKED 2026-04-25 (`docs/product/03_NAMING.md`). PO requested 3 distinct visual direction options for full rebrand from Memoro Design Brief v1.3 baseline.
+**Trigger:** Provedo name LOCKED 2026-04-25 (`docs/product/03_NAMING.md`). PO requested 3 distinct visual direction options for full rebrand from Provedo Design Brief v1.3 baseline.
 **Outputs needed:** PO selects 1 of 3 → product-designer drafts Design Brief v1.4 with locked palette/typography/effects.
 
 ---
@@ -277,7 +277,7 @@ EN/RU character budgets identical to A.
 | **ICP A appeal (Notion/Linear cohort, 28-40)** | HIGH | MEDIUM-HIGH | HIGH |
 | **ICP B appeal (AI-native newcomer 22-32)** | MEDIUM | HIGH (warmth, accessibility) | MEDIUM-HIGH |
 | **ICP mid-career secondary (post-mistake retail)** | MEDIUM | MEDIUM-HIGH | HIGH |
-| **Implementation cost vs Memoro v1.3 baseline** | LOW (slate-violet → slate-sky swap; same typography family) | HIGH (new palette, new serif typography, paper texture, shadow system retune) | MEDIUM (palette retune, headline-serif add, motion adjust) |
+| **Implementation cost vs Provedo v1.3 baseline** | LOW (slate-violet → slate-sky swap; same typography family) | HIGH (new palette, new serif typography, paper texture, shadow system retune) | MEDIUM (palette retune, headline-serif add, motion adjust) |
 | **Differentiation vs current AI-tool category** | LOW (every AI tool is Linear-shaped; Provedo would blend) | HIGH (Italian-warm fintech is rare; immediately distinctive) | MEDIUM (familiar consumer-fintech lineage + AI woven; recognizable but not unique) |
 | **Bilingual brand expression (Provedo etymology)** | NEUTRAL (etymology invisible) | HIGH (Italian = etymological birthplace; strongest fit) | NEUTRAL (etymology subtle in serif headlines but not load-bearing) |
 | **RU «Прове́до» visual readability** | NEUTRAL (Inter renders cleanly, no special character) | HIGH (Cormorant italic gives Cyrillic editorial weight) | MEDIUM (Source Serif renders well, less character) |
@@ -296,7 +296,7 @@ EN/RU character budgets identical to A.
 
 ### #1 — Direction B (Italian-warm) — RECOMMENDED PRIMARY
 
-**Why:** Highest differentiation in fintech AI category, strongest etymological resonance with Provedo (Italian provedere), and the warm cream/serif/sans-pairing aligns naturally with Magician + Sage + Everyman triple-archetype expression. PO chose Provedo over Memoro specifically for the bilingual Italian-RU advantage; visual direction should honor that choice. ICP B (AI-native newcomer) benefits from warmth; ICP mid-career (post-mistake retail) benefits from non-aggressive, considered visual. The Italian-editorial register has empty competitive territory — no fintech AI tool currently occupies it.
+**Why:** Highest differentiation in fintech AI category, strongest etymological resonance with Provedo (Italian provedere), and the warm cream/serif/sans-pairing aligns naturally with Magician + Sage + Everyman triple-archetype expression. PO chose Provedo over Provedo specifically for the bilingual Italian-RU advantage; visual direction should honor that choice. ICP B (AI-native newcomer) benefits from warmth; ICP mid-career (post-mistake retail) benefits from non-aggressive, considered visual. The Italian-editorial register has empty competitive territory — no fintech AI tool currently occupies it.
 
 **Honest risks:**
 - Cream paper background in financial software is RARE. ICP A control-craving cohort may misread «not serious enough» on first glance. Mitigation: high-density data-viz (mono numbers, precision charts) inside the warm shell preserves trust signal. Recommended: user-researcher dispatch with clickable mock for first-impression testing post-PO selection.
@@ -314,7 +314,7 @@ EN/RU character budgets identical to A.
 
 ### #3 — Direction A (Minimalist) — DEPRIORITIZE
 
-**Why deprioritized:** Lowest differentiation. Direction A is essentially the current Memoro Design Brief v1.3 with violet → sky-500 swap. PO requested «full rebrand visual direction» — A is more «palette tweak» than «direction». Etymological resonance is zero. Low-cost is the only meaningful pro.
+**Why deprioritized:** Lowest differentiation. Direction A is essentially the current Provedo Design Brief v1.3 with violet → sky-500 swap. PO requested «full rebrand visual direction» — A is more «palette tweak» than «direction». Etymological resonance is zero. Low-cost is the only meaningful pro.
 
 **When A might be right:** Only if PO consciously decides «we want maximum operational restraint, the visual differentiation is voice + product, not chrome». Valid but conservative.
 
@@ -346,4 +346,4 @@ EN/RU character budgets identical to A.
 2. If B selected: dispatch user-researcher with clickable mock for first-impression validation pre-Design-Brief-v1.4 lock (recommended).
 3. product-designer drafts Design Brief v1.4 with full token spec, surface-by-surface examples, motion library, anti-pattern reaffirmation.
 4. Navigator coordinates with frontend-engineer for token-migration estimate.
-5. tech-debt entry: Memoro design tokens → Provedo design tokens migration (`packages/design-tokens/tokens/semantic/{light,dark}.json`).
+5. tech-debt entry: Provedo design tokens → Provedo design tokens migration (`packages/design-tokens/tokens/semantic/{light,dark}.json`).

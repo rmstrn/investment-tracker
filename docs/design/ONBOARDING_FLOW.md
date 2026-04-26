@@ -1,4 +1,4 @@
-# Onboarding Flow — Memoro
+# Onboarding Flow — Provedo
 
 **Owner:** product-designer
 **Status:** draft v1.1 — Stage 3 first-value moment updated to contextual-icon + bell-dropdown model per Coach UX PO lock 2026-04-23
@@ -35,7 +35,7 @@ flowchart TD
     subgraph Stage3A["Stage 3A — Warm-start first-value (≤10 min)"]
         S3A1["Dashboard loads with hero + positions"] --> S3A2["Background: Core API pattern-detection<br/>runs on backfilled history"]
         S3A2 --> S3A3["First pattern-read lands<br/>Dot appears on affected position row<br/>(pulse for discovery)<br/>Bell badge increments to 1<br/>(bell pulses once this session)"]
-        S3A3 --> S3A4["First-time tutorial tooltip fires<br/>from the dot: 'Memoro noticed a pattern'"]
+        S3A3 --> S3A4["First-time tutorial tooltip fires<br/>from the dot: 'Provedo noticed a pattern'"]
     end
 
     subgraph Stage3B["Stage 3B — Cold-start first-value (staggered)"]
@@ -70,7 +70,7 @@ User arrives from landing page CTA «Ask your portfolio» / «Спроси св�
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│               Memoro                                │
+│               Provedo                                │
 │                                                     │
 │          Second Brain for Your Portfolio            │
 │                                                     │
@@ -98,7 +98,7 @@ User arrives from landing page CTA «Ask your portfolio» / «Спроси св�
 ```
 
 **Design notes:**
-- Memoro wordmark at top. Below: tagline (smaller, `text.secondary`). Establishes product identity before any form field.
+- Provedo wordmark at top. Below: tagline (smaller, `text.secondary`). Establishes product identity before any form field.
 - OAuth options are prioritized (top). Email sign-up is secondary.
 - No «Why sign up?» copy on this screen — landing already covered it. Don't repeat; get user through the form.
 - Clerk's default theme is over-ridden via design-tokens (see Design Brief §17.1). No «dark-vs-light flash» on navigation; use tokens consistently.
@@ -141,9 +141,9 @@ User arrives from landing page CTA «Ask your portfolio» / «Спроси св�
 ```
 ┌─────────────────────────────────────────────────────┐
 │                                                     │
-│            Welcome to Memoro, [name]                │
+│            Welcome to Provedo, [name]                │
 │                                                     │
-│   Memoro remembers what you hold, notices what      │
+│   Provedo remembers what you hold, notices what      │
 │   you'd miss, and explains what it sees.            │
 │                                                     │
 │   Let's connect your first broker to get started.   │
@@ -155,13 +155,13 @@ User arrives from landing page CTA «Ask your portfolio» / «Спроси св�
 ```
 
 **Design notes:**
-- **No onboarding carousel.** «Walk users through features» patterns have low engagement and delay time-to-value. Memoro's value is demonstrated by seeing their own portfolio, not by reading product descriptions. Let them connect and see.
+- **No onboarding carousel.** «Walk users through features» patterns have low engagement and delay time-to-value. Provedo's value is demonstrated by seeing their own portfolio, not by reading product descriptions. Let them connect and see.
 - The 3-verb tagline («remembers, notices, explains») is our onboarding promise, compressed. Aligns with landing hero sub.
-- Primary CTA is one action: «Connect a broker». No secondary «skip for now» — without a broker, Memoro has nothing to show. If we offer skip, users land on empty dashboard and churn.
+- Primary CTA is one action: «Connect a broker». No secondary «skip for now» — without a broker, Provedo has nothing to show. If we offer skip, users land on empty dashboard and churn.
 - «You can add more brokers later» — honest expectation management; reduces anxiety about which to pick first.
 
 **Copy hooks (content-lead to finalize):**
-- Greeting: «Welcome to Memoro, [name]» (Clerk provides first-name).
+- Greeting: «Welcome to Provedo, [name]» (Clerk provides first-name).
 - Intro: one line using verbs from positioning («remembers, notices, explains»).
 - Transition: «Let's connect your first broker to get started.»
 - CTA: «Connect a broker» (imperative, action-forward).
@@ -210,7 +210,7 @@ User clicks «Connect a broker» on Screen 1.3 (or later from dashboard empty st
 │                                                     │
 │   ───                                               │
 │                                                     │
-│   Read-only connection. Memoro never places         │
+│   Read-only connection. Provedo never places         │
 │   trades or moves money.                            │
 └─────────────────────────────────────────────────────┘
 ```
@@ -218,13 +218,13 @@ User clicks «Connect a broker» on Screen 1.3 (or later from dashboard empty st
 **Design notes:**
 - Grid of 8 popular brokers by geo (US = Fidelity / Schwab / IBKR / Robinhood / E*TRADE; EU = Trading212 / HL / Degiro; crypto = Coinbase / Binance / Kraken). Detection by IP + user locale; fallback to US default.
 - Search bar at top for long-tail (SnapTrade supports 1000+ brokers).
-- **Trust marker at bottom:** «Read-only connection. Memoro never places trades or moves money.» — explicit, not hidden in tooltip. This addresses the most common abandonment reason («they want my broker password?!»).
+- **Trust marker at bottom:** «Read-only connection. Provedo never places trades or moves money.» — explicit, not hidden in tooltip. This addresses the most common abandonment reason («they want my broker password?!»).
 - Broker tiles are square, logo-centric, use the broker's actual logo (licensed from SnapTrade assets).
 - Tile hover: `border.subtle → border.default` + minor lift (shadow-sm → shadow-md). Click: route to SnapTrade OAuth flow.
 
 **Screen 2.2 — SnapTrade OAuth redirect**
 
-User leaves Memoro for broker's OAuth page. This is SnapTrade-hosted / broker-hosted; we don't control UI. **Design contract with SnapTrade integration:**
+User leaves Provedo for broker's OAuth page. This is SnapTrade-hosted / broker-hosted; we don't control UI. **Design contract with SnapTrade integration:**
 
 - Return URL: `/onboarding/connect/return?status={success|cancel|error}`.
 - On success: fetch SnapTrade user + accounts + initial holdings. Sync job queued.
@@ -236,7 +236,7 @@ User leaves Memoro for broker's OAuth page. This is SnapTrade-hosted / broker-ho
 ```
 ┌─────────────────────────────────────────────────────┐
 │                                                     │
-│      Memoro is reading your Fidelity account        │
+│      Provedo is reading your Fidelity account        │
 │                                                     │
 │   ┌──────────────────────────────────────┐         │
 │   │ ████████░░░░░░░░░░░░  42%            │         │
@@ -291,7 +291,7 @@ Per Design Brief §2.2, error tone is calm + specific + next step.
 T+0:00  Stage 2 sync completes. Dashboard loads with:
          - Hero: total value + today's delta (if intraday data available)
          - Positions table populated
-         - «Memoro is reading your history» banner at top
+         - «Provedo is reading your history» banner at top
          - Bell icon visible in top-bar (badge = 0, no dots yet)
 
 T+0:30  Background: Core API pattern-detection queued on user's
@@ -313,7 +313,7 @@ T+10    Insights-table row inserted with type `coach_weekly`.
          - Bell itself pulses ONCE (same 1200ms scale) — marks
            first-coach-of-session. Subsequent patterns in the
            session increment silently.
-         - Dismissable dashboard banner: «Memoro read your
+         - Dismissable dashboard banner: «Provedo read your
            history — N patterns noticed. Check the bell ↑.»
          - If user's first interaction is with the dot: the
            first-time tutorial tooltip fires (COACH_SURFACE_SPEC
@@ -327,7 +327,7 @@ T+10    Insights-table row inserted with type `coach_weekly`.
 - The banner is modal-free. User can dismiss it or click through. Dismissal doesn't cancel the dot or the bell-badge — only the banner.
 - Dots and bell are the load-bearing first-value signals. Banner is a secondary human-readable announcement.
 - If warm-start pattern-detection takes >30 minutes, banner escalates: «Still reading your history — a bit slower today. We'll notify you as soon as patterns land.» Bell-dropdown continues to show Path A empty state (§6.1 of Coach spec).
-- If warm-start produces zero patterns (rare — user has imported-but-bland history): banner becomes «Memoro read your history — no patterns flagged this week. That's a good sign. Check back next Sunday for your first weekly read.» Bell-dropdown moves to post-gate quiet state (§6.3 of Coach spec).
+- If warm-start produces zero patterns (rare — user has imported-but-bland history): banner becomes «Provedo read your history — no patterns flagged this week. That's a good sign. Check back next Sunday for your first weekly read.» Bell-dropdown moves to post-gate quiet state (§6.3 of Coach spec).
 - **Reduced motion:** dot pulse + bell pulse disabled. Banner appears without slide-in animation.
 
 ### 4.3 Path B — cold-start timeline
@@ -336,7 +336,7 @@ T+10    Insights-table row inserted with type `coach_weekly`.
 T+0:00    Stage 2 sync completes. Dashboard loads with:
            - Hero: total value + today's delta
            - Positions table populated
-           - «Welcome! Memoro's starting to learn your portfolio.»
+           - «Welcome! Provedo's starting to learn your portfolio.»
              dismissable banner
            - Bell icon visible; badge = 0; no coach-unread ring.
              Opening bell shows Path B cold-start empty state
@@ -366,13 +366,13 @@ T+30d     Soft gate threshold met (tx_count≥30 OR span≥30d).
            - Bell badge increments + coach-unread ring appears
            - Bell pulses once (first-coach-of-session)
            - Tutorial tooltip fires on first interaction
-           - Banner: «Memoro noticed your first pattern. Check
+           - Banner: «Provedo noticed your first pattern. Check
              the bell ↑.»
 ```
 
 **Design contract:**
 - Cold-start period is NOT a dead zone. Dashboard is useful from day 1 (hero + positions + allocation). Insights land within 7 days. Only Coach waits, and waiting is invisible on surfaces — only the bell shows the learning-progress state.
-- Progress counter inside the bell-dropdown («8 / 30 days» or «12 / 30 transactions») creates forward momentum. Never frame as gate/lock; always as «Memoro is learning your portfolio».
+- Progress counter inside the bell-dropdown («8 / 30 days» or «12 / 30 transactions») creates forward momentum. Never frame as gate/lock; always as «Provedo is learning your portfolio».
 - At T+30d when first coach pattern lands: primitive fires + banner as above.
 - **Reduced motion:** dot pulse + bell pulse disabled. Banner appears without animation.
 
@@ -393,9 +393,9 @@ The only explicit in-product onboarding tour moment is a **one-time callout** ex
 
 - NOT a carousel. NOT a modal takeover. NOT a guided walkthrough.
 - Single anchored tooltip on the element the user first touched (dot OR bell). Content:
-  - «When you see a dot like this, Memoro has noticed a pattern in your trades. Click to see.»
+  - «When you see a dot like this, Provedo has noticed a pattern in your trades. Click to see.»
   - «All patterns also live in the bell» (if the user's first interaction was with a dot).
-  - «This is Memoro's read-list» (if the user's first interaction was with the bell).
+  - «This is Provedo's read-list» (if the user's first interaction was with the bell).
 - Dismiss: `Got it` button OR click outside.
 - Persistence: flag `coach_tutorial_seen` per user account. Fires once, ever. Suppressed on subsequent dot or bell interactions.
 
@@ -443,7 +443,7 @@ In this document, «onboarding tour» refers to the one-time bell+dot tutorial d
 **iOS-specific (post-alpha):**
 - Sign-up via Sign in with Apple is prioritized (iOS HIG).
 - Broker OAuth prefers SFSafariViewController for security + user-visible URL bar.
-- Push notifications for first-value moment require user permission; ask at T+0 after Stage 2 success with honest rationale («Memoro will notify you when your first insights are ready — about once a week»).
+- Push notifications for first-value moment require user permission; ask at T+0 after Stage 2 success with honest rationale («Provedo will notify you when your first insights are ready — about once a week»).
 
 ---
 
@@ -453,14 +453,14 @@ Content-lead owns final copy; product-designer owns where copy goes. Coordinatio
 
 | Location | Purpose | Current draft (replace) |
 |---|---|---|
-| Screen 1.3 welcome intro | 3-verb positioning promise | «Memoro remembers what you hold, notices what you'd miss, and explains what it sees.» |
-| Screen 2.1 trust marker | Allay broker-password fear | «Read-only connection. Memoro never places trades or moves money.» |
+| Screen 1.3 welcome intro | 3-verb positioning promise | «Provedo remembers what you hold, notices what you'd miss, and explains what it sees.» |
+| Screen 2.1 trust marker | Allay broker-password fear | «Read-only connection. Provedo never places trades or moves money.» |
 | Screen 2.3 «why it takes this long» | Expectation setting | «This takes 2–5 minutes for most brokers.» |
 | Screen 2.4 error copies | Calm + specific + next step | See §3.2 Screen 2.4 table |
-| Stage 3A warm-start banner | First-value announcement | «Memoro read your history — N patterns noticed. Check the bell ↑.» |
-| Stage 3B cold-start banner | Welcome without pressure | «Welcome! Memoro's starting to learn your portfolio.» |
+| Stage 3A warm-start banner | First-value announcement | «Provedo read your history — N patterns noticed. Check the bell ↑.» |
+| Stage 3B cold-start banner | Welcome without pressure | «Welcome! Provedo's starting to learn your portfolio.» |
 | Stage 3B Coach bell-dropdown empty state | Forward momentum, not lock | See `COACH_SURFACE_SPEC.md` §6.2 (cold-start) |
-| Stage 3B first-coach-land banner | First-pattern announcement | «Memoro noticed your first pattern. Check the bell ↑.» |
+| Stage 3B first-coach-land banner | First-pattern announcement | «Provedo noticed your first pattern. Check the bell ↑.» |
 | First-dot tutorial tooltip | One-time convention explainer | See `COACH_SURFACE_SPEC.md` §3.5 |
 | First-bell tutorial tooltip | One-time convention explainer (alt path) | See `COACH_SURFACE_SPEC.md` §7.5 |
 | First-time chat empty state | Suggested prompts | Coordinate with chat surface spec (future) |
@@ -529,7 +529,7 @@ Standard — no new tokens.
 ## 13. Verification checklist (before production ships)
 
 - [ ] All copy hooks (§7) replaced with content-lead final copy.
-- [ ] Clerk sign-up screens render with Memoro tokens (not Clerk default theme).
+- [ ] Clerk sign-up screens render with Provedo tokens (not Clerk default theme).
 - [ ] Broker picker loads in <500ms; search debounced 200ms; keyboard nav works left-to-right.
 - [ ] SnapTrade OAuth return URL parameters handled for all three states (success / cancel / error).
 - [ ] Sync progress bar updates accurately; stage list updates via `aria-live`.

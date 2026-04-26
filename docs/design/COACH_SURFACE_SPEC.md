@@ -1,4 +1,4 @@
-# Coach Surface Spec — Memoro
+# Coach Surface Spec — Provedo
 
 **Owner:** product-designer
 **Status:** draft v2.0 — rewritten from dedicated-route model to contextual-icon + bell-hub model per PO lock 2026-04-23
@@ -48,7 +48,7 @@ Coach patterns surface on five kinds of element. Each type owns a specific visua
 |---|---|---|---|
 | 1 | **Position row / position card** | Pattern concerns a specific symbol | Concentration flag on NVDA; Timing pattern on AAPL; Cost-averaging rhythm on VTI |
 | 2 | **Dashboard widget header** | Pattern concerns the widget's scope | Concentration across allocation donut; Timing drawdown on portfolio chart; Activity pattern on recent-transactions widget |
-| 3 | **Chat thread preview** (in chat list) + **chat thread head** (when open) | Pattern relates to the subject of an existing chat thread | User asked about NVDA → later Memoro notices NVDA concentration pattern |
+| 3 | **Chat thread preview** (in chat list) + **chat thread head** (when open) | Pattern relates to the subject of an existing chat thread | User asked about NVDA → later Provedo notices NVDA concentration pattern |
 | 4 | **Insight card** (in `/insights` feed or dashboard «Insight of the week») | A coach pattern is adjacent to an insight the user has seen | Concentration insight + concentration coach pattern on same position |
 | 5 | **Transaction row** (in position detail transaction history) | Pattern cites that specific transaction as evidence | A sell-at-local-low timing pattern's evidence row |
 
@@ -64,7 +64,7 @@ Coach patterns surface on five kinds of element. Each type owns a specific visua
 
 This is the load-bearing primitive. It must be:
 
-- **Recognizably Memoro-signal** (users learn «dot means Memoro noticed something»).
+- **Recognizably Provedo-signal** (users learn «dot means Provedo noticed something»).
 - **Calm** (compliant with Design Brief v1.2 §0 anti-pattern list — NO sparkle, NO gradient halo, NO brain-glow).
 - **Categorical, not evaluative** (never red-for-bad / green-for-good — Coach patterns are observational).
 - **Discoverable without being noisy** (see §3 for the motion spec).
@@ -136,19 +136,19 @@ When a new coach pattern attaches to an element, the dot pulses subtly for a bou
 
 ```
 ┌─────────────────────────────────┐
-│ Memoro noticed a Timing pattern │
+│ Provedo noticed a Timing pattern │
 │ Click to read                   │
 └─────────────────────────────────┘
 ```
 
-  - Copy template: «Memoro noticed a [Category] pattern» + «Click to read» (Free: «Upgrade to Plus to read»; see §5).
+  - Copy template: «Provedo noticed a [Category] pattern» + «Click to read» (Free: «Upgrade to Plus to read»; see §5).
   - Style: `text-xs` `text.primary` on `background.elevated`, `border.subtle`, `radius-md`, `shadow-md`, 8px padding.
   - Delay: 300ms before show (prevents flicker on quick mouse-overs).
   - Hide: on mouseout with 150ms delay (prevents flicker).
 
 ### 3.3 Focus state (keyboard)
 
-- Dot is a focusable element (`<button>` wrapper with `aria-label="Memoro noticed a [Category] pattern on [element name]. Press Enter to read."`).
+- Dot is a focusable element (`<button>` wrapper with `aria-label="Provedo noticed a [Category] pattern on [element name]. Press Enter to read."`).
 - Focus ring: 2px `violet-700` with 2px `background.page` offset — matches Design Brief §12.2.
 - Enter or Space: opens popover (§4). Same as click.
 - Escape while popover open: closes popover, returns focus to dot.
@@ -163,9 +163,9 @@ First time a user encounters a pulsing dot on any surface, a one-time **coach tu
 
 ```
 ┌──────────────────────────────────────────┐
-│ Memoro noticed a pattern                 │
+│ Provedo noticed a pattern                 │
 │                                          │
-│ When you see a dot like this, Memoro     │
+│ When you see a dot like this, Provedo     │
 │ has read your trades and noticed         │
 │ something worth sharing. Click to see.   │
 │                                          │
@@ -197,12 +197,12 @@ The popover is the read-surface for a single attachment point. Different content
 ┌──────────────────────────────────────────────────┐
 │ [Timing]  ·  Read: 2 days ago             [×]   │
 │                                                  │
-│ Memoro noticed a sell-at-local-low pattern       │
+│ Provedo noticed a sell-at-local-low pattern       │
 │ in your AAPL trades                              │
 │                                                  │
 │ You sold AAPL on three dates in the last 90 days │
 │ each within 2% of a local low. Each time, AAPL   │
-│ recovered within 30 days. Memoro noticed this    │
+│ recovered within 30 days. Provedo noticed this    │
 │ is a pattern — no judgment on whether it was     │
 │ the right call.                                  │
 │                                                  │
@@ -222,7 +222,7 @@ The popover is the read-surface for a single attachment point. Different content
 
 - **Category pill + read date** — `text-xs` Medium; same color-by-category rules as §2.1.
 - **Close button** — top-right `×`; closes popover, dot goes static (pulse already over by this point anyway).
-- **Headline** — `text-base` Medium (smaller than v1.0 card; popover is compact). One line verb-led. «Memoro noticed [pattern] in your [context]».
+- **Headline** — `text-base` Medium (smaller than v1.0 card; popover is compact). One line verb-led. «Provedo noticed [pattern] in your [context]».
 - **Summary** — `text-sm` Regular, `text.secondary`. 2-4 lines. Closes with observational-framing language.
 - **Evidence block** — same as v1.0 `CoachPatternCard` §2. Bordered sub-panel, `Geist Mono` for qty / price. «View transactions» link routes to `/positions/[symbol]?tx=[ids]`.
 - **Actions row** — `Dismiss` + `Snooze 30 days`. Reuses Slice 6b mutation contract.
@@ -243,7 +243,7 @@ The popover is the read-surface for a single attachment point. Different content
 ┌──────────────────────────────────────────────────┐
 │ [Timing]  ·  Locked preview              [×]    │
 │                                                  │
-│ Memoro noticed a pattern in your NVDA trades     │
+│ Provedo noticed a pattern in your NVDA trades     │
 │                                                  │
 │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │
 │ ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░           │
@@ -264,9 +264,9 @@ The popover is the read-surface for a single attachment point. Different content
 
 - **Category pill** — the pattern domain (Timing, Concentration, Dividends, Cost-averaging, Contrarian-signal).
 - **Subject-specific headline** — specific to what the pattern is about, but not substance. Templates:
-  - Per-symbol patterns: «Memoro noticed a pattern in your [SYMBOL] trades»
-  - Widget-level patterns: «Memoro noticed a [Category] pattern this week»
-  - Chat-thread patterns: «Memoro noticed a pattern related to [thread subject]»
+  - Per-symbol patterns: «Provedo noticed a pattern in your [SYMBOL] trades»
+  - Widget-level patterns: «Provedo noticed a [Category] pattern this week»
+  - Chat-thread patterns: «Provedo noticed a pattern related to [thread subject]»
 - **Skeleton shimmer bars** — standing in for the summary body. Uses existing `Skeleton` primitive (Design Brief §10.1) at `background.muted` on `background.elevated`. NOT filled with text.
 - **Evidence block — locked** — header «Evidence» + small `lock` icon (Lucide, 14px, `text.muted`); body as skeleton shimmer.
 - **CTA** — «Upgrade to Plus» primary button + one-line honest value explanation.
@@ -307,7 +307,7 @@ The popover is the read-surface for a single attachment point. Different content
 Free tier Coach experience:
 
 - Dots appear on attachment points as normal. Category color shows.
-- Hover tooltip: «Memoro noticed a [Category] pattern — upgrade to Plus to read».
+- Hover tooltip: «Provedo noticed a [Category] pattern — upgrade to Plus to read».
 - Click → teaser popover (§4.2). Subject revealed, substance locked.
 - Bell-dropdown lists all current patterns with locked state indicator (§7.3).
 - `Dismiss` available on Free locked patterns (user can hide a pattern they don't want to see even if they can't read it — agency over visual noise).
@@ -318,7 +318,7 @@ Free-to-Plus conversion signals:
 
 - CTA in popover.
 - CTA in bell-dropdown footer («Upgrade to Plus for full pattern reads»).
-- Contextual dashboard banner after week 2 if ≥3 locked patterns unread (honest, not pushy — «Memoro has noticed 3 patterns this month. Upgrade to Plus to see them»).
+- Contextual dashboard banner after week 2 if ≥3 locked patterns unread (honest, not pushy — «Provedo has noticed 3 patterns this month. Upgrade to Plus to see them»).
 
 **No dark patterns.** No countdown, no scarcity, no «expires soon». Never. (§13.3 Design Brief.)
 
@@ -334,7 +334,7 @@ Bell-dropdown empty copy:
 
 ```
 ┌────────────────────────────────────────┐
-│ Memoro is reading your trade history   │
+│ Provedo is reading your trade history   │
 │                                        │
 │ First patterns land in a few minutes.  │
 │ You'll see a dot here when they do.    │
@@ -353,7 +353,7 @@ Bell-dropdown empty copy:
 
 ```
 ┌────────────────────────────────────────┐
-│ Memoro is learning your portfolio      │
+│ Provedo is learning your portfolio      │
 │                                        │
 │ Coach reads your trade history to spot │
 │ patterns. You'll need about 30 days    │
@@ -361,7 +361,7 @@ Bell-dropdown empty copy:
 │                                        │
 │ Progress: ████░░░░░░░░░░ 8 / 30 days  │
 │                                        │
-│ In the meantime, Memoro is watching    │
+│ In the meantime, Provedo is watching    │
 │ your Dashboard and Insights for you.   │
 └────────────────────────────────────────┘
 ```
@@ -370,7 +370,7 @@ Bell-dropdown empty copy:
 - No dots on surfaces.
 - Progress counter updates daily. If Path A pattern fires mid-Path-B (e.g., user connects a second broker with history), auto-promotes to populated state.
 - Counter is day-count OR transaction-count — whichever is closer to threshold for this user. Uses same soft-gate logic as tech-lead ADR 5.
-- **Never frame as lock or gate.** «Memoro is learning» is honest and does not blame the user.
+- **Never frame as lock or gate.** «Provedo is learning» is honest and does not blame the user.
 
 ### 6.3 Post-gate — no patterns this week (all patterns dismissed or none generated)
 
@@ -380,7 +380,7 @@ Bell-dropdown empty copy:
 ┌────────────────────────────────────────┐
 │ You're all caught up                   │
 │                                        │
-│ Memoro read your trades this week and  │
+│ Provedo read your trades this week and  │
 │ didn't flag anything new. Check back   │
 │ Sunday for the next read.              │
 └────────────────────────────────────────┘
@@ -393,7 +393,7 @@ Bell-dropdown empty copy:
 
 ## 7. Bell-dropdown hub — full spec
 
-The top-bar bell is the always-on-screen aggregation surface for all «Memoro noticed» notifications, including Coach patterns. This extends the existing `BellDropdown` primitive (Design Brief §10.3, §16.2).
+The top-bar bell is the always-on-screen aggregation surface for all «Provedo noticed» notifications, including Coach patterns. This extends the existing `BellDropdown` primitive (Design Brief §10.3, §16.2).
 
 ### 7.1 Bell icon in top bar
 
@@ -498,8 +498,8 @@ If user opens bell-dropdown before ever clicking a surface dot, the first open s
 
 ```
 ┌──────────────────────────────────────────────┐
-│ ℹ This is Memoro's read-list.                │
-│   When Memoro notices a pattern in your      │
+│ ℹ This is Provedo's read-list.                │
+│   When Provedo notices a pattern in your      │
 │   trades, it shows up here and with a dot    │
 │   on the affected element.                   │
 │                              [ Got it ]      │
@@ -536,10 +536,10 @@ Plus/Pro difference from Free:
 
 ### 9.1 Screen reader — dots
 
-- Dot is wrapped in `<button aria-label="Memoro noticed a [Category] pattern on [element name]. Press Enter to read.">`.
-- Multi-category dot: `aria-label="Memoro noticed [N] patterns on [element name]. Press Enter to read."`.
+- Dot is wrapped in `<button aria-label="Provedo noticed a [Category] pattern on [element name]. Press Enter to read.">`.
+- Multi-category dot: `aria-label="Provedo noticed [N] patterns on [element name]. Press Enter to read."`.
 - Decorative pulse is not announced (`aria-hidden` on the animation layer).
-- **Verb-led framing enforced:** «Memoro noticed a pattern» — never «your brain noticed». See Design Brief §0.2.
+- **Verb-led framing enforced:** «Provedo noticed a pattern» — never «your brain noticed». See Design Brief §0.2.
 
 ### 9.2 Screen reader — popover
 
@@ -671,22 +671,22 @@ Copy hooks needed. Product-designer owns shape; content-lead owns wording varian
 
 | Location | Purpose | Current draft (content-lead to finalize) |
 |---|---|---|
-| Dot hover micro-tooltip (Plus/Pro) | One-liner discovery | «Memoro noticed a [Category] pattern» + «Click to read» |
-| Dot hover micro-tooltip (Free) | Discovery + upgrade | «Memoro noticed a [Category] pattern — upgrade to Plus to read» |
+| Dot hover micro-tooltip (Plus/Pro) | One-liner discovery | «Provedo noticed a [Category] pattern» + «Click to read» |
+| Dot hover micro-tooltip (Free) | Discovery + upgrade | «Provedo noticed a [Category] pattern — upgrade to Plus to read» |
 | First-time dot tooltip | Tutorial | §3.5 draft copy |
 | First-time bell tooltip | Tutorial (alt path) | §7.5 draft copy |
-| Popover headline (Plus/Pro, per-symbol) | Observational, verb-led | «Memoro noticed a [pattern-name] pattern in your [SYMBOL] trades» |
-| Popover headline (Plus/Pro, widget-level) | Observational | «Memoro noticed a [Category] pattern this week» |
+| Popover headline (Plus/Pro, per-symbol) | Observational, verb-led | «Provedo noticed a [pattern-name] pattern in your [SYMBOL] trades» |
+| Popover headline (Plus/Pro, widget-level) | Observational | «Provedo noticed a [Category] pattern this week» |
 | Popover summary (all patterns) | Observational + «no judgment» closer | AI-Service-generated narrative, passes Lane A regex guardrail, closes with observational-framing language |
-| Popover teaser headline (Free, per-symbol) | Subject only | «Memoro noticed a pattern in your [SYMBOL] trades» |
-| Popover teaser headline (Free, widget-level) | Subject only | «Memoro noticed a [Category] pattern this week» |
+| Popover teaser headline (Free, per-symbol) | Subject only | «Provedo noticed a pattern in your [SYMBOL] trades» |
+| Popover teaser headline (Free, widget-level) | Subject only | «Provedo noticed a [Category] pattern this week» |
 | Popover teaser value proposition (Free) | Upgrade framing | «Plus unlocks full pattern reads.» |
 | Bell-dropdown section headers | Grouping | «Coach · This week» / «Coach · Earlier» / «Other notifications» |
 | Bell-dropdown empty (Path A) | Warm-start | §6.1 copy |
-| Bell-dropdown empty (Path B) | Cold-start | §6.2 copy — «Memoro is learning your portfolio» |
+| Bell-dropdown empty (Path B) | Cold-start | §6.2 copy — «Provedo is learning your portfolio» |
 | Bell-dropdown empty (post-gate, no patterns) | Quiet state | §6.3 copy — «You're all caught up» |
 | Bell-dropdown Free footer CTA | Upgrade | «Upgrade to Plus for full pattern reads ▸» |
-| Dashboard banner (Free, ≥3 unread patterns) | Conversion nudge | «Memoro has noticed N patterns this month. Upgrade to Plus to see them.» |
+| Dashboard banner (Free, ≥3 unread patterns) | Conversion nudge | «Provedo has noticed N patterns this month. Upgrade to Plus to see them.» |
 
 Navigator mediates content-lead review.
 
@@ -698,8 +698,8 @@ Per positioning lock 2026-04-23 Q6 (EU/UK MiFID II + FCA in-context disclaimer f
 
 **Product-designer recommendation (unchanged from v1.0):**
 
-- **In-copy observational closer** on every popover summary — «Memoro noticed this is a pattern — no judgment» / «patterns only» / equivalent verb-led Lane-A-safe framing. This is AI-Service-generated narrative, passes Layer 2 regex guardrail.
-- **One-time first-interaction modal** on first dot-click (separate from the §3.5 tutorial tooltip — this one is the disclaimer specifically): «Memoro shows patterns based on your trade history, not advice. This is educational, not investment guidance. [Acknowledge]». Once acknowledged, never shown again (persisted flag `coach_disclaimer_acknowledged`).
+- **In-copy observational closer** on every popover summary — «Provedo noticed this is a pattern — no judgment» / «patterns only» / equivalent verb-led Lane-A-safe framing. This is AI-Service-generated narrative, passes Layer 2 regex guardrail.
+- **One-time first-interaction modal** on first dot-click (separate from the §3.5 tutorial tooltip — this one is the disclaimer specifically): «Provedo shows patterns based on your trade history, not advice. This is educational, not investment guidance. [Acknowledge]». Once acknowledged, never shown again (persisted flag `coach_disclaimer_acknowledged`).
 
 Legal-advisor to confirm:
 
@@ -736,7 +736,7 @@ Product-designer sign-off gates:
 - [ ] First-time-tutorial tooltip fires once per user, then suppressed via flag.
 - [ ] Popover opens anchored to dot (desktop) / bottom sheet (mobile) — both tested.
 - [ ] All pattern narratives in popover pass Lane A regex guardrail — tested with fixtures from tech-lead §2.6 Layer 2.
-- [ ] Every popover carries verb-led framing («Memoro noticed…») — audit per Design Brief §0.2.
+- [ ] Every popover carries verb-led framing («Provedo noticed…») — audit per Design Brief §0.2.
 - [ ] Locked teaser popover (Free) reveals subject, never substance — visual + screen-reader audit.
 - [ ] Bell icon shows coach-unread ring when at least one coach pattern unread — verified on all viewport sizes.
 - [ ] Bell-dropdown opens with `Cmd/Ctrl+B` keyboard shortcut.
@@ -747,7 +747,7 @@ Product-designer sign-off gates:
 - [ ] WCAG 2.2 AA contrast check on dot colors (amber-600 / sky-600 / emerald-600 on white; amber-400 / sky-400 / emerald-400 on dark).
 - [ ] Keyboard flow: Tab to dot → Enter → popover → Tab through buttons → Escape → focus returns to dot.
 - [ ] Keyboard flow: Tab to bell → Enter → dropdown → Tab through rows → Enter → popover → Escape → focus returns to row.
-- [ ] Screen reader announces «Memoro noticed a [Category] pattern on [element]» for every dot.
+- [ ] Screen reader announces «Provedo noticed a [Category] pattern on [element]» for every dot.
 - [ ] Dark-mode dot colors + popover surfaces meet contrast thresholds.
 - [ ] Upgrade CTA (Free popover + bell footer) routes to correct pricing URL with analytics parameters.
 

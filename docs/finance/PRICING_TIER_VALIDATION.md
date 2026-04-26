@@ -32,8 +32,8 @@ PO-locked tiers per `02_POSITIONING.md`:
 ### Verdict breakdown:
 
 1. **Tier structure itself is sound for Lane A + freemium retail fintech.** Three-tier ladder matches industry convention; price anchors ($0 / $8-10 / $20) are competitively positioned without being head-to-head undercuts or premium anomalies.
-2. **Pro at $20 sits EXACTLY at PortfolioPilot Gold price.** This is head-to-head on price axis with a competitor that has RIA registration ($30B AUM / 40K users / Lane C advice on paid tiers). Memoro's differentiation at this price point depends on Lane A POSITIVE trust + Coach uniqueness + EU/UK geography coverage + dashboard-primary UX. If any of those fail to differentiate convincingly at alpha, Pro conversion risks Pareto loss to PortfolioPilot Gold at the same price.
-3. **Plus at $8-10 is in a 4-way crowded cluster** (Copilot $7.92, Snowball $9.99, Monarch $8.33, Getquin €7.50). Price anchor is fine; differentiation must come from product-experience uniqueness (Coach + unlimited chat + Memoro's «remembers» metaphor) at this price point, not from being cheaper or more features.
+2. **Pro at $20 sits EXACTLY at PortfolioPilot Gold price.** This is head-to-head on price axis with a competitor that has RIA registration ($30B AUM / 40K users / Lane C advice on paid tiers). Provedo's differentiation at this price point depends on Lane A POSITIVE trust + Coach uniqueness + EU/UK geography coverage + dashboard-primary UX. If any of those fail to differentiate convincingly at alpha, Pro conversion risks Pareto loss to PortfolioPilot Gold at the same price.
+3. **Plus at $8-10 is in a 4-way crowded cluster** (Copilot $7.92, Snowball $9.99, Monarch $8.33, Getquin €7.50). Price anchor is fine; differentiation must come from product-experience uniqueness (Coach + unlimited chat + Provedo's «remembers» metaphor) at this price point, not from being cheaper or more features.
 4. **Free tier is the conversion keystone AND the cost-to-serve risk.** Free has negative gross margin per user (LLM inference cost > $0 revenue). Tolerable if Free → Plus conversion rate is within hypothesis range (3-7%); becomes a financial problem if Free is heavily used without conversion (high-usage Free user burns $X/month in Anthropic API with no offset). See §5 cost-to-serve + §6 conversion funnel.
 5. **Coach 30-day cold-start (per 2026-04-23 review §7.1 + `COACH_TIER_PLACEMENT.md` §3) materially affects Free → Plus conversion.** Warm-start backfill is the decisive operational variable. Warm-start path: conversion funnel works. Cold-start path: Plus conversion may come in 30-50% below hypothesis.
 
@@ -81,7 +81,7 @@ PO-locked tiers per `02_POSITIONING.md`:
 - Benchmark comparison (vs. retail aggregates where sourced — see `BENCHMARKS_SOURCED.md`)
 - CSV export of portfolio data + insights + chat history
 - **Full Coach pattern-reads (core categories: chasing-momentum, disposition-effect, anchoring, loss-aversion, concentration-drift)**
-- Coach follow-up chat integration (ask Memoro about a pattern)
+- Coach follow-up chat integration (ask Provedo about a pattern)
 - Priority support (email within 48 hours)
 
 **Gated (Pro only):**
@@ -136,7 +136,7 @@ Per `docs/product/pricing-landscape.md` + `docs/product/01_DISCOVERY.md` §4.5:
 - Portfolio aware of 12,000+ institutions (aggregation breadth)
 - $30B AUM / 40K+ users proof point
 
-**Memoro Pro ($20/mo) provides:**
+**Provedo Pro ($20/mo) provides:**
 - Unlimited AI chat with Lane A positive-trust-signal framing
 - Scenario chat interactions
 - Tax reports per jurisdiction (different from PP «tax optimization»; more retrospective vs. prospective)
@@ -149,21 +149,21 @@ Per `docs/product/pricing-landscape.md` + `docs/product/01_DISCOVERY.md` §4.5:
 
 **Comparison verdict — at identical price ($20/mo):**
 
-| Axis | PortfolioPilot Gold | Memoro Pro | Memoro edge? |
+| Axis | PortfolioPilot Gold | Provedo Pro | Provedo edge? |
 |---|---|---|---|
 | Proof / AUM | 40K users, $30B AUM | pre-alpha, 0 users | PP dominant |
-| AI chat depth | Limited on Gold | Unlimited | Memoro edge |
-| Regulatory lane | Lane C (RIA on paid) — can recommend | Lane A (observation-only) — cannot recommend | Depends on ICP — some users WANT advice (favors PP), others AVOID advice (favors Memoro) |
-| Coach (behavioral patterns) | Does NOT have this surface | HAS this surface | Memoro edge — structural differentiator |
-| EU / UK / multi-market | US-focused | Multi-market from day 1 | Memoro edge |
+| AI chat depth | Limited on Gold | Unlimited | Provedo edge |
+| Regulatory lane | Lane C (RIA on paid) — can recommend | Lane A (observation-only) — cannot recommend | Depends on ICP — some users WANT advice (favors PP), others AVOID advice (favors Provedo) |
+| Coach (behavioral patterns) | Does NOT have this surface | HAS this surface | Provedo edge — structural differentiator |
+| EU / UK / multi-market | US-focused | Multi-market from day 1 | Provedo edge |
 | Tax | Prospective «tax optimization» suggestions | Retrospective tax reports per jurisdiction | Different product shapes |
 | Scenario planning | YES | YES (via chat) | Parity |
 | Trust narrative | «Advisor we pay for» | «Memory that doesn't advise» | Depends on ICP preference |
 | Dashboard / aggregation UX | Mature | Unknown pre-alpha (dashboard-primary per Q3 lock) | PP dominant at launch |
 
-**Finance-advisor assessment:** At identical $20 price, Memoro Pro has real differentiation on 3 axes (Coach, EU/UK coverage, Lane A positive-trust) but loses on 3 axes (proof/AUM, regulatory lane for users who want advice, dashboard maturity). Net: differentiation is REAL but needs to be EARNED at alpha; cannot be assumed from positioning alone.
+**Finance-advisor assessment:** At identical $20 price, Provedo Pro has real differentiation on 3 axes (Coach, EU/UK coverage, Lane A positive-trust) but loses on 3 axes (proof/AUM, regulatory lane for users who want advice, dashboard maturity). Net: differentiation is REAL but needs to be EARNED at alpha; cannot be assumed from positioning alone.
 
-**Risk flag:** ICP A (multi-broker millennial, post-advisor-distrust) SHOULD prefer Memoro Pro. ICP B (AI-native newcomer) may prefer PortfolioPilot (wants guidance, not observation). Positioning already has ICP B as tertiary. Pricing assumption assumes ICP A dominance.
+**Risk flag:** ICP A (multi-broker millennial, post-advisor-distrust) SHOULD prefer Provedo Pro. ICP B (AI-native newcomer) may prefer PortfolioPilot (wants guidance, not observation). Positioning already has ICP B as tertiary. Pricing assumption assumes ICP A dominance.
 
 ### 3.2 Getquin Premium (€90/yr = ~$97/yr) — CLOSE to Plus annual
 
@@ -176,10 +176,10 @@ Per `docs/product/01_DISCOVERY.md` §4.6 + competitor scan:
 - EU-dominant market presence (500K users)
 
 **Getquin Wealth (€150/yr = ~$162/yr) adds:**
-- «AI Financial Agents» — conversational AI layer (comparable to Memoro's chat)
+- «AI Financial Agents» — conversational AI layer (comparable to Provedo's chat)
 - Still state/forward-facing AI — no retrospective behavioral pattern detection (confirmed per getquin-deep-dive.md)
 
-**Memoro Plus ($96-120/yr equivalent) provides:**
+**Provedo Plus ($96-120/yr equivalent) provides:**
 - Unlimited chat with behavioral memory (Getquin: has chat in Wealth tier only)
 - **Full Coach pattern-reads** (Getquin: does not have equivalent — structural differentiator)
 - Dividend calendar, benchmark comparison, CSV export
@@ -187,13 +187,13 @@ Per `docs/product/01_DISCOVERY.md` §4.6 + competitor scan:
 
 **Comparison verdict vs Getquin:**
 
-At Memoro Plus $96-120/yr vs Getquin Premium €90/yr (~$97/yr):
+At Provedo Plus $96-120/yr vs Getquin Premium €90/yr (~$97/yr):
 - Similar price, similar year
-- Memoro's full chat is HERE at Plus; Getquin's conversational AI is NOT at Premium (€90/yr) — it's at Wealth (€150/yr)
-- Memoro's Coach is the structural differentiator Getquin lacks at any tier
-- Getquin has maturity + 500K user base; Memoro does not (pre-alpha)
+- Provedo's full chat is HERE at Plus; Getquin's conversational AI is NOT at Premium (€90/yr) — it's at Wealth (€150/yr)
+- Provedo's Coach is the structural differentiator Getquin lacks at any tier
+- Getquin has maturity + 500K user base; Provedo does not (pre-alpha)
 
-**Net:** Memoro Plus at $96-120 vs. Getquin Premium €90/yr offers MORE AI-integrated features at similar price + a structural differentiator Getquin doesn't have anywhere. **Defensible value proposition.**
+**Net:** Provedo Plus at $96-120 vs. Getquin Premium €90/yr offers MORE AI-integrated features at similar price + a structural differentiator Getquin doesn't have anywhere. **Defensible value proposition.**
 
 ### 3.3 Snowball Starter ($79.99/yr) — CHEAPER than Plus annual
 
@@ -203,7 +203,7 @@ Per `docs/product/pricing-landscape.md`:
 - 1 portfolio, 10 holdings cap on Starter
 - Higher tiers $149.99 (Investor) / $249.99 (Expert)
 
-**Comparison verdict:** Different segment. Snowball serves dividend-income-focused retail. Memoro Plus serves broader «AI-integrated portfolio memory» segment. Not direct price comparison.
+**Comparison verdict:** Different segment. Snowball serves dividend-income-focused retail. Provedo Plus serves broader «AI-integrated portfolio memory» segment. Not direct price comparison.
 
 ### 3.4 Mezzi Core ($299/yr) — EXPENSIVE (different lane)
 
@@ -212,11 +212,11 @@ Per `docs/product/pricing-landscape.md`:
 - Fiduciary advice framing (Lane B-equivalent)
 - Aggregation via Plaid + Finicity
 
-**Comparison verdict:** Different lane. Memoro does not compete on advice; Mezzi is advice-first. No direct comparison.
+**Comparison verdict:** Different lane. Provedo does not compete on advice; Mezzi is advice-first. No direct comparison.
 
 ### 3.5 ChatGPT Plus ($20/mo) — COMMODITY AI ANCHOR at Pro price
 
-Not direct competitor on functionality but anchors the $20/mo price in user mental model as «what I pay for AI». Users comparing Memoro Pro $20 to ChatGPT Plus $20 may question «why pay both?». **Mitigation:** positioning makes Memoro specifically about portfolio memory (vs. generic LLM chat); the value delta is portfolio-awareness + multi-broker aggregation + behavioral coach — things ChatGPT Plus cannot do.
+Not direct competitor on functionality but anchors the $20/mo price in user mental model as «what I pay for AI». Users comparing Provedo Pro $20 to ChatGPT Plus $20 may question «why pay both?». **Mitigation:** positioning makes Provedo specifically about portfolio memory (vs. generic LLM chat); the value delta is portfolio-awareness + multi-broker aggregation + behavioral coach — things ChatGPT Plus cannot do.
 
 ---
 
@@ -228,7 +228,7 @@ Value delivered: commodity dashboard + limited AI chat + 1 weekly insight + 1 mo
 
 **User's perception of value-per-dollar:** positive (anything for free is positive). BUT: retention depends on whether Free tier delivers ENOUGH differentiated value to convert. Commodity-level features at $0 do not drive conversion; differentiated activation (Coach teaser + unique brand framing) drives conversion.
 
-**Memoro's cost per Free user:** see §5 cost-to-serve. Negative gross margin by definition.
+**Provedo's cost per Free user:** see §5 cost-to-serve. Negative gross margin by definition.
 
 ### 4.2 Plus tier — $8-10/mo
 
@@ -260,7 +260,7 @@ Value delivered per month (incremental over Plus):
 
 **Value-per-dollar:** $20/mo is justifiable for user who USES the advanced features. If user subscribes to Pro but only uses Plus features, they paying 2x for no marginal value — churn risk.
 
-**Key retention mechanism: tax report seasonal stickiness.** Once user generates Memoro tax report in February/March for 2025 tax year, switching cost is high for following year (data continuity, report format familiarity, jurisdiction-specific calculations).
+**Key retention mechanism: tax report seasonal stickiness.** Once user generates Provedo tax report in February/March for 2025 tax year, switching cost is high for following year (data continuity, report format familiarity, jurisdiction-specific calculations).
 
 ### 4.4 Summary value-per-dollar table
 
@@ -276,13 +276,13 @@ At percentages of portfolio value, all tiers are economically invisible if they 
 
 ## 5. Cost-to-serve per tier
 
-**Critical pre-alpha analysis:** what does each tier cost Memoro per user, especially on LLM inference? **This section updated 2026-04-23 post-4-locks patch for Haiku routing on Free + Sonnet on Plus/Pro/Trial.**
+**Critical pre-alpha analysis:** what does each tier cost Provedo per user, especially on LLM inference? **This section updated 2026-04-23 post-4-locks patch for Haiku routing on Free + Sonnet on Plus/Pro/Trial.**
 
 ### 5.1 Anthropic API cost model (public pricing as of 2026-04-23)
 
 Per Anthropic pricing page (anthropic.com/pricing) at 2026-04-23:
 
-| Model | Input ($/M tok) | Output ($/M tok) | Use in Memoro |
+| Model | Input ($/M tok) | Output ($/M tok) | Use in Provedo |
 |---|---|---|---|
 | **Claude 3.5 Haiku** | $0.80 | $4.00 | Free tier (per DECISIONS 2026-04-23) |
 | **Claude 3.5 Sonnet** | $3.00 | $15.00 | Plus + Pro + 14-day Plus trial |
@@ -384,7 +384,7 @@ _Break-even trial→paid conversion rate (LTV basis):_
 - Expected value per trial start: p × $34.75 + (1 − p) × (−$3.05) ≥ 0
 - p ≥ $3.05 / ($34.75 + $3.05) = **p ≥ 8.1%** for trial to break even on LTV basis
 - Industry benchmark for card-required B2C SaaS trial→paid: **40-60%** (per ProfitWell, Baremetrics public reports; see §6.4)
-- **Memoro trial has a 5-7x cushion between break-even (8%) and industry benchmark (40-60%). Trial economics are SAFE with wide margin.**
+- **Provedo trial has a 5-7x cushion between break-even (8%) and industry benchmark (40-60%). Trial economics are SAFE with wide margin.**
 
 _Break-even trial→paid conversion rate (1-month horizon — pessimistic):_
 - If we only count month-1 paid retention (1 paid month × $1.89 − $3.05 = −$1.16): p × $1.89 − $3.05 ≥ 0 → **p ≥ 61%** to break even in 1 month alone
@@ -505,7 +505,7 @@ Plus subscriber
 
 **Stage 1 (Landing → Signup):** losses driven by:
 - Hero parse-time / metaphor abstraction (cognition cost flagged in 02_POSITIONING v3.1 Risks)
-- Lack of immediate «why Memoro vs X?» signal
+- Lack of immediate «why Provedo vs X?» signal
 - Signup friction
 - **Mitigation:** landing copy (content-lead) + imperative hero (PO Q1 lock) + visible proof elements (sub-proofs «cites sources», «1000+ brokers»)
 
@@ -536,13 +536,13 @@ Plus subscriber
 - Second-guess at payment confirmation
 - **Mitigation:** standard Stripe UX best practices; clear cancellation policy; trial period consideration
 
-### 6.3 Where is Memoro's biggest funnel risk?
+### 6.3 Where is Provedo's biggest funnel risk?
 
 **Finance-advisor assessment:**
 
 Highest-leverage loss points (where best mitigation → biggest conversion lift):
 
-1. **Stage 3 (Activated → differentiated value encountered).** Without warm-start, Free user experiences zero Memoro-unique value for 30 days. Warm-start backfill is THE single most important operational decision for conversion.
+1. **Stage 3 (Activated → differentiated value encountered).** Without warm-start, Free user experiences zero Provedo-unique value for 30 days. Warm-start backfill is THE single most important operational decision for conversion.
 2. **Stage 5 (Teaser → Upgrade attempt).** This is where the teaser UX + copy make or break. Content-lead microcopy + product-designer visual treatment + finance-advisor Lane A validation all pile on this stage.
 3. **Stage 4 (Activated → First teaser).** Partial-backfill users are the hidden risk — they get some warm-start but not a qualifying pattern. Need lower-threshold firing for first pattern + honest «emerging» vs. «confirmed» framing.
 
@@ -550,7 +550,7 @@ Highest-leverage loss points (where best mitigation → biggest conversion lift)
 
 From `COACH_TIER_PLACEMENT.md` §3.3:
 
-**The activation event is the first Coach teaser firing — manifested as a blinking contextual icon on a position card or dashboard widget (per DECISIONS 2026-04-23 Coach UX lock).** Before this, user has commodity-level tracker features. After this, user experiences Memoro's structural differentiator + sees paid-tier value anchor («there's more detail behind this» via teaser popover). Without the activation event firing in the first 7-14 days post-signup, Free → Plus conversion likely underperforms.
+**The activation event is the first Coach teaser firing — manifested as a blinking contextual icon on a position card or dashboard widget (per DECISIONS 2026-04-23 Coach UX lock).** Before this, user has commodity-level tracker features. After this, user experiences Provedo's structural differentiator + sees paid-tier value anchor («there's more detail behind this» via teaser popover). Without the activation event firing in the first 7-14 days post-signup, Free → Plus conversion likely underperforms.
 
 **This is the single most important funnel metric to track post-alpha.**
 
@@ -563,7 +563,7 @@ From `COACH_TIER_PLACEMENT.md` §3.3:
 | OpenView SaaS Benchmarks Report (broad SaaS) | 20-30% median freemium Free→paid over 90d | OpenView Partners `[SOURCE-PENDING]` |
 | B2C consumer SaaS ($5-15/mo price point) | 25-40% trial→paid when card required | Industry convention; see `BENCHMARKS_SOURCED.md` for specific citable rows when verified |
 
-**Memoro's trial hypothesis:** 30-50% trial→paid conversion at 14 days (card-required pattern; Plus product experience delivered). At 8.1% break-even (§5.3.1), even pessimistic trial performance covers COGS. Key sensitivity: Plus retention past month 1.
+**Provedo's trial hypothesis:** 30-50% trial→paid conversion at 14 days (card-required pattern; Plus product experience delivered). At 8.1% break-even (§5.3.1), even pessimistic trial performance covers COGS. Key sensitivity: Plus retention past month 1.
 
 ### 6.5 Free→Plus conversion break-even threshold
 
@@ -611,12 +611,12 @@ Inputs:
 | F1a | Plus heavy-user margin negative at $8; fair-use needed | MEDIUM | Users using 600+ chat msgs/mo on Sonnet exceed $9 revenue | tech-lead (model tiering inside Plus + fair-use policy) |
 | F1b | Trial COGS $3.05/user not recovered if conversion <8% | MEDIUM | 10K/mo trial starts × $3.05 = $30.5K/mo burn; offset depends on conversion | finance-advisor (90d post-launch measurement); content-lead (trial onboarding UX) |
 | F2 | Pro $20 head-to-head with PortfolioPilot Gold $20 — RIA competitor with proof | HIGH | Pro-tier conversion pressure; differentiation must earn price parity | Navigator (positioning); content-lead (differentiation messaging); product-designer (UX edge) |
-| F3 | Plus $8-10 in crowded 4-way cluster — differentiation not on price axis | MEDIUM | Plus feels «just another tracker» at same price as Copilot/Snowball/Getquin | content-lead (unique Coach messaging); product-designer (Memoro-unique UX) |
+| F3 | Plus $8-10 in crowded 4-way cluster — differentiation not on price axis | MEDIUM | Plus feels «just another tracker» at same price as Copilot/Snowball/Getquin | content-lead (unique Coach messaging); product-designer (Provedo-unique UX) |
 | F4 | Warm-start backfill failure reduces Plus conversion 30-50% | HIGH | Plus revenue hypothesis fails if cold-start is the common path | tech-lead (SnapTrade coverage audit); product-designer (empty-state design) |
 | F5 | Coach teaser obfuscation wrong dose → low upgrade CTA click-through | MEDIUM | Primary conversion driver fails | product-designer (UX treatment); content-lead (microcopy variants) |
 | F6 | Plus user novelty fade after month 3 → high monthly churn | MEDIUM | LTV hypothesis fails; CAC payback stretched | finance-advisor + user-researcher (cohort retention data post-alpha) |
 | F7 | ChatGPT Plus $20/mo anchors user mental model on «AI value» — Pro may feel redundant | LOW-MEDIUM | Pro conversion friction | content-lead (positioning vs. ChatGPT differentiation) |
-| F8 | ICP B preference for advice (Origin Lane B) may divert away from Memoro Lane A | LOW | ICP B is tertiary per positioning; acknowledged tradeoff | Navigator (already locked; no change) |
+| F8 | ICP B preference for advice (Origin Lane B) may divert away from Provedo Lane A | LOW | ICP B is tertiary per positioning; acknowledged tradeoff | Navigator (already locked; no change) |
 | F9 | «90-day history» Free limit narrows Coach quality for any user in that tier | LOW | Coach works better with more history; Free limit compounds 30-day cold-start | product-designer (tier-limit UX); finance-advisor (model impact) |
 | F10 | Tax report Pro retention hook depends on report quality + jurisdiction coverage | MEDIUM | Pro retention driver fails if reports are weak or country-incomplete | tech-lead (tax calculation implementation); legal-advisor (jurisdiction compliance) |
 
@@ -666,7 +666,7 @@ Inputs:
 - Token consumption estimates are hypothesis based on typical context patterns; real usage requires post-alpha instrumentation.
 - SnapTrade API fees NOT modeled (`[SOURCE-PENDING]` on current pricing).
 - All benchmark conversions + rates (EUR→USD ~1.08) use approximations; real-time rates will shift.
-- Conversion funnel percentages are hypothesis anchored on industry SaaS benchmarks; Memoro's actual funnel must be measured post-alpha.
+- Conversion funnel percentages are hypothesis anchored on industry SaaS benchmarks; Provedo's actual funnel must be measured post-alpha.
 - No Bloomberg / Refinitiv / paid data used (CONSTRAINTS Rule 1 respected throughout).
 
 ---

@@ -1,7 +1,7 @@
 ---
 name: seo-specialist
 description: SEO specialist for technical SEO audits, on-page optimization, structured data, Core Web Vitals, and content/keyword mapping. Dispatched by creative-director (under Navigator) for site audits, meta tag reviews, schema markup, sitemap and robots issues, SEO remediation plans, landing page optimization. Produces audit reports + remediation specs for content-lead + frontend-engineer to apply. Never talks to PO directly.
-model: sonnet
+model: claude-opus-4-7
 tools: Read, Grep, Glob, Bash, WebSearch, WebFetch
 ---
 

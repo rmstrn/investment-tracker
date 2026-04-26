@@ -1,4 +1,4 @@
-# Memoro — Subprocessor Registry
+# Provedo — Subprocessor Registry
 
 **Status:** ACTIVE (internal single source of truth). Public-facing version will be derived from this table at **`[SUBPROCESSOR REGISTRY PUBLIC URL — TBD]`** once a public route exists.
 **Version:** 0.1 (2026-04-23)
@@ -46,7 +46,7 @@
 
 ## 2. Pre-EU-launch checklist (per subprocessor)
 
-The following items must be green for each subprocessor before Memoro can lawfully serve EU / EEA / UK users at scale. Current state is RED across the board — this is the expected state at pre-alpha, and is the top-of-list action as part of pre-public-launch legal workstream.
+The following items must be green for each subprocessor before Provedo can lawfully serve EU / EEA / UK users at scale. Current state is RED across the board — this is the expected state at pre-alpha, and is the top-of-list action as part of pre-public-launch legal workstream.
 
 | # | Subprocessor | DPA signed | SCCs / IDTA attached | TIA complete | Residency set to EU where needed | AI retention verified | Ready? |
 |---|---|---|---|---|---|---|---|
@@ -63,7 +63,7 @@ The following items must be green for each subprocessor before Memoro can lawful
 
 ## 3. AI vendor retention configuration — detailed tracking
 
-This section tracks the specific configuration required for AI vendors. The default tier for both Anthropic and OpenAI retains inputs/outputs for a period that is NOT compatible with Memoro's data-minimization posture or with the AI-training exclusion promised in the Privacy Policy §5.3.
+This section tracks the specific configuration required for AI vendors. The default tier for both Anthropic and OpenAI retains inputs/outputs for a period that is NOT compatible with Provedo's data-minimization posture or with the AI-training exclusion promised in the Privacy Policy §5.3.
 
 ### 3.1 Anthropic (Claude API)
 
@@ -79,7 +79,7 @@ This section tracks the specific configuration required for AI vendors. The defa
 
 ### 3.2 OpenAI (GPT API)
 
-**Required configuration:** either Zero-Retention tier (Enterprise) or 30-day-abuse-only tier. Default API retains for 30 days for abuse monitoring; enterprise ZDR removes this. Memoro should target ZDR where cost allows; 30-day-abuse-only is acceptable if ZDR is not available for Memoro's usage tier.
+**Required configuration:** either Zero-Retention tier (Enterprise) or 30-day-abuse-only tier. Default API retains for 30 days for abuse monitoring; enterprise ZDR removes this. Provedo should target ZDR where cost allows; 30-day-abuse-only is acceptable if ZDR is not available for Provedo's usage tier.
 
 **Configuration steps (as above, to be executed by tech-lead + legal-advisor):**
 1. Upgrade OpenAI account to Enterprise if needed (cost decision — flagged for PO; CONSTRAINT Rule 1).
@@ -94,7 +94,7 @@ This section tracks the specific configuration required for AI vendors. The defa
 
 ### 3.3 Alternative AI vendor evaluation (future)
 
-Should either Anthropic or OpenAI change their retention posture in a way that Memoro cannot accept, two fallback vendor candidates should be scoped:
+Should either Anthropic or OpenAI change their retention posture in a way that Provedo cannot accept, two fallback vendor candidates should be scoped:
 - **Azure OpenAI** — enterprise-grade retention controls, EU residency, but introduces Microsoft as an additional subprocessor chain.
 - **Mistral** (EU-based) — EU residency natively, smaller ecosystem.
 - **Self-hosted Llama / other open-weight models via Fly.io / AWS Bedrock** — operational complexity tradeoff.

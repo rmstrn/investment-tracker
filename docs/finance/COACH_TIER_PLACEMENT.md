@@ -16,7 +16,7 @@ Core pattern per tier:
 
 | Tier | Coach behavior | Value anchor | Lane A framing |
 |---|---|---|---|
-| **Free** | **2 pattern teasers per calendar month** (see §1.1 cap rationale); blinking contextual icon on relevant element; click → teaser popover («Memoro noticed a pattern in your [asset/category] trades — upgrade to Plus to see detail») | activation event + conversion driver | observation («Memoro noticed…»), no prescription; SUBJECT revealed, SUBSTANCE paywalled |
+| **Free** | **2 pattern teasers per calendar month** (see §1.1 cap rationale); blinking contextual icon on relevant element; click → teaser popover («Provedo noticed a pattern in your [asset/category] trades — upgrade to Plus to see detail») | activation event + conversion driver | observation («Provedo noticed…»), no prescription; SUBJECT revealed, SUBSTANCE paywalled |
 | **Plus** | Unlimited detailed pattern-reads across core categories (chasing-momentum, disposition-effect, anchoring, loss-aversion, concentration-drift); full teaser popover + deep-dive via chat | full behavioral memory value | descriptive pattern reads, no normative verbs |
 | **Pro** | Unlimited + advanced categories (factor-exposure-drift, tax-loss-harvesting-missed, sector-rotation-pattern) + historical retrospectives + export | power-user tier for sophisticated ICP A | same Lane A constraints + more categories |
 
@@ -24,8 +24,8 @@ Core pattern per tier:
 
 Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-locks ADR:
 
-- **Contextual icons** — blinking Memoro icon appears on the element tied to the pattern (position card if pattern is single-ticker, dashboard concentration widget if pattern is portfolio-level, chat message if pattern surfaces in conversation). Icon is the primary visual trigger.
-- **Icon click → teaser popover** — compact overlay showing teaser headline («Memoro noticed a pattern in your NVDA trades»), subject-level detail (which asset/category, how many instances), paywall CTA («Upgrade to Plus to see detail»). Does NOT open a new route — stays in context.
+- **Contextual icons** — blinking Provedo icon appears on the element tied to the pattern (position card if pattern is single-ticker, dashboard concentration widget if pattern is portfolio-level, chat message if pattern surfaces in conversation). Icon is the primary visual trigger.
+- **Icon click → teaser popover** — compact overlay showing teaser headline («Provedo noticed a pattern in your NVDA trades»), subject-level detail (which asset/category, how many instances), paywall CTA («Upgrade to Plus to see detail»). Does NOT open a new route — stays in context.
 - **Bell-dropdown hub in top-bar** — persistent icon with unread count. Click reveals list of all currently-fired Coach patterns (unread + read). Single discovery point if user missed icons in context.
 - **No `/coach` route** — explicit rejection. Contrary to product-designer's earlier dedicated-route recommendation.
 - **No filter-chip in insights feed** — explicit rejection. Contrary to tech-lead's filter-chip proposal. Coach is NOT merged into insights feed; it lives as its own surface via icon+bell.
@@ -35,7 +35,7 @@ Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-l
 
 **Key unit-economics hypothesis:** Free teaser creates a Day-30-to-90 activation event that functions as the primary Free → Plus conversion driver for users who come through organic acquisition. Without Coach-as-conversion-lever, the Free tier has no differentiated activation beyond first-sync dashboard + basic chat (which competitors Getquin / PortfolioPilot-free offer at equivalent quality).
 
-**Key Lane A hypothesis:** Teaser headline stays observational («Memoro noticed a pattern in your NVDA trades»), NOT prescriptive («You should stop doing X»). The obfuscation gates detail, not prescription — the pattern, once unlocked, is still descriptive, never advisory.
+**Key Lane A hypothesis:** Teaser headline stays observational («Provedo noticed a pattern in your NVDA trades»), NOT prescriptive («You should stop doing X»). The obfuscation gates detail, not prescription — the pattern, once unlocked, is still descriptive, never advisory.
 
 **Key risk:** Coach 30-day cold-start problem carried forward from earlier finance-advisor review (2026-04-23 Option 4 §7.1). The teaser-paywall pattern MITIGATES but does not ELIMINATE this risk — warm-start backfill feasibility per Q2 working assumption is what collapses the activation gap from 30 days to ~24 hours. Without warm-start, Free user sees zero Coach activation for the critical first 30 days.
 
@@ -48,7 +48,7 @@ Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-l
 **Allocation:** **2 pattern teasers per calendar month** (updated 2026-04-23 from v1 «1/month»), starting after first successful broker sync. See §1.1 rationale for cap.
 
 **Visual pattern:**
-- Blinking Memoro icon appears on the element tied to the pattern (position card, dashboard widget, or chat thread)
+- Blinking Provedo icon appears on the element tied to the pattern (position card, dashboard widget, or chat thread)
 - Icon click opens teaser popover in-context (does NOT navigate to a new route)
 - Bell-dropdown in top-bar shows «1 new Coach pattern» or «2 new Coach patterns»; click lists all currently-fired patterns
 
@@ -64,7 +64,7 @@ Per DECISIONS 2026-04-23 «Trial + Free tier + Coach UX + brand commitment» 4-l
 
 Per DECISIONS 2026-04-23 Coach UX lock: teaser reveals SUBJECT (asset / pattern category) but NOT substance.
 
-- **Headline (visible to Free user, in popover):** «Memoro noticed a pattern in your [ticker/sector/category] trades»
+- **Headline (visible to Free user, in popover):** «Provedo noticed a pattern in your [ticker/sector/category] trades»
   - Observation verb («noticed») — Lane A clean
   - Specific asset/category reference allowed at headline level (factual observation of what the user holds; references user's own data)
   - No action verb, no normative framing, no evaluative framing
@@ -78,29 +78,29 @@ Per DECISIONS 2026-04-23 Coach UX lock: teaser reveals SUBJECT (asset / pattern 
 
 **Empty-state (cold-start path, no qualifying pattern yet):**
 
-- First 30 days with no backfill: «Memoro is learning your trade patterns. First pattern-read typically appears around day 30.»
+- First 30 days with no backfill: «Provedo is learning your trade patterns. First pattern-read typically appears around day 30.»
   - Sets honest expectation
   - Reframes wait-time as product learning (not product broken)
   - Lane A clean (observation framing, no prescription)
-- Warm-start partial backfill: «Memoro has read [N] trades from your history. Looking for patterns as more data accumulates.»
+- Warm-start partial backfill: «Provedo has read [N] trades from your history. Looking for patterns as more data accumulates.»
 
 **Lane A guardrails on teaser headline (finance-advisor validated; extended 2026-04-23 per DECISIONS 4-locks dispatch):**
 
 Allowed headline shapes (Lane A safe in US / EU / UK — Russia out of scope per 2026-04-23 Q7):
-- «Memoro noticed a pattern in your [ticker/sector/category] trades»
-- «Memoro noticed a recurring behavior in your [sector/cluster] positions»
-- «Memoro noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
+- «Provedo noticed a pattern in your [ticker/sector/category] trades»
+- «Provedo noticed a recurring behavior in your [sector/cluster] positions»
+- «Provedo noticed something across your [ticker1]/[ticker2]/[ticker3] trades»
 
 Lane A validation per word:
-- «Memoro noticed» — factual observation verb (whitelist per `AI_CONTENT_VALIDATION_TEMPLATES.md` §2.1); safe
+- «Provedo noticed» — factual observation verb (whitelist per `AI_CONTENT_VALIDATION_TEMPLATES.md` §2.1); safe
 - «a pattern» — generic, no prescriptive weight; safe
 - «in your [asset] trades» — references user's own data factually; safe
 - «Upgrade to Plus to see detail» — commerce action CTA, NOT investment-action CTA; safe in all four jurisdictions
 
 BLOCKED headline shapes (Lane A violations, reject in content-lead review):
-- «Memoro suggests you [action]» — prescriptive verb
+- «Provedo suggests you [action]» — prescriptive verb
 - «You might want to consider [action]» — soft prescription
-- «Memoro recommends [action]» — explicit advice
+- «Provedo recommends [action]» — explicit advice
 - «This is risky — [action] now» — urgency + implicit prescription
 - «Most successful investors [action]» — social proof prescription
 
@@ -122,7 +122,7 @@ Teaser copy MUST NOT contain ANY evaluative commentary on user's trading behavio
 - «warn» (as in «we warn you») — prescription-adjacent
 - «worry» — emotional pressure
 
-The teaser's job is to generate CURIOSITY, not JUDGMENT. «Memoro noticed a pattern» invites the user to look; «Memoro noticed a concerning pattern» tells the user what to feel. The first is Lane A safe; the second crosses the line.
+The teaser's job is to generate CURIOSITY, not JUDGMENT. «Provedo noticed a pattern» invites the user to look; «Provedo noticed a concerning pattern» tells the user what to feel. The first is Lane A safe; the second crosses the line.
 
 ### 2.2 Plus tier Coach behavior
 
@@ -144,11 +144,11 @@ The teaser's job is to generate CURIOSITY, not JUDGMENT. «Memoro noticed a patt
 - Tendency direction («trending up», «intermittent», «concentrated in tech»)
 - NO normative language («you should», «consider», «most investors», «next time»)
 - NO action invitation («rebalance now», «set a stop-loss»)
-- Optional: link to Chat surface for follow-up questions («Ask Memoro about this pattern»)
+- Optional: link to Chat surface for follow-up questions («Ask Provedo about this pattern»)
 
 **Follow-up chat integration:**
 
-Plus tier pattern-reads must be followable via Chat. User clicks «Ask Memoro about this pattern» → Chat opens with context-preloaded (the pattern, the trades). User asks; AI answers descriptively about the pattern, still Lane A.
+Plus tier pattern-reads must be followable via Chat. User clicks «Ask Provedo about this pattern» → Chat opens with context-preloaded (the pattern, the trades). User asks; AI answers descriptively about the pattern, still Lane A.
 
 ### 2.3 Pro tier Coach behavior
 
@@ -160,7 +160,7 @@ Plus tier pattern-reads must be followable via Chat. User clicks «Ask Memoro ab
    - Requires Pro-tier because it needs deeper historical data + factor index integration
 7. **Tax-loss-harvesting missed** — user held a losing position into year-end that, had it been harvested, would have generated a tax benefit; retrospective observation, jurisdiction-scoped
    - Pro-tier only because TLH is jurisdiction-specific and requires tax-report integration
-   - Lane A framing: «Memoro observed that [losing position] remained held past year-end 2025. At that point its unrealized loss was $X. Tax-loss harvesting rules in [jurisdiction] permit offsetting gains…» (purely observational + educational; does NOT say «you should have harvested»)
+   - Lane A framing: «Provedo observed that [losing position] remained held past year-end 2025. At that point its unrealized loss was $X. Tax-loss harvesting rules in [jurisdiction] permit offsetting gains…» (purely observational + educational; does NOT say «you should have harvested»)
 8. **Sector-rotation pattern** — user's trade flows show directional rotation across sectors; detected via sector-weight change analysis + trade-flow signing
    - Pro-tier because it requires full historical reconstruction
 
@@ -200,7 +200,7 @@ This is a HYPOTHESIS, not a model — must be replaced with real cohort data pos
 
 ### 3.2 Benchmark comparison (public references)
 
-| Metric | Industry benchmark | Source | Memoro hypothesis |
+| Metric | Industry benchmark | Source | Provedo hypothesis |
 |---|---|---|---|
 | SaaS freemium Free → paid conversion (broad B2C) | 2-5% over 90 days | OpenView Partners 2023 SaaS benchmarks report `[SOURCE-PENDING for URL]` | 3-7% target (teaser-paywall + activation design optimized) |
 | Fintech retail app activation (sync completion after signup) | 40-60% | Plaid case-study aggregate `[SOURCE-PENDING]` | 60-70% (SnapTrade single-provider integration; less friction) |
@@ -210,7 +210,7 @@ This is a HYPOTHESIS, not a model — must be replaced with real cohort data pos
 
 ### 3.3 Activation event design (finance-advisor view)
 
-The **activation event is the first blinking contextual icon appearing after SnapTrade backfill completes** (per DECISIONS 2026-04-23 Coach UX lock). The visual moment — a static dashboard suddenly shows a pulsing Memoro icon on a specific position — creates the curiosity-reveal moment that drives conversion consideration. Click → teaser popover with subject reveal → curiosity gap → Plus upgrade CTA.
+The **activation event is the first blinking contextual icon appearing after SnapTrade backfill completes** (per DECISIONS 2026-04-23 Coach UX lock). The visual moment — a static dashboard suddenly shows a pulsing Provedo icon on a specific position — creates the curiosity-reveal moment that drives conversion consideration. Click → teaser popover with subject reveal → curiosity gap → Plus upgrade CTA.
 
 Before the first teaser fires, Free user has:
 
@@ -218,7 +218,7 @@ Before the first teaser fires, Free user has:
 - 50 chat messages per month on Haiku (no daily cap; burst-friendly; per 2026-04-23 4-locks)
 - 1 insight per week (weekly dividends, drawdowns — commodity-level value)
 
-None of these are Memoro-unique. The differentiated activation that separates Memoro from Getquin/PortfolioPilot-free/Snowball-free is the Coach teaser — surfaced via blinking contextual icon, not via a dedicated route. Without warm-start, that differentiated activation does not exist for 30 days. With warm-start, it exists within 24 hours.
+None of these are Provedo-unique. The differentiated activation that separates Provedo from Getquin/PortfolioPilot-free/Snowball-free is the Coach teaser — surfaced via blinking contextual icon, not via a dedicated route. Without warm-start, that differentiated activation does not exist for 30 days. With warm-start, it exists within 24 hours.
 
 **Finance-advisor conclusion:** Warm-start backfill is the single highest-leverage operational decision for Free → Plus conversion. Q2 defers this to development-stage feasibility verification. This document flags that the conversion funnel is materially different between the two branches (warm-start operational vs not), and the two branches should be modeled as separate scenarios, not averaged.
 
@@ -234,7 +234,7 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 
 **Handling:**
 
-- Teaser empty-state activates: «Memoro is building memory of your trades. First pattern-reads appear once you've made a few more moves in the market. In the meantime, [Chat] and [weekly Insights] are ready now.»
+- Teaser empty-state activates: «Provedo is building memory of your trades. First pattern-reads appear once you've made a few more moves in the market. In the meantime, [Chat] and [weekly Insights] are ready now.»
 - Teaser surface still occupies visual real estate on dashboard — reinforces the forthcoming promise rather than hiding Coach entirely
 - No Plus-upgrade pressure at this stage (user hasn't experienced the value — upgrade CTA suppressed until first real teaser)
 - Monthly check: once user reaches ≥5 trades OR ≥30 days elapsed, teaser flow re-evaluates
@@ -249,7 +249,7 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 
 - Run pattern-detection on whatever history is available
 - Lower minimum-instance threshold for first-pattern firing (≥2 instances instead of ≥3) to accelerate first-value-moment
-- Teaser notes the partial-data context: «Memoro noticed a pattern in your [ticker] trades from the data available so far. As more history syncs, the picture gets richer.»
+- Teaser notes the partial-data context: «Provedo noticed a pattern in your [ticker] trades from the data available so far. As more history syncs, the picture gets richer.»
 - Do NOT show teaser with unsupportable confidence (if N=2 instances is borderline, flag to user as emerging pattern, not confirmed)
 - Backfill retry logic: if SnapTrade later returns more history via re-sync, re-run detection on updated dataset
 
@@ -262,10 +262,10 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 **Handling:**
 
 - Full cold-start path: 30+ days of live trades before first teaser can fire
-- Empty-state copy stronger: «Memoro is building memory of your trades. First pattern-read typically appears around day 30 once enough trades accumulate.»
+- Empty-state copy stronger: «Provedo is building memory of your trades. First pattern-read typically appears around day 30 once enough trades accumulate.»
 - Dashboard + Chat + weekly Insights are the only Free-tier value surfaces during the 30-day gap
 - No upgrade pressure during this window (user has not experienced Coach yet; upgrade pitch is premature)
-- Day 30 checkpoint: if no pattern has fired, surface an honest retention message («Memoro has read your trades but hasn't found a repeat pattern yet — you might be a more systematic trader than average!»)
+- Day 30 checkpoint: if no pattern has fired, surface an honest retention message («Provedo has read your trades but hasn't found a repeat pattern yet — you might be a more systematic trader than average!»)
 
 **Finance-advisor view:** This is the worst-case activation path and the scenario where Free → Plus conversion risk concentrates. If a material fraction of users (say ≥20%) fall into this path, Plus conversion suffers. Tech-lead + product-designer should estimate what percentage of launch-geography users (US + EU + UK + LATAM + APAC) have SnapTrade-history-unsupported brokers as their primary broker. If that percentage is high, warm-start feasibility question becomes more consequential than Q2 locked working assumption implied.
 
@@ -291,9 +291,9 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 - Threshold pattern detection conservatively — prefer false-negatives (missing a real pattern) over false-positives (fabricating a pattern)
 - If user upgrades and finds the pattern unconvincing, reputation damage is high; conservative thresholds mitigate this
 - Consider showing pattern confidence to Plus users («high-confidence» vs «emerging») to set expectation
-- Offer user-facing feedback mechanism («Was this pattern useful?» thumbs-up/down) — data for algorithm tuning + signal for user that Memoro is listening
+- Offer user-facing feedback mechanism («Was this pattern useful?» thumbs-up/down) — data for algorithm tuning + signal for user that Provedo is listening
 
-**Finance-advisor view:** Pattern-detection false positives are both a product-quality issue and a Lane A issue. If Memoro says «Memoro noticed a disposition-effect pattern» and the pattern isn't really there, it violates «accuracy in advertising» regardless of Lane A (FTC §5 + UCPD exposure). Conservative thresholds are the finance + compliance answer; tech-lead owns implementation; finance-advisor will validate sample outputs post-alpha (`AI_CONTENT_VALIDATION.md`).
+**Finance-advisor view:** Pattern-detection false positives are both a product-quality issue and a Lane A issue. If Provedo says «Provedo noticed a disposition-effect pattern» and the pattern isn't really there, it violates «accuracy in advertising» regardless of Lane A (FTC §5 + UCPD exposure). Conservative thresholds are the finance + compliance answer; tech-lead owns implementation; finance-advisor will validate sample outputs post-alpha (`AI_CONTENT_VALIDATION.md`).
 
 ---
 
@@ -301,7 +301,7 @@ None of these are Memoro-unique. The differentiated activation that separates Me
 
 ### 5.1 Free tier churn risk
 
-**Primary churn driver:** Activation lag. If first teaser doesn't fire within 24-48 hours (warm-start path), user may churn before experiencing Coach differentiation. Getquin-free + PortfolioPilot-free offer comparable commodity value at Day 1; Memoro's differentiation depends on Coach activation.
+**Primary churn driver:** Activation lag. If first teaser doesn't fire within 24-48 hours (warm-start path), user may churn before experiencing Coach differentiation. Getquin-free + PortfolioPilot-free offer comparable commodity value at Day 1; Provedo's differentiation depends on Coach activation.
 
 **Churn mitigation (within Free tier):**
 
@@ -345,7 +345,7 @@ This range materially affects unit economics (see `PRICING_TIER_VALIDATION.md`).
 
 - Usage-based re-engagement — monthly «Here's what Pro unlocked for you this month» email (shows tax-loss-harvesting observations, factor drift noticed, alerts triggered)
 - Power-user community (if it develops) — Pro Discord / private channel for sophisticated ICP A users to exchange patterns + observations
-- Year-end tax report dependency — strong retention hook if user uses Memoro as their primary tax-reporting tool (switching cost is high at tax-season)
+- Year-end tax report dependency — strong retention hook if user uses Provedo as their primary tax-reporting tool (switching cost is high at tax-season)
 
 **Projected Pro-tier monthly churn:**
 
@@ -363,7 +363,7 @@ This range materially affects unit economics (see `PRICING_TIER_VALIDATION.md`).
 | Free teaser body (obfuscated) | None | Body is paywalled; whatever pattern description lives in Plus output has its own guardrails |
 | Plus pattern narrative | Medium (historical finance-advisor §3.5 EDGE verdict in EU/UK) | Descriptive-only; NO «you should», «consider», «next time», «most investors» |
 | Plus pattern-naming convention | Medium (legal-advisor §3.5 flagged: «counter-cyclical» has implicit normative weight) | Use neutral category names in UI (e.g., «disposition-effect pattern» not «bad-timing pattern»); in narrative body describe what was observed, not what it means normatively |
-| Pro TLH observation | Higher (tax-specific; jurisdiction-dependent) | Framing: «Memoro observed that [position] remained held past year-end. Jurisdiction tax rules in [country] permit offsetting gains…» — educational, not prescriptive; include «consult a tax professional» disclaimer for TLH specifically |
+| Pro TLH observation | Higher (tax-specific; jurisdiction-dependent) | Framing: «Provedo observed that [position] remained held past year-end. Jurisdiction tax rules in [country] permit offsetting gains…» — educational, not prescriptive; include «consult a tax professional» disclaimer for TLH specifically |
 | Pro factor-drift observation | Low | Factual observation of composition change over time; no «you should rebalance» framing |
 | Pro sector-rotation observation | Low | Factual observation of trade-flow direction over time; no «your sector bets are wrong» framing |
 | AI chat follow-up on any Coach pattern | Medium | Chat AI system prompt enforces Lane A guardrails universally — see `AI_CONTENT_VALIDATION_TEMPLATES.md` |

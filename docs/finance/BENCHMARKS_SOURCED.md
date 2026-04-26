@@ -1,8 +1,8 @@
-# Benchmarks Sourced — Memoro AI Reference Data
+# Benchmarks Sourced — Provedo AI Reference Data
 
 **Owner:** `finance-advisor` agent (internal SME, NOT registered investment advisor)
 **Date:** 2026-04-23
-**Purpose:** Citable benchmarks for Memoro's AI output to reference without hallucinating. Every row: factual claim + source + access date + retrieval method.
+**Purpose:** Citable benchmarks for Provedo's AI output to reference without hallucinating. Every row: factual claim + source + access date + retrieval method.
 **Depends on:** `AI_CONTENT_VALIDATION_TEMPLATES.md` Section 9 Risk #3 — every numerical claim in AI output must resolve to a benchmark here or to user's own trade data.
 **Constraint:** Public sources only. NO paid data feeds (CONSTRAINTS Rule 1). SEC.gov, Bank of England, ECB, Vanguard public research, Fidelity public reports, CFA Institute free material, academic papers, official regulator publications.
 
@@ -10,7 +10,7 @@
 
 ## 1. Usage guidance for AI
 
-When Memoro's AI output needs a benchmark comparison (e.g., «your tech allocation is 58% vs US retail median 34%»), the AI MUST:
+When Provedo's AI output needs a benchmark comparison (e.g., «your tech allocation is 58% vs US retail median 34%»), the AI MUST:
 
 1. Reference a benchmark from this table by name
 2. Include the citation fragment (source + year) in the AI's output to the user
@@ -55,7 +55,7 @@ Flag legend:
 | 3 | S&P 500 10-year rolling annualized return (various 10-year windows since 1970) ranges from approximately -3% to +17% | Multiple published period-by-period tables; Ibbotson / Morningstar SBBI Classic Yearbook is the canonical reference | Morningstar SBBI: paywalled; Federal Reserve FRED historical index data (SP500) is public: https://fred.stlouisfed.org/series/SP500 | 2026-04-23 | FRED is the public-access path; computation from raw index series | `[SOURCE-PENDING]` for range-statement; FRED data `[VERIFIED]` as accessible |
 | 4 | Long-run historical equity premium over risk-free rate (US) is approximately 4-6% per year | CFA Institute research reports + Damodaran annual equity-risk-premium data | https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/histretSP.html | 2026-04-23 | Damodaran maintains public updated historical ERP tables | `[SOURCE-PENDING]` `[REFRESH: annual]` |
 
-**AI usage note:** #1 and #2 are the most commonly-referenced benchmarks. Memoro's AI may say «historically, the S&P 500 has returned ~10% nominal / ~7% real per year over long horizons per [source]» when a user asks about long-run returns. Refresh annually.
+**AI usage note:** #1 and #2 are the most commonly-referenced benchmarks. Provedo's AI may say «historically, the S&P 500 has returned ~10% nominal / ~7% real per year over long horizons per [source]» when a user asks about long-run returns. Refresh annually.
 
 ### 3.2 Retail portfolio composition benchmarks
 
@@ -126,7 +126,7 @@ Added 2026-04-23 post-4-locks patch to support trial-phase economics modeling in
 
 ## 4. Finance formulas reference (not benchmarks but AI-use accuracy)
 
-These formulas need to be implemented correctly in Memoro's AI/compute layer. Incorrect formulas = FTC §5 exposure + brand trust violation. Per `quantitative-trading:risk-metrics-calculation` skill — all formulas below use conventional finance parameters (252 trading days for annualization, etc.).
+These formulas need to be implemented correctly in Provedo's AI/compute layer. Incorrect formulas = FTC §5 exposure + brand trust violation. Per `quantitative-trading:risk-metrics-calculation` skill — all formulas below use conventional finance parameters (252 trading days for annualization, etc.).
 
 ### 4.1 Sharpe ratio
 
@@ -143,7 +143,7 @@ Annualization factor from daily returns: multiply daily Sharpe by √252
 
 **Source:** Sharpe (1966) «Mutual Fund Performance» DOI: 10.1086/294846
 
-**Common retail miscalculation:** using monthly or weekly returns without proper annualization; using arithmetic mean instead of geometric mean; ignoring risk-free rate. Memoro must use annualized returns + annualized volatility + current T-bill rate as R_f.
+**Common retail miscalculation:** using monthly or weekly returns without proper annualization; using arithmetic mean instead of geometric mean; ignoring risk-free rate. Provedo must use annualized returns + annualized volatility + current T-bill rate as R_f.
 
 ### 4.2 Sortino ratio
 
@@ -220,7 +220,7 @@ User designates which tax lots are sold; broker confirms
 
 **IRS default (US) for brokerage transactions is FIFO unless specific-lot is designated.** Source: IRS Publication 550 «Investment Income and Expenses» — https://www.irs.gov/publications/p550
 
-**Jurisdiction-specific:** UK uses «Section 104 pool» averaging (different). Germany uses FIFO (§23 EStG). EU countries vary. `[ATTORNEY REVIEW]` flag: Memoro's tax-lot tracking must use per-jurisdiction correct method; tax reports in Pro tier must respect jurisdiction.
+**Jurisdiction-specific:** UK uses «Section 104 pool» averaging (different). Germany uses FIFO (§23 EStG). EU countries vary. `[ATTORNEY REVIEW]` flag: Provedo's tax-lot tracking must use per-jurisdiction correct method; tax reports in Pro tier must respect jurisdiction.
 
 ### 4.7 Concentration (Herfindahl-Hirschman Index)
 
@@ -246,15 +246,15 @@ Portfolio-level HHI interpretation (convention):
 
 ## 5. Gap analysis — what's missing from v1
 
-Benchmarks that would strengthen Memoro's AI coverage but were NOT sourced in v1:
+Benchmarks that would strengthen Provedo's AI coverage but were NOT sourced in v1:
 
 1. **Retail self-directed brokerage sector allocations.** The «34% retail median tech» number flagged in 2026-04-23 finance-advisor review has no verified source. Best available proxy is Vanguard HAS 401(k)-aggregate data (row 7), which is NOT the same thing. Needs work: deep-search FRB SCF micro-data for self-directed brokerage holdings; or cite FINRA retail-investor-survey data if published.
 2. **Median retail turnover rate.** Industry-convention says retail turnover is 30-80% annually, but no single primary-source citation established. Academic: Barber & Odean data is ~20 years old. Needs fresh source or labeled as «historical, circa 2000».
 3. **Crypto retail participation current data.** Fidelity 2023 report (row 17) is aging; 2024-2025 reports exist. Flag for refresh.
 4. **Sector-by-sector dividend yields.** S&P 500 overall is sourced (row 9); individual sector yields (utilities ~3.5%, REITs ~3.8%, tech ~0.8%) not individually sourced. Would strengthen Insights surface dividend observations.
-5. **EU retail portfolio composition by country (DE, FR, IT, ES, NL).** Aggregate EU row (row 18) is high-level. Per-country breakdown would be useful when Memoro launches in specific EU markets; ECB has country-level data in Household Finance and Consumption Survey (HFCS).
+5. **EU retail portfolio composition by country (DE, FR, IT, ES, NL).** Aggregate EU row (row 18) is high-level. Per-country breakdown would be useful when Provedo launches in specific EU markets; ECB has country-level data in Household Finance and Consumption Survey (HFCS).
 6. **UK retail investor statistics.** FCA has published financial-lives-survey data; not yet integrated here. Important for UK launch.
-7. **LATAM + APAC retail benchmarks.** Not covered at all in v1. When Memoro expands to these launch markets, needs dedicated sourcing work from local regulators + industry associations.
+7. **LATAM + APAC retail benchmarks.** Not covered at all in v1. When Provedo expands to these launch markets, needs dedicated sourcing work from local regulators + industry associations.
 
 **Prioritization for v2 expansion:**
 

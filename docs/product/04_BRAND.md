@@ -101,7 +101,7 @@ This map governs every user-facing surface. Brand-strategist owns the **register
 | **Errors** | Calm + actionable | «Provedo couldn't connect to Schwab. Want to retry?» / «Provedo не смог подключиться к Schwab. Попробуем ещё раз?» | Tech-jargon «Error 503: upstream timeout» without recovery path |
 | **Footer disclaimer (formal, locked)** | Regulatory-clear | «Provedo is not a registered investment advisor. Information is provided for educational purposes only. Past performance is not indicative of future results. All investment decisions are your own.» | (locked — do not paraphrase) |
 
-Cross-reference: `04_DESIGN_BRIEF.md` §2.2 carries an earlier draft of this map (Memoro-era); content-lead + product-designer will reconcile to this Provedo-final version in their next pass.
+Cross-reference: `04_DESIGN_BRIEF.md` §2.2 carries an earlier draft of this map (Provedo-era); content-lead + product-designer will reconcile to this Provedo-final version in their next pass.
 
 ---
 
@@ -205,7 +205,7 @@ Routed via Navigator in Brand-Foundation v1.0 review:
 
 1. **Tagline pick (§3).** Rank top-3 from the 5-option set. Brand-strategist recommendation: lock #1 «Notice what you'd miss» as global primary + #2 «Provedo проведёт через твой портфель» as RU-market secondary + #4 as Section-2 sub. PO call: accept this stack, or pick differently?
 2. **Visual direction pick.** From product-designer's parallel 3-option dispatch (when artefact lands). Brand-foundation v1.1 will lock the chosen direction back into §7.
-3. **Memoro.co $250 sunk cost.** Three options: (a) release at registrar expiry (sunk-cost full write-off), (b) hold for resale on Sedo/Afternic broker market (recovery probability low — coined-Latin niche), (c) repurpose as 301 redirect to provedo.ai (PO contemplation: keeps SEO inflight, but creates brand-confusion if anyone references Memoro post-launch). Brand-strategist recommendation: **option (c) for 90 days**, then re-evaluate based on whether residual Memoro mentions exist; default to (a) at 90-day mark if no inbound. Rule 1 — no further spend.
+3. **Provedo.co $250 sunk cost.** Three options: (a) release at registrar expiry (sunk-cost full write-off), (b) hold for resale on Sedo/Afternic broker market (recovery probability low — coined-Latin niche), (c) repurpose as 301 redirect to provedo.ai (PO contemplation: keeps SEO inflight, but creates brand-confusion if anyone references Provedo post-launch). Brand-strategist recommendation: **option (c) for 90 days**, then re-evaluate based on whether residual Provedo mentions exist; default to (a) at 90-day mark if no inbound. Rule 1 — no further spend.
 4. **EN guardrail enforcement mechanism.** §6.5 lists 5 banned co-occurrences. Open question: does PO want this enforced (a) at content-lead review stage only (manual), (b) at AI system-prompt level + content-lead review (recommended — already in §6.5 system-prompt), or (c) at automated lint stage (future tooling — not built, would require commit hook + CI check)? Brand-strategist recommendation: (b) for v1.0, defer (c) to post-launch tooling investment (Rule 1 — needs PO approval if any paid lint service).
 
 ---

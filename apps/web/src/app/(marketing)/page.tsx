@@ -29,7 +29,7 @@ export const metadata: Metadata = {
       'Provedo will lead you through your portfolio — across every broker, with sources. Free forever, no card.',
     type: 'website',
     locale: 'en_US',
-    url: 'https://memoro.co/',
+    url: 'https://provedo.ai/',
   },
   twitter: {
     card: 'summary_large_image',

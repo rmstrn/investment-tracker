@@ -11,7 +11,7 @@
 
 **Seven locks (summary; rationale in `DECISIONS.md`):**
 
-- **Q1 — YES demotion.** «Second Brain for Your Portfolio» = TAGLINE + brand-world copy. NOT hero, NOT product name. Hero reverts to imperative. Product name sourced from Round 5 (Mneme / Memoro / Noesis — PO leaning Memoro, Round 6 in flight in parallel for additional options before final lock).
+- **Q1 — YES demotion.** «Second Brain for Your Portfolio» = TAGLINE + brand-world copy. NOT hero, NOT product name. Hero reverts to imperative. Product name sourced from Round 5 (Mneme / Provedo / Noesis — PO leaning Provedo, Round 6 in flight in parallel for additional options before final lock).
 - **Q2 — YES with nuance.** Coach warm-start via SnapTrade trade-history = working assumption, not pre-lock feasibility gate. Formal verification happens during Coach vertical eng-planning. Oracle fallback retained.
 - **Q3 — Dashboard-primary architecture.** Chat is a tab, not the home. AI woven across dashboard cards + insights feed + coach. Getquin/Kubera shape with stronger AI integration. Full UX spec deferred to design phase.
 - **Q4 — NO trademark spend.** No $2-5K US clearance search before name lock. Accept post-launch rebrand risk if conflict surfaces. CONSTRAINTS Rule 1 applied.
@@ -21,7 +21,7 @@
 
 **Repositioning summary (what changed from v1.5 → v1.6):**
 - Option 4 hero («Second Brain for Your Portfolio») → Option 4 tagline + brand-world copy. Hero reverts to imperative «Спроси свой портфель» / «Ask your portfolio».
-- Product name: NOT «Second Brain»; sourced from Round 5/6 mind/memory territory. PO lean = Memoro (unlocked pending Round 6).
+- Product name: NOT «Second Brain»; sourced from Round 5/6 mind/memory territory. PO lean = Provedo (unlocked pending Round 6).
 - Coach: warm-start working assumption; tech-lead verifies at dev-stage, not pre-lock. Oracle fallback preserved.
 - Architecture: dashboard-primary + chat-as-tab + AI-woven (rejects designer Alt 1 chat-primary).
 - Pricing: teaser-paywall coach pattern locked.
@@ -57,7 +57,7 @@
 
 **Path B fallback (if warm-start infeasible):** Oracle (Path A fallback already named in v1.3; locked «Поговори со своим портфелем» hero preserved; lowest cold-start risk).
 
-**Path C fallback (if trademark clearance returns unfavorably):** «Portfolio Memory» as tagline (brand-strategist Alt B + legal Alt 1 converge; Round 5 names Mneme/Memoro already aligned with this axis).
+**Path C fallback (if trademark clearance returns unfavorably):** «Portfolio Memory» as tagline (brand-strategist Alt B + legal Alt 1 converge; Round 5 names Mneme/Provedo already aligned with this axis).
 
 **Status:** Option 4 remains TENTATIVE. PO lock decision required on three Priority-1 questions (see §REVIEW_SYNTHESIS_2026-04-23.md §6). No specialists re-dispatched until PO decides.
 

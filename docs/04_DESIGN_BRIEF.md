@@ -5,9 +5,9 @@ Source of truth for the visual, interaction, and content design of **Provedo**. 
 **Version history**
 - v1.0 — initial brief, foundations only
 - v1.1 — added freemium UX (§13), AI module UI (§14), tier-specific screens (§15), notifications (§16), security UI (§17), account management (§18), KPI coverage map (§19)
-- v1.2 — added §0 anti-pattern list (Memoro brand-metaphor guard); §2.2 Insights tone row changed «actionable» → «observational»; §14.2 Insights cadence honesty (weekly, not daily); new §14.6 Coach surface subsection referencing `docs/design/COACH_SURFACE_SPEC.md`; new §11.6 reference to `docs/design/DASHBOARD_ARCHITECTURE.md`; updated principles commentary for dashboard-primary architecture (positioning lock 2026-04-23)
+- v1.2 — added §0 anti-pattern list (Provedo brand-metaphor guard); §2.2 Insights tone row changed «actionable» → «observational»; §14.2 Insights cadence honesty (weekly, not daily); new §14.6 Coach surface subsection referencing `docs/design/COACH_SURFACE_SPEC.md`; new §11.6 reference to `docs/design/DASHBOARD_ARCHITECTURE.md`; updated principles commentary for dashboard-primary architecture (positioning lock 2026-04-23)
 - v1.3 — rewrote §14.6 Coach surface to contextual-icon + bell-hub model per PO lock 2026-04-23; added new §14.7 BellDropdown pattern (extension of §10.3 + §16.2); updated §15 tier-specific screens to remove Coach-route references; no token changes
-- **v1.4 (2026-04-25)** — full Provedo rebrand. **Direction A — Modern AI-Tool Minimalist** locked by PO 2026-04-25 after 3-direction dispatch. Major changes: name Memoro → Provedo across entire brief; §3 Color system rewritten — slate-violet replaced with warm-neutral `#FAFAF7` bg + deep slate `#0F172A` text + sky-blue `#0EA5E9` accent (default — see §3.6 open question); §4 Typography rewritten — Geist replaced with Inter + JetBrains Mono pairing (Google Fonts, free); §0 anti-pattern list updated for Provedo (brain/neural patterns retained as banned — Sage register; AI-purple/pink gradients explicitly added per ui-ux-pro-max anti-pattern); §6 Shadows refined to 3-tier flat-with-borders system; §7 Radius unchanged; §8 Motion duration reaffirmed 150–200ms primary; §10 Components updated for accent swap (focus rings, CTAs); §11 layout patterns retained (no surface architecture change); Memoro-era Coach contextual-dot model carried forward unchanged.
+- **v1.4 (2026-04-25)** — full Provedo rebrand. **Direction A — Modern AI-Tool Minimalist** locked by PO 2026-04-25 after 3-direction dispatch. Major changes: name Provedo → Provedo across entire brief; §3 Color system rewritten — slate-violet replaced with warm-neutral `#FAFAF7` bg + deep slate `#0F172A` text + sky-blue `#0EA5E9` accent (default — see §3.6 open question); §4 Typography rewritten — Geist replaced with Inter + JetBrains Mono pairing (Google Fonts, free); §0 anti-pattern list updated for Provedo (brain/neural patterns retained as banned — Sage register; AI-purple/pink gradients explicitly added per ui-ux-pro-max anti-pattern); §6 Shadows refined to 3-tier flat-with-borders system; §7 Radius unchanged; §8 Motion duration reaffirmed 150–200ms primary; §10 Components updated for accent swap (focus rings, CTAs); §11 layout patterns retained (no surface architecture change); Provedo-era Coach contextual-dot model carried forward unchanged.
 
 ---
 
@@ -34,7 +34,7 @@ The following are forbidden in Provedo's UI — at any tier, on any surface, on 
 Copy and microcopy must also avoid:
 
 - **«Your AI noticed…»** / first-person AI narration. The agent's name is **Provedo** — that's what copy says. Use «Provedo noticed X» or verb-led framing («Noticed this week: X»). Screen readers amplify personification awkwardly.
-- **Memoro-era «Your brain noticed…» / «Your second brain…».** Banned. Memoro brand-metaphor is fully retired. Provedo is foresight + observation, not memory.
+- **Provedo-era «Your brain noticed…» / «Your second brain…».** Banned. Provedo brand-metaphor is fully retired. Provedo is foresight + observation, not memory.
 - **Imperative action language from AI.** Lane A LOCKED. AI never says «buy X», «sell Y», «rebalance», «reduce your exposure», «we recommend», «we advise». Only `notice / observe / flag / surface / explain / show / summarize / read / map`. This applies to chat, insights, coach, and dashboard AI badges. EN co-occurrence guardrail: «Provedo» + advice/recommend/strategy/suggest/tells-you-to → forbidden in same sentence (see `04_BRAND.md` §6.5).
 - **«Provedo guides your decision».** Use «Provedo walks you through» or «Provedo provides clarity» — «guides» is FCA/FINRA-borderline (advice-adjacent). See `04_BRAND.md` §6.2 «Guidance splitter rule».
 
@@ -50,7 +50,7 @@ Provedo belongs to the **modern AI-tool minimalist** visual tradition (Direction
 - Design review: every new surface spec must reference this anti-pattern list and declare compliance.
 - Code review: `code-reviewer` agent flags violations — brain icons in UI chrome, sparkle animations, purple/pink AI gradients in CSS, gradient meshes, violate-able copy (see §0.2).
 - Token audit: `packages/design-tokens/` must not contain tokens named for brain/neural/sparkle imagery, nor purple/pink AI-gradient values. If a need arises, raise through Navigator before token add.
-- Brand-name audit: every appearance of «Memoro» in code/docs is a v1.4 migration debt — replace with «Provedo» per `04_BRAND.md` §6 capitalization rule (capital P, lowercase remainder; never PROVEDO, never provedo).
+- Brand-name audit: every appearance of «Provedo» in code/docs is a v1.4 migration debt — replace with «Provedo» per `04_BRAND.md` §6 capitalization rule (capital P, lowercase remainder; never PROVEDO, never provedo).
 
 ---
 
@@ -98,7 +98,7 @@ Product name LOCKED 2026-04-25: **Provedo** (Italian *provedere* «I provide for
 Tagline LOCKED 2026-04-25 by PO: **EN «Notice what you'd miss» · RU «Замечает то, что ты упустил бы»** (global primary). Secondary RU-market: «Provedo проведёт через твой портфель». Hero (locked v3.1 positioning): imperative «Ask your portfolio» / «Спроси свой портфель» (bilingual-ready; English day-1 launch).
 
 In-product references:
-- Product name: **Provedo** (never «the tracker», «the app», «Investment Tracker», «Memoro»). Capitalization: capital P, lowercase remainder. Never PROVEDO (shouting), never provedo (URL-fragment look).
+- Product name: **Provedo** (never «the tracker», «the app», «Investment Tracker», «Provedo»). Capitalization: capital P, lowercase remainder. Never PROVEDO (shouting), never provedo (URL-fragment look).
 - Latin script primary in EN and RU contexts both. Cyrillic «Прове́до» appears ONLY in pronunciation guides with explicit stress mark, never in body copy.
 - Agent self-reference in copy: **Provedo** (third-person). «Provedo noticed…» / «Provedo сейчас читает твой портфель…». Never «your AI…», «your brain…», «your second brain…», or «I…» (no AI first-person except in scoped onboarding persona declarations — see `04_BRAND.md` §6.4).
 - Tagline use: sparingly in marketing surfaces; not persistent UI chrome.
@@ -990,10 +990,10 @@ Negative references (what we avoid):
 ## Appendix B — Change log
 
 - **v1.0 → v1.1:** added §13 freemium UX, §14 AI module UI, §15 tier-specific screens, §16 notifications, §17 security UI, §18 account management, §19 KPI coverage map; updated §3.5 with WCAG audit outcomes from PR #31.
-- **v1.1 → v1.2 (2026-04-23):** Memoro product-name lock + dashboard-primary architecture lock alignment. Added:
+- **v1.1 → v1.2 (2026-04-23):** Provedo product-name lock + dashboard-primary architecture lock alignment. Added:
   - **§0 Anti-pattern list** — explicit ban list guarding the «Second Brain» metaphor against AI-sparkle / brain-chrome / neural-network / gradient-mesh / Liquid-Glass-on-AI-content / dashboard-jazz drift. Copy-level patterns banned («Your brain noticed…»). Enforcement notes for design review + code review.
   - **§2.2 Insights tone** — «actionable» → «observational» (Lane A lock, AI never prescribes).
-  - **§2.3 Naming** — Memoro locked; agent-self-reference policy («Memoro noticed…», never «your brain…», never AI first-person).
+  - **§2.3 Naming** — Provedo locked; agent-self-reference policy («Provedo noticed…», never «your brain…», never AI first-person).
   - **§10.4 Monetization** — added `LockedPatternCard` primitive for Coach teaser-paywall.
   - **§10.5 Coach primitives** — new subsection introducing `CoachPatternCard`, `CoachWeekAnchor`, `CoachEmptyState`, `CategoryPill`.
   - **§11.6 Dashboard architecture** — pointer to `docs/design/DASHBOARD_ARCHITECTURE.md`.
@@ -1007,7 +1007,7 @@ Negative references (what we avoid):
   - **§11.6 Dashboard architecture pointer** — updated primary routes count (5, not 6); removed Coach teaser row from top-of-fold; updated iOS tab-bar (4 tabs, Coach contextual).
   - **§14.2 Insights categories** — behavioral insights note updated (no longer «routes to Coach»; coach surfaces contextually).
   - **§14.6 Coach surface** — major rewrite. Contextual-layer architecture: dot on attachment-points + bell-dropdown hub. Legal-advisor coordination carried forward. Detailed spec now in `COACH_SURFACE_SPEC.md` v2.0.
-  - **§14.7 BellDropdown pattern (new)** — single hub for all «Memoro noticed» notifications including Coach. Coach-unread violet ring differentiator, first-session pulse, keyboard shortcut `Cmd/Ctrl+Shift+B`, three-section grouping (Coach · This week / Coach · Earlier / Other).
+  - **§14.7 BellDropdown pattern (new)** — single hub for all «Provedo noticed» notifications including Coach. Coach-unread violet ring differentiator, first-session pulse, keyboard shortcut `Cmd/Ctrl+Shift+B`, three-section grouping (Coach · This week / Coach · Earlier / Other).
   - **§16.2 In-app notifications** — BellDropdown grouping updated (points to §14.7).
   - No token changes. Existing semantic tokens (warning / info / positive / accent.primary) cover Coach dot colors. Palette and mapping unchanged.
 

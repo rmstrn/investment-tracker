@@ -151,7 +151,7 @@ Each tab shows mock user message + mock Provedo response. EN only.
 
 ### Mid-page brand-world section (Sage-guide narrative, EN-only)
 
-This section carries the post-Provedo-lock equivalent of the Memoro-era «Second Brain» mid-page narrative. RU bilingual wordplay («Provedo проведёт») deferred to wave-2; EN-only equivalent below.
+This section carries the post-Provedo-lock equivalent of the Provedo-era «Second Brain» mid-page narrative. RU bilingual wordplay («Provedo проведёт») deferred to wave-2; EN-only equivalent below.
 
 **Section header:**
 
@@ -219,7 +219,7 @@ After Section 4 (aggregation marquee), repeat the dual-path CTA pattern from §1
 
 > Provedo is not a registered investment advisor. Information is provided for educational purposes only. Past performance is not indicative of future results. All investment decisions are your own.
 
-**Substitution audit:** Memoro → Provedo. No other changes. Locked verbatim from `02_POSITIONING.md` §Footer disclaimer.
+**Substitution audit:** Provedo → Provedo. No other changes. Locked verbatim from `02_POSITIONING.md` §Footer disclaimer.
 
 **EN guardrail check:** «Information is provided» — passive voice, no Provedo as subject of «provide». PASS audit. The disclaimer is the one place where «provided» appears in EN copy; it's a passive regulatory phrase, not a Provedo-as-subject claim. Acceptable.
 
@@ -353,8 +353,8 @@ Per PO directive 2026-04-25 («забудь про русский пока, де
 - `docs/content/paywall-provedo-v1.md` — modal copy + Free vs Plus comparison + 3 A/B variants.
 
 **Preserved as historical record:**
-- `docs/content/landing.md` — Memoro-era. NOT edited.
-- `docs/content/email-sequences.md`, `microcopy.md`, `paywall.md`, `LANDING_BRIEF.md` — Memoro-era; NOT edited.
+- `docs/content/landing.md` — Provedo-era. NOT edited.
+- `docs/content/email-sequences.md`, `microcopy.md`, `paywall.md`, `LANDING_BRIEF.md` — Provedo-era; NOT edited.
 
 **No external communication sent. No emails dispatched. No social posts published. All artifacts live in repo only.**
 

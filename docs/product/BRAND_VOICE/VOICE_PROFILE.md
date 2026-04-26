@@ -16,7 +16,7 @@
 
 ## Summary (one paragraph)
 
-Voice-anchor is **modern tech-tool 2020s** with **two valid registers**: (a) the **Muni-shape sub-anchor** (4-5L / 2-syl / soft-onset / open-vowel-body — PO-reaffirmed twice) and (b) the **Memoro-register / Provedo-register** (3-syl / 6-7L / plosive-cluster onset + open-vowel-flow body — product-name lock-validated). The locked product name **Provedo** sits in register (b) and operates as the operational baseline for all downstream copy/persona/AI work. Phonetic envelope: short (1–3 syl, 3–7 letters, median 6), hard-edged plosive/fricative cluster onsets dominant or soft-nasal/liquid/soft-fricative within Muni-shape. Rooted in real-word territory (67% English shadow + unchanged + concept among the AI-tool cohort) OR real verb-form discovered etymology (Provedo, *provedere* = «I provide for / I foresee»). Archetype centers on **Magician** (foresight, pattern recognition) with **Sage** (stewardship, observation, calm clarity) and **Everyman** (accessible, caring helper) — matches positioning v3.1 lock (Magician+Sage primary · Everyman modifier) cleanly and reinforced by Provedo's *provedere* etymology. Voice rejects six explicit anti-territories: academic-Greek cadence, Sanskrit/mystical roots, companion-warm first-name register, meaningless consonant-cluster slug, compound English-word stacks ≥8 letters, and negative-valence head morpheme. **NEW 2026-04-25 post-lock:** EN-side «provide → recommend / advise / strategy» downhill gradient is the load-bearing operational risk for the locked Provedo brand — codified as 5-item mandatory EN copy guardrails below. RU side: no special guardrails (Sage-clean «провести/проводить» semantic).
+Voice-anchor is **modern tech-tool 2020s** with **two valid registers**: (a) the **Muni-shape sub-anchor** (4-5L / 2-syl / soft-onset / open-vowel-body — PO-reaffirmed twice) and (b) the **Provedo-register / Provedo-register** (3-syl / 6-7L / plosive-cluster onset + open-vowel-flow body — product-name lock-validated). The locked product name **Provedo** sits in register (b) and operates as the operational baseline for all downstream copy/persona/AI work. Phonetic envelope: short (1–3 syl, 3–7 letters, median 6), hard-edged plosive/fricative cluster onsets dominant or soft-nasal/liquid/soft-fricative within Muni-shape. Rooted in real-word territory (67% English shadow + unchanged + concept among the AI-tool cohort) OR real verb-form discovered etymology (Provedo, *provedere* = «I provide for / I foresee»). Archetype centers on **Magician** (foresight, pattern recognition) with **Sage** (stewardship, observation, calm clarity) and **Everyman** (accessible, caring helper) — matches positioning v3.1 lock (Magician+Sage primary · Everyman modifier) cleanly and reinforced by Provedo's *provedere* etymology. Voice rejects six explicit anti-territories: academic-Greek cadence, Sanskrit/mystical roots, companion-warm first-name register, meaningless consonant-cluster slug, compound English-word stacks ≥8 letters, and negative-valence head morpheme. **NEW 2026-04-25 post-lock:** EN-side «provide → recommend / advise / strategy» downhill gradient is the load-bearing operational risk for the locked Provedo brand — codified as 5-item mandatory EN copy guardrails below. RU side: no special guardrails (Sage-clean «провести/проводить» semantic).
 
 ---
 
@@ -94,7 +94,7 @@ In addition to the broader modern-tech-tool fingerprint above, **Muni** is a **P
 | Discovered-feel (not invented-from-scratch) | required | LOAD-BEARING |
 | Clean RU first-read | required | LOAD-BEARING (Yula/Vera/Velo KILLs confirm) |
 
-This sub-anchor coexists with the broader hard-edged-onset cluster: both registers are valid for Memoro generation, but the Muni-sub-anchor has stronger PO heart-reaction signal in the calibration record.
+This sub-anchor coexists with the broader hard-edged-onset cluster: both registers are valid for Provedo generation, but the Muni-sub-anchor has stronger PO heart-reaction signal in the calibration record.
 
 ---
 
@@ -157,7 +157,7 @@ Re-anchored against the 12 positives (replacing R16's borrowed Stripe/Brex/Mercu
 - **5 (mid):** Figma (/f/ + open /a/), Canva (/k/ + open /a/), Cursor (/k/ + /r/)
 - **0 (min edge):** Teven (soft /t/ + nasal close — the negative anchor), Shunkan (soft fricative + nasal)
 
-**Target score for Memoro candidates:** **6–9.** Edge is load-bearing; don't go below 5.
+**Target score for Provedo candidates:** **6–9.** Edge is load-bearing; don't go below 5.
 
 ### C2 — Decisive-Compression
 
@@ -204,20 +204,20 @@ Re-anchored against the 12 positives (replacing R16's borrowed Stripe/Brex/Mercu
 **Definition:** Does the name read as a coherent AI-agent / product persona declaration? Test: «Привет, я {Name}, твой AI помощник для портфеля» — does it parse natural or awkward?
 
 - **10 (max persona-fit):** Muni («Привет, я Muni»), Mneme, Vala, Iris, Quill — clean persona declaration, no semantic friction
-- **5 (mid):** Notion («Привет, я Notion» reads as product not persona but acceptable), Linear (same), Memoro (slight clinical lean)
+- **5 (mid):** Notion («Привет, я Notion» reads as product not persona but acceptable), Linear (same), Provedo (slight clinical lean)
 - **0 (min persona-fit):** Stillwatch («Привет, я Stillwatch» = name reads as observation tool not entity), Lerx (slug, can't carry persona)
 
-**Target score for Memoro candidates:** **6–10.** PO's R26 agent-persona pivot put weight on this. Below 5 = product is wearing a name, not embodying it.
+**Target score for Provedo candidates:** **6–10.** PO's R26 agent-persona pivot put weight on this. Below 5 = product is wearing a name, not embodying it.
 
 ### C7 — Semantic-fit-к-product (added 2026-04-25; new this session)
 
 **Definition:** Can PO answer «как это относится к нашему проекту?» in ONE sentence on first read, without etymology lookup? Tests whether the name's semantic shadow is JTBD-coherent with «AI portfolio tracker / second brain for finance».
 
-- **10 (max product-fit):** Muni («Odin's memory raven → second-brain memory claim», PO connects in one sentence); Cursor («pointer in your work»); Notion («captures ideas/concepts»); Memoro («I remember» Latin → memory claim)
+- **10 (max product-fit):** Muni («Odin's memory raven → second-brain memory claim», PO connects in one sentence); Cursor («pointer in your work»); Notion («captures ideas/concepts»); Provedo («I remember» Latin → memory claim)
 - **5 (mid):** Mneme («Greek Muse of memory» — needs the Muse-of-memory mention to land; Greek-myth pedigree readable but slightly remote); Frege (logician name → logic-of-portfolio is plausible but indirect)
 - **0 (min product-fit):** Vala («Norse seer» — requires explanation paragraph), Bogle («Scottish ghost» — requires explanation paragraph), Steward («fiduciary archaic» — period-piece feel), R28-finance-term-truncations risk landing here if drift «fintech-infrastructure-serious-only» (e.g., generic «Cap» / «Divi» / «Equa» without product-JTBD shadow)
 
-**Target score for Memoro candidates:** **7–10.** This is the criterion that R20-R26 review surfaced as missing. Mythology-only-because-the-domain-is-clean fails this gate. **PO's «как это относится» question is the load-bearing test for any future generation.**
+**Target score for Provedo candidates:** **7–10.** This is the criterion that R20-R26 review surfaced as missing. Mythology-only-because-the-domain-is-clean fails this gate. **PO's «как это относится» question is the load-bearing test for any future generation.**
 
 ### Composite target
 
@@ -232,12 +232,12 @@ Plus the soft+easy double-score for Muni-shape candidates specifically (R27 cali
 
 ### Provedo baseline scoring (locked product name — operational anchor)
 
-For all future variant / sub-brand / surface-name evaluations, **Provedo's C1-C7 baseline is the in-profile reference** (not Memoro-historical or Muni-shape-only). Provedo composite **7.4 / 10**:
+For all future variant / sub-brand / surface-name evaluations, **Provedo's C1-C7 baseline is the in-profile reference** (not Provedo-historical or Muni-shape-only). Provedo composite **7.4 / 10**:
 
 | Criterion | Provedo score | Anchor / rationale |
 |---|---|---|
 | C1 Edge | 6 | /pr/ plosive-liquid cluster + /v/ middle + /d/ close — two hard-edged events bracketing softer body. In-family with Framer (/fr/), Stripe (/str/), Claude (/kl/). |
-| C2 Compression | 7 | 7L / 3-syl — at the upper-edge ceiling but flow is open-vowel-smooth (/o/-/eh/-/oh/). Memoro precedent (also 3-syl/6L) validates 3-syl-acceptable when flow is smooth. |
+| C2 Compression | 7 | 7L / 3-syl — at the upper-edge ceiling but flow is open-vowel-smooth (/o/-/eh/-/oh/). Provedo precedent (also 3-syl/6L) validates 3-syl-acceptable when flow is smooth. |
 | C3 Register-Fit | 7 | Italian-verb-form register; sits at Vercel/Stripe edge of the modern-tech-tool 2020s cluster, not native Figma/Notion/Linear core. Acceptable, not generous. |
 | C4 Invented-but-rooted | **9** | Real Italian archaic verb form (1st-pers sing present indicative of *provedere*) — Wiktionary-verifiable living-language root, not coined truncation. |
 | C5 Verb-potential | 6 | EN «I'll Provedo it» forced (avoid); RU «провести/проводить» fully native verb-form. Asymmetric — RU=9, EN=4, weighted toward bilingual surface. |

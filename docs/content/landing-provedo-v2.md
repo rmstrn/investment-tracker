@@ -466,8 +466,8 @@ Full v2 document scanned for the 5-item EN copy guardrails:
 
 **Preserved as historical record:**
 - `docs/content/landing-provedo-v1.md` — v1 EN-first lock (PO 2026-04-25). Still source-of-truth until v2 PO-locked.
-- `docs/content/landing.md` — Memoro-era. NOT edited.
-- `docs/content/email-sequences-provedo-v1.md`, `microcopy-provedo-v1.md`, `paywall-provedo-v1.md` — Memoro/Provedo earlier; NOT edited this dispatch.
+- `docs/content/landing.md` — Provedo-era. NOT edited.
+- `docs/content/email-sequences-provedo-v1.md`, `microcopy-provedo-v1.md`, `paywall-provedo-v1.md` — Provedo/Provedo earlier; NOT edited this dispatch.
 
 **No external communication sent. No emails dispatched. No social posts published. All artefacts live in repo only.**
 

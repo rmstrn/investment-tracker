@@ -32,7 +32,7 @@ X-Frame-Options: DENY
 Strict-Transport-Security: max-age=63072000
 ```
 
-**Existing content:** Investment Tracker (Memoro-era) marketing landing — title "Investment Tracker — AI-native portfolio tracker", hero "What you actually own. Why it moved. What to do next."
+**Existing content:** Investment Tracker (Provedo-era) marketing landing — title "Investment Tracker — AI-native portfolio tracker", hero "What you actually own. Why it moved. What to do next."
 
 **No noindex meta tag** present currently. Frontend-engineer adds `<meta name="robots" content="noindex,nofollow">` in Provedo landing build per kickoff §6. This is a **page-level meta tag** in `page.tsx`, NOT an HTTP header — confirmed correct approach for Next.js App Router staging.
 

@@ -1,9 +1,9 @@
-# Token migration: Memoro v1.3 → Provedo v1.4
+# Token migration: Provedo v1.3 → Provedo v1.4
 
 **Author:** product-designer
 **Date:** 2026-04-25
 **Status:** SPEC — awaiting frontend-engineer kickoff
-**Trigger:** Direction A — Modern AI-Tool Minimalist locked by PO 2026-04-25 (`docs/04_DESIGN_BRIEF.md` v1.4 §3 + §4 + §6 + §8). Full visual rebrand from Memoro slate-violet system to Provedo warm-neutral + sky-blue (default) system.
+**Trigger:** Direction A — Modern AI-Tool Minimalist locked by PO 2026-04-25 (`docs/04_DESIGN_BRIEF.md` v1.4 §3 + §4 + §6 + §8). Full visual rebrand from Provedo slate-violet system to Provedo warm-neutral + sky-blue (default) system.
 **Pairs with:** `docs/04_DESIGN_BRIEF.md` v1.4 (master spec), `docs/design/2026-04-25-provedo-visual-direction-options.md` (3-direction dispatch + Direction A details), `docs/product/04_BRAND.md` v1.0 (brand foundation).
 
 ---
@@ -407,7 +407,7 @@ Sequence (single PR or sequence of small PRs — frontend-engineer's call based 
 - [ ] Grep for `Geist Mono` → replace with `JetBrains Mono`
 - [ ] Grep for `shadow-ai` class usage → REMOVE (no replacement; AI surfaces use `shadow-subtle`)
 - [ ] Grep for `motion-easing-spring` / `ease-spring` references → replace with `easing-default` (cubic in-out)
-- [ ] Grep for «Memoro» string literals in `.tsx` files → replace with «Provedo»
+- [ ] Grep for «Provedo» string literals in `.tsx` files → replace with «Provedo»
 - [ ] Update `<Logo />` component SVG wordmark path to «Provedo» (in `packages/ui/src/components/Logo.tsx`)
 - [ ] Update `next/font/google` imports per §4 above
 - [ ] Run `pnpm tsc --noEmit` — no type errors
@@ -444,8 +444,8 @@ Components likely affected (non-exhaustive — frontend-engineer's pre-flight gr
 | AI chat input | focus ring violet → sky | frontend-engineer |
 | BellDropdown | unread Coach 1px ring violet-700 → interactive.primary (sky-500 default) | frontend-engineer |
 | Buttons (primary) | violet-700 → sky-500 fill; violet-800 hover → sky-600 hover | frontend-engineer |
-| InsightCard | hairline border tokens unchanged; «Memoro noticed» copy → «Provedo noticed» | content-lead (copy) + frontend-engineer (tokens) |
-| Logo wordmark | «Memoro» SVG → «Provedo» SVG (3 variants: full, mark, wordmark) | product-designer (SVG asset) → frontend-engineer (apply) |
+| InsightCard | hairline border tokens unchanged; «Provedo noticed» copy → «Provedo noticed» | content-lead (copy) + frontend-engineer (tokens) |
+| Logo wordmark | «Provedo» SVG → «Provedo» SVG (3 variants: full, mark, wordmark) | product-designer (SVG asset) → frontend-engineer (apply) |
 | Toast / Alert | semantic state colors unchanged in role; no visible diff | — |
 | Focus rings | violet-700 outline → sky-500 outline (or PO-calibrated teal) | frontend-engineer |
 
@@ -480,7 +480,7 @@ If v1.4 ships with an unforeseen blocker (e.g. critical contrast regression disc
 1. Single revert commit on `packages/design-tokens/` brings back v1.3 violet-slate values
 2. Frontend revert PR re-applies v1.3 Tailwind config + font imports
 3. Component-level breaking changes (chat bubble tint removal, etc.) are token-only — automatic rollback via Style Dictionary regen
-4. Brand.json domain/email reverts: blocked by «Memoro» string usage in landing; product-designer + content-lead must re-validate before flipping back
+4. Brand.json domain/email reverts: blocked by «Provedo» string usage in landing; product-designer + content-lead must re-validate before flipping back
 
 Pre-alpha protection: zero production users, so rollback risk is purely internal-build-stability. Acceptable.
 
@@ -509,7 +509,7 @@ Pre-alpha protection: zero production users, so rollback risk is purely internal
 1. **PO §3.6 accent calibration — RESOLVED 2026-04-25.** PO locked **A2 muted teal `#0D9488`**. Frontend-engineer Phase A starts с teal tokens, NOT sky-500 default. All migration table references к `sky-500` / `sky-400` to be read as `teal-600 #0D9488` (light) / `teal-400 #2DD4BF` (dark). `state.info` family flips к teal as well (Provedo «notices» = informational, sharing accent family per Design Brief §3.3). Single bulk find-replace в migration commits: sky-{shade} → teal-{shade}.
 2. **`color.neutral.*` path rename.** Recommended rename of v1.3 path (slate values) → `color.slate.*` to free up `color.neutral.*` for Tailwind warm-gray. Frontend-engineer may push back if Style Dictionary references are extensively threaded; alternative is to keep slate under `color.neutral.*` (legacy name) and put new neutrals under `color.warm.gray.*` or similar. Product-designer accepts either; clarity-of-naming preferred but not blocking.
 3. **Brand.json domain transition.** `provedo.ai` is owned (PO 2026-04-25 purchase). `localhost:*` placeholders should flip to `provedo.ai` only after deployment infra is staged. Frontend-engineer + devops-engineer coordinate; not blocking on token migration.
-4. **Logo wordmark SVG.** «Memoro» wordmark in `packages/ui/src/components/Logo.tsx` needs «Provedo» replacement. product-designer will deliver SVG paths in a follow-up artifact (separate dispatch — wordmark needs typographic care given Inter Semibold + tracking-tight). Token migration can land before logo SVG; logo lands as separate small PR.
+4. **Logo wordmark SVG.** «Provedo» wordmark in `packages/ui/src/components/Logo.tsx` needs «Provedo» replacement. product-designer will deliver SVG paths in a follow-up artifact (separate dispatch — wordmark needs typographic care given Inter Semibold + tracking-tight). Token migration can land before logo SVG; logo lands as separate small PR.
 5. **iOS token consumption (TASK_08, post-alpha).** Style Dictionary Swift output regenerates automatically; iOS frontend implementation will catch up post-alpha per `04_DESIGN_BRIEF.md` framing. No iOS-specific blocker for v1.4 web migration.
 
 ---

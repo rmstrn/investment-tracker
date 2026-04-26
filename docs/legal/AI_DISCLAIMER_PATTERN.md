@@ -1,4 +1,4 @@
-# Memoro — In-context AI Disclaimer Pattern (SPEC)
+# Provedo — In-context AI Disclaimer Pattern (SPEC)
 
 **Status:** DRAFT spec — first-pass internal legal-advisor output. Design candidate authority: product-designer. Copy authority: content-lead. Engineering implementation: tech-lead + frontend-engineer.
 **Version:** 0.1 (2026-04-23)
@@ -9,7 +9,7 @@
 
 ## Purpose
 
-Memoro occupies a Lane A regulatory posture: **information and education only, not investment advice**. The footer disclaimer on the landing page is the first layer of this positioning but is insufficient on its own for EU (MiFID II) and UK (FCA PERG 8 + Consumer Duty) markets, because the AI-output surfaces (Chat, Insights, Coach) are multiple clicks away from the landing page. European regulators treat consistent in-context disclaimers on the surface that actually delivers personalized analysis as a material defense factor. This spec defines where, when, and how the in-context disclaimer appears, and the regulatory rationale for each design constraint.
+Provedo occupies a Lane A regulatory posture: **information and education only, not investment advice**. The footer disclaimer on the landing page is the first layer of this positioning but is insufficient on its own for EU (MiFID II) and UK (FCA PERG 8 + Consumer Duty) markets, because the AI-output surfaces (Chat, Insights, Coach) are multiple clicks away from the landing page. European regulators treat consistent in-context disclaimers on the surface that actually delivers personalized analysis as a material defense factor. This spec defines where, when, and how the in-context disclaimer appears, and the regulatory rationale for each design constraint.
 
 **This document is a SPEC, not a policy and not copy.** Final microcopy is content-lead's; final visual treatment is product-designer's; final implementation is tech-lead's. Legal-advisor owns the placement rules and the regulatory reasoning.
 
@@ -52,29 +52,29 @@ When an AI surface is empty (e.g. Coach with <30 days of history, no insights th
 ### 2.1 Core message (bilingual, per positioning lock)
 
 **English:**
-> **Information only — not investment advice.** Memoro analyzes your actual data; all decisions are yours.
+> **Information only — not investment advice.** Provedo analyzes your actual data; all decisions are yours.
 
 **Russian:**
-> **Только информация — не инвестиционный совет.** Memoro анализирует твои реальные данные; все решения — за тобой.
+> **Только информация — не инвестиционный совет.** Provedo анализирует твои реальные данные; все решения — за тобой.
 
 ### 2.2 Jurisdiction-specific expansions (optional, where context permits)
 
 The core message is the default. In specific surfaces where additional text can be tolerated (e.g. a dedicated "About this response" panel), the following jurisdictionally-grounded expansions may be appended. These are NOT required on every surface; they are a reserve option for surfaces with more UI real estate.
 
 **EU/UK expanded form:**
-> **Information only — not investment advice.** Memoro provides observations, calculations, and pattern descriptions based on your actual data. It is not a personal recommendation within the meaning of MiFID II / FCA rules. All investment decisions are yours.
+> **Information only — not investment advice.** Provedo provides observations, calculations, and pattern descriptions based on your actual data. It is not a personal recommendation within the meaning of MiFID II / FCA rules. All investment decisions are yours.
 
 **US expanded form:**
-> **Information only — not investment advice.** Memoro is not a registered investment advisor. Observations above are educational and based on your actual data. All investment decisions are yours.
+> **Information only — not investment advice.** Provedo is not a registered investment advisor. Observations above are educational and based on your actual data. All investment decisions are yours.
 
 > **Rationale (legal-advisor):** EU/UK expansion adds the "personal recommendation" negation because that is the specific regulatory test those jurisdictions apply. US expansion uses the "registered investment advisor" framing because that is the publisher's-exclusion language the SEC evaluates. Content-lead may reduce further but should not alter the regulatory anchors without legal-advisor review.
 
 ### 2.3 What the message must NOT say
 
-- Must NOT say or imply that Memoro's output is a recommendation, suggestion, or guidance to take action
+- Must NOT say or imply that Provedo's output is a recommendation, suggestion, or guidance to take action
 - Must NOT say or imply suitability for the individual user's circumstances ("suitable for you" / "recommended for you" / "right for your portfolio" — all forbidden)
 - Must NOT use hedging language that could be read as undermining the disclaimer itself ("this is not advice, but...")
-- Must NOT be phrased as a liability shield in the user's face ("Memoro is not liable for..." — that is TOS territory, not in-context)
+- Must NOT be phrased as a liability shield in the user's face ("Provedo is not liable for..." — that is TOS territory, not in-context)
 - Must NOT be longer than two short sentences in the default form (Q6 PO lock intent: minimize visual noise)
 
 ---
@@ -147,7 +147,7 @@ The disclaimer text and treatment vary by the user's detected geography (or expl
 | Crypto-native (global) | English core | US expanded form | Crypto-native users expect this framing; treat as US-style for disclaimer purposes |
 | RU-localized interfaces (CIS-non-RU only) | Russian core | Russian does not currently carry an expanded form — legal-advisor will author if post-launch RU-diaspora market entry is approved | Russia (RF) out of launch scope per `DECISIONS.md` Q7 2026-04-23. This row applies to Kazakhstan, Armenia, Belarus, etc. users choosing RU language |
 
-> `[ATTORNEY REVIEW]` — Per-jurisdiction rendering depends on geography detection reliability (IP-derived region + user-set locale). Counsel to validate that Memoro's geography-detection logic is defensible for regulatory purposes — a user in Germany who sets their locale to en-US should still receive the EU expanded form when their IP resolves to DE, unless they explicitly override. This logic belongs in product-designer + tech-lead's scope; legal-advisor validates the rendering rules.
+> `[ATTORNEY REVIEW]` — Per-jurisdiction rendering depends on geography detection reliability (IP-derived region + user-set locale). Counsel to validate that Provedo's geography-detection logic is defensible for regulatory purposes — a user in Germany who sets their locale to en-US should still receive the EU expanded form when their IP resolves to DE, unless they explicitly override. This logic belongs in product-designer + tech-lead's scope; legal-advisor validates the rendering rules.
 
 ---
 

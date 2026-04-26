@@ -8,7 +8,7 @@
 
 ## Session 2026-04-25/26 — What happened (CURRENT — read this first)
 
-**MASSIVE 2-day session.** Memoro lock reopened, 32-round naming workshop with brand-voice-curator + Rule 3 6-specialist validation → Provedo locked. Domains owned: provedo.ai + provedo.app ($170). Brand foundation v1.0 + Design Brief v1.4 (Direction A — Modern AI-Tool Minimalist, teal accent #0D9488) + content suite EN-first + creative-team subteam (.agents/creative-team/) + landing v1→v2→v3 build → Vercel preview → finance + legal reviews.
+**MASSIVE 2-day session.** 32-round naming workshop with brand-voice-curator + Rule 3 6-specialist validation → **Provedo locked**. Domains owned: provedo.ai + provedo.app ($170). Brand foundation v1.0 + Design Brief v1.4 (Direction A — Modern AI-Tool Minimalist, teal accent #0D9488) + content suite EN-first + creative-team subteam (.agents/creative-team/) + landing v1→v2→v3 build → Vercel preview → finance + legal reviews.
 
 ### Key locked decisions 2026-04-25/26
 
@@ -18,8 +18,7 @@
 - **Mid-page editorial line:** «You hold the assets. Provedo holds the context.»
 - **Visual direction:** A — Modern AI-Tool Minimalist (warm-neutral `#FAFAF7` + slate-900 + teal-600 `#0D9488`). Inter + JetBrains Mono.
 - **Domains owned:** provedo.ai (primary, $140 2yr) + provedo.app ($30/yr). $170 total per Rule 1 PO authorization.
-- **Memoro.co $250 sunk cost** — decision deferred (release/resell/redirect).
-- **Total spent to date:** **$420** ($250 Memoro sunk + $170 Provedo).
+- **Total spent to date:** **$420** (incl. $250 sunk on rejected predecessor; release/sell decision deferred).
 
 ### Engineering deliverables 2026-04-25/26
 
@@ -60,7 +59,6 @@
 - PR #65 merge → main → staging.investment-tracker.app deploy
 - Manual TM checks (USPTO TESS / DPMA остальные 4 hits / Provedo Security NL KvK 88563421 / PROVIDA phonetic) — PO ~30-45 min, free
 - Attorney opinion $900-6K across 3 jurisdictions (US SEC + EU MiFID II + UK FCA) — Rule 1 PO greenlight pre-launch
-- Memoro.co $250 sunk cost decision (release / resell / 90-day redirect)
 - Logo wordmark SVG product-designer dispatch (TD-091)
 - Full v1.4 token migration через apps/web (TD-092 — separate slice)
 
@@ -98,107 +96,13 @@
 
 ---
 
-## Session 2026-04-23/24 — What happened (HISTORICAL — superseded by 2026-04-25/26)
+## Session 2026-04-23/24 — superseded
 
-## Session 2026-04-23/24 — What happened
-
-**Major productivity session.** Started with a broken single-agent «council» process; PO identified Rule 3 violation; rebuilt as 6 real independent specialist reviews → Navigator synthesis → 7 PO decisions → 4 execution dispatches (product-designer / content-lead / finance-advisor / legal-advisor) → 3 patch dispatches (coach UX rewrite / trial+content / 50-cap cost model). Product name locked. Domain purchased ($250).
-
-**Commits this session (chronological top→bottom):**
-- `21cf3ad` DECISIONS 7-locks entry
-- `8836029` STRATEGIC_OPTIONS v1.6
-- `b5eb108` POSITIONING v3 (imperative hero + dashboard-primary + Russia out)
-- `990cfb5` NAMING Round 6 placeholder
-- `e993bd4` PENDING_CLEANUPS (5 items tracked)
-- `7fbc379` NAMING Round 6 (12 candidates, Memoro stays lead)
-- `3524b33` NAME-LOCK sweep (Memoro everywhere)
-- `250c410` commit-hash backfill
-- `70139ef` PO_HANDOFF Memoro snapshot
-- `21d865d` EXPENSES.md + first entry ($250 domain)
-- `ac920a6` PENDING_CLEANUPS item #6 (physical address)
-- `e5e0313` DECISIONS 4-locks entry (trial + cap + coach UX + free-forever)
-- Content-lead patches: `893ef8f` / `038e385` / `ad18837` / `4a8baa5`
-- Product-designer patches: coach-contextual rewrite v2.0, dashboard v1.1, DB v1.3, onboarding v1.1
-- Finance-advisor patches: pricing + coach-tier + AI validation + benchmarks
-- Legal-advisor drafts: `e20cbea` / `a789b54` / `99e78a7` / `7d25f33` / `d7635fb` / `80e8b5d`
-
-## Locked decisions 2026-04-23 (product spec complete)
-
-- **Product name:** **Memoro** (Latin «I remember»; pronounced «meh-MO-ro» EN / «мемóро» RU). Domain target: `memoro.co` — **purchased 2026-04-23 for $250** (see `docs/finance/EXPENSES.md`).
-- **Tagline:** «Second Brain for Your Portfolio» — mid-page brand-world copy, NOT hero, NOT product name.
-- **Hero:** imperative — «Ask your portfolio» EN / «Спроси свой портфель» RU.
-- **Regulatory lane:** A (information/education only). Lane B/C explicitly rejected.
-- **Geography:** global **без РФ**. US + EU + UK + LATAM + APAC + crypto-native. CIS per-country post-alpha.
-- **Launch language:** English primary. Russian drafted parallel. EU languages (DE/IT/ES/FR/PT) deferred to wave-2.
-- **Architecture:** dashboard-primary with AI woven (NOT chat-primary). Chat is a tab. 5 primary routes: Dashboard / Positions / Insights / Chat / Settings. iOS tab-bar 4.
-- **Coach UX:** contextual — blinking dots on position cards / dashboard widgets / chat threads / insight cards / transaction rows + bell-dropdown top-bar hub (unread count). NO `/coach` route. NO filter-chip. Free teaser reveals subject not substance; «Upgrade to Plus to see detail» CTA.
-- **Trial:** 14-day Plus, card required. No pushy copy. Day-13 has TWO equal-weight CTAs (Keep Plus / Cancel).
-- **Free cap:** 50 messages/month (NO daily limit). **Haiku model** for Free tier (5x cheaper than Sonnet). Plus/Pro on Sonnet.
-- **«Free is always Free»** — permanent brand commitment. Content-lead built landing + paywall copy around this.
-
-## Rule 3 establishment
-
-**Permanent rule** from this session (in `.agents/team/CONSTRAINTS.md` Rule 3 + `feedback_multi_agent_strategic_review.md` memory): strategic decisions (new metaphor / positioning / naming / brand / pricing structure / regulatory lane / ICP / major surface emphasis) require REAL parallel Agent-tool dispatch of 3-6 specialists in isolated contexts. Single-agent simulation forbidden. Navigator synthesizes with ONE weighted recommendation; PO decides.
-
-Six independent reviews landed for Option 4 («Second Brain») — all 6 WARN, none SUPPORT, none REJECT. Synthesis in `docs/product/REVIEW_SYNTHESIS_2026-04-23.md`. PO chose condition-keep path (demote metaphor to tagline, imperative hero, product name Memoro from Round 5) → all 7 conditions locked → execution dispatches → product spec complete.
-
-## Open threads for next session
-
-### Pri 1 — Strategic palette review (PO asked, not yet launched)
-PO noticed that violet-700 + slate palette was inherited from pre-Memoro generic tracker design, never explicitly decided for Memoro. Also Claude Design logo output shows gradient violations of Design Brief v1.2 §0 anti-pattern list + no wordmark↔icon case consistency. **PO asked to launch palette exploration as multi-agent strategic review (brand-strategist + product-designer + content-lead in parallel)** — PO's «запускаю» not given yet. Next-session trigger: PO says «запускаю palette review» or alternative.
-
-### Pri 2 — 4 trial-policy clarifications from content-lead
-PO confirm requests:
-- One-trial-per-account policy YES/NO
-- Weekly activity email default ON/OFF
-- Chat usage meter visibility always vs 80% threshold
-- Tier-name localization «Plus/Pro» Latin (current) vs «Плюс/Про» calque
-
-### Pri 3 — 2 product-designer nits (non-blocking)
-- `Cmd/Ctrl+Shift+B` as bell-dropdown shortcut (vs `Cmd/Ctrl+B` which conflicts with Chrome bookmark-bar)
-- Free-tier nudge banner threshold: ≥3 unread locked patterns/month, max once/month, dismissable
-
-### Pri 4 — Engineering ready to start
-Tech-lead can receive Slice 8a kickoff when PO ready. Full product spec exists; Coach contextual UX + Trial flow + Free/Plus/Pro tier structure all specc'ed. Dependencies flagged by specialists:
-- Haiku routing for Free MUST ship before 50/mo cap (else cost 3.75x worse)
-- Plus heavy-user fair-use policy (600+ msg/mo on Sonnet → negative margin)
-- Contextual Coach icon infrastructure (new product surface — tech-lead scopes firing + unread-state management)
-- SnapTrade trade-history coverage audit (≥70% of launch-geography brokers — gate for warm-start Coach feasibility)
-
-### Pri 5 — Deferred cleanups (PENDING_CLEANUPS.md)
-- #5 Language expansion order ADR — post-alpha wave-2
-- #6 Physical address for commercial email — trigger: first commercial email fires
-
-### Pri 6 — Spend items (all ЗАПРЕЩЕНЫ until PO explicit greenlight)
-- Trademark clearance US $2-5K + multi-jurisdiction
-- US securities-counsel opinion $5-12K (highest ROI pre-launch legal)
-- DE legal-counsel €5-15K (if EU within 6-months launch window)
-- OpenAI Enterprise tier (for GDPR zero-retention)
-- Professional naming consultant (not needed since Memoro locked)
-
-## Financial state
-
-- **Total spent to date:** $250 (domain Memoro)
-- **Projected pre-launch legal:** $30-90K across jurisdictions (deferred per PO decision)
-- **Free-tier LLM COGS at 10K users:** $3,600/month (down from $26,600/month under v1 Sonnet+5-msg/day model)
-- **Free→Plus break-even conversion:** 11.8% (industry benchmark 15-30% for card-required trial)
-
-## Team state
-
-**13 agents in `.agents/team/`:**
-- Navigator (PO entry point, opus, has Agent tool for parallel dispatch)
-- Product specialists: brand-strategist, product-designer, user-researcher, content-lead (all opus)
-- Domain SMEs: finance-advisor, legal-advisor (both opus — NOT yet loaded in session; require session restart to appear in subagent roster; currently via general-purpose with full role-file prompts)
-- Tech-lead + builders (backend, frontend, devops, qa) + code-reviewer
-
-**Rules locked in `.agents/team/CONSTRAINTS.md`:**
-- Rule 1: no spend without explicit per-transaction PO approval
-- Rule 2: no external communication in PO's name
-- Rule 3: multi-agent review mandatory for strategic decisions
+Earlier session content (Option-4 lock, naming Round 5/6, financial state @ 2026-04-23, team-state @ 2026-04-23) is preserved in git history and in `docs/DECISIONS.md`. Working state is the **2026-04-25/26 Provedo lock** above.
 
 ## Artefact map (where to find things)
 
-- **Product:** `docs/product/01_DISCOVERY.md` v2, `02_POSITIONING.md` v3.1, `03_NAMING.md` (LOCKED: Memoro), `STRATEGIC_OPTIONS_v1.md` v1.6, `REVIEW_SYNTHESIS_2026-04-23.md`, `competitor-matrix.md`, `competitor-positioning.md`, `pricing-landscape.md`, `getquin-deep-dive.md`, `USER_RESEARCH/hypotheses.md`
+- **Product:** `docs/product/01_DISCOVERY.md` v2, `02_POSITIONING.md` v3.1, `03_NAMING.md` (LOCKED: Provedo), `STRATEGIC_OPTIONS_v1.md` v1.6, `REVIEW_SYNTHESIS_2026-04-23.md`, `competitor-matrix.md`, `competitor-positioning.md`, `pricing-landscape.md`, `getquin-deep-dive.md`, `USER_RESEARCH/hypotheses.md`
 - **Content:** `docs/content/landing.md`, `email-sequences.md`, `microcopy.md`, `paywall.md`
 - **Design:** `docs/04_DESIGN_BRIEF.md` v1.3, `docs/design/DASHBOARD_ARCHITECTURE.md`, `COACH_SURFACE_SPEC.md` v2.0, `ONBOARDING_FLOW.md`
 - **Legal:** `docs/legal/PRIVACY_POLICY_draft.md`, `TOS_draft.md`, `COOKIE_POLICY_draft.md`, `DPA_template.md`, `AI_DISCLAIMER_PATTERN.md`, `SUBPROCESSOR_REGISTRY.md`
