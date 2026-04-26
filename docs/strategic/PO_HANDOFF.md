@@ -2,7 +2,70 @@
 
 **Что это:** документ для передачи состояния между сессиями Claude. Когда чат лагает / переполнен контекстом / теряется фокус — открыть новый чат, дать промт (внизу документа), Claude поднимает весь проект по этому файлу и доп.документам.
 
-**Last updated:** 2026-04-26 — end-of-session snapshot after Provedo rebrand + landing v1→v3 evolution + finance/legal landing reviews.
+**Last updated:** 2026-04-27 EOD — landing iterated through 6 slices then full rebuild from scratch into landing-v2 «Ledger That Talks» on separate branch. Two PRs open in parallel for PO review.
+
+---
+
+## ⏱ SESSION 2026-04-27 — END SNAPSHOT (read this first next session)
+
+### What's open for PO review
+
+**TWO PRs simultaneously** — PO picks the winner:
+
+| | PR #65 (v3.1 + iterations) | PR #66 (v2 «Ledger That Talks») |
+|---|---|---|
+| Branch | `feat/lp-provedo-first-pass` | `feat/lp-provedo-v2-ledger-talks` |
+| HEAD | `cfdb705` pushed (+ `27cfb7f` LOCAL hotfix not pushed) | `ce5f6ca` pushed |
+| Style | Iterated current 9-section landing, ChatPromptPicker, Sources primitive | Full rebuild — «Ledger That Talks» two-pane editorial, 6 sections, Patagonia voice |
+| Tests | 347 local | 126 |
+| Bundle `/` | ~114 kB | 110 kB |
+| Status | OPEN — fallback if v2 doesn't land | OPEN — primary candidate |
+
+**Vercel preview URLs:** find in PR comments (Vercel bot auto-attaches).
+
+### What right-hand decided unilaterally this session (all defensible per PO delegation)
+
+1. Bundled massive scope into single PRs (LP5-BCD + LP6 each combined many items per PO «не staged, я хочу видеть результат»)
+2. Hotfix LP6.1 NOT pushed — PO said «вообще не надо read-only», v2 supersedes anyway
+3. v2 built off main not stacked on v3.1 (clean diff)
+4. Both PRs kept open simultaneously — PO picks
+5. Cherry-picked v3.1 primitives (MarketingHeader/Footer/ProvedoButton/Sources) onto v2 branch — needed because they were absent on main
+6. Hero count-up animation static for v2.0 ship → TD follow-up
+7. Broker logos as wordmark text → TD for real-SVG-with-licensing-clearance
+
+### Five from-scratch specialist visions (consolidated into landing-v2)
+
+| Specialist | Key contribution |
+|---|---|
+| brand-strategist | Category «Portfolio answer engine»; ICP «Researcher-Investor» 28-45; anti-position NOT «AI picks stocks» |
+| brand-voice-curator | Voice «Observant. Composed. Plain-spoken.» (Patagonia + Craig Mod + Wirecutter); «Guide, not a coach» |
+| content-lead | 6-section structure; Hero eyebrow «Portfolio intelligence, on demand.»; Stripe Atlas reference |
+| user-researcher | ICP «Scattered Optimiser» (multi-broker holder with anxiety, not trader); anti-segment day-traders |
+| product-designer | «The Ledger That Talks» two-pane editorial — left ledger / right conversation, Stripe Press + Granola + Anthropic refs |
+
+### Key files created this session
+- `docs/design/landing-v2-implementation-spec.md` (~1400 lines) — binding for any v2 follow-up work
+- `docs/design/slice-lp5-magician-strong-rethink.md` (~1309 lines) — alternative direction if v2 rejected
+- `docs/product/chart-component-catalog.md` (50 entries) — for Claude Design parallel work
+- `claude_design/` package (42 files, 636KB) — outside CD review export
+- 5 fresh-eyes review files + 5 from-scratch review files + 5 final-design-review files + Phase 3 + CD memo reviews
+
+### Active TDs carried
+- TD-095 broker count «Hundreds» → «1000+» (await tech-lead verify)
+- TD-099 chart-complexity refactor (charts dormant in v2; live in v3.1)
+- Hero count-up animation (v2 polish)
+- Real broker SVG logos (v2 polish + licensing review)
+- VOICE_PROFILE.md guardrails Item 1 ambiguity (negation-form co-occurrence — needs profile-side exception clause)
+
+### Spend
+$420 total, no new spend this session.
+
+### Recurring tactical lesson (right-hand self-flag)
+Read-only chrome-overdose: I created in slice-LP6 the exact anti-pattern I was diet-fixing for «Sources» in slice-LP5. Pattern: when adding new trust signals, audit existing instances of same concept FIRST before adding new mounts. Same blindspot caught.
+
+---
+
+## ARCHIVED PRIOR-SESSION SNAPSHOT (2026-04-26)
 
 ---
 
