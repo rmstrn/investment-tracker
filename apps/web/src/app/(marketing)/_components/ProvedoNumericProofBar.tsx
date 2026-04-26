@@ -36,36 +36,56 @@ function AnimatedNumber({
   prefersReduced,
   duration = 1000,
 }: AnimatedNumberProps): React.ReactElement {
-  const [value, setValue] = useState(prefersReduced ? target : 0);
+  // Wave 2.6 a11y HIGH-2: progressive enhancement — render the FINAL value on
+  // SSR + first paint so no-JS users + early hydration phase see real content
+  // (not «0%»). The count-up animation is a JS enhancement layered on top of
+  // the static, correct, accessible value. We track `mounted` so the count-up
+  // can still play for users with motion enabled, by jumping to 0 only when
+  // the client has hydrated AND motion is enabled AND the section has not
+  // yet been scrolled into view (so we don't trigger an out-and-back flash
+  // for users who land mid-scroll on a section already in viewport).
+  const [value, setValue] = useState(target);
+  const [mounted, setMounted] = useState(false);
   const rafRef = useRef<number | null>(null);
   const startRef = useRef<number | null>(null);
+  const hasAnimatedRef = useRef(false);
 
   useEffect(() => {
-    if (!animate) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (prefersReduced) {
       setValue(target);
       return;
     }
+    if (animate && !hasAnimatedRef.current) {
+      hasAnimatedRef.current = true;
+      // Reset to 0 + start count-up in the same effect tick — single browser
+      // frame change minimizes perceptual flash from `target` → 0.
+      setValue(0);
+      startRef.current = null;
 
-    startRef.current = null;
-
-    function tick(now: number) {
-      if (startRef.current === null) startRef.current = now;
-      const elapsed = now - startRef.current;
-      const progress = Math.min(elapsed / duration, 1);
-      // Ease-out cubic
-      const eased = 1 - (1 - progress) ** 3;
-      setValue(Math.round(eased * target));
-      if (progress < 1) {
-        rafRef.current = requestAnimationFrame(tick);
+      function tick(now: number) {
+        if (startRef.current === null) startRef.current = now;
+        const elapsed = now - startRef.current;
+        const progress = Math.min(elapsed / duration, 1);
+        // Ease-out cubic
+        const eased = 1 - (1 - progress) ** 3;
+        setValue(Math.round(eased * target));
+        if (progress < 1) {
+          rafRef.current = requestAnimationFrame(tick);
+        }
       }
-    }
 
-    rafRef.current = requestAnimationFrame(tick);
-    return () => {
-      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    };
-  }, [animate, target, duration, prefersReduced]);
+      rafRef.current = requestAnimationFrame(tick);
+      return () => {
+        if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      };
+    }
+    return undefined;
+  }, [animate, target, duration, prefersReduced, mounted]);
 
   return (
     <span>
@@ -111,6 +131,13 @@ export function ProvedoNumericProofBar({
 }: ProvedoNumericProofBarProps): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.3 });
   const prefersReduced = usePrefersReducedMotion();
+  // Wave 2.6 a11y HIGH-2: text-only cells (#2 «Every», #3 «5 min») render
+  // visible from SSR with no opacity fade. The previous fade-in-on-scroll
+  // hid plain-text content from no-JS users + the early hydration phase.
+  // The audit explicitly directs us to drop the destructive enhancement and
+  // keep these cells unconditionally visible. The count-up on cell #4 is
+  // preserved as a non-destructive enhancement (target value rendered on
+  // SSR; count-up only plays after hydration if motion is enabled).
 
   return (
     <section
@@ -145,16 +172,12 @@ export function ProvedoNumericProofBar({
             </dd>
           </div>
 
-          {/* Cell 2 — Every observation cited */}
+          {/* Cell 2 — Every observation cited
+              Wave 2.6 HIGH-2: opacity fade dropped — text content always visible. */}
           <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
-              style={{
-                ...CELL_BIG_STYLE,
-                color: 'var(--provedo-text-primary)',
-                opacity: inView || prefersReduced ? 1 : 0,
-                transition: prefersReduced ? 'none' : 'opacity 400ms ease 200ms',
-              }}
+              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
             >
               Every
             </dd>
@@ -163,16 +186,12 @@ export function ProvedoNumericProofBar({
           </div>
 
           {/* Cell 3 — Time anchor «5 min / a week» (v3.2 NEW)
-              Static token, no count-up (PD spec — count-up reads gimmicky on time-anchor) */}
+              Static token, no count-up (PD spec — count-up reads gimmicky on time-anchor)
+              Wave 2.6 HIGH-2: opacity fade dropped — text content always visible. */}
           <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
-              style={{
-                ...CELL_BIG_STYLE,
-                color: 'var(--provedo-text-primary)',
-                opacity: inView || prefersReduced ? 1 : 0,
-                transition: prefersReduced ? 'none' : 'opacity 400ms ease 200ms',
-              }}
+              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
             >
               5 min
             </dd>

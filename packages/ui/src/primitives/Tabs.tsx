@@ -3,6 +3,7 @@
 import {
   type ButtonHTMLAttributes,
   type HTMLAttributes,
+  type KeyboardEvent,
   type ReactNode,
   createContext,
   useCallback,
@@ -77,9 +78,76 @@ export interface TabsTriggerProps extends ButtonHTMLAttributes<HTMLButtonElement
   value: string;
 }
 
-export function TabsTrigger({ className, value: v, children, ...props }: TabsTriggerProps) {
+// Wave 2.6 a11y HIGH-1: WAI-ARIA APG tab keyboard navigation keys.
+// Map non-trivial direction logic to a tiny pure function so the React
+// handler stays under cognitive-complexity budget.
+const NAV_KEYS = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End']);
+
+function nextTabIndex(currentIndex: number, total: number, key: string): number {
+  if (key === 'ArrowLeft' || key === 'ArrowUp') {
+    return currentIndex <= 0 ? total - 1 : currentIndex - 1;
+  }
+  if (key === 'ArrowRight' || key === 'ArrowDown') {
+    return currentIndex >= total - 1 ? 0 : currentIndex + 1;
+  }
+  if (key === 'Home') return 0;
+  if (key === 'End') return total - 1;
+  return currentIndex;
+}
+
+export function TabsTrigger({
+  className,
+  value: v,
+  children,
+  onKeyDown,
+  ...props
+}: TabsTriggerProps) {
   const { value, setValue, baseId } = useTabs();
   const active = v === value;
+
+  // Wave 2.6 a11y HIGH-1: WAI-ARIA APG tab keyboard pattern.
+  // ArrowLeft/Up    → previous tab (wraps to last)
+  // ArrowRight/Down → next tab (wraps to first)
+  // Home            → first tab
+  // End             → last tab
+  // Roving tabindex (`tabIndex={active ? 0 : -1}`) is already correct above;
+  // this handler moves both DOM focus AND selection to the new tab so the
+  // associated panel updates on keyboard navigation. WCAG 2.1.1 Keyboard (A).
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent<HTMLButtonElement>) => {
+      if (!NAV_KEYS.has(event.key)) {
+        onKeyDown?.(event);
+        return;
+      }
+
+      const currentTab = event.currentTarget;
+      const tabList = currentTab.closest('[role="tablist"]');
+      const tabs = tabList
+        ? Array.from(tabList.querySelectorAll<HTMLButtonElement>('[role="tab"]')).filter(
+            (tab) => !tab.disabled,
+          )
+        : [];
+
+      if (tabs.length === 0) {
+        onKeyDown?.(event);
+        return;
+      }
+
+      const nextIndex = nextTabIndex(tabs.indexOf(currentTab), tabs.length, event.key);
+      const nextTab = tabs[nextIndex];
+      if (!nextTab || nextTab === currentTab) {
+        onKeyDown?.(event);
+        return;
+      }
+
+      event.preventDefault();
+      setValue(nextTab.id.replace(`${baseId}-trigger-`, ''));
+      nextTab.focus();
+      onKeyDown?.(event);
+    },
+    [baseId, onKeyDown, setValue],
+  );
+
   return (
     <button
       type="button"
@@ -89,6 +157,7 @@ export function TabsTrigger({ className, value: v, children, ...props }: TabsTri
       aria-controls={`${baseId}-panel-${v}`}
       tabIndex={active ? 0 : -1}
       onClick={() => setValue(v)}
+      onKeyDown={handleKeyDown}
       className={cn(
         'rounded-sm px-3 py-1.5 text-sm font-medium transition-colors duration-fast',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',

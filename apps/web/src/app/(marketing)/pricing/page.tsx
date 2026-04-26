@@ -3,8 +3,11 @@ import type { Metadata } from 'next';
 import type { PlanTier } from './_components/PricingTable';
 import { PricingTable } from './_components/PricingTable';
 
+// Wave 2.6 HIGH-3 (Rule 4): title MUST mention only Provedo. The rejected
+// naming predecessor was previously rendered in the browser tab + announced
+// by screen readers on /pricing page load. Hard-rule violation removed.
 export const metadata: Metadata = {
-  title: 'Pricing — Investment Tracker',
+  title: 'Pricing — Provedo',
   description:
     'Simple pricing. Free for basic tracking. Paid tiers unlock deeper AI and tax reports.',
 };

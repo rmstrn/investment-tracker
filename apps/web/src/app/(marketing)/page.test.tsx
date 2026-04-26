@@ -3,6 +3,8 @@
 // Test shape: render → getByRole/getByText → assertion (AAA pattern)
 // Does NOT import 'use client' components with DOM APIs — uses dedicated component-level mocks.
 
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
@@ -764,5 +766,172 @@ describe('ProvedoDemoTabsV2 — source citations (v3.2)', () => {
     expect(screen.getByText(/~28%/)).toBeInTheDocument();
     // v3.2 NEW source line — S&P DJI methodology
     expect(screen.getByText(/s&p dji methodology/i)).toBeInTheDocument();
+  });
+});
+
+// ─── Wave 2.6 a11y CRIT-2 — single <main> landmark on home page ──────────
+
+describe('MarketingHomePage — Wave 2.6 CRIT-2 (no nested <main>)', () => {
+  it('does NOT render its own <main> element (layout already provides one)', () => {
+    // The marketing layout at (marketing)/layout.tsx wraps children in
+    // <main id="main-content">. The home page must NOT introduce a second
+    // <main> landmark, which would create two landmarks of the same role
+    // and confuse SR landmark navigation
+    // (WCAG 1.3.1 Info and Relationships A + 4.1.2 Name, Role, Value A).
+    const { container } = render(<MarketingHomePage />);
+    const inlineMain = container.querySelector('main');
+    expect(inlineMain).toBeNull();
+  });
+});
+
+// ─── Wave 2.6 a11y HIGH-2 — proof bar visible on SSR / first paint ───────
+
+describe('ProvedoNumericProofBar — Wave 2.6 HIGH-2 (visible on SSR)', () => {
+  it('renders cell #2 «Every» without an opacity:0 inline style (always visible)', () => {
+    render(<ProvedoNumericProofBar />);
+    // The «Every» token sits inside a <dd>. Per Wave 2.6 HIGH-2, the
+    // destructive opacity-fade-on-scroll was dropped — text content stays
+    // unconditionally visible so no-JS users + the early hydration phase
+    // see real content.
+    const everyEl = screen.getByText('Every');
+    const dd = everyEl.closest('dd');
+    expect(dd).not.toBeNull();
+    const inlineStyle = (dd as HTMLElement).getAttribute('style') ?? '';
+    // Must not contain `opacity: 0` as initial state.
+    expect(inlineStyle).not.toMatch(/opacity:\s*0(?!\.)/);
+  });
+
+  it('renders cell #3 «5 min» without an opacity:0 inline style (always visible)', () => {
+    render(<ProvedoNumericProofBar />);
+    const fiveMinEl = screen.getByText('5 min');
+    const dd = fiveMinEl.closest('dd');
+    expect(dd).not.toBeNull();
+    const inlineStyle = (dd as HTMLElement).getAttribute('style') ?? '';
+    expect(inlineStyle).not.toMatch(/opacity:\s*0(?!\.)/);
+  });
+
+  it('renders cell #4 with the final count-up target value on SSR via renderToString', async () => {
+    // Use react-dom/server so the test sees the actual SSR HTML payload
+    // (no useEffect, no client mount). The audit requires that no-JS users
+    // see «100%» — not «0%» — for the information-not-advice cell.
+    // React injects HTML comments between sibling text nodes for hydration,
+    // so we strip those before matching.
+    const { renderToString } = await import('react-dom/server');
+    const html = renderToString(<ProvedoNumericProofBar />).replace(/<!--[^>]*-->/g, '');
+    expect(html).toMatch(/100%/);
+    // The pre-fix initial state was 0; ensure that exact substring is not
+    // emitted as the cell value. (We allow «100%» which contains «0%».)
+    expect(html).not.toMatch(/>0%</);
+  });
+});
+
+// ─── Wave 2.6 a11y HIGH-1 — Tabs arrow-key keyboard navigation ───────────
+
+describe('Tabs — Wave 2.6 HIGH-1 (WAI-ARIA APG arrow-key nav)', () => {
+  it('ArrowRight from active tab moves selection + focus to next tab', () => {
+    render(<ProvedoDemoTabsV2 />);
+    const whyTab = screen.getByRole('tab', { name: /why\?/i });
+    whyTab.focus();
+    fireEvent.keyDown(whyTab, { key: 'ArrowRight' });
+    const dividendsTab = screen.getByRole('tab', { name: /dividends/i });
+    expect(dividendsTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(dividendsTab);
+  });
+
+  it('ArrowLeft from first tab wraps to last tab', () => {
+    render(<ProvedoDemoTabsV2 />);
+    const whyTab = screen.getByRole('tab', { name: /why\?/i });
+    whyTab.focus();
+    fireEvent.keyDown(whyTab, { key: 'ArrowLeft' });
+    const aggregateTab = screen.getByRole('tab', { name: /aggregate/i });
+    expect(aggregateTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(aggregateTab);
+  });
+
+  it('Home key jumps to first tab', () => {
+    render(<ProvedoDemoTabsV2 />);
+    // Activate the Aggregate (last) tab first
+    const aggregateTab = screen.getByRole('tab', { name: /aggregate/i });
+    fireEvent.click(aggregateTab);
+    aggregateTab.focus();
+    fireEvent.keyDown(aggregateTab, { key: 'Home' });
+    const whyTab = screen.getByRole('tab', { name: /why\?/i });
+    expect(whyTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(whyTab);
+  });
+
+  it('End key jumps to last tab', () => {
+    render(<ProvedoDemoTabsV2 />);
+    const whyTab = screen.getByRole('tab', { name: /why\?/i });
+    whyTab.focus();
+    fireEvent.keyDown(whyTab, { key: 'End' });
+    const aggregateTab = screen.getByRole('tab', { name: /aggregate/i });
+    expect(aggregateTab).toHaveAttribute('aria-selected', 'true');
+    expect(document.activeElement).toBe(aggregateTab);
+  });
+});
+
+// ─── Wave 2.6 HIGH-3 — Rule 4 grep regression across apps/web ────────────
+
+describe('Rule 4 — no rejected predecessor name in apps/web user-facing source', () => {
+  // Walk apps/web/src and grep for the rejected predecessor display string
+  // in source files we own. Package-name imports (`@investment-tracker/...`)
+  // are infrastructure — different namespace, allowed by design — so the
+  // pattern explicitly targets the two-word display string.
+  const REJECTED_PATTERN = /Investment\s+Tracker/i;
+  // Vitest runs from apps/web/ → cwd-relative resolution avoids
+  // import.meta.url URL-scheme issues under happy-dom.
+  const SRC_DIR = path.resolve(process.cwd(), 'src');
+  const SKIPPED_DIRS = new Set(['node_modules', '.next']);
+  const SCANNABLE_EXT = /\.(tsx?|jsx?|md)$/;
+
+  function shouldSkipFile(full: string): boolean {
+    // The Rule 4 audit tests themselves contain the pattern by definition;
+    // skip them so the assertion does not match against its own source.
+    if (full.endsWith('middleware.test.ts')) return true;
+    return full.endsWith('page.test.tsx') && full.includes(`${path.sep}(marketing)${path.sep}`);
+  }
+
+  function collectFiles(dir: string, out: string[]): void {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!SKIPPED_DIRS.has(entry.name)) collectFiles(full, out);
+        continue;
+      }
+      if (!SCANNABLE_EXT.test(entry.name)) continue;
+      if (shouldSkipFile(full)) continue;
+      out.push(full);
+    }
+  }
+
+  function findOffendersInFile(file: string): Array<{ file: string; line: number; text: string }> {
+    const lines = readFileSync(file, 'utf8').split(/\r?\n/);
+    const offenders: Array<{ file: string; line: number; text: string }> = [];
+    for (let idx = 0; idx < lines.length; idx += 1) {
+      const line = lines[idx] ?? '';
+      // Strip package-import lines — they reference the workspace npm
+      // namespace `@investment-tracker/*` which is a different identifier.
+      if (line.includes('@investment-tracker/')) continue;
+      if (REJECTED_PATTERN.test(line)) {
+        offenders.push({ file, line: idx + 1, text: line.trim() });
+      }
+    }
+    return offenders;
+  }
+
+  it('no source file under apps/web/src renders the rejected predecessor display string', () => {
+    const files: string[] = [];
+    collectFiles(SRC_DIR, files);
+
+    const offenders = files.flatMap(findOffendersInFile);
+
+    if (offenders.length > 0) {
+      const summary = offenders.map((o) => `${o.file}:${o.line} → ${o.text}`).join('\n');
+      throw new Error(
+        `Rule 4 violation — rejected predecessor display string found in user-facing source:\n${summary}`,
+      );
+    }
+    expect(offenders).toEqual([]);
   });
 });

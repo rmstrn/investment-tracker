@@ -40,8 +40,13 @@ export const metadata: Metadata = {
 };
 
 export default function MarketingHomePage() {
+  // Wave 2.6 a11y CRIT-2: use a fragment, NOT <main>. The marketing layout
+  // at (marketing)/layout.tsx already provides <main id="main-content">.
+  // Nesting <main> inside <main> is invalid HTML and creates two landmarks
+  // of the same role, breaking SR landmark navigation
+  // (WCAG 1.3.1 Info and Relationships A + 4.1.2 Name, Role, Value A).
   return (
-    <main>
+    <>
       {/* S1 — Hero (stacked 3-mockup, dual CTA) */}
       <ProvedoHeroV2 />
 
@@ -78,6 +83,6 @@ export default function MarketingHomePage() {
       <ProvedoRepeatCTAV2 />
 
       {/* Footer rendered by (marketing)/layout.tsx */}
-    </main>
+    </>
   );
 }
