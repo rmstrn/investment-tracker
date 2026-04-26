@@ -11,7 +11,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'Does Provedo give investment advice?',
     answer:
-      'No. Provedo provides clarity, observation, context, and foresight — never advice, recommendations, or strategy. Lane A: information, not advice.',
+      'No. Provedo provides clarity, observation, context, and foresight — never advice, recommendations, or strategy. Information, not advice.',
   },
   {
     question: 'How is Provedo different from a robo-advisor?',

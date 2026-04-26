@@ -397,9 +397,10 @@ describe('ProvedoFAQ', () => {
     expect(screen.getByText(/what does .pre-alpha. mean/i)).toBeInTheDocument();
   });
 
-  it('Q1 answer contains Lane A explicit disclaim', () => {
+  it('Q1 answer contains explicit disclaim (information, not advice)', () => {
     render(<ProvedoFAQ />);
     expect(screen.getByText(/never advice, recommendations, or strategy/i)).toBeInTheDocument();
+    expect(screen.getByText(/information, not advice/i)).toBeInTheDocument();
   });
 
   it('Q5 security answer mentions read-only connections', () => {
