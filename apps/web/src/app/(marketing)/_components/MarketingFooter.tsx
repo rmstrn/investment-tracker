@@ -60,14 +60,20 @@ export function MarketingFooter() {
           </nav>
         </div>
 
-        {/* Regulatory disclaimer — verbatim from §6 */}
+        {/* Regulatory disclaimer — tightened per legal-advisor 2026-04-26 (v3.1).
+            Adds «not broker-dealer» + «no personalized recommendations» + explicit
+            Investment Advisers Act / MiFID II / FSMA 2000 citations + advisor-consult close.
+            Final wording requires per-jurisdiction attorney review before public launch. */}
         <p
           className="mt-6 max-w-2xl text-xs leading-relaxed"
           style={{ color: 'var(--provedo-text-tertiary)' }}
         >
-          Provedo is not a registered investment advisor. Information is provided for educational
-          purposes only. Past performance is not indicative of future results. All investment
-          decisions are your own.
+          Provedo is not a registered investment advisor and is not a broker-dealer. Provedo
+          provides generic information for educational purposes only and does not provide
+          personalized investment recommendations or advice as defined under the U.S. Investment
+          Advisers Act of 1940, EU MiFID II, or UK FSMA 2000. Past performance is not indicative of
+          future results. All investment decisions are your own. Consult a licensed financial
+          advisor in your jurisdiction before making investment decisions.
         </p>
       </div>
     </footer>

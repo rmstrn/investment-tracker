@@ -5,7 +5,7 @@
 // Accessibility: details/summary native HTML (keyboard navigable, no JS required)
 // 'use client' directive required for inline onFocus/onBlur event handlers (Next.js 15 RSC boundary)
 // Lane A: Q1 explicit disclaim register, all answers audited per 5-item guardrails
-// TD-096: FAQ Q4 Plus price «$X/month» placeholder — update when finance-advisor confirms
+// Plus price LOCKED $9/month per finance-advisor 2026-04-26 (was TD-096 placeholder)
 
 const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
@@ -26,7 +26,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'What does Provedo cost?',
     answer:
-      'Free is always free — 50 chat messages a month, full broker aggregation, weekly insights, no card required. Plus tier ($X/month) unlocks unlimited chat and daily insights.',
+      'Free is always free — 50 chat messages a month, full broker aggregation, weekly insights, no card required. Plus tier ($9/month) unlocks unlimited chat and insights when they matter.',
   },
   {
     question: 'Is my data secure?',

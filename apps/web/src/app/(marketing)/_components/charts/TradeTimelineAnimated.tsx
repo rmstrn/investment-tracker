@@ -1,8 +1,10 @@
 'use client';
 
-// TradeTimelineAnimated — Tab 3 «Patterns» animated trade timeline (v3)
-// Animation: 3 sell points appear sequentially (300ms stagger), then recovery marks,
-//            then dotted connectors, then «no judgment, no advice» text fades last
+// TradeTimelineAnimated — Tab 3 «Patterns» animated trade timeline (v3.1)
+// Animation: all sell points + recovery marks + connectors fade in simultaneously
+//            (legal patch 2026-04-26: simultaneous presentation eliminates
+//            narrative-causation framing «if you hadn't sold...»),
+//            then «no judgment, no advice» disclaim fades last
 // Fallback: prefers-reduced-motion → static (all visible)
 // Lane A: «no judgment, no advice» disclaim — load-bearing copy
 // Accessibility: role="img" + aria-label + <details> fallback table
@@ -29,44 +31,25 @@ const SELL_POINTS: ReadonlyArray<{
 const MONTH_LABELS = ['Jan', 'Mar', 'May', 'Jul', 'Sep', 'Nov'] as const;
 const MONTH_LABEL_XS = [0, 47, 94, 142, 189, 236] as const;
 
-type AnimPhase = 'idle' | 'sells' | 'recoveries' | 'connectors' | 'disclaim' | 'done';
-
 export function TradeTimelineAnimated(): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.3 });
   const prefersReduced = usePrefersReducedMotion();
-  const [phase, setPhase] = useState<AnimPhase>('idle');
-  const [visibleSells, setVisibleSells] = useState(0);
+  const [marksRevealed, setMarksRevealed] = useState(false);
+  const [disclaimVisible, setDisclaimVisible] = useState(false);
   const timerRefs = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
     if (!inView) return;
     if (prefersReduced) {
-      setPhase('done');
-      setVisibleSells(SELL_POINTS.length);
+      setMarksRevealed(true);
+      setDisclaimVisible(true);
       return;
     }
-
-    // Sequence:
-    // 0ms: sell 1 appears
-    // 300ms: sell 2
-    // 600ms: sell 3
-    // 900ms: phase=recoveries
-    // 1200ms: phase=connectors
-    // 1600ms: phase=disclaim/done
-    const t0 = setTimeout(() => setVisibleSells(1), 0);
-    const t1 = setTimeout(() => setVisibleSells(2), 300);
-    const t2 = setTimeout(() => setVisibleSells(3), 600);
-    const t3 = setTimeout(() => setPhase('recoveries'), 900);
-    const t4 = setTimeout(() => setPhase('connectors'), 1200);
-    const t5 = setTimeout(() => setPhase('done'), 1600);
-    timerRefs.current = [t0, t1, t2, t3, t4, t5];
-
+    const t1 = setTimeout(() => setMarksRevealed(true), 0);
+    const t2 = setTimeout(() => setDisclaimVisible(true), 600);
+    timerRefs.current = [t1, t2];
     return () => timerRefs.current.forEach(clearTimeout);
   }, [inView, prefersReduced]);
-
-  const showRecoveries = phase === 'recoveries' || phase === 'connectors' || phase === 'done';
-  const showConnectors = phase === 'connectors' || phase === 'done';
-  const showDisclaim = phase === 'done';
 
   return (
     <div ref={ref} style={{ marginTop: '12px' }}>
@@ -88,8 +71,8 @@ export function TradeTimelineAnimated(): React.ReactElement {
           strokeWidth="1"
         />
 
-        {/* Dotted connectors — appear in connectors phase */}
-        {SELL_POINTS.map((sp, i) => (
+        {/* Dotted connectors — appear simultaneously with all marks */}
+        {SELL_POINTS.map((sp) => (
           <line
             key={`conn-${sp.month}`}
             x1={sp.xSell}
@@ -100,15 +83,15 @@ export function TradeTimelineAnimated(): React.ReactElement {
             strokeWidth="1"
             strokeDasharray="3,3"
             style={{
-              opacity: showConnectors || prefersReduced ? 1 : 0,
-              transition: prefersReduced ? 'none' : `opacity 200ms ease ${i * 100}ms`,
+              opacity: marksRevealed || prefersReduced ? 1 : 0,
+              transition: prefersReduced ? 'none' : 'opacity 200ms ease',
             }}
           />
         ))}
 
-        {/* Sell-point triangles — stagger by index */}
-        {SELL_POINTS.map((sp, i) => {
-          const visible = prefersReduced || visibleSells > i;
+        {/* Sell-point triangles — all appear simultaneously */}
+        {SELL_POINTS.map((sp) => {
+          const visible = prefersReduced || marksRevealed;
           return (
             <g key={`sell-${sp.month}`}>
               <polygon
@@ -133,7 +116,7 @@ export function TradeTimelineAnimated(): React.ReactElement {
                 fontWeight="500"
                 style={{
                   opacity: visible ? 1 : 0,
-                  transition: prefersReduced ? 'none' : 'opacity 200ms ease 100ms',
+                  transition: prefersReduced ? 'none' : 'opacity 200ms ease',
                 }}
               >
                 {sp.month}
@@ -142,8 +125,8 @@ export function TradeTimelineAnimated(): React.ReactElement {
           );
         })}
 
-        {/* 8-week-after recovery circles — appear in recoveries phase with stagger */}
-        {SELL_POINTS.map((sp, i) => (
+        {/* 8-week-after recovery circles — appear simultaneously with sells */}
+        {SELL_POINTS.map((sp) => (
           <circle
             key={`after-${sp.month}`}
             cx={sp.xAfter}
@@ -153,12 +136,12 @@ export function TradeTimelineAnimated(): React.ReactElement {
             stroke="var(--provedo-accent)"
             strokeWidth="1.5"
             style={{
-              opacity: showRecoveries || prefersReduced ? 1 : 0,
-              transform: showRecoveries || prefersReduced ? 'scale(1)' : 'scale(0)',
+              opacity: marksRevealed || prefersReduced ? 1 : 0,
+              transform: marksRevealed || prefersReduced ? 'scale(1)' : 'scale(0)',
               transformOrigin: `${sp.xAfter}px ${AXIS_Y}px`,
               transition: prefersReduced
                 ? 'none'
-                : `opacity 200ms ease ${i * 100}ms, transform 250ms cubic-bezier(0.34,1.56,0.64,1) ${i * 100}ms`,
+                : 'opacity 200ms ease, transform 250ms cubic-bezier(0.34,1.56,0.64,1)',
             }}
           />
         ))}
@@ -212,7 +195,7 @@ export function TradeTimelineAnimated(): React.ReactElement {
           fontFamily: 'var(--provedo-font-mono)',
           color: 'var(--provedo-text-tertiary)',
           marginTop: '6px',
-          opacity: showDisclaim || prefersReduced ? 1 : 0,
+          opacity: disclaimVisible || prefersReduced ? 1 : 0,
           transition: prefersReduced ? 'none' : 'opacity 400ms ease',
         }}
       >

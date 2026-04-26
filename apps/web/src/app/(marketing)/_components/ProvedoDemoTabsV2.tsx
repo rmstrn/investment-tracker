@@ -172,10 +172,14 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
               <UserBubble>Anything unusual in my trades this year?</UserBubble>
               <ProvedoBubble>
                 <p>
-                  One pattern stands out. You sold <Mono>Apple</Mono> within{' '}
-                  <Mono>3 trading days</Mono> of a <Neg>&gt;5% drop</Neg>, three times last year.
-                  Each time, <Mono>AAPL</Mono> recovered above your sell price within{' '}
-                  <Mono>8 weeks</Mono>.
+                  You sold <Mono>Apple</Mono> within <Mono>3 trading days</Mono> of a{' '}
+                  <Neg>&gt;5% drop</Neg>, three times last year. Each time, <Mono>AAPL</Mono>&apos;s
+                  price returned above your sell level within <Mono>8 weeks</Mono>. This is a common
+                  pattern across retail investors.
+                </p>
+                <p className="mt-2 text-xs" style={{ color: 'var(--provedo-text-tertiary)' }}>
+                  Retrospective observation about past trades; not a recommendation about future
+                  trading decisions. Past patterns do not predict future results.
                 </p>
                 <TradeTimelineAnimated />
               </ProvedoBubble>
@@ -188,11 +192,11 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
               <UserBubble>How much tech am I holding across IBKR + Schwab?</UserBubble>
               <ProvedoBubble>
                 <p>
-                  Across both accounts, tech is <Mono>58%</Mono> of your equity exposure.{' '}
+                  Across both accounts, tech is <Mono>58%</Mono> of your equity exposure — about{' '}
+                  <Mono>2x</Mono> the sector&apos;s weight in S&amp;P 500 (<Mono>~28%</Mono>).{' '}
                   <Mono>IBKR</Mono> carries the bulk: <Mono>AAPL ($14k)</Mono>,{' '}
                   <Mono>MSFT ($9k)</Mono>, <Mono>NVDA ($8k)</Mono>. <Mono>Schwab</Mono> adds{' '}
-                  <Mono>GOOG ($3k)</Mono> and <Mono>AMZN ($2k)</Mono>. For context, US retail median
-                  tech allocation is around <Mono>34%</Mono>.
+                  <Mono>GOOG ($3k)</Mono> and <Mono>AMZN ($2k)</Mono>.
                 </p>
                 <AllocationPieBarAnimated />
               </ProvedoBubble>
