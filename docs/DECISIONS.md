@@ -55,6 +55,34 @@ same shape when they add subpaths.
 Owner: web lead. Revisit: only if the build step becomes slow enough to
 matter on fresh installs.
 
+## 2026-04-27 — Landing v3.2 universal-improvements; A/B/C posture DEFERRED
+
+After Phase 2 redesign synthesis (3 options A/B/C) right-hand issued preliminary
+Option A recommendation. Phase 3 Rule 3 multi-agent validation (finance-advisor +
+legal-advisor + brand-voice-curator + brand-strategist, real parallel dispatch)
+returned 4/4 SUPPORT-ALT-D — ship 7 universally-validated improvements as v3.2
+patch; defer A/B/C strategic posture commitment until cold-traffic signal exists.
+
+PO greenlit Option D 2026-04-27 + 2 micro-decisions: (a) Layer 1 disclaimer = legal
+edit «provides general information... not personalized investment advice»;
+(b) «free forever» dropped globally across all marketing surface, replaced with
+just «Free».
+
+A/B/C decision reopens after ONE of three trigger events (per brand-strategist
+verdict): (1) credible third-party brand mention (fintech-Twitter >5K, podcast,
+named case-study), OR (2) 1000+ unique visitors at bounce <70% on v3.2-patched
+landing, OR (3) confirmed ICP-A inbound (Notion/Linear/Cursor domains in waitlist).
+
+Reason: pre-alpha + zero cold-traffic data + hero locked 2 days prior — picking
+strategic posture without information consumes optionality. Synthesis §5 itself
+admits the 7 universals would ship in any scenario. Decoupling them from posture
+choice yields lower regulatory coupling + lower rollback cost.
+
+Slice-LP3.2 kickoff: `docs/kickoffs/2026-04-27-slice-lp3-2-universal-improvements.md`
+Phase 3 validator reports: `docs/reviews/2026-04-27-phase3-*-validation.md` (4 files)
+
+Owner: right-hand (Phase 2.5 reopening). Revisit trigger: see above.
+
 ## 2026-04-19 — Admin merge bypass policy
 
 `gh pr merge --admin` is allowed under one condition only: the CI failure
@@ -758,8 +786,12 @@ PO rejected finance-advisor's 3/day + 60/month combo; monthly cap only. User can
 - **Free tier paywall teaser:** reveals pattern subject but not substance. Example: «Provedo noticed a pattern in your NVDA trades — upgrade to Plus to see detail». Creates curiosity without Lane A violation.
 - **No dedicated surface for Coach** as category-claim — AI woven into existing surfaces per Q3 dashboard-primary lock.
 
-### «Free is always Free» — permanent brand commitment
-PO confirms Free tier stays free forever. Content-lead built landing + paywall copy around this («no last chance nonsense», «cancel is one click», «Free is always Free»). Brand promise — if later reneged, significant brand damage. PO confirms understanding and commits.
+### Free tier is permanent (internal anchor)
+**Policy:** Free tier does not expire, does not become a trial, never converts to paid without explicit user choice. No card required at sign-up. Cancel-on-Plus is one click.
+
+**Brand promise** — if later reneged, significant brand damage. PO confirms understanding and commits.
+
+**Marketing-copy directive (PO 2026-04-27):** This commitment is INTERNAL anchor only. Do NOT translate into user-facing copy. No «free forever», no «free always», no «always free», no «no trial ending», no «no last chance», no «no expiration» framings. Users know free is free — explaining the obvious reads condescending and signals anti-commercial intent («we don't expect you to upgrade»). Trust users to discover the policy through product use, not through reassurance copy. Counter-argument review (2026-04-27) found no surviving exception — apply globally across landing, pricing, paywall, microcopy.
 
 **Owner.** Navigator (decisions log) + content-lead (copy) + product-designer (coach UX spec rewrite) + finance-advisor (cost model + tier validation).
 **Revisit.** Each separately:
