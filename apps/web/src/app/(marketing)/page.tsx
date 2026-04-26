@@ -58,7 +58,11 @@ export default function MarketingHomePage() {
           tech-lead verifies SnapTrade + Plaid + CCXT broker coverage count */}
       <ProvedoNumericProofBar coverage="Hundreds" />
 
-      {/* S3 — Problem-negation positioning («This is what Provedo is not.») */}
+      {/* S3 — Problem-negation 2-card asymmetric table (Slice-LP5-BCD A1)
+          Restored 2-card comparison table per PD spec §C.S3. The redundant
+          h2 «This is what Provedo is not.» and the «Provedo» word eyebrow
+          are dropped (PO 2026-04-27 «дважды дублируем» / «зачем перед
+          этим текстом Provedo»). New eyebrow: neutral «POSITIONING». */}
       <ProvedoNegationSection />
 
       {/* S4 — Demo teasers bento (Slice-LP5-A §K.2)

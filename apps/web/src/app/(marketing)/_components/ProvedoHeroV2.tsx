@@ -72,9 +72,15 @@ export function ProvedoHeroV2(): React.ReactElement {
         <HeroAtmosphere />
 
         <div className="relative mx-auto max-w-7xl" style={{ zIndex: 1 }}>
-          <div className="flex flex-col items-center gap-12 lg:flex-row lg:items-center lg:gap-8">
+          {/* Slice-LP5-BCD C1: explicit equal halves at lg+ via grid so the
+              left text column truly aligns flush to the page-padding left edge.
+              Prior `flex-shrink-0 lg:max-w-xl` left the column at intrinsic
+              text width, allowing the right (chat) column to consume extra
+              space — visually pulling the left text inward at wide viewports.
+              PO 2026-04-27: «как то не выровнено слева». */}
+          <div className="flex flex-col items-center gap-12 lg:grid lg:grid-cols-2 lg:items-center lg:gap-12">
             {/* Left — text column (LOCKED copy) */}
-            <div className="flex-shrink-0 text-center lg:max-w-xl lg:text-left">
+            <div className="text-center lg:max-w-xl lg:text-left">
               <h1
                 id="hero-heading"
                 className="text-4xl font-semibold leading-tight tracking-tight md:text-5xl lg:text-6xl"
@@ -90,15 +96,15 @@ export function ProvedoHeroV2(): React.ReactElement {
                 Notice what you&apos;d miss across all your brokers.
               </p>
 
+              {/* Slice-LP5-BCD C2: «No card. 50 free questions a month.»
+                  small-print line dropped per PO 2026-04-27. The Free-tier
+                  policy is implicit from product flow + repeated in §S10
+                  pre-footer CTA + FAQ Q4 — the hero does not need it. */}
               <div className="mt-10 flex flex-col items-center lg:items-start">
                 <ProvedoButton href="#demo" variant="primary" size="lg">
                   Ask Provedo
                 </ProvedoButton>
               </div>
-
-              <p className="mt-4 text-xs" style={{ color: 'var(--provedo-text-tertiary)' }}>
-                No card. 50 free questions a month.
-              </p>
             </div>
 
             {/* Right — picture-first chat surface column.
@@ -108,7 +114,7 @@ export function ProvedoHeroV2(): React.ReactElement {
                 conversation as supplementary to the locked headline copy. */}
             <aside
               aria-label="Provedo demo receipt"
-              className="flex w-full flex-1 flex-col items-stretch justify-center min-h-[400px] md:min-h-[440px]"
+              className="flex w-full flex-col items-stretch justify-center min-h-[400px] md:min-h-[440px]"
             >
               <div className="mx-auto w-full max-w-[480px]">
                 <ChatMockup prefersReduced={prefersReduced} />

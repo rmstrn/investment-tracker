@@ -192,42 +192,16 @@ export function ProvedoNumericProofBar({
           </BentoCell>
         </dl>
 
-        {/* Disclaimer footer — italic line below the bento.
-            Stays SEPARATE from the audience-whisper per brand-voice
-            REJECT-WITH-EDIT on combined run-on. */}
-        <p
-          className="mx-auto mt-8 px-4 text-center"
-          style={{
-            fontFamily: 'var(--provedo-font-sans)',
-            fontStyle: 'italic',
-            fontWeight: 400,
-            fontSize: '14px',
-            lineHeight: 1.55,
-            color: 'var(--provedo-text-tertiary)',
-            maxWidth: '480px',
-          }}
-          data-testid="proof-bar-disclaimer-footer"
-        >
-          Information, not advice.
-        </p>
-
-        {/* Audience-whisper — kept SEPARATE from the disclaimer footer per
-            brand-voice REJECT-WITH-EDIT. PD §C.S2 recommends moving this to
-            §S1 hero in a follow-up slice; for Slice-LP5-A it stays here. */}
-        <p
-          className="mx-auto mt-3 px-4 text-center"
-          style={{
-            fontFamily: 'var(--provedo-font-sans)',
-            fontStyle: 'italic',
-            fontWeight: 400,
-            fontSize: '14px',
-            lineHeight: 1.55,
-            color: 'var(--provedo-text-tertiary)',
-            maxWidth: '480px',
-          }}
-        >
-          For investors who hold across more than one broker.
-        </p>
+        {/* Slice-LP5-BCD C3 + C4: BOTH the «Information, not advice.» disclaimer
+            footer AND the «For investors who hold across more than one broker.»
+            audience-whisper line are dropped from the proof bar.
+            - C3: «Information, not advice.» retains its single load-bearing
+              mount in the footer Layer-1 disclaimer (legal-required there).
+              Repeating in proof-bar duplicated the disclaim mid-page (PO
+              2026-04-27: «обязательно везде упоминать?»).
+            - C4: audience-whisper narrowed the ICP unnecessarily — the product
+              still works for one-broker users; the marketing wedge stays
+              implicit (PO 2026-04-27: «а у кого один брокер, не наши клиенты?»). */}
       </div>
     </section>
   );

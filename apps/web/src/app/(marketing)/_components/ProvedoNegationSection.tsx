@@ -1,21 +1,34 @@
 'use client';
 
-// ProvedoNegationSection — §S3 problem-negation typeset (Slice-LP3.5)
+// ProvedoNegationSection — §S3 problem-negation 2-card asymmetric table
+// (Slice-LP5-BCD A1, restored from PD spec §C.S3)
 //
-// Typographic refactor (PD re-evaluation §3.2 + brand-voice §5):
-//   - DROP lucide icons + red Xs + green checks (over-decorated typographic
-//     moment).
-//   - SINGLE COLUMN (not 2-column — pros/cons sales register risk).
-//   - «What Provedo is not» heading, three em-dash bullets in slate-500.
-//     Brand-voice EDIT: «Does not» (declarative-Sage) NOT «Won't» (chatty).
-//   - Mirrored «What Provedo is» heading, three plus-sign bullets in slate-900,
-//     bullet glyphs in teal. Brand-voice REJECT «citer» — replaced with
-//     «source-keeper».
+// Bold direction (PD spec §C.S3):
+//   Restore the 2-column comparison-table format, but craft it as a bento
+//   card pair with INTENTIONAL VISUAL CONTRAST — the asymmetry IS the
+//   message. Left card («What Provedo is not») reads quieter (slate flat
+//   background, em-dash bullets in slate-tertiary). Right card («What
+//   Provedo is») reads richer + lifted with a teal-tinted shadow on cream
+//   bg, plus-sign bullets in teal-accent. Both cards speak together — no
+//   centered h2 needed. A small «POSITIONING» eyebrow seats the section.
+//
+// PO drops carried in this slice:
+//   - The redundant section sub-header «This is what Provedo is not.» is
+//     gone (PO 2026-04-27: «дважды дублируем»). The negation cards already
+//     carry the «is not» heading; repeating it in an h2 above duplicated.
+//   - The «Provedo» eyebrow above the section is gone (PO 2026-04-27:
+//     «зачем перед этим текстом Provedo»). The new eyebrow is the neutral
+//     «POSITIONING» — establishes the beat without word-repetition.
+//
+// Mobile: positive card («What Provedo is») renders FIRST per PD §C.S3 —
+//         positive-led on small screens reads cleaner; the negation reads
+//         as supporting context, not an opening statement.
 //
 // Lane A: explicit disclaimer register — the negation row is the load-bearing
-// «we are not advice» surface on the page.
-// Accessibility: aria-labelledby h2; bullet glyphs aria-hidden so the SR reads
-// the sentence cleanly without «em-dash» / «plus».
+//   «we are not advice» surface on the page.
+// Accessibility: section is aria-labelledby the new eyebrow span; bullet
+//   glyphs aria-hidden so the SR reads the sentence cleanly without
+//   «em-dash» / «plus».
 
 import type { CSSProperties, ReactElement } from 'react';
 import { ScrollFadeIn } from './ScrollFadeIn';
@@ -45,7 +58,7 @@ const COLUMN_HEADING_STYLE: CSSProperties = {
   letterSpacing: '0.1em',
   color: 'var(--provedo-text-tertiary)',
   margin: 0,
-  marginBottom: '16px',
+  marginBottom: '20px',
 };
 
 const ITEM_LIST_STYLE: CSSProperties = {
@@ -54,7 +67,7 @@ const ITEM_LIST_STYLE: CSSProperties = {
   margin: 0,
   display: 'flex',
   flexDirection: 'column',
-  gap: '12px',
+  gap: '14px',
 };
 
 const ITEM_ROW_STYLE: CSSProperties = {
@@ -67,7 +80,8 @@ const ITEM_ROW_STYLE: CSSProperties = {
   gap: '10px',
 };
 
-interface BlockProps {
+interface NegationCardProps {
+  /** Card heading (renders as a small mono uppercase eyebrow inside the card). */
   heading: string;
   items: ReadonlyArray<NegationItem>;
   /** Bullet glyph («—» for negation, «+» for affirmation). */
@@ -80,9 +94,13 @@ interface BlockProps {
   nounWeight: 400 | 500 | 600;
   /** Noun text color (CSS var). */
   nounColor: string;
+  /** Card background (flat slate vs lifted cream + teal-tinted shadow). */
+  cardStyle: CSSProperties;
+  /** data-testid for asymmetric-card assertions. */
+  testId: string;
 }
 
-function NegationBlock({
+function NegationCard({
   heading,
   items,
   glyph,
@@ -90,9 +108,11 @@ function NegationBlock({
   predicateColor,
   nounWeight,
   nounColor,
-}: BlockProps): ReactElement {
+  cardStyle,
+  testId,
+}: NegationCardProps): ReactElement {
   return (
-    <div>
+    <div data-testid={testId} style={cardStyle}>
       <p style={COLUMN_HEADING_STYLE}>{heading}</p>
       <ul style={ITEM_LIST_STYLE}>
         {items.map((item) => (
@@ -121,6 +141,27 @@ function NegationBlock({
   );
 }
 
+// Card chrome — the asymmetric depth IS the message. Left card sits flat on
+// slate-muted, right card lifts off the page with a teal-tinted shadow.
+const IS_NOT_CARD_STYLE: CSSProperties = {
+  backgroundColor: 'var(--provedo-bg-muted)',
+  border: '1px solid var(--provedo-border-subtle)',
+  borderRadius: '16px',
+  padding: '32px',
+  height: '100%',
+};
+
+const IS_CARD_STYLE: CSSProperties = {
+  backgroundColor: 'var(--provedo-bg-elevated)',
+  border: '1px solid var(--provedo-border-subtle)',
+  borderRadius: '16px',
+  padding: '32px',
+  height: '100%',
+  // Teal-tinted layered shadow — the asymmetric depth signal per PD §C.S3.
+  boxShadow:
+    '0 8px 24px rgba(13, 148, 136, 0.08), 0 2px 4px rgba(13, 148, 136, 0.04), 0 0 0 1px rgba(13, 148, 136, 0.04)',
+};
+
 export function ProvedoNegationSection(): ReactElement {
   return (
     <section
@@ -132,59 +173,65 @@ export function ProvedoNegationSection(): ReactElement {
         paddingBottom: 'clamp(5rem, 4rem + 4vw, 7rem)',
       }}
     >
-      <div className="mx-auto" style={{ maxWidth: '640px' }}>
-        {/* Section header */}
+      <div className="mx-auto" style={{ maxWidth: '960px' }}>
+        {/* Section eyebrow — replaces the dropped «Provedo» word + the
+            redundant «This is what Provedo is not.» h2. The two cards below
+            speak together; the eyebrow only seats the beat. */}
         <ScrollFadeIn>
-          <div className="mb-12 text-center md:mb-14">
-            <p
-              className="mb-4 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: 'var(--provedo-accent)' }}
-              aria-hidden="true"
-            >
-              Provedo
-            </p>
+          <div className="mb-10 text-center md:mb-12">
             <h2
               id="negation-heading"
+              data-testid="negation-eyebrow"
               style={{
-                fontFamily: 'var(--provedo-font-sans)',
+                fontFamily: 'var(--provedo-font-mono)',
                 fontWeight: 500,
-                fontSize: 'clamp(1.5rem, 1.2rem + 1.5vw, 2.25rem)',
-                color: 'var(--provedo-text-primary)',
-                lineHeight: 1.3,
+                fontSize: '12px',
+                textTransform: 'uppercase',
+                letterSpacing: '0.18em',
+                color: 'var(--provedo-accent)',
+                margin: 0,
               }}
             >
-              This is what Provedo is not.
+              Positioning
             </h2>
           </div>
         </ScrollFadeIn>
 
-        {/* «What Provedo is not» — single-column typeset */}
+        {/* 2-card asymmetric grid. Mobile order: «What Provedo is» FIRST
+            (positive-led on small screens). Desktop order: «is not» left,
+            «is» right. We use grid-flow-row + order classes to reverse only
+            on mobile — md+ uses the natural order. */}
         <ScrollFadeIn>
-          <div className="mb-12">
-            <NegationBlock
-              heading="What Provedo is not"
-              items={IS_NOT_ITEMS}
-              glyph="—"
-              glyphColor="var(--provedo-text-tertiary)"
-              predicateColor="var(--provedo-text-muted)"
-              nounWeight={500}
-              nounColor="var(--provedo-text-secondary)"
-            />
-          </div>
-        </ScrollFadeIn>
-
-        {/* «What Provedo is» — mirror, single-column, plus-sign bullets in teal */}
-        <ScrollFadeIn delay={150}>
-          <div>
-            <NegationBlock
-              heading="What Provedo is"
-              items={IS_ITEMS}
-              glyph="+"
-              glyphColor="var(--provedo-accent)"
-              predicateColor="var(--provedo-text-secondary)"
-              nounWeight={600}
-              nounColor="var(--provedo-text-primary)"
-            />
+          <div
+            data-testid="negation-cards-grid"
+            className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8"
+          >
+            <div className="order-2 md:order-1">
+              <NegationCard
+                testId="negation-card-not"
+                heading="What Provedo is not"
+                items={IS_NOT_ITEMS}
+                glyph="—"
+                glyphColor="var(--provedo-text-tertiary)"
+                predicateColor="var(--provedo-text-muted)"
+                nounWeight={500}
+                nounColor="var(--provedo-text-secondary)"
+                cardStyle={IS_NOT_CARD_STYLE}
+              />
+            </div>
+            <div className="order-1 md:order-2">
+              <NegationCard
+                testId="negation-card-is"
+                heading="What Provedo is"
+                items={IS_ITEMS}
+                glyph="+"
+                glyphColor="var(--provedo-accent)"
+                predicateColor="var(--provedo-text-secondary)"
+                nounWeight={600}
+                nounColor="var(--provedo-text-primary)"
+                cardStyle={IS_CARD_STYLE}
+              />
+            </div>
           </div>
         </ScrollFadeIn>
       </div>

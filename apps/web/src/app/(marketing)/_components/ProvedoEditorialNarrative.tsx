@@ -1,15 +1,69 @@
 'use client';
 
-// ProvedoEditorialNarrative — §S6 dark editorial full-bleed section (v3)
-// V3.5: scroll-into-view fade-in, slower timing for dark editorial sections (800ms)
-// V3.6: copy trimmed ~30% — paragraph 2 shortened, paragraph 3 consolidated
-// Spec: visual spec §4 — slate-900 full-bleed, oversized Inter typography
-// PO lock: closing line = candidate #2 «You hold the assets. Provedo holds the context.»
-// Accessibility: WCAG AAA contrast (#FAFAF7 on slate-900 = 19.3:1)
+// ProvedoEditorialNarrative — §S6 dark editorial atmosphere upgrade
+// (Slice-LP5-BCD A3, per PD spec §C.S6)
+//
+// Bold direction (PD spec §C.S6):
+//   The dark editorial section is the page's chance for visual maximalism
+//   but shipped text-only on flat slate-900 with one teal accent on the
+//   closer. Add ATMOSPHERE: a subtle teal radial-glow anchored bottom-
+//   right + a noise()-grain SVG texture overlay at ~2% alpha + an oversized
+//   decorative «Q» quotation glyph anchored behind the body text in
+//   slate-800 (almost-invisible) acting as editorial chrome.
+//
+//   The closing line «You hold the assets. Provedo holds the context.»
+//   gets a typographic upgrade: split onto two visual lines with the
+//   second line indented (editorial print convention), bumped to a larger
+//   font-size, and the teal-on-«Provedo holds the context» becomes a soft
+//   gradient (background-clip: text) — ONE word-cluster gradient,
+//   Stripe-pattern. Both lines preserved verbatim (PO copy lock).
+//
+// Accessibility: WCAG AAA contrast (#FAFAF7 on slate-900 = 19.3:1) preserved.
+// Decorative «Q» + noise overlay are aria-hidden + pointer-events:none — they
+// add atmosphere without polluting the SR landmark output.
 
+import type { CSSProperties } from 'react';
 import { Sources } from './Sources';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+
+// Decorative atmosphere layers — all aria-hidden, pointer-events:none.
+const NOISE_OVERLAY_STYLE: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  pointerEvents: 'none',
+  opacity: 0.025,
+  zIndex: 0,
+  // Inline SVG noise via data URI — no extra HTTP request, ~0.2kB gz.
+  // feTurbulence baseFrequency ≈ 0.9 produces fine grain.
+  backgroundImage:
+    "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>\")",
+  backgroundSize: '180px 180px',
+};
+
+const RADIAL_GLOW_STYLE: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  pointerEvents: 'none',
+  zIndex: 0,
+  backgroundImage:
+    'radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.12) 0%, transparent 50%)',
+};
+
+const DECORATIVE_GLYPH_STYLE: CSSProperties = {
+  position: 'absolute',
+  top: '-40px',
+  right: '-30px',
+  fontFamily: 'var(--provedo-font-mono)',
+  fontWeight: 500,
+  fontSize: 'clamp(180px, 30vw, 320px)',
+  lineHeight: 1,
+  color: '#1E293B',
+  opacity: 0.5,
+  pointerEvents: 'none',
+  userSelect: 'none',
+  zIndex: 0,
+};
 
 export function ProvedoEditorialNarrative(): React.ReactElement {
   const { ref, inView } = useInView({ threshold: 0.1 });
@@ -30,11 +84,24 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
       aria-labelledby="editorial-heading"
       style={{
         backgroundColor: '#0F172A',
+        position: 'relative',
+        overflow: 'hidden',
         paddingTop: 'clamp(6rem, 4rem + 5vw, 10rem)',
         paddingBottom: 'clamp(6rem, 4rem + 5vw, 10rem)',
       }}
     >
-      <div className="mx-auto px-4" style={{ maxWidth: '768px' }}>
+      {/* Atmosphere layers (PD spec §C.S6) — all decorative, behind content */}
+      <div data-testid="editorial-radial-glow" aria-hidden="true" style={RADIAL_GLOW_STYLE} />
+      <div data-testid="editorial-noise-overlay" aria-hidden="true" style={NOISE_OVERLAY_STYLE} />
+      <span
+        data-testid="editorial-decorative-glyph"
+        aria-hidden="true"
+        style={DECORATIVE_GLYPH_STYLE}
+      >
+        &ldquo;
+      </span>
+
+      <div className="relative mx-auto px-4" style={{ maxWidth: '768px', zIndex: 1 }}>
         {/* Header — scale 0.98→1 on view */}
         <h2
           id="editorial-heading"
@@ -58,7 +125,7 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
           One place. One feed. One chat.
         </h2>
 
-        {/* Body — V3.6 trimmed */}
+        {/* Body */}
         <div style={{ maxWidth: '60ch' }}>
           <p
             style={{
@@ -91,15 +158,19 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
           </p>
         </div>
 
-        {/* Closing brand-world line — PO lock candidate #2 */}
-        <p
+        {/* Closing brand-world line — PO lock candidate #2.
+            Typographic upgrade per PD §C.S6: bumped to ~40px, two-line split,
+            second line indented + gradient-on-text via background-clip.
+            Both lines preserved verbatim (legal lock — PO copy lock). */}
+        <div
+          data-testid="editorial-closer"
           style={{
+            marginTop: '64px',
             fontFamily: 'var(--provedo-font-sans)',
             fontStyle: 'italic',
             fontWeight: 500,
-            fontSize: 'clamp(1.5rem, 1.2rem + 1.2vw, 2rem)',
-            lineHeight: 1.3,
-            marginTop: '56px',
+            fontSize: 'clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem)',
+            lineHeight: 1.25,
             ...(prefersReduced
               ? {}
               : {
@@ -108,9 +179,24 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
                 }),
           }}
         >
-          <span style={{ color: '#FAFAF7' }}>You hold the assets. </span>
-          <span style={{ color: '#2DD4BF' }}>Provedo holds the context.</span>
-        </p>
+          <p style={{ color: '#FAFAF7', margin: 0 }}>You hold the assets.</p>
+          <p
+            data-testid="editorial-closer-gradient-line"
+            style={{
+              margin: 0,
+              marginTop: '4px',
+              paddingLeft: 'clamp(16px, 4vw, 48px)',
+              backgroundImage: 'linear-gradient(90deg, #14B8A6 0%, #2DD4BF 100%)',
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              color: 'transparent',
+              // Fallback color in case background-clip:text is not supported.
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
+            Provedo holds the context.
+          </p>
+        </div>
 
         {/* Sources mount (Slice-LP3.5) — drops CD's specific cohort-N citations
             per brand-voice REJECT §6.3 (manifestos do not cite their own JTBD

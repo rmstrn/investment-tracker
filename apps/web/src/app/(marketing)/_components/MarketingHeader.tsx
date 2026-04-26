@@ -13,7 +13,10 @@ export function MarketingHeader() {
         backgroundColor: 'color-mix(in srgb, var(--provedo-bg-page) 92%, transparent)',
       }}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:h-16 md:px-8">
+      {/* Slice-LP5-BCD C5: header inner-width aligned to max-w-7xl so the nav
+          row matches the hero/main-content max-width. PO complaint 2026-04-27:
+          «текст в ней уже чем сама страница, это правильно?» — answer is no. */}
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 md:h-16 md:px-8">
         {/* Skip link for a11y — visually hidden until focused */}
         <a
           href="#main-content"

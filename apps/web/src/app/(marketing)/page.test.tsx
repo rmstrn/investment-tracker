@@ -9,6 +9,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MarketingFooter } from './_components/MarketingFooter';
+import { MarketingHeader } from './_components/MarketingHeader';
 import { ProvedoAggregationSection } from './_components/ProvedoAggregationSection';
 import { ProvedoDemoTabsV2 } from './_components/ProvedoDemoTabsV2';
 import { ProvedoEditorialNarrative } from './_components/ProvedoEditorialNarrative';
@@ -79,10 +80,11 @@ describe('MarketingHomePage v2', () => {
     ).toBeInTheDocument();
     // S2 Proof bar — has «Proof points» aria-label
     expect(screen.getByRole('region', { name: /proof points/i })).toBeInTheDocument();
-    // S3 Negation — h2 with «This is what Provedo is not»
-    expect(
-      screen.getByRole('region', { name: /this is what provedo is not/i }),
-    ).toBeInTheDocument();
+    // S3 Negation — Slice-LP5-BCD A1: section is now aria-labelledby a small
+    // «POSITIONING» eyebrow, NOT the dropped «This is what Provedo is not.» h2
+    // (PO 2026-04-27 «дважды дублируем»). The 2-card asymmetric table speaks
+    // without a redundant header.
+    expect(screen.getByRole('region', { name: /^positioning$/i })).toBeInTheDocument();
     // S4 Demo teasers bento — «Two answers. Same shape on every question.» (Slice-LP5-A §K.2)
     expect(
       screen.getByRole('region', { name: /two answers. same shape on every question/i }),
@@ -131,11 +133,14 @@ describe('ProvedoNumericProofBar', () => {
     expect(screen.getByText('5 min')).toBeInTheDocument();
   });
 
-  it('renders audience-whisper micro-line (v3.2 NEW per PD spec V2)', () => {
-    render(<ProvedoNumericProofBar />);
-    expect(
-      screen.getByText(/for investors who hold across more than one broker/i),
-    ).toBeInTheDocument();
+  it('Slice-LP5-BCD C4: audience-whisper line is DROPPED (PO directive)', () => {
+    // PO 2026-04-27: «а у кого один брокер, не наши клиенты?» — narrowing
+    // ICP excluded single-broker users. Line removed from proof-bar surface;
+    // the marketing wedge stays implicit. Anti-regression guard.
+    const { container } = render(<ProvedoNumericProofBar />);
+    expect(container.textContent ?? '').not.toMatch(
+      /for investors who hold across more than one broker/i,
+    );
   });
 
   it('uses "Hundreds" fallback by default (Slice-LP3.7-A: aligned with §S8 register)', () => {
@@ -151,27 +156,15 @@ describe('ProvedoNumericProofBar', () => {
     expect(screen.getByText('1000+')).toBeInTheDocument();
   });
 
-  it('renders disclaimer footer «Information, not advice.» as italic line below cells (Slice-LP3.5)', () => {
-    render(<ProvedoNumericProofBar />);
-    const footer = screen.getByTestId('proof-bar-disclaimer-footer');
-    expect(footer).toBeInTheDocument();
-    expect(footer.textContent).toMatch(/information, not advice\./i);
-    // Disclaimer footer + audience-whisper MUST stay separate (brand-voice REJECT-WITH-EDIT
-    // on combined run-on). Footer text alone, no audience copy mixed in.
-    expect(footer.textContent).not.toMatch(/for investors who hold/i);
-  });
-
-  it('audience-whisper line stays SEPARATE from disclaimer footer', () => {
-    const { container } = render(<ProvedoNumericProofBar />);
-    const footer = screen.getByTestId('proof-bar-disclaimer-footer');
-    const audienceLine = container.querySelector('p:not([data-testid])');
-    // The audience-whisper exists and is NOT the disclaimer footer.
-    expect(
-      Array.from(container.querySelectorAll('p')).some((p) =>
-        /for investors who hold across more than one broker/i.test(p.textContent ?? ''),
-      ),
-    ).toBe(true);
-    expect(footer).not.toBe(audienceLine);
+  it('Slice-LP5-BCD C3: «Information, not advice.» disclaimer is DROPPED from proof bar (PO directive)', () => {
+    // PO 2026-04-27: «обязательно везде упоминать?» — the disclaimer was
+    // mounted in BOTH the proof-bar footer + footer Layer-1 disclaimer.
+    // The footer Layer-1 mount is legal-required + load-bearing; the
+    // proof-bar mount is dropped to single-mount the disclaim across the
+    // page (Lane A discipline preserved, just at a single load-bearing site).
+    const { container, queryByTestId } = render(<ProvedoNumericProofBar />);
+    expect(queryByTestId('proof-bar-disclaimer-footer')).toBeNull();
+    expect(container.textContent ?? '').not.toMatch(/information, not advice/i);
   });
 
   it('section has correct aria-label', () => {
@@ -709,11 +702,21 @@ describe('MarketingFooter — 3-layer disclaimer (v3.2)', () => {
     expect(link).toHaveAttribute('href', '/disclosures');
   });
 
-  it('waitlist box CTA renamed «Try Plus free for 14 days» → «Open Provedo» (v3.2)', () => {
-    render(<MarketingFooter />);
-    expect(screen.getByRole('link', { name: /^open provedo$/i })).toBeInTheDocument();
-    // Old «Try Plus free for 14 days» MUST be gone
-    expect(screen.queryByText(/try plus free for 14 days/i)).not.toBeInTheDocument();
+  it('Slice-LP5-BCD B3: waitlist box is DROPPED entirely (PD §Footer + PO directive)', () => {
+    // PO 2026-04-27: «две максимально тупые секции одна за другой» — the
+    // S10 dark CTA + footer waitlist box read as two ask-the-product CTAs
+    // back-to-back. Footer is now chrome-only; S10 carries the pre-footer
+    // commitment moment alone (PD §C.S10).
+    const { container } = render(<MarketingFooter />);
+    // Anti-regression: legacy waitlist box copy MUST be gone.
+    expect(container.textContent ?? '').not.toMatch(/ready when you are/i);
+    expect(container.textContent ?? '').not.toMatch(/provedo is coming soon/i);
+    expect(container.textContent ?? '').not.toMatch(/waitlist open/i);
+    expect(container.textContent ?? '').not.toMatch(/try plus free for 14 days/i);
+    // The previously-rendered footer-internal «Open Provedo» button is gone.
+    // The footer should not render an Ask Provedo CTA at all.
+    const askProvedoButtons = screen.queryAllByRole('link', { name: /^open provedo$/i });
+    expect(askProvedoButtons.length).toBe(0);
   });
 
   it('does NOT contain «free forever» / «free always» / «forever» framings (PO microcopy principle)', () => {
@@ -989,8 +992,9 @@ describe('ProvedoNumericProofBar — Wave 2.6 HIGH-2 (visible on SSR)', () => {
     expect(html).toMatch(/Sources/);
     expect(html).toMatch(/for every answer/i);
     expect(html).toMatch(/cited inline, dated, traceable/i);
-    // Disclaimer footer line still present below the cells.
-    expect(html).toMatch(/information, not advice\./i);
+    // Slice-LP5-BCD C3: «Information, not advice.» is no longer mounted on
+    // this surface — the single load-bearing mount lives in footer Layer-1.
+    expect(html).not.toMatch(/information, not advice/i);
   });
 });
 
@@ -1430,15 +1434,47 @@ describe('Slice-LP3.5 — Sources mounts across the page', () => {
 
 // ─── Slice-LP3.5 — Aggregation marquee → typeset list ─────────────────────
 
-describe('Slice-LP3.5 — ProvedoAggregationSection (marquee → typeset list)', () => {
-  it('renders broker typeset list (replaces v3 keyframe marquee)', () => {
+describe('Slice-LP5-BCD A4 — ProvedoAggregationSection (marquee restored, 2 rows)', () => {
+  it('renders the 2-row opposing-direction marquee container with broker pills', () => {
     render(<ProvedoAggregationSection />);
-    const list = screen.getByTestId('broker-typeset-list');
-    expect(list).toBeInTheDocument();
-    // Sample broker abbreviations rendered as <li> entries.
-    expect(within(list).getByText('IBKR')).toBeInTheDocument();
-    expect(within(list).getByText('Schwab')).toBeInTheDocument();
-    expect(within(list).getByText('Coinbase')).toBeInTheDocument();
+    const container = screen.getByTestId('broker-marquee-container');
+    expect(container).toBeInTheDocument();
+    // Both rows present — top row scrolls ltr, bottom row scrolls rtl.
+    expect(screen.getByTestId('broker-marquee-track-ltr')).toBeInTheDocument();
+    expect(screen.getByTestId('broker-marquee-track-rtl')).toBeInTheDocument();
+  });
+
+  it('renders broker WORDMARKS (full names) in mono pills, not abbreviations', () => {
+    render(<ProvedoAggregationSection />);
+    // PD spec §C.S8: pills carry full broker NAMES (better visual density).
+    // Verify several full-name labels render across the two tracks.
+    const ltrTrack = screen.getByTestId('broker-marquee-track-ltr');
+    const rtlTrack = screen.getByTestId('broker-marquee-track-rtl');
+    const allText = `${ltrTrack.textContent ?? ''} ${rtlTrack.textContent ?? ''}`;
+    expect(allText).toMatch(/Interactive Brokers/);
+    expect(allText).toMatch(/Charles Schwab/);
+    expect(allText).toMatch(/Hargreaves Lansdown/);
+  });
+
+  it('declares both marquee keyframes (ltr + rtl) and uses transform-only animation', () => {
+    const { container } = render(<ProvedoAggregationSection />);
+    const styleTag = container.querySelector('style');
+    expect(styleTag).not.toBeNull();
+    const css = styleTag?.textContent ?? '';
+    expect(css).toMatch(/@keyframes\s+provedo-marquee-ltr/);
+    expect(css).toMatch(/@keyframes\s+provedo-marquee-rtl/);
+    // Animations must use transform (compositor-friendly), NOT layout-bound props.
+    expect(css).toMatch(/transform:\s*translateX/);
+    expect(css).not.toMatch(/left:\s*\d/);
+  });
+
+  it('respects prefers-reduced-motion via @media block (animation: none fallback)', () => {
+    const { container } = render(<ProvedoAggregationSection />);
+    const styleTag = container.querySelector('style');
+    const css = styleTag?.textContent ?? '';
+    // Reduced-motion fallback freezes the marquee animation.
+    expect(css).toMatch(/@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)/);
+    expect(css).toMatch(/animation:\s*none/);
   });
 
   it('renders «— and growing» tail (brand-voice EDIT — NOT «100s more»)', () => {
@@ -1447,12 +1483,6 @@ describe('Slice-LP3.5 — ProvedoAggregationSection (marquee → typeset list)',
     expect(tail.textContent).toMatch(/—\s*and growing/i);
     // Brand-voice §8 EDIT: «100s more» rejected (collides with proof-bar Cell I «100s»).
     expect(tail.textContent).not.toMatch(/100s more/i);
-  });
-
-  it('does NOT render the dropped keyframe marquee animation class', () => {
-    const { container } = render(<ProvedoAggregationSection />);
-    expect(container.querySelector('.provedo-marquee')).toBeNull();
-    expect(container.innerHTML).not.toMatch(/@keyframes provedo-scroll/);
   });
 });
 
@@ -2050,5 +2080,250 @@ describe('Slice-LP5-A — ProvedoDemoTabsV2 unmount + S7 testimonials unmount on
     // pre-loaded social-proof expectations the product cannot back yet.
     expect(screen.queryByText(/^coming q2 2026$/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/alpha quotes coming q2 2026/i)).not.toBeInTheDocument();
+  });
+});
+
+// ─── Slice-LP5-BCD — comprehensive PO-feedback-coverage block ─────────────
+//
+// This block aggregates the Slice-LP5-BCD changes that complete the section-
+// by-section feedback PO surfaced after Slice-LP5-A. Each test guards a
+// specific PO directive — the test names cite the directive verbatim so the
+// rationale stays load-bearing in CI failures.
+
+describe('Slice-LP5-BCD A1 — S3 Negation 2-card asymmetric table', () => {
+  it('renders the 2-card asymmetric grid (NOT the prior single-column typeset)', () => {
+    render(<ProvedoNegationSection />);
+    const grid = screen.getByTestId('negation-cards-grid');
+    expect(grid).toBeInTheDocument();
+    // Both cards present.
+    expect(screen.getByTestId('negation-card-not')).toBeInTheDocument();
+    expect(screen.getByTestId('negation-card-is')).toBeInTheDocument();
+  });
+
+  it('drops the redundant «This is what Provedo is not.» h2 (PO «дважды дублируем»)', () => {
+    const { container } = render(<ProvedoNegationSection />);
+    expect(container.textContent ?? '').not.toMatch(/this is what provedo is not\./i);
+  });
+
+  it('drops the «Provedo» word eyebrow (PO «зачем перед этим текстом Provedo»)', () => {
+    render(<ProvedoNegationSection />);
+    // The new eyebrow is neutral «POSITIONING» — no «Provedo» word repetition.
+    const eyebrow = screen.getByTestId('negation-eyebrow');
+    expect(eyebrow.textContent).toMatch(/^positioning$/i);
+    expect(eyebrow.textContent).not.toMatch(/provedo/i);
+  });
+
+  it('right card («What Provedo is») carries a teal-tinted layered shadow (asymmetric depth)', () => {
+    render(<ProvedoNegationSection />);
+    const isCard = screen.getByTestId('negation-card-is') as HTMLElement;
+    const inline = isCard.getAttribute('style') ?? '';
+    // Box-shadow uses teal-tinted rgba — the asymmetry IS the message per PD §C.S3.
+    expect(inline).toMatch(/box-shadow:\s*[^;]*rgba\(13,\s*148,\s*136/);
+  });
+
+  it('mobile order: «What Provedo is» renders FIRST (positive-led on small screens)', () => {
+    render(<ProvedoNegationSection />);
+    const grid = screen.getByTestId('negation-cards-grid');
+    // The «is» card has order-1 (mobile), order-2 wrapper (md+ via wrapper class).
+    const cards = within(grid).getAllByTestId(/^negation-card-/);
+    // Find the wrapper of the «is» card and verify its className contains «order-1»
+    // for the mobile-first positive-led order.
+    const isCardWrapper = cards.find(
+      (el) => el.dataset.testid === 'negation-card-is',
+    )?.parentElement;
+    expect(isCardWrapper?.className ?? '').toMatch(/\border-1\b/);
+  });
+});
+
+describe('Slice-LP5-BCD A2 — S5 Insights asymmetric bento', () => {
+  it('renders the bento grid with one large hero card + two small cards (NOT 3 equal cards)', () => {
+    render(<ProvedoInsightsBullets />);
+    const grid = screen.getByTestId('insights-bento-grid');
+    expect(grid).toBeInTheDocument();
+    expect(screen.getByTestId('insights-bento-hero-card')).toBeInTheDocument();
+    const smalls = screen.getAllByTestId('insights-bento-small-card');
+    expect(smalls.length).toBe(2);
+  });
+
+  it('hero card occupies cols 1-8 at lg+ breakpoint (asymmetric 2/3 split)', () => {
+    render(<ProvedoInsightsBullets />);
+    const hero = screen.getByTestId('insights-bento-hero-card');
+    expect(hero.className).toMatch(/lg:col-span-8/);
+  });
+
+  it('drops the lucide icon set + teal-tint badge pattern (PO «не красиво»)', () => {
+    const { container } = render(<ProvedoInsightsBullets />);
+    // No lucide-* class names anywhere in the rendered tree.
+    expect(container.innerHTML).not.toMatch(/lucide-/i);
+  });
+
+  it('renders 3 bespoke inline SVG mini-illustrations (broker-graph + notif + cite-link)', () => {
+    render(<ProvedoInsightsBullets />);
+    expect(screen.getByTestId('insights-illustration-broker-graph')).toBeInTheDocument();
+    expect(screen.getByTestId('insights-illustration-notification-stack')).toBeInTheDocument();
+    expect(screen.getByTestId('insights-illustration-cite-link')).toBeInTheDocument();
+  });
+});
+
+describe('Slice-LP5-BCD A3 — S6 Editorial atmosphere upgrade', () => {
+  it('renders radial-glow + noise overlay + decorative «Q» glyph layers', () => {
+    render(<ProvedoEditorialNarrative />);
+    expect(screen.getByTestId('editorial-radial-glow')).toBeInTheDocument();
+    expect(screen.getByTestId('editorial-noise-overlay')).toBeInTheDocument();
+    const glyph = screen.getByTestId('editorial-decorative-glyph');
+    expect(glyph).toBeInTheDocument();
+    // Decorative — must be aria-hidden so SR users skip the «Q» glyph.
+    expect(glyph.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('closer line uses larger typography + gradient-on-text on second line', () => {
+    render(<ProvedoEditorialNarrative />);
+    const closer = screen.getByTestId('editorial-closer');
+    expect(closer).toBeInTheDocument();
+    // Both PO-locked lines preserved.
+    expect(closer.textContent ?? '').toMatch(/you hold the assets/i);
+    expect(closer.textContent ?? '').toMatch(/provedo holds the context/i);
+    const gradientLine = screen.getByTestId('editorial-closer-gradient-line') as HTMLElement;
+    const inline = gradientLine.getAttribute('style') ?? '';
+    // Gradient via background-clip:text — Stripe-pattern, ONE word-cluster.
+    expect(inline).toMatch(/background-clip:\s*text/);
+    expect(inline).toMatch(/linear-gradient/);
+  });
+});
+
+describe('Slice-LP5-BCD B1 — S9 FAQ 2-column magazine layout', () => {
+  it('renders left col with FAQ eyebrow + intro line + right col accordion', () => {
+    render(<ProvedoFAQ />);
+    expect(screen.getByTestId('faq-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('faq-left-col')).toBeInTheDocument();
+    expect(screen.getByTestId('faq-right-col')).toBeInTheDocument();
+    // Lane-A clean intro line (observation-coded, not advice).
+    expect(screen.getByText(/if you.re wondering, you.re not the first/i)).toBeInTheDocument();
+  });
+
+  it('left col carries the sticky behavior at md+ for magazine-style layout', () => {
+    render(<ProvedoFAQ />);
+    const leftCol = screen.getByTestId('faq-left-col');
+    expect(leftCol.className).toMatch(/md:sticky/);
+  });
+
+  it('preserves all 6 FAQ questions in the right col accordion', () => {
+    render(<ProvedoFAQ />);
+    const rightCol = screen.getByTestId('faq-right-col');
+    const detailsEls = rightCol.querySelectorAll('details');
+    expect(detailsEls.length).toBe(6);
+  });
+});
+
+describe('Slice-LP5-BCD B2 — S10 atmosphere upgrade matches §S6 visual rhyme', () => {
+  it('renders atmosphere layers (radial-glow + noise + decorative arrow)', () => {
+    render(<ProvedoRepeatCTAV2 />);
+    expect(screen.getByTestId('cta-radial-glow')).toBeInTheDocument();
+    expect(screen.getByTestId('cta-noise-overlay')).toBeInTheDocument();
+    const arrow = screen.getByTestId('cta-decorative-arrow');
+    expect(arrow).toBeInTheDocument();
+    expect(arrow.getAttribute('aria-hidden')).toBe('true');
+  });
+
+  it('headline splits into two visual lines (italic-second-line rhyme with §S6)', () => {
+    render(<ProvedoRepeatCTAV2 />);
+    const italicLine = screen.getByTestId('cta-headline-italic-line') as HTMLElement;
+    expect(italicLine.textContent).toMatch(/when you.re ready/i);
+    expect(italicLine.getAttribute('style') ?? '').toMatch(/font-style:\s*italic/);
+  });
+
+  it('primary CTA carries an ambient teal glow (box-shadow on wrapper, not the button)', () => {
+    render(<ProvedoRepeatCTAV2 />);
+    const wrapper = screen.getByTestId('cta-button-glow-wrapper') as HTMLElement;
+    const inline = wrapper.getAttribute('style') ?? '';
+    expect(inline).toMatch(/box-shadow:\s*[^;]*rgba\(13,\s*148,\s*136/);
+  });
+});
+
+describe('Slice-LP5-BCD B3 — Footer chrome refactor + visual separator', () => {
+  it('renders the visual separator (warm-bg-muted bg + thicker top border)', () => {
+    const { container } = render(<MarketingFooter />);
+    const footer = container.querySelector('footer') as HTMLElement;
+    const inline = footer.getAttribute('style') ?? '';
+    expect(inline).toMatch(/background-color:\s*var\(--provedo-bg-muted\)/);
+    // Browsers expand `border-top: 1px solid var(--token)` to per-property
+    // longhand. Match the longhand emission produced by the CSS engine.
+    expect(inline).toMatch(/border-top-width:\s*1px/);
+    expect(inline).toMatch(/border-top-style:\s*solid/);
+    expect(inline).toMatch(/border-top-color:\s*var\(--provedo-border-default\)/);
+  });
+
+  it('renders the wordmark with a single-letter «P» teal underline accent', () => {
+    render(<MarketingFooter />);
+    const wordmark = screen.getByTestId('footer-wordmark');
+    expect(wordmark.textContent).toBe('Provedo');
+    // The «P» span carries the teal underline; the rest of «rovedo» does not.
+    const innerP = wordmark.querySelector('span');
+    expect(innerP).not.toBeNull();
+    const inline = innerP?.getAttribute('style') ?? '';
+    // Browsers expand `border-bottom: 2px solid var(--token)` to per-property longhand.
+    expect(inline).toMatch(/border-bottom-width:\s*2px/);
+    expect(inline).toMatch(/border-bottom-style:\s*solid/);
+    expect(inline).toMatch(/border-bottom-color:\s*var\(--provedo-accent\)/);
+  });
+
+  it("renders the tagline-rhyme italic line «Notice what you'd miss.» (PD §Footer)", () => {
+    render(<MarketingFooter />);
+    const tagline = screen.getByTestId('footer-tagline-rhyme') as HTMLElement;
+    expect(tagline.textContent).toMatch(/notice what you.d miss/i);
+    expect(tagline.getAttribute('style') ?? '').toMatch(/font-style:\s*italic/);
+  });
+
+  it('preserves the 3-layer disclaimer block (legal lock — Layer 1 + Layer 2 + Layer 3)', () => {
+    render(<MarketingFooter />);
+    // Layer 1 plain summary.
+    expect(
+      screen.getByText(/provedo provides general information about your portfolio/i),
+    ).toBeInTheDocument();
+    // Layer 2 expandable details.
+    expect(screen.getByText(/full regulatory disclosures \(us, eu, uk\)/i)).toBeInTheDocument();
+    // Layer 3 link to /disclosures.
+    expect(screen.getByRole('link', { name: /read full extended disclosures/i })).toHaveAttribute(
+      'href',
+      '/disclosures',
+    );
+  });
+});
+
+describe('Slice-LP5-BCD C1 — Hero left-column equal-width alignment', () => {
+  it('hero uses an explicit grid-cols-2 split at lg+ (left text col flush to padding edge)', () => {
+    render(<ProvedoHeroV2 />);
+    const heading = screen.getByRole('heading', { level: 1 });
+    // Walk up to the column-grid wrapper that owns the lg:grid-cols-2 contract.
+    // The grid wrapper is itself a div.flex (it carries `flex flex-col items-
+    // center ... lg:grid lg:grid-cols-2`), so `closest('div.flex')` lands on it.
+    const gridWrapper = heading.closest('div.flex');
+    expect(gridWrapper).not.toBeNull();
+    expect(gridWrapper?.className ?? '').toMatch(/lg:grid-cols-2/);
+  });
+});
+
+describe('Slice-LP5-BCD C2 — Hero microcopy «No card. 50 free questions» dropped', () => {
+  it('hero no longer renders the small-print «No card. 50 free questions a month.» line', () => {
+    const { container } = render(<ProvedoHeroV2 />);
+    // The Free-tier policy is implicit from product flow + repeated in §S10
+    // pre-footer CTA + FAQ Q4. PO 2026-04-27 «зачем оставили».
+    // The hero left col MUST NOT carry the line. We scope to the left col so a
+    // future re-mount of the same copy elsewhere does not give a false pass.
+    const heading = screen.getByRole('heading', { level: 1 });
+    const leftCol = heading.closest('div');
+    expect(leftCol?.textContent ?? '').not.toMatch(/no card\. 50 free questions a month/i);
+    // Belt-and-suspenders — the section as a whole does not carry it.
+    expect(container.textContent ?? '').not.toMatch(/no card\.\s*50 free questions a month\./i);
+  });
+});
+
+describe('Slice-LP5-BCD C5 — Header inner-width matches main-content max-w-7xl', () => {
+  it('header inner row is constrained to max-w-7xl (PO «текст в ней уже чем сама страница»)', () => {
+    const { container } = render(<MarketingHeader />);
+    const innerRow = container.querySelector('header > div');
+    expect(innerRow?.className ?? '').toMatch(/\bmax-w-7xl\b/);
+    // Anti-regression: the prior max-w-6xl must NOT be the chosen constraint.
+    expect(innerRow?.className ?? '').not.toMatch(/\bmax-w-6xl\b/);
   });
 });

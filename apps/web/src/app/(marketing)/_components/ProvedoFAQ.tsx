@@ -1,11 +1,19 @@
-// ProvedoFAQ — §S10 FAQ accordion (Slice-LP2)
-// Content: verbatim from landing-provedo-v2.md §S10 — 6 Q&A
-// Accessibility: details/summary native HTML (keyboard navigable, no JS required)
-// Slice-LP3.7-A: focus styling migrated from inline onFocus/onBlur to CSS
-// :focus-visible (matches MarketingFooter pattern shipped in Wave 2.5).
-// No `'use client'` needed — pure Server Component.
-// Lane A: Q1 explicit disclaim register, all answers audited per 5-item guardrails
-// Plus price LOCKED $9/month per finance-advisor 2026-04-26 (was TD-096 placeholder)
+// ProvedoFAQ — §S9 FAQ accordion 2-column magazine layout
+// (Slice-LP5-BCD B1, per PD spec §C.S9)
+//
+// Bold direction (PD spec §C.S9):
+//   Magazine-style 2-column layout on md+. Left column anchors a contextual
+//   eyebrow («FAQ») + section heading + intro line; right column holds the
+//   accordion. Within the accordion, each question gets a subtle hover
+//   background. The heading «Questions you'd ask» becomes friendlier with
+//   a small intro line «If you're wondering, you're not the first.» (Lane-A
+//   clean — observation-coded, not advice).
+//
+// Mobile (<768px): the left col collapses ABOVE the right col (no sticky).
+// Standard 1-col stack — accessibility unchanged.
+//
+// Plus price LOCKED $9/month per finance-advisor 2026-04-26.
+// All FAQ questions/answers preserved verbatim.
 
 const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
@@ -47,67 +55,104 @@ export function ProvedoFAQ(): React.ReactElement {
       className="px-4 py-16 md:py-24"
       style={{ backgroundColor: 'var(--provedo-bg-page)' }}
     >
-      <div className="mx-auto max-w-2xl">
-        {/* Section header */}
-        <h2
-          id="faq-heading"
-          className="mb-10 text-center text-2xl font-semibold tracking-tight md:mb-14 md:text-3xl"
-          style={{ color: 'var(--provedo-text-primary)' }}
-        >
-          Questions you&apos;d ask
-        </h2>
-
-        {/* FAQ items — native details/summary, keyboard accessible */}
-        <div className="space-y-0">
-          {FAQ_ITEMS.map((item, faqIdx) => (
-            <details
-              key={item.question}
-              className="group"
+      <div className="mx-auto max-w-6xl">
+        {/* 2-column grid on md+; mobile stacks left col above right col. */}
+        <div data-testid="faq-grid" className="grid grid-cols-1 gap-10 md:grid-cols-12 md:gap-12">
+          {/* Left column — eyebrow + heading + intro line.
+              Sticky on md+ (Apple/Stripe documentation pattern) so the
+              header stays in view while the accordion scrolls. */}
+          <aside
+            data-testid="faq-left-col"
+            className="md:col-span-4 md:sticky md:top-24 md:self-start"
+          >
+            <p
+              className="text-xs font-medium uppercase tracking-widest"
               style={{
-                borderTop: faqIdx === 0 ? '1px solid var(--provedo-border-subtle)' : undefined,
-                borderBottom: '1px solid var(--provedo-border-subtle)',
+                color: 'var(--provedo-accent)',
+                fontFamily: 'var(--provedo-font-mono)',
+                letterSpacing: '0.18em',
+                margin: 0,
               }}
             >
-              <summary
-                className="flex cursor-pointer list-none items-center justify-between rounded py-5 text-base font-medium outline-none focus-visible:outline-2 focus-visible:[outline-color:var(--provedo-accent)] focus-visible:[outline-offset:2px]"
-                style={{
-                  color: 'var(--provedo-text-primary)',
-                }}
-              >
-                <span>{item.question}</span>
-                {/* Chevron indicator — CSS :open state */}
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  aria-hidden="true"
-                  style={{
-                    flexShrink: 0,
-                    marginLeft: '16px',
-                    color: 'var(--provedo-text-tertiary)',
-                    transition: 'transform 150ms ease',
-                  }}
-                  className="group-open:rotate-180"
-                >
-                  <path
-                    d="M5 7.5L10 12.5L15 7.5"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </summary>
+              FAQ
+            </p>
+            <h2
+              id="faq-heading"
+              className="mt-3 text-2xl font-semibold tracking-tight md:text-4xl"
+              style={{ color: 'var(--provedo-text-primary)', textWrap: 'balance' }}
+            >
+              Questions you&apos;d ask
+            </h2>
+            <p
+              className="mt-4 text-base leading-relaxed"
+              style={{ color: 'var(--provedo-text-muted)' }}
+            >
+              If you&apos;re wondering, you&apos;re not the first.
+            </p>
+          </aside>
 
-              <p
-                className="pb-5 text-sm leading-relaxed"
-                style={{ color: 'var(--provedo-text-secondary)' }}
-              >
-                {item.answer}
-              </p>
-            </details>
-          ))}
+          {/* Right column — accordion */}
+          <div data-testid="faq-right-col" className="md:col-span-8">
+            <div className="space-y-0">
+              {FAQ_ITEMS.map((item, faqIdx) => (
+                <details
+                  key={item.question}
+                  className="group"
+                  style={{
+                    borderTop: faqIdx === 0 ? '1px solid var(--provedo-border-subtle)' : undefined,
+                    borderBottom: '1px solid var(--provedo-border-subtle)',
+                  }}
+                >
+                  <summary
+                    className="flex cursor-pointer list-none items-center justify-between rounded py-5 text-base font-medium outline-none focus-visible:outline-2 focus-visible:[outline-color:var(--provedo-accent)] focus-visible:[outline-offset:2px] hover:bg-[var(--provedo-bg-muted)]"
+                    style={{
+                      color: 'var(--provedo-text-primary)',
+                      paddingLeft: '12px',
+                      paddingRight: '12px',
+                      transition: 'background-color 150ms ease',
+                    }}
+                  >
+                    <span style={{ fontSize: '17px' }}>{item.question}</span>
+                    {/* Chevron indicator — CSS :open state */}
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                      aria-hidden="true"
+                      style={{
+                        flexShrink: 0,
+                        marginLeft: '16px',
+                        color: 'var(--provedo-text-tertiary)',
+                        transition: 'transform 150ms ease',
+                      }}
+                      className="group-open:rotate-180"
+                    >
+                      <path
+                        d="M5 7.5L10 12.5L15 7.5"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </summary>
+
+                  <p
+                    className="pb-5 text-sm leading-relaxed"
+                    style={{
+                      color: 'var(--provedo-text-secondary)',
+                      paddingLeft: '12px',
+                      paddingRight: '12px',
+                      maxWidth: '640px',
+                    }}
+                  >
+                    {item.answer}
+                  </p>
+                </details>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

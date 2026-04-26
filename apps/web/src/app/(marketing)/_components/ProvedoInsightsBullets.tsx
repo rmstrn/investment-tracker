@@ -1,20 +1,31 @@
 'use client';
 
-// ProvedoInsightsBullets — §S5 insights proof bullets (v3)
-// Patch B: «a few minutes a week» → «a few minutes a day»
-// V3.5: scroll-into-view fade-in via ScrollFadeIn wrapper
-// V3.6: copy trim — sub shortened, bullets kept concise
-// Slice-LP3.7-A: backs the chrome-promise asserted by bullet #3 («Provedo
-// cites every observation») with an actual <Sources> mount on this surface.
-// Brand-strategist 2026-04-27 §S5: closes the chrome-promise-content-mismatch
-// gap. Treatment is intentionally LIGHTER (max-width + reduced opacity wrapper)
-// than the other 6 Sources mounts — the primitive's upper bound for Everyman
-// survival was named at 6 mounts, so the 7th uses muted visual weight to
-// avoid Sage-stacking. Items reference methodology + per-answer cite, NOT
-// internal pre-alpha cohorts (brand-voice rejected performative-Sage citing).
-// Visual spec §6.2: 3-card row, white bg (ELEVATED)
+// ProvedoInsightsBullets — §S5 insights asymmetric bento (Slice-LP5-BCD A2)
+//
+// Bold direction (PD spec §C.S5):
+//   Replace the equal 3-column white-card grid (PO «не красиво») with an
+//   ASYMMETRIC BENTO — one large hero card spanning 2/3 width carrying the
+//   primary insight, two smaller cards stacked in the remaining 1/3. Drop
+//   lucide icons + teal-tint badges; replace with bespoke inline SVG mini-
+//   illustrations sized 48×48 — broker-graph for #1, notification-stack for
+//   #2, cite-link for #3. Atmosphere added via a soft warm-cream gradient
+//   wash on the section.
+//
+// Visual rhythm (PD spec):
+//   - 12-col grid on lg+, gap-6.
+//   - Large card spans cols 1–8: white bg (elevated), p-10, rounded-2xl,
+//     shadow-lg with very low alpha layered shadows.
+//   - Small cards span cols 9–12 stacked: warm-bg-muted, p-6, rounded-xl,
+//     hairline border, no shadow.
+//   - Each illustration: slate-700 strokes + one teal-accent stroke per
+//     illustration. Hand-drawn for the bullet's idea — broker-graph for #1,
+//     notification-stack for #2, cite-link for #3.
+//
+// Section header preserved: «A few minutes a day. Everything that moved.»
+// Section sub preserved: «Provedo surfaces dividends, drawdowns…»
+// Sources line preserved at the bottom (closes §S5 chrome-promise gap from
+//   Slice-LP3.7-A — load-bearing for the chrome-system).
 
-import { BookOpen, Search, Wifi } from 'lucide-react';
 import { ScrollFadeIn } from './ScrollFadeIn';
 import { Sources } from './Sources';
 
@@ -23,25 +34,205 @@ const INSIGHTS_SOURCES_ITEMS: ReadonlyArray<string> = [
   'Cited per observation in chat answers',
 ] as const;
 
-const INSIGHT_BULLETS: ReadonlyArray<{
-  icon: React.ElementType;
-  iconLabel: string;
+// ─── Bespoke inline SVG illustrations (48×48, slate-700 + 1 teal accent) ───
+
+function BrokerGraphIllustration(): React.ReactElement {
+  // 3 broker nodes converging into 1 Provedo node. Mirrors the §S1 hero
+  // synthesis-glyph metaphor at small scale — visually rhymes the page.
+  return (
+    <svg
+      data-testid="insights-illustration-broker-graph"
+      width="56"
+      height="56"
+      viewBox="0 0 56 56"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle
+        cx="10"
+        cy="14"
+        r="3"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="28"
+        cy="14"
+        r="3"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.5"
+      />
+      <circle
+        cx="46"
+        cy="14"
+        r="3"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.5"
+      />
+      <circle cx="28" cy="44" r="4" fill="none" stroke="var(--provedo-accent)" strokeWidth="1.75" />
+      <path
+        d="M 10 17 Q 14 30 28 40"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 28 17 L 28 40"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 46 17 Q 42 30 28 40"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function NotificationStackIllustration(): React.ReactElement {
+  // Three stacked notification cards with the topmost slightly offset and
+  // teal-accented — the «what would slip past» surfaces forward.
+  return (
+    <svg
+      data-testid="insights-illustration-notification-stack"
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect
+        x="6"
+        y="32"
+        width="32"
+        height="8"
+        rx="2"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+      />
+      <rect
+        x="8"
+        y="22"
+        width="32"
+        height="8"
+        rx="2"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+      />
+      <rect
+        x="10"
+        y="10"
+        width="32"
+        height="10"
+        rx="2"
+        fill="none"
+        stroke="var(--provedo-accent)"
+        strokeWidth="1.75"
+      />
+      <line
+        x1="14"
+        y1="15"
+        x2="32"
+        y2="15"
+        stroke="var(--provedo-accent)"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CiteLinkIllustration(): React.ReactElement {
+  // A document with an underline + a small chain-link glyph emanating —
+  // observation tied to a source.
+  return (
+    <svg
+      data-testid="insights-illustration-cite-link"
+      width="48"
+      height="48"
+      viewBox="0 0 48 48"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <rect
+        x="6"
+        y="6"
+        width="22"
+        height="28"
+        rx="2"
+        fill="none"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1.25"
+      />
+      <line
+        x1="10"
+        y1="14"
+        x2="24"
+        y2="14"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+      <line
+        x1="10"
+        y1="20"
+        x2="24"
+        y2="20"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+      <line
+        x1="10"
+        y1="26"
+        x2="20"
+        y2="26"
+        stroke="var(--provedo-text-secondary)"
+        strokeWidth="1"
+        strokeLinecap="round"
+      />
+      <path
+        d="M 28 36 Q 34 36 36 32 Q 38 28 42 28"
+        fill="none"
+        stroke="var(--provedo-accent)"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
+      <circle cx="42" cy="28" r="3" fill="none" stroke="var(--provedo-accent)" strokeWidth="1.5" />
+    </svg>
+  );
+}
+
+// ─── Section composer ────────────────────────────────────────────────────────
+
+const HERO_BULLET_COPY =
+  'Provedo holds context across every broker — knows what you own, what changed, where the deltas matter.';
+
+const SMALL_BULLETS: ReadonlyArray<{
   copy: string;
+  Illustration: () => React.ReactElement;
 }> = [
   {
-    icon: Wifi,
-    iconLabel: 'Context across brokers icon',
-    copy: 'Provedo holds context across every broker — knows what you own, what changed, where the deltas matter.',
-  },
-  {
-    icon: Search,
-    iconLabel: 'Surface insights icon',
     copy: 'Provedo surfaces what would slip past — incoming dividends, forming drawdowns, creeping concentration.',
+    Illustration: NotificationStackIllustration,
   },
   {
-    icon: BookOpen,
-    iconLabel: 'Citation and sources icon',
     copy: 'Provedo cites every observation. Every pattern ties back to a trade, an event, or a published source.',
+    Illustration: CiteLinkIllustration,
   },
 ] as const;
 
@@ -50,12 +241,18 @@ export function ProvedoInsightsBullets(): React.ReactElement {
     <section
       aria-labelledby="insights-heading"
       className="px-4 py-16 md:py-24"
-      style={{ backgroundColor: 'var(--provedo-bg-elevated)' }}
+      style={{
+        // Atmosphere wash — subtle warm-cream radial that lifts the section
+        // out of the flat sequence the prior version sat in.
+        backgroundColor: 'var(--provedo-bg-elevated)',
+        backgroundImage:
+          'radial-gradient(ellipse 1100px 600px at 80% 0%, rgba(13, 148, 136, 0.045) 0%, transparent 65%)',
+      }}
     >
-      <div className="mx-auto max-w-4xl">
-        {/* Section header — Patch B: week → day */}
+      <div className="mx-auto max-w-6xl">
+        {/* Section header */}
         <ScrollFadeIn>
-          <div className="mb-12 text-center md:mb-16">
+          <div className="mb-12 text-center md:mb-14">
             <h2
               id="insights-heading"
               className="text-2xl font-semibold tracking-tight md:text-4xl"
@@ -74,48 +271,69 @@ export function ProvedoInsightsBullets(): React.ReactElement {
           </div>
         </ScrollFadeIn>
 
-        {/* Three proof bullets */}
-        <div className="grid gap-6 md:grid-cols-3">
-          {INSIGHT_BULLETS.map((bullet, i) => {
-            const Icon = bullet.icon;
-            return (
-              <ScrollFadeIn key={bullet.copy} delay={i * 80}>
-                <div
-                  className="rounded-xl border p-6"
-                  style={{
-                    borderColor: 'var(--provedo-border-subtle)',
-                    backgroundColor: 'var(--provedo-bg-page)',
-                    height: '100%',
-                  }}
-                >
-                  <div
-                    className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg"
-                    style={{ backgroundColor: 'var(--provedo-accent-subtle)' }}
-                  >
-                    <Icon
-                      size={20}
-                      strokeWidth={1.5}
-                      aria-label={bullet.iconLabel}
-                      style={{ color: 'var(--provedo-accent)' }}
-                    />
-                  </div>
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: 'var(--provedo-text-secondary)' }}
-                  >
-                    {bullet.copy}
-                  </p>
-                </div>
-              </ScrollFadeIn>
-            );
-          })}
-        </div>
+        {/* Asymmetric bento — large hero card 2/3 + two small cards 1/3 stacked */}
+        <ScrollFadeIn>
+          <div
+            data-testid="insights-bento-grid"
+            className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-6"
+          >
+            {/* Hero card (cols 1–8 at lg+) */}
+            <div
+              data-testid="insights-bento-hero-card"
+              className="lg:col-span-8"
+              style={{
+                backgroundColor: 'var(--provedo-bg-elevated)',
+                border: '1px solid var(--provedo-border-subtle)',
+                borderRadius: '20px',
+                padding: '40px',
+                boxShadow: '0 16px 32px rgba(15, 23, 42, 0.04), 0 4px 8px rgba(15, 23, 42, 0.02)',
+                height: '100%',
+              }}
+            >
+              <BrokerGraphIllustration />
+              <p
+                className="mt-6 text-lg leading-relaxed md:text-xl"
+                style={{ color: 'var(--provedo-text-primary)' }}
+              >
+                {HERO_BULLET_COPY}
+              </p>
+            </div>
 
-        {/* Slice-LP3.7-A: backs bullet #3's chrome-promise on the surface
-            that asserts it. Wrapped in a constrained, opacity-muted container
+            {/* Two small cards stacked (cols 9–12 at lg+) */}
+            <div className="flex flex-col gap-6 lg:col-span-4">
+              {SMALL_BULLETS.map((bullet) => {
+                const { Illustration } = bullet;
+                return (
+                  <div
+                    key={bullet.copy}
+                    data-testid="insights-bento-small-card"
+                    style={{
+                      backgroundColor: 'var(--provedo-bg-muted)',
+                      border: '1px solid var(--provedo-border-subtle)',
+                      borderRadius: '14px',
+                      padding: '24px',
+                      flex: '1 1 0',
+                    }}
+                  >
+                    <Illustration />
+                    <p
+                      className="mt-4 text-sm leading-relaxed"
+                      style={{ color: 'var(--provedo-text-secondary)' }}
+                    >
+                      {bullet.copy}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </ScrollFadeIn>
+
+        {/* Sources mount preserved (closes §S5 chrome-promise gap from
+            Slice-LP3.7-A). Lighter chrome via constrained max-width + opacity
             so the 7th Sources mount does not push Sage past Everyman parity
             (brand-strategist §7 ceiling note). */}
-        <ScrollFadeIn delay={INSIGHT_BULLETS.length * 80}>
+        <ScrollFadeIn>
           <div
             data-testid="insights-sources-wrapper"
             className="mx-auto mt-10 md:mt-12"
