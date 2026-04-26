@@ -53,21 +53,10 @@ export function ProvedoRepeatCTAV2(): React.ReactElement {
             </ProvedoButton>
           </div>
 
-          {/* Secondary text-link */}
-          <div className="mt-4">
-            <ProvedoNavLink
-              href="/sign-up"
-              className="text-sm font-medium"
-              colorFrom="#94A3B8"
-              colorTo="#2DD4BF"
-            >
-              Or start free forever
-            </ProvedoNavLink>
-          </div>
-
-          {/* Small-print */}
-          <p className="mt-4 text-xs leading-relaxed" style={{ color: '#94A3B8' }}>
-            No card. 50 free messages a month, free always.{' '}
+          {/* Small-print — v3.2: secondary «Or start free forever» NavLink dropped per PO
+              microcopy principle 2026-04-27. mt-4 → mt-6 for breathing on dark bg per PD spec. */}
+          <p className="mt-6 text-xs leading-relaxed" style={{ color: '#94A3B8' }}>
+            No card. 50 free questions a month.{' '}
             <ProvedoNavLink
               href="/pricing"
               className="text-xs underline-offset-2 hover:underline"

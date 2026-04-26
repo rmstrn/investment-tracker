@@ -1,10 +1,12 @@
 'use client';
 
-// ProvedoNumericProofBar — §S2 numeric proof bar (v3)
+// ProvedoNumericProofBar — §S2 numeric proof bar (v3.2)
 // V3.4: count-up animation on scroll-into-view
-// Patch A: cell #3 swapped from «$0/month / free forever» → «100% / Lane A — information not advice»
-//          cell #1: «100s of brokers and exchanges» (pre-verification fallback)
-//          cell #2: «Every observation cited»
+// V3.2 patches:
+//   - 4-cell layout (was 3) — adds time-anchor cell #3 «5 min / a week / the whole habit»
+//   - Cell #4 eyebrow «Lane A — information not advice» → «information not advice» (PD spec)
+//   - Audience-whisper micro-line below cells: «For investors who hold across more than one broker.»
+//   - max-w-4xl → max-w-5xl for 4-cell breathing room (PD spec)
 // Accessibility: <section><dl><dt><dd>, AAA contrast verified
 // TD-095: swap coverage="100s" → coverage="1000+" once tech-lead verifies coverage
 
@@ -74,6 +76,36 @@ function AnimatedNumber({
   );
 }
 
+// Per-breakpoint big-number font-size clamp (PD spec V1, slightly tighter for 4-cell layout)
+const BIG_NUMBER_CLAMP = 'clamp(2.25rem, 1.6rem + 1.6vw, 3.25rem)';
+
+// Shared cell typography (PD spec V1)
+const CELL_BIG_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--provedo-font-mono)',
+  fontWeight: 500,
+  fontSize: BIG_NUMBER_CLAMP,
+  letterSpacing: '-0.02em',
+  lineHeight: 1,
+  marginBottom: '8px',
+};
+
+const CELL_EYEBROW_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--provedo-font-sans)',
+  fontWeight: 500,
+  fontSize: '13px',
+  textTransform: 'uppercase',
+  letterSpacing: '0.08em',
+  color: 'var(--provedo-text-secondary)',
+  marginBottom: '4px',
+};
+
+const CELL_SUB_STYLE: React.CSSProperties = {
+  fontFamily: 'var(--provedo-font-sans)',
+  fontWeight: 400,
+  fontSize: '13px',
+  color: 'var(--provedo-text-muted)',
+};
+
 export function ProvedoNumericProofBar({
   coverage = '100s',
 }: ProvedoNumericProofBarProps): React.ReactElement {
@@ -90,108 +122,69 @@ export function ProvedoNumericProofBar({
         borderBottom: '1px solid var(--provedo-border-subtle)',
       }}
     >
-      <div className="mx-auto max-w-4xl px-4 py-12 md:py-16">
+      <div className="mx-auto max-w-5xl px-4 py-12 md:py-16">
         <dl
-          className="flex flex-col divide-y md:flex-row md:divide-x md:divide-y-0"
-          style={{ '--tw-divide-color': 'var(--provedo-border-subtle)' } as React.CSSProperties}
+          className="flex flex-col divide-y lg:flex-row lg:divide-x lg:divide-y-0"
+          style={
+            {
+              '--tw-divide-color': 'var(--provedo-border-subtle)',
+            } as React.CSSProperties
+          }
         >
-          {/* Cell 1 — Broker coverage (Patch A) */}
-          <div className="flex flex-col items-center py-8 text-center first:pt-0 last:pb-0 md:flex-1 md:px-8 md:py-0 md:first:pt-0 md:last:pb-0">
+          {/* Cell 1 — Broker coverage */}
+          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
-              style={{
-                fontFamily: 'var(--provedo-font-mono)',
-                fontWeight: 500,
-                fontSize: 'clamp(2.5rem, 1.8rem + 2vw, 3.5rem)',
-                color: 'var(--provedo-text-primary)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                marginBottom: '8px',
-              }}
+              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-text-primary)' }}
             >
               {coverage === '100s' ? '100s' : '1000+'}
             </dd>
-            <dt
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 500,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--provedo-text-secondary)',
-                marginBottom: '4px',
-              }}
-            >
-              brokers and exchanges
-            </dt>
-            <dd
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 400,
-                fontSize: '13px',
-                color: 'var(--provedo-text-muted)',
-              }}
-            >
+            <dt style={CELL_EYEBROW_STYLE}>brokers and exchanges</dt>
+            <dd style={CELL_SUB_STYLE}>
               {coverage === '100s' ? 'every major one' : 'in one place'}
             </dd>
           </div>
 
           {/* Cell 2 — Every observation cited */}
-          <div className="flex flex-col items-center py-8 text-center first:pt-0 last:pb-0 md:flex-1 md:px-8 md:py-0 md:first:pt-0 md:last:pb-0">
+          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
               style={{
-                fontFamily: 'var(--provedo-font-mono)',
-                fontWeight: 500,
-                fontSize: 'clamp(2.5rem, 1.8rem + 2vw, 3.5rem)',
+                ...CELL_BIG_STYLE,
                 color: 'var(--provedo-text-primary)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                marginBottom: '8px',
                 opacity: inView || prefersReduced ? 1 : 0,
                 transition: prefersReduced ? 'none' : 'opacity 400ms ease 200ms',
               }}
             >
               Every
             </dd>
-            <dt
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 500,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--provedo-text-secondary)',
-                marginBottom: '4px',
-              }}
-            >
-              observation cited
-            </dt>
-            <dd
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 400,
-                fontSize: '13px',
-                color: 'var(--provedo-text-muted)',
-              }}
-            >
-              with sources inline
-            </dd>
+            <dt style={CELL_EYEBROW_STYLE}>observation cited</dt>
+            <dd style={CELL_SUB_STYLE}>with sources inline</dd>
           </div>
 
-          {/* Cell 3 — Lane A: 100% information, not advice (Patch A) */}
-          <div className="flex flex-col items-center py-8 text-center first:pt-0 last:pb-0 md:flex-1 md:px-8 md:py-0 md:first:pt-0 md:last:pb-0">
+          {/* Cell 3 — Time anchor «5 min / a week» (v3.2 NEW)
+              Static token, no count-up (PD spec — count-up reads gimmicky on time-anchor) */}
+          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
             <dd
               className="leading-none tracking-tight"
               style={{
-                fontFamily: 'var(--provedo-font-mono)',
-                fontWeight: 500,
-                fontSize: 'clamp(2.5rem, 1.8rem + 2vw, 3.5rem)',
-                color: 'var(--provedo-accent)',
-                letterSpacing: '-0.02em',
-                lineHeight: 1,
-                marginBottom: '8px',
+                ...CELL_BIG_STYLE,
+                color: 'var(--provedo-text-primary)',
+                opacity: inView || prefersReduced ? 1 : 0,
+                transition: prefersReduced ? 'none' : 'opacity 400ms ease 200ms',
               }}
+            >
+              5 min
+            </dd>
+            <dt style={CELL_EYEBROW_STYLE}>a week</dt>
+            <dd style={CELL_SUB_STYLE}>the whole habit</dd>
+          </div>
+
+          {/* Cell 4 — Information, not advice (Patch A — v3.2: «Lane A —» prefix dropped) */}
+          <div className="flex flex-col items-center px-2 py-8 text-center first:pt-0 last:pb-0 lg:flex-1 lg:px-6 lg:py-0 lg:first:pt-0 lg:last:pb-0">
+            <dd
+              className="leading-none tracking-tight"
+              style={{ ...CELL_BIG_STYLE, color: 'var(--provedo-accent)' }}
             >
               <AnimatedNumber
                 target={100}
@@ -201,31 +194,26 @@ export function ProvedoNumericProofBar({
                 duration={1000}
               />
             </dd>
-            <dt
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 500,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                color: 'var(--provedo-text-secondary)',
-                marginBottom: '4px',
-              }}
-            >
-              Lane A — information not advice
-            </dt>
-            <dd
-              style={{
-                fontFamily: 'var(--provedo-font-sans)',
-                fontWeight: 400,
-                fontSize: '13px',
-                color: 'var(--provedo-text-muted)',
-              }}
-            >
-              no robo-advisor, no brokerage
-            </dd>
+            <dt style={CELL_EYEBROW_STYLE}>information not advice</dt>
+            <dd style={CELL_SUB_STYLE}>no robo-advisor, no brokerage</dd>
           </div>
         </dl>
+
+        {/* Audience-whisper — v3.2 (PD spec V2: proof-bar small-print placement) */}
+        <p
+          className="mx-auto mt-8 px-4 text-center md:mt-8"
+          style={{
+            fontFamily: 'var(--provedo-font-sans)',
+            fontStyle: 'italic',
+            fontWeight: 400,
+            fontSize: '14px',
+            lineHeight: 1.55,
+            color: 'var(--provedo-text-tertiary)',
+            maxWidth: '480px',
+          }}
+        >
+          For investors who hold across more than one broker.
+        </p>
       </div>
     </section>
   );

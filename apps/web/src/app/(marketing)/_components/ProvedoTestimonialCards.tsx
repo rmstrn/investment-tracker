@@ -1,9 +1,11 @@
 'use client';
 
-// ProvedoTestimonialCards — §S7 pre-alpha testimonials (v3)
-// V3.5: scroll fade-in on cards (stagger)
-// Content: builder quotes (Option B — «builder» badge, honest pre-alpha framing)
-// Accessibility: <section><figure><blockquote><figcaption>
+// ProvedoTestimonialCards — §S7 pre-alpha testimonials (v3.2)
+// V3.2: collapsed from 3-card grid → single weighted card per content-lead D3 + product-designer V5.
+// Card 1 (chat surface) selected — strongest signal cluster (chat-first wedge + sources + ICP-A).
+// «Alpha quotes coming Q2 2026.» honest line moves to header sub (replaces verbose 2-sentence sub).
+// Bottom redundant disclosure dropped (single mention in header sub is enough).
+// Accessibility: <section><figure><blockquote><figcaption> preserved. AAA contrast verified.
 
 interface TestimonialCard {
   quote: string;
@@ -12,29 +14,13 @@ interface TestimonialCard {
   surface: string;
 }
 
-const BUILDER_CARDS: ReadonlyArray<TestimonialCard> = [
-  {
-    quote:
-      'I asked Provedo why my portfolio was down. It told me which two positions did 62% of the work, with sources. Two minutes, no spreadsheet.',
-    name: 'Roman M.',
-    tier: 'Plus',
-    surface: 'chat surface',
-  },
-  {
-    quote:
-      "I check the feed for five minutes Sunday morning. Everything that moved is in one place. That's the whole product for me.",
-    name: 'Roman M.',
-    tier: 'Free',
-    surface: 'weekly insights',
-  },
-  {
-    quote:
-      "Provedo noticed I'd been selling Apple within days of every dip last year. It just showed me the pattern. No judgment, no advice.",
-    name: 'Roman M.',
-    tier: 'Plus',
-    surface: 'pattern recognition',
-  },
-] as const;
+const FEATURED_QUOTE: TestimonialCard = {
+  quote:
+    'I asked Provedo why my portfolio was down. It told me which two positions did 62% of the work, with sources. Two minutes, no spreadsheet.',
+  name: 'Roman M.',
+  tier: 'Plus',
+  surface: 'chat surface',
+};
 
 import { ScrollFadeIn } from './ScrollFadeIn';
 
@@ -67,7 +53,7 @@ export function ProvedoTestimonialCards(): React.ReactElement {
       className="px-4 py-16 md:py-24"
       style={{ backgroundColor: 'var(--provedo-bg-page)' }}
     >
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-3xl">
         {/* Section header */}
         <ScrollFadeIn>
           <div className="mb-10 text-center md:mb-14">
@@ -97,110 +83,98 @@ export function ProvedoTestimonialCards(): React.ReactElement {
             >
               What testers will be noticing.
             </h2>
+            {/* v3.2: replaces verbose 2-sentence sub with single honest line per content-lead D3 */}
             <p
-              className="mx-auto mt-3 max-w-xl text-sm leading-relaxed"
+              className="mx-auto mt-3 max-w-xl text-sm italic leading-relaxed"
               style={{ color: 'var(--provedo-text-tertiary)' }}
             >
-              Provedo enters closed alpha Q2 2026. Below: quotes from the team building the product.
+              Alpha quotes coming Q2 2026. Below: a builder&apos;s note from the team shipping the
+              product.
             </p>
           </div>
         </ScrollFadeIn>
 
-        {/* 3-card grid — staggered fade-in */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {BUILDER_CARDS.map((card, i) => (
-            <ScrollFadeIn key={card.surface} delay={i * 100}>
-              <figure
-                style={{
-                  backgroundColor: 'var(--provedo-bg-elevated)',
-                  border: '1px solid var(--provedo-border-subtle)',
-                  borderRadius: '12px',
-                  padding: '32px',
-                  boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
-                  minHeight: '240px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%',
-                }}
-              >
-                <span
-                  aria-hidden="true"
-                  style={{
-                    fontFamily: 'var(--provedo-font-mono)',
-                    fontSize: '32px',
-                    color: 'var(--provedo-accent)',
-                    opacity: 0.4,
-                    lineHeight: 1,
-                    marginBottom: '8px',
-                    display: 'block',
-                  }}
-                >
-                  &ldquo;
-                </span>
+        {/* Single weighted card (v3.2 — was 3-card grid) */}
+        <ScrollFadeIn>
+          <figure
+            className="mx-auto"
+            style={{
+              maxWidth: '640px',
+              backgroundColor: 'var(--provedo-bg-elevated)',
+              border: '1px solid var(--provedo-border-subtle)',
+              borderRadius: '16px',
+              padding: 'clamp(32px, 4vw, 48px)',
+              boxShadow: '0 1px 2px rgba(15,23,42,0.06)',
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                fontFamily: 'var(--provedo-font-mono)',
+                fontSize: '40px',
+                color: 'var(--provedo-accent)',
+                opacity: 0.4,
+                lineHeight: 1,
+                marginBottom: '16px',
+                display: 'block',
+              }}
+            >
+              &ldquo;
+            </span>
 
-                <blockquote
+            <blockquote
+              style={{
+                fontFamily: 'var(--provedo-font-sans)',
+                fontWeight: 400,
+                fontSize: '18px',
+                color: 'var(--provedo-text-primary)',
+                lineHeight: 1.6,
+                marginBottom: '32px',
+                quotes: 'none',
+              }}
+            >
+              {FEATURED_QUOTE.quote}
+            </blockquote>
+
+            <hr
+              style={{
+                border: 'none',
+                borderTop: '1px solid var(--provedo-border-subtle)',
+                marginBottom: '20px',
+              }}
+            />
+
+            <figcaption>
+              <div className="flex flex-wrap items-center gap-2">
+                <span
                   style={{
                     fontFamily: 'var(--provedo-font-sans)',
-                    fontWeight: 400,
-                    fontSize: '16px',
-                    color: 'var(--provedo-text-secondary)',
-                    lineHeight: 1.55,
-                    marginBottom: 'auto',
-                    paddingBottom: '24px',
-                    quotes: 'none',
+                    fontWeight: 500,
+                    fontSize: '14px',
+                    color: 'var(--provedo-text-primary)',
                   }}
                 >
-                  {card.quote}
-                </blockquote>
-
-                <hr
-                  style={{
-                    border: 'none',
-                    borderTop: '1px solid var(--provedo-border-subtle)',
-                    marginBottom: '16px',
-                  }}
-                />
-
-                <figcaption>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      style={{
-                        fontFamily: 'var(--provedo-font-sans)',
-                        fontWeight: 500,
-                        fontSize: '14px',
-                        color: 'var(--provedo-text-primary)',
-                      }}
-                    >
-                      {card.name}
-                    </span>
-                    <TierBadge tier={card.tier} />
-                  </div>
-                  <p
-                    style={{
-                      fontFamily: 'var(--provedo-font-sans)',
-                      fontWeight: 400,
-                      fontSize: '13px',
-                      color: 'var(--provedo-text-muted)',
-                      marginTop: '4px',
-                    }}
-                  >
-                    <span style={{ fontWeight: 500 }}>builder</span> at Provedo ·{' '}
-                    <span style={{ fontFamily: 'var(--provedo-font-mono)' }}>{card.surface}</span>
-                  </p>
-                </figcaption>
-              </figure>
-            </ScrollFadeIn>
-          ))}
-        </div>
-
-        {/* Honest disclaimer */}
-        <p
-          className="mx-auto mt-8 max-w-xl text-center text-xs italic leading-relaxed"
-          style={{ color: 'var(--provedo-text-tertiary)' }}
-        >
-          Provedo is in pre-alpha. Quotes are from the team building the product. Real alpha-tester
-          quotes replace these once alpha ships.
-        </p>
+                  {FEATURED_QUOTE.name}
+                </span>
+                <TierBadge tier={FEATURED_QUOTE.tier} />
+              </div>
+              <p
+                style={{
+                  fontFamily: 'var(--provedo-font-sans)',
+                  fontWeight: 400,
+                  fontSize: '13px',
+                  color: 'var(--provedo-text-muted)',
+                  marginTop: '4px',
+                }}
+              >
+                <span style={{ fontWeight: 500 }}>builder</span> at Provedo ·{' '}
+                <span style={{ fontFamily: 'var(--provedo-font-mono)' }}>
+                  {FEATURED_QUOTE.surface}
+                </span>
+              </p>
+            </figcaption>
+          </figure>
+        </ScrollFadeIn>
       </div>
     </section>
   );

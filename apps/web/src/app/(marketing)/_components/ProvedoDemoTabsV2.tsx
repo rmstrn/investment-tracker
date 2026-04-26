@@ -1,10 +1,13 @@
 'use client';
 
-// ProvedoDemoTabsV2 — §S4 demo tabs with animated inline SVG charts (v3)
-// V3.2: all 4 charts replaced with animated versions (PnlSparklineAnimated etc.)
+// ProvedoDemoTabsV2 — §S4 demo tabs with animated inline SVG charts (v3.2)
+// V3.2 (Slice-LP3.2): inline source citation footer added to all 4 tabs (content-lead D1).
+//   - Tab 1 + Tab 2 also lift inline event labels (AAPL Q3 earnings, TSLA delivery miss).
+//   - Tab 3 + Tab 4 phrasing PRESERVED verbatim from `8cb509b` legal/finance v3.1 patches.
+//   - Source-line styling mirrors Tab 3's existing disclaimer (text-xs italic, text-tertiary).
+// V3.2 — all 4 charts replaced with animated versions (PnlSparklineAnimated etc.)
 // Patch C: section header reframed «Ask anything.» + sub «Four real questions on your actual holdings. Notice what you'd miss.»
-// Patch B: «week» → «day» not applicable in this section (week refs are in S5)
-// Lane A: Tab 3 patterns section audited — «no judgment, no advice» disclaim retained
+// Lane A: Tab 3 patterns section audited — «not a recommendation about future trading decisions» retained
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@investment-tracker/ui';
 import { AllocationPieBarAnimated } from './charts/AllocationPieBarAnimated';
@@ -80,6 +83,16 @@ function Pos({ children }: { children: React.ReactNode }): React.ReactElement {
   );
 }
 
+// Sources footer — inline citation line for each demo tab answer (v3.2)
+// Styling matches Tab 3's existing disclaimer pattern for visual rhyme across all 4 tabs.
+function Sources({ children }: { children: React.ReactNode }): React.ReactElement {
+  return (
+    <p className="mt-2 text-xs italic" style={{ color: 'var(--provedo-text-tertiary)' }}>
+      {children}
+    </p>
+  );
+}
+
 // ─── Main component ──────────────────────────────────────────────────────────
 
 export function ProvedoDemoTabsV2(): React.ReactElement {
@@ -134,23 +147,27 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
             })}
           </TabsList>
 
-          {/* Tab 1 — Why? — Animated P&L Sparkline */}
+          {/* Tab 1 — Why? — Animated P&L Sparkline (v3.2: source line per content-lead D1) */}
           <TabsContent value="why">
             <div className="space-y-4">
               <UserBubble>Why is my portfolio down this month?</UserBubble>
               <ProvedoBubble>
                 <p>
                   You&apos;re down <Neg>−4.2%</Neg> this month. <Mono>62%</Mono> of the drawdown is
-                  two positions: <Mono>Apple (−11%, AAPL Q3 earnings)</Mono> and{' '}
-                  <Mono>Tesla (−8%, TSLA delivery miss)</Mono>. The rest of your portfolio is
-                  roughly flat.
+                  two positions: <Mono>Apple (−11%)</Mono> after Q3 earnings on{' '}
+                  <Mono>2025-10-31</Mono> and <Mono>Tesla (−8%)</Mono> after the{' '}
+                  <Mono>2025-10-22</Mono> delivery miss. The rest of your portfolio is roughly flat.
                 </p>
+                <Sources>
+                  Sources: AAPL Q3 earnings 2025-10-31 · TSLA Q3 delivery report 2025-10-22 ·
+                  holdings via Schwab statement 2025-11-01.
+                </Sources>
                 <PnlSparklineAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
 
-          {/* Tab 2 — Dividends — Animated Calendar */}
+          {/* Tab 2 — Dividends — Animated Calendar (v3.2: source line per content-lead D1) */}
           <TabsContent value="dividends">
             <div className="space-y-4">
               <UserBubble>When are dividends coming this quarter?</UserBubble>
@@ -161,12 +178,18 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>Oct 7 ($74)</Mono>, <Mono>MSFT</Mono> ex-div <Mono>Nov 19 ($61)</Mono>.
                   Three smaller payments after that.
                 </p>
+                <Sources>
+                  Sources: ex-dividend dates from issuer investor-relations announcements ·
+                  per-share amounts × your holdings of record on Schwab statement 2025-09-30.
+                </Sources>
                 <DividendCalendarAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
 
-          {/* Tab 3 — Patterns (Coach surface — highest Lane A risk, fully audited) */}
+          {/* Tab 3 — Patterns (Coach surface — highest Lane A risk, fully audited)
+              v3.2: phrasing PRESERVED verbatim from `8cb509b` legal-advisor patch (load-bearing).
+              Source line added per content-lead D1 — strengthens «every observation cited» promise. */}
           <TabsContent value="patterns">
             <div className="space-y-4">
               <UserBubble>Anything unusual in my trades this year?</UserBubble>
@@ -181,12 +204,19 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   Retrospective observation about past trades; not a recommendation about future
                   trading decisions. Past patterns do not predict future results.
                 </p>
+                <Sources>
+                  Sources: AAPL trade timestamps from your Schwab + IBKR statements 2025-01-01 to
+                  2025-12-31 · AAPL daily close from public market data · disposition-effect pattern
+                  per Shefrin &amp; Statman (1985).
+                </Sources>
                 <TradeTimelineAnimated />
               </ProvedoBubble>
             </div>
           </TabsContent>
 
-          {/* Tab 4 — Aggregate — Animated Donut + Bar */}
+          {/* Tab 4 — Aggregate — Animated Donut + Bar
+              v3.2: phrasing PRESERVED verbatim from `8cb509b` finance-advisor patch (sourced
+              «about 2x the sector's weight in S&P 500 (~28%)»). Source line added per D1. */}
           <TabsContent value="aggregate">
             <div className="space-y-4">
               <UserBubble>How much tech am I holding across IBKR + Schwab?</UserBubble>
@@ -198,6 +228,11 @@ export function ProvedoDemoTabsV2(): React.ReactElement {
                   <Mono>MSFT ($9k)</Mono>, <Mono>NVDA ($8k)</Mono>. <Mono>Schwab</Mono> adds{' '}
                   <Mono>GOOG ($3k)</Mono> and <Mono>AMZN ($2k)</Mono>.
                 </p>
+                <Sources>
+                  Sources: position values from your IBKR + Schwab statements 2025-11-01 · S&amp;P
+                  500 sector weights from S&amp;P DJI methodology, Information Technology sector as
+                  of 2025-Q3.
+                </Sources>
                 <AllocationPieBarAnimated />
               </ProvedoBubble>
             </div>

@@ -1,11 +1,12 @@
-// Smoke tests — Provedo landing v2 (Slice-LP2)
-// Coverage: 10 sections × 3-4 tests each = ~40 tests + cross-section + guardrail checks
+// Smoke tests — Provedo landing v2 (Slice-LP2) + v3.2 universal-improvements patches.
+// Coverage: 10 sections × 3-4 tests each + cross-section + guardrail checks + Slice-LP3.2 deltas.
 // Test shape: render → getByRole/getByText → assertion (AAA pattern)
 // Does NOT import 'use client' components with DOM APIs — uses dedicated component-level mocks.
 
 import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
+import { MarketingFooter } from './_components/MarketingFooter';
 import { ProvedoDemoTabsV2 } from './_components/ProvedoDemoTabsV2';
 import { ProvedoEditorialNarrative } from './_components/ProvedoEditorialNarrative';
 import { ProvedoFAQ } from './_components/ProvedoFAQ';
@@ -18,6 +19,7 @@ import { AllocationPieBar } from './_components/charts/AllocationPieBar';
 import { DividendCalendar } from './_components/charts/DividendCalendar';
 import { PnlSparkline } from './_components/charts/PnlSparkline';
 import { TradeTimeline } from './_components/charts/TradeTimeline';
+import DisclosuresPage, { metadata as disclosuresMetadata } from './disclosures/page';
 import MarketingHomePage, { metadata } from './page';
 
 // ─── Page-level smoke tests ────────────────────────────────────────────────
@@ -44,13 +46,15 @@ describe('MarketingHomePage v2', () => {
     expect(metadata.robots).toEqual({ index: false, follow: false });
   });
 
-  it('renders OG description without trial mention (v2 delta)', () => {
+  it('renders OG description without trial mention (v2 delta) and without «free forever» (v3.2 delta)', () => {
     const ogDesc =
       typeof metadata.openGraph === 'object' && metadata.openGraph
         ? (metadata.openGraph as { description?: string }).description
         : '';
     expect(ogDesc).not.toMatch(/14 days/i);
-    expect(ogDesc).toMatch(/free forever/i);
+    // v3.2: PO microcopy principle — no «free forever» framings in marketing surface.
+    expect(ogDesc).not.toMatch(/free forever/i);
+    expect(ogDesc).toMatch(/free tier/i);
   });
 
   it('renders all 10 landmark sections (via headings)', () => {
@@ -77,8 +81,8 @@ describe('MarketingHomePage v2', () => {
     ).toBeInTheDocument();
     // S8 Aggregation — «One chat holds everything.»
     expect(screen.getByRole('region', { name: /one chat holds everything/i })).toBeInTheDocument();
-    // S9 FAQ — «Common questions»
-    expect(screen.getByRole('region', { name: /common questions/i })).toBeInTheDocument();
+    // S9 FAQ — «Questions you'd ask» (v3.2 Slice-LP3.2 rename)
+    expect(screen.getByRole('region', { name: /questions you.d ask/i })).toBeInTheDocument();
     // S10 Repeat CTA — «Open Provedo when you're ready.»
     expect(
       screen.getByRole('region', { name: /open provedo when you.re ready/i }),
@@ -89,12 +93,29 @@ describe('MarketingHomePage v2', () => {
 // ─── S2 Numeric proof bar ──────────────────────────────────────────────────
 
 describe('ProvedoNumericProofBar', () => {
-  it('renders 3 proof cells (v3 Patch A)', () => {
+  it('renders 4 proof cells (v3.2: time-anchor cell added)', () => {
     render(<ProvedoNumericProofBar />);
     expect(screen.getByText('brokers and exchanges')).toBeInTheDocument();
     expect(screen.getByText('observation cited')).toBeInTheDocument();
-    // Cell 3 is now Lane A — «information not advice» (Patch A)
-    expect(screen.getByText(/lane a — information not advice/i)).toBeInTheDocument();
+    // v3.2: Cell #3 NEW — time-anchor «5 min / a week / the whole habit»
+    expect(screen.getByText('a week')).toBeInTheDocument();
+    expect(screen.getByText(/the whole habit/i)).toBeInTheDocument();
+    // v3.2: Cell #4 — «Lane A —» prefix dropped per PD spec V1
+    expect(screen.getByText(/^information not advice$/i)).toBeInTheDocument();
+    // v3.2: «Lane A —» prefix MUST be gone
+    expect(screen.queryByText(/lane a — information not advice/i)).not.toBeInTheDocument();
+  });
+
+  it('renders «5 min» time-anchor token (v3.2 NEW)', () => {
+    render(<ProvedoNumericProofBar />);
+    expect(screen.getByText('5 min')).toBeInTheDocument();
+  });
+
+  it('renders audience-whisper micro-line (v3.2 NEW per PD spec V2)', () => {
+    render(<ProvedoNumericProofBar />);
+    expect(
+      screen.getByText(/for investors who hold across more than one broker/i),
+    ).toBeInTheDocument();
   });
 
   it('uses "100s" fallback by default', () => {
@@ -107,9 +128,8 @@ describe('ProvedoNumericProofBar', () => {
     expect(screen.getByText('1000+')).toBeInTheDocument();
   });
 
-  it('renders Lane A «100%» cell (v3 Patch A — replaces $0/month)', () => {
+  it('renders «100%» information-not-advice cell sub-line', () => {
     render(<ProvedoNumericProofBar />);
-    // Cell 3: animated count-up target = 100% — renders as 0 initially (count starts on scroll)
     expect(screen.getByText(/no robo-advisor, no brokerage/i)).toBeInTheDocument();
   });
 
@@ -328,39 +348,40 @@ describe('ProvedoEditorialNarrative', () => {
 describe('ProvedoTestimonialCards', () => {
   it('renders «Coming Q2 2026» badge', () => {
     render(<ProvedoTestimonialCards />);
-    expect(screen.getByText(/coming q2 2026/i)).toBeInTheDocument();
+    // Badge text — exact match (sub-line uses different phrasing «Alpha quotes coming Q2 2026.»)
+    expect(screen.getByText(/^coming q2 2026$/i)).toBeInTheDocument();
   });
 
-  it('renders honest pre-alpha disclaimer below cards', () => {
+  it('renders «Alpha quotes coming Q2 2026.» honest line in header (v3.2)', () => {
     render(<ProvedoTestimonialCards />);
-    expect(screen.getByText(/quotes are from the team building the product/i)).toBeInTheDocument();
+    expect(screen.getByText(/alpha quotes coming q2 2026/i)).toBeInTheDocument();
   });
 
-  it('renders 3 quote cards as <figure><blockquote>', () => {
+  it('renders single weighted quote (v3.2: was 3-card grid, now single figure)', () => {
     render(<ProvedoTestimonialCards />);
     const figures = document.querySelectorAll('figure');
-    expect(figures.length).toBe(3);
+    expect(figures.length).toBe(1);
   });
 
-  it('card 3 contains «No judgment, no advice» Lane A disclaim', () => {
+  it('renders the chat-surface quote («62% of the work, with sources»)', () => {
     render(<ProvedoTestimonialCards />);
-    expect(screen.getByText(/no judgment, no advice/i)).toBeInTheDocument();
+    expect(screen.getByText(/62% of the work, with sources/i)).toBeInTheDocument();
   });
 
-  it('attribution shows «builder at Provedo»', () => {
+  it('attribution shows «builder at Provedo» on the single card', () => {
     render(<ProvedoTestimonialCards />);
     const builderLabels = screen.getAllByText(/builder/i);
-    expect(builderLabels.length).toBeGreaterThanOrEqual(3);
+    expect(builderLabels.length).toBeGreaterThanOrEqual(1);
   });
 });
 
 // ─── S9 FAQ ───────────────────────────────────────────────────────────────
 
 describe('ProvedoFAQ', () => {
-  it('renders section heading «Common questions»', () => {
+  it("renders section heading «Questions you'd ask» (v3.2 rename)", () => {
     render(<ProvedoFAQ />);
     expect(
-      screen.getByRole('heading', { level: 2, name: /common questions/i }),
+      screen.getByRole('heading', { level: 2, name: /questions you.d ask/i }),
     ).toBeInTheDocument();
   });
 
@@ -406,9 +427,19 @@ describe('ProvedoRepeatCTAV2', () => {
     expect(screen.getByRole('link', { name: /ask provedo/i })).toBeInTheDocument();
   });
 
-  it('renders secondary «Or start free forever» link', () => {
+  it('does NOT render «Or start free forever» link (v3.2: dropped per PO microcopy principle)', () => {
     render(<ProvedoRepeatCTAV2 />);
-    expect(screen.getByRole('link', { name: /or start free forever/i })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /or start free forever/i })).not.toBeInTheDocument();
+  });
+
+  it('renders updated small-print «50 free questions a month» (v3.2)', () => {
+    render(<ProvedoRepeatCTAV2 />);
+    expect(screen.getByText(/50 free questions a month/i)).toBeInTheDocument();
+  });
+
+  it('keeps «Or see Plus pricing →» link (v3.2: kept, distinct from dropped sign-up link)', () => {
+    render(<ProvedoRepeatCTAV2 />);
+    expect(screen.getByRole('link', { name: /or see plus pricing/i })).toBeInTheDocument();
   });
 
   it('does NOT contain v1 «Ready when you are» copy', () => {
@@ -460,5 +491,154 @@ describe('Anti-pattern: no purple/violet', () => {
     expect(html).not.toMatch(/purple/i);
     expect(html).not.toMatch(/violet/i);
     expect(html).not.toMatch(/#[56789][Dd][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f][0-9A-Fa-f]/);
+  });
+});
+
+// ─── Slice-LP3.2 — Footer 3-layer disclaimer ─────────────────────────────
+
+describe('MarketingFooter — 3-layer disclaimer (v3.2)', () => {
+  it('Layer 1: renders plain-language summary', () => {
+    render(<MarketingFooter />);
+    expect(
+      screen.getByText(/provedo provides general information about your portfolio/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/it is not personalized investment advice — every decision stays yours/i),
+    ).toBeInTheDocument();
+  });
+
+  it('Layer 2: renders <details>/<summary> with locked summary copy', () => {
+    render(<MarketingFooter />);
+    const summaryText = screen.getByText(/full regulatory disclosures \(us, eu, uk\)/i);
+    expect(summaryText).toBeInTheDocument();
+    // Ensure native <details> wrapping for keyboard accessibility (PD spec V3)
+    const details = summaryText.closest('details');
+    expect(details).not.toBeNull();
+    // The text is rendered inside a <summary> child of <details> for the focusable affordance
+    const summary = summaryText.closest('summary');
+    expect(summary).not.toBeNull();
+    expect(summary?.tagName.toLowerCase()).toBe('summary');
+  });
+
+  it('Layer 2: contains verbatim 75-word regulator-readable block (preserved from 8cb509b)', () => {
+    render(<MarketingFooter />);
+    expect(
+      screen.getByText(
+        /provedo is not a registered investment advisor and is not a broker-dealer/i,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/u.s. investment advisers act of 1940, eu mifid ii, or uk fsma 2000/i),
+    ).toBeInTheDocument();
+  });
+
+  it('Layer 3: renders link to /disclosures inside expanded Layer 2', () => {
+    render(<MarketingFooter />);
+    const link = screen.getByRole('link', { name: /read full extended disclosures/i });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/disclosures');
+  });
+
+  it('waitlist box CTA renamed «Try Plus free for 14 days» → «Open Provedo» (v3.2)', () => {
+    render(<MarketingFooter />);
+    expect(screen.getByRole('link', { name: /^open provedo$/i })).toBeInTheDocument();
+    // Old «Try Plus free for 14 days» MUST be gone
+    expect(screen.queryByText(/try plus free for 14 days/i)).not.toBeInTheDocument();
+  });
+
+  it('does NOT contain «free forever» / «free always» / «forever» framings (PO microcopy principle)', () => {
+    const { container } = render(<MarketingFooter />);
+    const text = container.textContent ?? '';
+    expect(text).not.toMatch(/free forever/i);
+    expect(text).not.toMatch(/free always/i);
+    expect(text).not.toMatch(/free-forever/i);
+  });
+});
+
+// ─── Slice-LP3.2 — /disclosures page (Layer 3 full text) ─────────────────
+
+describe('DisclosuresPage (Layer 3)', () => {
+  it('renders «Regulatory disclosures» h1', () => {
+    render(<DisclosuresPage />);
+    expect(
+      screen.getByRole('heading', { level: 1, name: /regulatory disclosures/i }),
+    ).toBeInTheDocument();
+  });
+
+  it('robots metadata: noindex + nofollow', () => {
+    expect(disclosuresMetadata.robots).toEqual({ index: false, follow: false });
+  });
+
+  it('renders all 6 sections from content-lead D2', () => {
+    render(<DisclosuresPage />);
+    expect(
+      screen.getByRole('heading', { level: 2, name: /who provedo is and is not/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /information we provide/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /per-jurisdiction notes/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /past performance and predictions/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { level: 2, name: /your decisions, your responsibility/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /^contact$/i })).toBeInTheDocument();
+  });
+
+  it('cites US/EU/UK regulatory frameworks per legal-advisor brief', () => {
+    const { container } = render(<DisclosuresPage />);
+    const text = container.textContent ?? '';
+    expect(text).toMatch(/investment advisers act of 1940/i);
+    expect(text).toMatch(/mifid ii/i);
+    expect(text).toMatch(/financial services and markets act 2000/i);
+  });
+
+  it('contact section links to support@provedo.app', () => {
+    render(<DisclosuresPage />);
+    const link = screen.getByRole('link', { name: /support@provedo\.app/i });
+    expect(link).toHaveAttribute('href', 'mailto:support@provedo.app');
+  });
+});
+
+// ─── Slice-LP3.2 — Demo tabs source citations ────────────────────────────
+
+describe('ProvedoDemoTabsV2 — source citations (v3.2)', () => {
+  it('Tab 1 (Why?): renders source line with AAPL Q3 + TSLA delivery + Schwab statement', () => {
+    render(<ProvedoDemoTabsV2 />);
+    expect(screen.getByText(/aapl q3 earnings 2025-10-31/i)).toBeInTheDocument();
+    expect(screen.getByText(/tsla q3 delivery report 2025-10-22/i)).toBeInTheDocument();
+  });
+
+  it('Tab 2 (Dividends): renders source line with issuer IR + Schwab statement', () => {
+    render(<ProvedoDemoTabsV2 />);
+    fireEvent.click(screen.getByRole('tab', { name: /dividends/i }));
+    expect(
+      screen.getByText(/ex-dividend dates from issuer investor-relations/i),
+    ).toBeInTheDocument();
+  });
+
+  it('Tab 3 (Patterns): preserves verbatim load-bearing phrasing + adds source line', () => {
+    render(<ProvedoDemoTabsV2 />);
+    fireEvent.click(screen.getByRole('tab', { name: /patterns/i }));
+    // v3.1 verbatim — MUST remain
+    expect(screen.getByText(/common pattern across retail investors/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/not a recommendation about future trading decisions/i),
+    ).toBeInTheDocument();
+    // v3.2 NEW source line — Shefrin & Statman (1985) verified citation
+    expect(screen.getByText(/shefrin & statman \(1985\)/i)).toBeInTheDocument();
+  });
+
+  it('Tab 4 (Aggregate): preserves «about 2x» sourced benchmark + adds S&P DJI citation', () => {
+    render(<ProvedoDemoTabsV2 />);
+    fireEvent.click(screen.getByRole('tab', { name: /aggregate/i }));
+    // v3.1 verbatim — MUST remain
+    expect(screen.getByText(/~28%/)).toBeInTheDocument();
+    // v3.2 NEW source line — S&P DJI methodology
+    expect(screen.getByText(/s&p dji methodology/i)).toBeInTheDocument();
   });
 });

@@ -26,7 +26,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'What does Provedo cost?',
     answer:
-      'Free is always free — 50 chat messages a month, full broker aggregation, weekly insights, no card required. Plus tier ($9/month) unlocks unlimited chat and insights when they matter.',
+      'The Free tier is 50 questions a month, full broker aggregation, weekly insights, no card required. Plus tier ($9/month) unlocks unlimited chat and insights when they matter.',
   },
   {
     question: 'Is my data secure?',
@@ -36,7 +36,7 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
   {
     question: 'What does "pre-alpha" mean?',
     answer:
-      "Provedo is in active build. Free-forever tier is locked; the product is real and runs on your real holdings. Some surfaces are still being polished, and you're early.",
+      "Provedo is in active build. The Free tier is locked; the product is real and runs on your real holdings. Some surfaces are still being polished, and you're early.",
   },
 ] as const;
 
@@ -54,7 +54,7 @@ export function ProvedoFAQ(): React.ReactElement {
           className="mb-10 text-center text-2xl font-semibold tracking-tight md:mb-14 md:text-3xl"
           style={{ color: 'var(--provedo-text-primary)' }}
         >
-          Common questions
+          Questions you&apos;d ask
         </h2>
 
         {/* FAQ items — native details/summary, keyboard accessible */}

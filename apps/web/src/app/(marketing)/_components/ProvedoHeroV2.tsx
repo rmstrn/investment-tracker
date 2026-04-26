@@ -9,7 +9,7 @@
 // Copy: §S1 verbatim (Patch D verified: primary «Ask Provedo» + secondary text-link, no trial CTA)
 
 import { useEffect, useRef, useState } from 'react';
-import { ProvedoButton, ProvedoNavLink } from './ProvedoButton';
+import { ProvedoButton } from './ProvedoButton';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
 
 // ─── Typing animation hook ────────────────────────────────────────────────────
@@ -458,23 +458,16 @@ export function ProvedoHeroV2(): React.ReactElement {
                 Notice what you&apos;d miss across all your brokers.
               </p>
 
-              {/* v3 dual-CTA stack — Patch D verified: primary + secondary text-link, no trial */}
-              <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row lg:items-start">
+              {/* v3.2 single-CTA — secondary «Or start free forever» dropped per PO microcopy
+                  principle 2026-04-27 (no «free forever» framings in marketing surface) */}
+              <div className="mt-10 flex flex-col items-center lg:items-start">
                 <ProvedoButton href="#demo" variant="primary" size="lg">
                   Ask Provedo
                 </ProvedoButton>
-                <ProvedoNavLink
-                  href="/sign-up"
-                  className="flex h-12 items-center text-base font-medium"
-                  colorFrom="var(--provedo-text-tertiary)"
-                  colorTo="var(--provedo-accent)"
-                >
-                  Or start free forever
-                </ProvedoNavLink>
               </div>
 
-              <p className="mt-3 text-xs" style={{ color: 'var(--provedo-text-tertiary)' }}>
-                No card. 50 chat messages a month, free always.
+              <p className="mt-4 text-xs" style={{ color: 'var(--provedo-text-tertiary)' }}>
+                No card. 50 free questions a month.
               </p>
             </div>
 

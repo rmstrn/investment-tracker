@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Provedo · Notice what you'd miss across all your brokers",
     description:
-      'Provedo will lead you through your portfolio — across every broker, with sources. Free forever, no card.',
+      'Provedo will lead you through your portfolio — across every broker, with sources. Free tier, no card.',
     type: 'website',
     locale: 'en_US',
     url: 'https://provedo.ai/',

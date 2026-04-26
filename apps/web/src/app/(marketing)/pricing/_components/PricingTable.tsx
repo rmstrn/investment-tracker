@@ -20,7 +20,7 @@ const TIERS: ReadonlyArray<Tier> = [
     id: 'free',
     name: 'Free',
     price: '$0',
-    priceSuffix: 'forever',
+    priceSuffix: '',
     tagline: 'Track a couple of accounts and try the AI.',
   },
   {

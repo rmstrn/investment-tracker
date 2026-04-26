@@ -1,8 +1,11 @@
 import Link from 'next/link';
 import { ProvedoButton } from './ProvedoButton';
 
-// Provedo footer — verbatim disclaimer from docs/content/landing-provedo-v1.md v2 §6
-// Rename notice deferred — PO call required (Risk 2 from kickoff, Option B = skip for first-pass).
+// Provedo footer — v3.2: 3-layer disclaimer (Layer 1 plain summary + Layer 2 expandable
+// regulator-readable + Layer 3 link to /disclosures).
+// Layer 2 verbatim 75-word block PRESERVED from `8cb509b` legal-advisor patch — DO NOT modify.
+// Waitlist box CTA changed «Try Plus free for 14 days» → «Open Provedo» per PO microcopy
+// principle 2026-04-27 (no «free for X days» reassurance framings; voice-rhyme with §S10).
 export function MarketingFooter() {
   return (
     <footer
@@ -35,7 +38,7 @@ export function MarketingFooter() {
             Provedo is coming soon. Waitlist open — be first to try it.
           </p>
           <ProvedoButton href="/sign-up" size="md">
-            Try Plus free for 14 days
+            Open Provedo
           </ProvedoButton>
         </div>
 
@@ -60,21 +63,100 @@ export function MarketingFooter() {
           </nav>
         </div>
 
-        {/* Regulatory disclaimer — tightened per legal-advisor 2026-04-26 (v3.1).
-            Adds «not broker-dealer» + «no personalized recommendations» + explicit
-            Investment Advisers Act / MiFID II / FSMA 2000 citations + advisor-consult close.
-            Final wording requires per-jurisdiction attorney review before public launch. */}
+        {/* ─── Layer 1 — plain-language summary ──────────────────────────────
+            Visible primary disclaim. Locked copy from legal-advisor + PO 2026-04-27.
+            Typography per product-designer V3 spec — slate-600, 13px, lh 1.6, max-w 640px. */}
         <p
-          className="mt-6 max-w-2xl text-xs leading-relaxed"
-          style={{ color: 'var(--provedo-text-tertiary)' }}
+          className="mt-6"
+          style={{
+            fontFamily: 'var(--provedo-font-sans)',
+            fontWeight: 400,
+            fontSize: '13px',
+            lineHeight: 1.6,
+            color: 'var(--provedo-text-secondary)',
+            maxWidth: '640px',
+          }}
         >
-          Provedo is not a registered investment advisor and is not a broker-dealer. Provedo
-          provides generic information for educational purposes only and does not provide
-          personalized investment recommendations or advice as defined under the U.S. Investment
-          Advisers Act of 1940, EU MiFID II, or UK FSMA 2000. Past performance is not indicative of
-          future results. All investment decisions are your own. Consult a licensed financial
-          advisor in your jurisdiction before making investment decisions.
+          Provedo provides general information about your portfolio. It is not personalized
+          investment advice — every decision stays yours.
         </p>
+
+        {/* ─── Layer 2 — expandable regulator-readable disclosure ────────────
+            <details>/<summary> chevron pattern matches ProvedoFAQ.tsx exactly.
+            Verbatim 75-word block PRESERVED from commit 8cb509b — DO NOT modify wording.
+            CSS-only focus styling (no JS handlers) — keeps MarketingFooter as Server Component. */}
+        <details className="group mt-4" style={{ maxWidth: '640px' }}>
+          <summary
+            className="flex cursor-pointer list-none items-center gap-2 rounded py-2 outline-none focus-visible:outline-2 focus-visible:[outline-color:var(--provedo-accent)] focus-visible:[outline-offset:2px]"
+            style={{
+              fontFamily: 'var(--provedo-font-sans)',
+              fontWeight: 500,
+              fontSize: '13px',
+              color: 'var(--provedo-text-secondary)',
+              transition: 'color 150ms ease',
+            }}
+          >
+            <span>Full regulatory disclosures (US, EU, UK)</span>
+            {/* Chevron — same SVG path as ProvedoFAQ.tsx */}
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 20 20"
+              fill="none"
+              aria-hidden="true"
+              style={{
+                flexShrink: 0,
+                color: 'var(--provedo-text-tertiary)',
+                transition: 'transform 150ms ease',
+              }}
+              className="group-open:rotate-180"
+            >
+              <path
+                d="M5 7.5L10 12.5L15 7.5"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </summary>
+
+          <div className="mt-3">
+            <p
+              style={{
+                fontFamily: 'var(--provedo-font-sans)',
+                fontWeight: 400,
+                fontSize: '12px',
+                lineHeight: 1.55,
+                color: 'var(--provedo-text-tertiary)',
+                maxWidth: '640px',
+              }}
+            >
+              Provedo is not a registered investment advisor and is not a broker-dealer. Provedo
+              provides generic information for educational purposes only and does not provide
+              personalized investment recommendations or advice as defined under the U.S. Investment
+              Advisers Act of 1940, EU MiFID II, or UK FSMA 2000. Past performance is not indicative
+              of future results. All investment decisions are your own. Consult a licensed financial
+              advisor in your jurisdiction before making investment decisions.
+            </p>
+
+            {/* Layer 3 — link to /disclosures full-text page */}
+            <Link
+              href="/disclosures"
+              className="mt-3 inline-flex items-center gap-1 hover:underline"
+              style={{
+                fontFamily: 'var(--provedo-font-sans)',
+                fontWeight: 500,
+                fontSize: '12px',
+                color: 'var(--provedo-accent)',
+                textDecoration: 'none',
+                textUnderlineOffset: '2px',
+              }}
+            >
+              Read full extended disclosures →
+            </Link>
+          </div>
+        </details>
       </div>
     </footer>
   );
