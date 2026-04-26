@@ -18,9 +18,12 @@
 //   Teaser 2 («Aggregate») — text-led answer + italic Provedo-voice pull-
 //   quote line. NO chart. The asymmetry reinforces the picture-first pivot.
 //
-// Section header (PD §K.2): «Two answers. Same shape on every question.»
-// Section sub: «These are two of the questions Provedo answers daily.
-//              Same shape on every one — read, mono tokens, sources.»
+// Section header — Slice-LP6 §gap-6 voice cuts (content-lead REJECT):
+//   OLD: «Two answers. Same shape on every question.» (internal-team copy)
+//   NEW: «See how Provedo answers.» (visitor-language; the two surfaces
+//        speak for themselves without needing the «same shape» preface).
+//   Section sub also DROPPED entirely — «read, mono tokens, sources» was
+//   design-system vocabulary leaking into marketing copy.
 //
 // Layout (PD §K.2):
 //   - 12-col grid on lg+, gap-8.
@@ -175,11 +178,10 @@ function TeaserWhy(): ReactElement {
 // ─── Teaser 2 — «Aggregate» (text-led, italic Provedo-voice pull-quote) ────
 
 function TeaserAggregate(): ReactElement {
-  const sourceItems = [
-    'holdings via Schwab + IBKR statements 2025-11-01',
-    'S&P 500 sector weights via S&P DJI methodology 2025-Q3',
-  ] as const;
-
+  // Slice-LP6 §gap-4: source items unmounted (Sources receipt dropped from
+  // this teaser — see comment at JSX site below). Cite items for the
+  // cross-broker statement + S&P methodology now live ONLY in the matching
+  // chat-prompts.ts catalog so the chip-driven hero replay carries them.
   return (
     <ChatAppShell
       ariaLabel="Provedo answer · Aggregate"
@@ -213,7 +215,11 @@ function TeaserAggregate(): ReactElement {
           >
             Your tech exposure is about 2× the index&apos;s — driven by IBKR.
           </p>
-          <Sources items={sourceItems} />
+          {/* Slice-LP6 §gap-4 — Sources mount DROPPED from Teaser 2 (PD + voice
+              + content convergence: «sources/cites/notice» triad repeated
+              3-4 sections in a row dilutes the first mention). Teaser 2 is
+              text-led already — the pull-quote carries the observation
+              chrome without needing receipt-rule treatment. */}
         </ProvedoBubble>
       </div>
     </ChatAppShell>
@@ -224,10 +230,6 @@ function TeaserAggregate(): ReactElement {
 
 const SECTION_HEADER_STYLE: CSSProperties = {
   color: 'var(--provedo-text-primary)',
-};
-
-const SECTION_SUB_STYLE: CSSProperties = {
-  color: 'var(--provedo-text-secondary)',
 };
 
 export function ProvedoDemoTeasersBento(): ReactElement {
@@ -245,15 +247,12 @@ export function ProvedoDemoTeasersBento(): ReactElement {
             className="text-2xl font-semibold tracking-tight md:text-3xl"
             style={SECTION_HEADER_STYLE}
           >
-            Two answers. Same shape on every question.
+            See how Provedo answers.
           </h2>
-          <p
-            className="mx-auto mt-3 max-w-2xl text-base leading-relaxed md:text-lg"
-            style={SECTION_SUB_STYLE}
-          >
-            These are two of the questions Provedo answers daily. Same shape on every one — read,
-            mono tokens, sources.
-          </p>
+          {/* Slice-LP6 §gap-6 voice cuts: section sub DROPPED entirely.
+              Old copy («Same shape on every one — read, mono tokens, sources»)
+              was design-system vocabulary leaking into marketing copy
+              (content-lead REJECT). The two surfaces speak for themselves. */}
         </div>
 
         <div

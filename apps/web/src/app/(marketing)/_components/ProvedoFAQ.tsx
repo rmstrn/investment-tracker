@@ -42,9 +42,16 @@ const FAQ_ITEMS: ReadonlyArray<{ question: string; answer: string }> = [
       'Provedo reads your broker data through read-only API connections — no trading credentials, no money movement. Provedo cannot place trades on your account, by design.',
   },
   {
+    // Slice-LP6 §gap-7 — Q6 rewrite (voice + content + researcher convergence).
+    // OLD: «Provedo is in active build. The Free tier is locked; the product
+    // is real and runs on your real holdings. Some surfaces are still being
+    // polished, and you're early.»
+    // Issue: «Free tier is locked» reads as «unavailable» (= trust collapse).
+    // NEW (per content-lead): runs-on-real-holdings-today framing + the
+    // «you're early» payoff that gives the admission a value, not a hedge.
     question: 'What does "pre-alpha" mean?',
     answer:
-      "Provedo is in active build. The Free tier is locked; the product is real and runs on your real holdings. Some surfaces are still being polished, and you're early.",
+      "It runs on your real holdings today. Some screens are rough, some features land week by week. You're early — which is the point.",
   },
 ] as const;
 

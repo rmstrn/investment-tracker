@@ -23,9 +23,15 @@
 // add atmosphere without polluting the SR landmark output.
 
 import type { CSSProperties } from 'react';
-import { Sources } from './Sources';
 import { useInView } from './hooks/useInView';
 import { usePrefersReducedMotion } from './hooks/usePrefersReducedMotion';
+
+// Slice-LP6 §gap-4 — Sources mount DROPPED from §S6 editorial closer (PD +
+// voice + content convergence). Brand-voice review specifically flagged this
+// mount: «manifestos do not cite their own JTBD interview sample sizes —
+// performative-Sage anti-pattern». The closing line «You hold the assets. /
+// Provedo holds the context.» is the load-bearing beat; a citation receipt
+// beneath a manifesto cheapens both.
 
 // Decorative atmosphere layers — all aria-hidden, pointer-events:none.
 const NOISE_OVERLAY_STYLE: CSSProperties = {
@@ -198,27 +204,9 @@ export function ProvedoEditorialNarrative(): React.ReactElement {
           </p>
         </div>
 
-        {/* Sources mount (Slice-LP3.5) — drops CD's specific cohort-N citations
-            per brand-voice REJECT §6.3 (manifestos do not cite their own JTBD
-            interview sample sizes — performative-Sage anti-pattern). Carries
-            the source-anchor signal in restrained form. */}
-        <div
-          style={{
-            marginTop: '32px',
-            maxWidth: '60ch',
-            ...(prefersReduced
-              ? {}
-              : {
-                  opacity: inView ? 1 : 0,
-                  transition: 'opacity 800ms ease 600ms',
-                }),
-          }}
-        >
-          <Sources
-            theme="dark"
-            items={['Pre-alpha JTBD interviews 2026-Q1', 'ICP cohort signals']}
-          />
-        </div>
+        {/* Slice-LP6 §gap-4: Sources mount UNMOUNTED from §S6 editorial closer
+            (see import-block comment). The closing brand-world line carries
+            the editorial weight without needing a receipt-rule below it. */}
       </div>
     </section>
   );

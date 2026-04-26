@@ -209,18 +209,10 @@ export function ProvedoAggregationSection(): ReactElement {
           )}
         </div>
 
-        <p
-          className="mt-6 text-center"
-          style={{
-            fontFamily: 'var(--provedo-font-mono)',
-            fontSize: '13px',
-            color: 'var(--provedo-text-tertiary)',
-            fontStyle: 'italic',
-          }}
-          data-testid="broker-list-tail"
-        >
-          — and growing
-        </p>
+        {/* Slice-LP6 §gap-6 voice cut #5 — «— and growing» tail DROPPED
+            entirely (content-lead REJECT: italic afterthought adds zero
+            information after a marquee already showing twelve broker names
+            plus the word «Hundreds» three sections earlier). */}
       </ScrollFadeIn>
     </section>
   );

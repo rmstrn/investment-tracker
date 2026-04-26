@@ -27,12 +27,13 @@
 //   Slice-LP3.7-A — load-bearing for the chrome-system).
 
 import { ScrollFadeIn } from './ScrollFadeIn';
-import { Sources } from './Sources';
 
-const INSIGHTS_SOURCES_ITEMS: ReadonlyArray<string> = [
-  'Methodology · pattern detection runs on your transactions',
-  'Cited per observation in chat answers',
-] as const;
+// Slice-LP6 §gap-4 — Sources mount DROPPED from §S5 (PD + voice + content
+// convergence: «sources/cites/notice» triad repeated 3-4 sections in a row
+// dilutes the first mention). The chrome-promise gap that originally drove
+// the Slice-LP3.7-A Sources mount here closes elsewhere now (hero ChatMockup
+// + S4 Teaser 1 each carry their own Sources line; the §S5 bullet-3 copy
+// itself names «every one tied back to a trade or event»).
 
 // ─── Bespoke inline SVG illustrations (48×48, slate-700 + 1 teal accent) ───
 
@@ -222,6 +223,10 @@ function CiteLinkIllustration(): React.ReactElement {
 const HERO_BULLET_COPY =
   'Provedo holds context across every broker — knows what you own, what changed, where the deltas matter.';
 
+// Slice-LP6 §gap-5b — surfacing «patterns in your past trades» (most
+// differentiated claim per brand-strategist; previously only in OG
+// description). Bullet #2 now names patterns explicitly + ties to the trade
+// ledger as the source. Lane A preserved (observation, not advice).
 const SMALL_BULLETS: ReadonlyArray<{
   copy: string;
   Illustration: () => React.ReactElement;
@@ -231,7 +236,7 @@ const SMALL_BULLETS: ReadonlyArray<{
     Illustration: NotificationStackIllustration,
   },
   {
-    copy: 'Provedo cites every observation. Every pattern ties back to a trade, an event, or a published source.',
+    copy: 'Provedo shows patterns in your past trades — entry timing, exits, repeat shapes — every one tied back to a trade or event.',
     Illustration: CiteLinkIllustration,
   },
 ] as const;
@@ -329,19 +334,10 @@ export function ProvedoInsightsBullets(): React.ReactElement {
           </div>
         </ScrollFadeIn>
 
-        {/* Sources mount preserved (closes §S5 chrome-promise gap from
-            Slice-LP3.7-A). Lighter chrome via constrained max-width + opacity
-            so the 7th Sources mount does not push Sage past Everyman parity
-            (brand-strategist §7 ceiling note). */}
-        <ScrollFadeIn>
-          <div
-            data-testid="insights-sources-wrapper"
-            className="mx-auto mt-10 md:mt-12"
-            style={{ maxWidth: '480px', opacity: 0.85 }}
-          >
-            <Sources items={INSIGHTS_SOURCES_ITEMS} />
-          </div>
-        </ScrollFadeIn>
+        {/* Slice-LP6 §gap-4: Sources mount UNMOUNTED from §S5 (see import-block
+            comment). The Sage-stacking ceiling brand-strategist §7 flagged
+            now resolves naturally — Sources visible mounts go from 5 down to
+            2 (hero + S4 Teaser 1). */}
       </div>
     </section>
   );

@@ -1,7 +1,7 @@
-// Provedo landing — Slice-LP5-A picture-first hero + S4 teasers + S2 bento.
-// 10-section structure preserved minus S7 testimonials (PO directive 2026-04-27).
+// Provedo landing — Slice-LP6 fresh-eyes 7-gap addressing (5 outside specialists).
+// 10-section structure now minus S2 (proof bar collapsed into hero microline)
+// and minus S7 testimonials (Slice-LP5-A PO directive). 8 active sections.
 // TD-091: restore Clerk auth redirect for provedo.ai migration (production cutover).
-// Copy verbatim from docs/content/landing-provedo-v2.md across all sections.
 
 import type { Metadata } from 'next';
 import { ProvedoAggregationSection } from './_components/ProvedoAggregationSection';
@@ -11,7 +11,6 @@ import { ProvedoFAQ } from './_components/ProvedoFAQ';
 import { ProvedoHeroV2 } from './_components/ProvedoHeroV2';
 import { ProvedoInsightsBullets } from './_components/ProvedoInsightsBullets';
 import { ProvedoNegationSection } from './_components/ProvedoNegationSection';
-import { ProvedoNumericProofBar } from './_components/ProvedoNumericProofBar';
 import { ProvedoRepeatCTAV2 } from './_components/ProvedoRepeatCTAV2';
 
 // SEO meta + OG — verbatim from content v2 §S12.
@@ -46,17 +45,22 @@ export default function MarketingHomePage() {
   // (WCAG 1.3.1 Info and Relationships A + 4.1.2 Name, Role, Value A).
   return (
     <>
-      {/* S1 — Picture-first hero (Slice-LP5-A §K.1)
+      {/* S1 — Picture-first hero (Slice-LP5-A §K.1 + Slice-LP6 §gaps 1+2+3+5a)
           Atmosphere layer (radial gradients + bespoke synthesis-glyph SVG)
-          + ChatAppShell-wrapped chat surface, no inline chart in bubble. */}
+          + ChatAppShell-wrapped chat surface (no inline chart in bubble) +
+          new ChatPromptPicker (4 chips, in-place replay). Slice-LP6 adds:
+          (#1) category-tell eyebrow above H1, (#2) chip picker below chat
+          driving CTA scroll target, (#3) mono microline replacing S2 proof
+          bar, (#5a) read-only trust line above CTA cluster. */}
       <ProvedoHeroV2 />
 
-      {/* S2 — Numeric proof bar (Slice-LP5-A §C.S2 bento)
-          4-cell bento grid; cell #4 «Sources / for every answer» is the
-          teal-tinted hero cell. Dividers dropped. Copy verbatim.
-          TD-095 (P3): swap coverage="Hundreds" → coverage="1000+" once
-          tech-lead verifies SnapTrade + Plaid + CCXT broker coverage count */}
-      <ProvedoNumericProofBar coverage="Hundreds" />
+      {/* S2 — UNMOUNTED in Slice-LP6 §gap-3 (PD + content reviews convergent:
+          proof bar had 3/4 cells that were words, only 1 figure — decoration
+          pretending to be substance). The single mono microline now sits
+          under the hero CTA cluster (`Read-only · Every major broker · Cited
+          per answer`). The component file `ProvedoNumericProofBar.tsx` stays
+          in the codebase dormant for potential later restore once verified
+          metrics are available (TD-095 ties broker count). */}
 
       {/* S3 — Problem-negation 2-card asymmetric table (Slice-LP5-BCD A1)
           Restored 2-card comparison table per PD spec §C.S3. The redundant

@@ -50,11 +50,15 @@ describe('MarketingHomePage v2', () => {
     ).toBeInTheDocument();
   });
 
-  it('renders primary CTA linking to #demo anchor', () => {
+  it('renders primary CTA linking to #prompt-picker anchor (Slice-LP6 §gap-2)', () => {
+    // Slice-LP6 §gap-2: hero CTA «Ask Provedo» now anchors to the new
+    // ChatPromptPicker group (in-place chip-driven demo) instead of the
+    // soft #demo scroll. Researcher + strategist: cold visitor expected
+    // to type, got scripted teaser; conversion intent leaked.
     render(<MarketingHomePage />);
     const askCta = screen.getAllByRole('link', { name: /ask provedo/i });
     expect(askCta.length).toBeGreaterThanOrEqual(1);
-    expect(askCta[0]).toHaveAttribute('href', '#demo');
+    expect(askCta[0]).toHaveAttribute('href', '#prompt-picker');
   });
 
   it('sets robots noindex for staging deploy', () => {
@@ -72,31 +76,27 @@ describe('MarketingHomePage v2', () => {
     expect(ogDesc).toMatch(/free tier/i);
   });
 
-  it('renders the 9 active landmark sections (Slice-LP5-A: S7 testimonials unmounted)', () => {
+  it('renders the 8 active landmark sections (Slice-LP6 §gap-3: S2 proof bar unmounted)', () => {
     render(<MarketingHomePage />);
     // S1 Hero — h1
     expect(
       screen.getByRole('heading', { level: 1, name: /provedo will lead you through/i }),
     ).toBeInTheDocument();
-    // S2 Proof bar — has «Proof points» aria-label
-    expect(screen.getByRole('region', { name: /proof points/i })).toBeInTheDocument();
+    // S2 Proof bar — UNMOUNTED in Slice-LP6 §gap-3 (PD + content reviews
+    // convergent: 3/4 cells were words, only 1 figure — decoration). The
+    // single mono microline now sits under the hero CTA cluster.
+    expect(screen.queryByRole('region', { name: /proof points/i })).not.toBeInTheDocument();
     // S3 Negation — Slice-LP5-BCD A1: section is now aria-labelledby a small
     // «POSITIONING» eyebrow, NOT the dropped «This is what Provedo is not.» h2
-    // (PO 2026-04-27 «дважды дублируем»). The 2-card asymmetric table speaks
-    // without a redundant header.
     expect(screen.getByRole('region', { name: /^positioning$/i })).toBeInTheDocument();
-    // S4 Demo teasers bento — «Two answers. Same shape on every question.» (Slice-LP5-A §K.2)
-    expect(
-      screen.getByRole('region', { name: /two answers. same shape on every question/i }),
-    ).toBeInTheDocument();
+    // S4 Demo teasers bento — Slice-LP6 §gap-6: header rewritten to
+    // «See how Provedo answers.» (was «Two answers. Same shape on every question.»)
+    expect(screen.getByRole('region', { name: /see how provedo answers/i })).toBeInTheDocument();
     // S5 Insights — «A few minutes a day» (v3 Patch B)
     expect(screen.getByRole('region', { name: /a few minutes a day/i })).toBeInTheDocument();
     // S6 Editorial — «One place. One feed. One chat.» (v3)
     expect(screen.getByRole('region', { name: /one place/i })).toBeInTheDocument();
-    // S7 Testimonials — UNMOUNTED in Slice-LP5-A (PO directive 2026-04-27, PD §S7
-    // recommendation HIDE accepted). The component file is preserved in the
-    // codebase for possible future reuse but is no longer rendered on the
-    // landing — pre-loaded social-proof expectations the product can't yet back.
+    // S7 Testimonials — UNMOUNTED in Slice-LP5-A (PO directive 2026-04-27).
     expect(
       screen.queryByRole('region', { name: /what testers will be noticing/i }),
     ).not.toBeInTheDocument();
@@ -467,11 +467,14 @@ describe('ProvedoInsightsBullets', () => {
     expect(screen.getByText(/seven broker emails/i)).toBeInTheDocument();
   });
 
-  it('renders 3 proof bullet cards', () => {
+  it('renders 3 proof bullet cards (Slice-LP6 §gap-5b: bullet 3 surfaces «patterns in past trades»)', () => {
     render(<ProvedoInsightsBullets />);
     expect(screen.getByText(/holds context across every broker/i)).toBeInTheDocument();
     expect(screen.getByText(/surfaces what would slip past/i)).toBeInTheDocument();
-    expect(screen.getByText(/cites every observation/i)).toBeInTheDocument();
+    // Slice-LP6 §gap-5b: brand-strategist «most differentiated claim» —
+    // patterns in past trades — now surfaced explicitly in bullet #3
+    // (was previously only in OG description).
+    expect(screen.getByText(/shows patterns in your past trades/i)).toBeInTheDocument();
   });
 });
 
@@ -1404,14 +1407,13 @@ describe('Slice-LP3.5 — Sources primitive', () => {
 // ─── Slice-LP3.5 — Sources primitive system mounts ────────────────────────
 
 describe('Slice-LP3.5 — Sources mounts across the page', () => {
-  it('S6 editorial closing renders Sources with pre-alpha JTBD + ICP cohort items', () => {
+  it('Slice-LP6 §gap-4: §S6 editorial closing has Sources mount UNMOUNTED', () => {
+    // Brand-voice review specifically called this mount «performative-Sage
+    // anti-pattern» — manifestos do not cite their own JTBD interview sample
+    // sizes. The closing line «You hold the assets. / Provedo holds the
+    // context.» now carries the editorial weight without a receipt below.
     const { container } = render(<ProvedoEditorialNarrative />);
-    const sources = container.querySelector('[data-testid="provedo-sources"]');
-    expect(sources).not.toBeNull();
-    expect(sources?.textContent).toMatch(/pre-alpha jtbd interviews 2026-q1/i);
-    expect(sources?.textContent).toMatch(/icp cohort signals/i);
-    // Brand-voice REJECT §6.3: no specific cohort-N citations on the manifesto surface.
-    expect(sources?.textContent).not.toMatch(/n=\d+/);
+    expect(container.querySelector('[data-testid="provedo-sources"]')).toBeNull();
   });
 
   it('S7 testimonial renders Sources with builder-note + 2026-Q2 dating', () => {
@@ -1477,12 +1479,14 @@ describe('Slice-LP5-BCD A4 — ProvedoAggregationSection (marquee restored, 2 ro
     expect(css).toMatch(/animation:\s*none/);
   });
 
-  it('renders «— and growing» tail (brand-voice EDIT — NOT «100s more»)', () => {
+  it('Slice-LP6 §gap-6 cut #5: «— and growing» tail UNMOUNTED entirely', () => {
+    // Content-lead REJECT: italic afterthought added zero information after
+    // a marquee already showing twelve broker names plus the word «Hundreds»
+    // three sections earlier. The broker pills now speak for themselves.
     render(<ProvedoAggregationSection />);
-    const tail = screen.getByTestId('broker-list-tail');
-    expect(tail.textContent).toMatch(/—\s*and growing/i);
-    // Brand-voice §8 EDIT: «100s more» rejected (collides with proof-bar Cell I «100s»).
-    expect(tail.textContent).not.toMatch(/100s more/i);
+    expect(screen.queryByTestId('broker-list-tail')).toBeNull();
+    const { container } = render(<ProvedoAggregationSection />);
+    expect(container.textContent ?? '').not.toMatch(/—\s*and growing/i);
   });
 });
 
@@ -1643,45 +1647,18 @@ describe('Slice-LP3.7-A — Tab 4 in-segment label contrast (CRIT-A WCAG 1.4.3 A
   }
 });
 
-describe('Slice-LP3.7-A — §S5 InsightsBullets Sources mount (chrome-promise content backing)', () => {
-  // Brand-strategist 2026-04-27 §S5 found: bullet #3 verbatim asserts
-  // «Provedo cites every observation. Every pattern ties back to a trade,
-  // an event, or a published source.» but the surface itself shipped without
-  // a Sources mount. This test guards the close of that chrome-promise gap.
+describe('Slice-LP6 §gap-4 — §S5 InsightsBullets Sources mount UNMOUNTED', () => {
+  // Slice-LP6 fresh-eyes review (PD + voice + content convergence):
+  // «sources/cites/notice» triad repeated 3-4 sections in a row dilutes
+  // the first mention. The Slice-LP3.7-A chrome-promise gap that drove
+  // the Sources mount on §S5 closes elsewhere now — bullet #3 itself
+  // surfaces «every one tied back to a trade or event» (gap #5b) so the
+  // sentence carries its own observation chrome.
 
-  it('mounts <Sources> primitive below the 3 bullets (closes §S5 chrome-promise gap)', () => {
+  it('does NOT mount <Sources> primitive in §S5 (Slice-LP6 §gap-4 unmount)', () => {
     const { container } = render(<ProvedoInsightsBullets />);
-    const wrapper = container.querySelector('[data-testid="insights-sources-wrapper"]');
-    expect(wrapper).not.toBeNull();
-    const sources = wrapper?.querySelector('[data-testid="provedo-sources"]');
-    expect(sources).not.toBeNull();
-  });
-
-  it('cites methodology + per-answer items, NOT internal pre-alpha cohort references', () => {
-    const { container } = render(<ProvedoInsightsBullets />);
-    const sources = container.querySelector('[data-testid="provedo-sources"]');
-    expect(sources?.textContent).toMatch(/methodology/i);
-    expect(sources?.textContent).toMatch(/cited per observation/i);
-    // Brand-voice REJECT: do NOT cite pre-alpha JTBD interviews / ICP cohort
-    // signals on this surface. That treatment is reserved for §S6 editorial.
-    expect(sources?.textContent ?? '').not.toMatch(/jtbd interviews/i);
-    expect(sources?.textContent ?? '').not.toMatch(/icp cohort/i);
-    expect(sources?.textContent ?? '').not.toMatch(/n=\d+/);
-  });
-
-  it('uses lighter chrome (constrained max-width + opacity) to avoid Sage-stacking', () => {
-    const { container } = render(<ProvedoInsightsBullets />);
-    const wrapper = container.querySelector<HTMLElement>(
-      '[data-testid="insights-sources-wrapper"]',
-    );
-    expect(wrapper).not.toBeNull();
-    // Brand-strategist §7 ceiling note: 6 mounts is upper-bound for Everyman
-    // survival; the 7th uses muted weight rather than full chrome density.
-    expect(wrapper?.style.maxWidth).toBe('480px');
-    // Opacity in the 0.7-0.9 range — visually de-emphasized vs the other 6.
-    const opacityValue = Number.parseFloat(wrapper?.style.opacity ?? '1');
-    expect(opacityValue).toBeGreaterThanOrEqual(0.7);
-    expect(opacityValue).toBeLessThan(1);
+    expect(container.querySelector('[data-testid="insights-sources-wrapper"]')).toBeNull();
+    expect(container.querySelector('[data-testid="provedo-sources"]')).toBeNull();
   });
 });
 
@@ -1983,14 +1960,20 @@ describe('Slice-LP5-A — ProvedoNumericProofBar bento layout (PD §C.S2)', () =
 });
 
 describe('Slice-LP5-A — ProvedoDemoTeasersBento (S4 picture-first reduction §K.2)', () => {
-  it('renders the new section heading + sub copy verbatim', () => {
+  it('Slice-LP6 §gap-6: section heading rewritten to visitor-language', () => {
+    // Content-lead REJECT (verbatim cuts #1 + #2):
+    //   - «Two answers. Same shape on every question.» — internal-team copy
+    //   - section sub «Same shape on every one — read, mono tokens, sources»
+    //     — design-system vocabulary leaking into marketing
     render(<ProvedoDemoTeasersBento />);
     expect(
-      screen.getByRole('heading', { level: 2, name: /two answers. same shape on every question/i }),
+      screen.getByRole('heading', { level: 2, name: /see how provedo answers/i }),
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/these are two of the questions provedo answers daily/i),
-    ).toBeInTheDocument();
+    // Old «two answers / same shape» header MUST be gone.
+    expect(screen.queryByText(/two answers. same shape on every question/i)).toBeNull();
+    // Old sub line MUST be gone (design-system vocabulary purged).
+    expect(screen.queryByText(/these are two of the questions provedo answers daily/i)).toBeNull();
+    expect(screen.queryByText(/same shape on every one.*read.*mono tokens.*sources/i)).toBeNull();
   });
 
   it('renders 2 teaser surfaces in a side-by-side bento grid (mobile stacks 1-col)', () => {
@@ -2037,18 +2020,15 @@ describe('Slice-LP5-A — ProvedoDemoTeasersBento (S4 picture-first reduction §
     );
   });
 
-  it('both teasers carry their own Sources line below the response bubble', () => {
+  it('Slice-LP6 §gap-4: only Teaser 1 carries Sources (Teaser 2 mount dropped)', () => {
+    // Sources chrome diet — Teaser 2 mount DROPPED (it's text-led already;
+    // pull-quote carries the observation chrome without a receipt below).
+    // Teaser 1 «Why?» keeps Sources because its inline sparkline is the
+    // page's «mention charts exist» beat and the chart needs a source line.
     const { container } = render(<ProvedoDemoTeasersBento />);
     const sources = container.querySelectorAll('[data-testid="provedo-sources"]');
-    // 2 teasers × 1 sources each = 2 mounts.
-    expect(sources.length).toBe(2);
-    // Each one carries its own cite items — Teaser 1 cites AAPL/TSLA;
-    // Teaser 2 cites the cross-broker statement + S&P methodology.
-    const allText = Array.from(sources)
-      .map((s) => s.textContent ?? '')
-      .join('\n');
-    expect(allText).toMatch(/aapl q3 earnings 2025-10-31/i);
-    expect(allText).toMatch(/s&p 500 sector weights via s&p dji methodology 2025-q3/i);
+    expect(sources.length).toBe(1);
+    expect(sources[0]?.textContent ?? '').toMatch(/aapl q3 earnings 2025-10-31/i);
   });
 
   it('mono-token pills (slate-100 bg, rounded) are used across both teasers (matches §K.1.a hero)', () => {
@@ -2325,5 +2305,223 @@ describe('Slice-LP5-BCD C5 — Header inner-width matches main-content max-w-7xl
     expect(innerRow?.className ?? '').toMatch(/\bmax-w-7xl\b/);
     // Anti-regression: the prior max-w-6xl must NOT be the chosen constraint.
     expect(innerRow?.className ?? '').not.toMatch(/\bmax-w-6xl\b/);
+  });
+});
+
+// ─── Slice-LP6 — fresh-eyes 7-gap addressing block ────────────────────────
+//
+// 5 outside specialists scored landing 6.3/10 average. Right-hand synthesized
+// 7 convergent gaps. Each test below guards a specific gap so the rationale
+// stays load-bearing in CI failures.
+
+describe('Slice-LP6 §gap-1 — Hero category-tell eyebrow', () => {
+  it('renders the eyebrow ABOVE the locked H1 with 3-word category descriptor + middle dots', () => {
+    render(<ProvedoHeroV2 />);
+    const eyebrow = screen.getByTestId('hero-eyebrow');
+    expect(eyebrow).toBeInTheDocument();
+    expect(eyebrow.textContent).toMatch(/portfolio ai · read-only · every broker/i);
+  });
+
+  it('eyebrow uses JBM-mono + widened tracking + slate-tertiary color', () => {
+    render(<ProvedoHeroV2 />);
+    const eyebrow = screen.getByTestId('hero-eyebrow') as HTMLElement;
+    const inline = eyebrow.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-family:\s*var\(--provedo-font-mono\)/);
+    expect(inline).toMatch(/letter-spacing:\s*0\.18em/);
+    expect(inline).toMatch(/color:\s*var\(--provedo-text-tertiary\)/);
+  });
+
+  it('eyebrow renders BEFORE the H1 in source order (cold-visitor first parse)', () => {
+    render(<ProvedoHeroV2 />);
+    const eyebrow = screen.getByTestId('hero-eyebrow');
+    const h1 = screen.getByRole('heading', { level: 1 });
+    // compareDocumentPosition returns 0x04 (FOLLOWING) when h1 follows eyebrow.
+    // eslint-disable-next-line no-bitwise
+    expect(eyebrow.compareDocumentPosition(h1) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('does NOT modify the locked H1 + sub copy (PO copy lock preserved)', () => {
+    render(<ProvedoHeroV2 />);
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: /provedo will lead you through your portfolio/i,
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/notice what you'd miss across all your brokers/i)).toBeInTheDocument();
+  });
+});
+
+describe('Slice-LP6 §gap-2 — Working chat demo (ChatPromptPicker)', () => {
+  it('renders 4 prompt chips below the hero ChatAppShell', () => {
+    render(<ProvedoHeroV2 />);
+    const picker = screen.getByTestId('chat-prompt-picker');
+    expect(picker).toBeInTheDocument();
+    // The 4 chips cover: Why? + Sector + Patterns + Dividends.
+    expect(within(picker).getByTestId('chat-prompt-chip-why')).toBeInTheDocument();
+    expect(within(picker).getByTestId('chat-prompt-chip-sector')).toBeInTheDocument();
+    expect(within(picker).getByTestId('chat-prompt-chip-patterns')).toBeInTheDocument();
+    expect(within(picker).getByTestId('chat-prompt-chip-dividends')).toBeInTheDocument();
+  });
+
+  it('first chip is the active default (Why?) on initial render', () => {
+    render(<ProvedoHeroV2 />);
+    const whyChip = screen.getByTestId('chat-prompt-chip-why');
+    expect(whyChip).toHaveAttribute('aria-pressed', 'true');
+    // Other chips are not active.
+    expect(screen.getByTestId('chat-prompt-chip-sector')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('clicking a chip swaps the active state to that chip (replay trigger)', () => {
+    render(<ProvedoHeroV2 />);
+    const sectorChip = screen.getByTestId('chat-prompt-chip-sector');
+    fireEvent.click(sectorChip);
+    expect(sectorChip).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByTestId('chat-prompt-chip-why')).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('chip-driven prompt swap surfaces «patterns in your past trades» canned answer (gap #5b)', () => {
+    // Strategist: most differentiated claim, only in OG description until now.
+    render(<ProvedoHeroV2 />);
+    const patternsChip = screen.getByTestId('chat-prompt-chip-patterns');
+    expect(patternsChip.textContent).toMatch(/patterns in my recent trades/i);
+  });
+
+  it('CTA «Ask Provedo» links to #prompt-picker (in-place demo) NOT #demo (soft scroll)', () => {
+    render(<ProvedoHeroV2 />);
+    const ctas = screen.getAllByRole('link', { name: /ask provedo/i });
+    expect(ctas[0]).toHaveAttribute('href', '#prompt-picker');
+  });
+
+  it('picker group has id="prompt-picker" + accessible group label', () => {
+    render(<ProvedoHeroV2 />);
+    const picker = screen.getByTestId('chat-prompt-picker');
+    expect(picker.id).toBe('prompt-picker');
+    expect(picker.getAttribute('role')).toBe('group');
+    // aria-labelledby points to the «Try a sample question» label.
+    const labelledBy = picker.getAttribute('aria-labelledby');
+    expect(labelledBy).not.toBeNull();
+    if (labelledBy) {
+      const label = picker.querySelector(`#${labelledBy}`);
+      expect(label?.textContent).toMatch(/try a sample question/i);
+    }
+  });
+});
+
+describe('Slice-LP6 §gap-3 — S2 numeric proof bar UNMOUNTED + hero microline', () => {
+  it('landing page no longer renders ProvedoNumericProofBar region (S2 unmounted)', () => {
+    render(<MarketingHomePage />);
+    expect(screen.queryByRole('region', { name: /proof points/i })).not.toBeInTheDocument();
+  });
+
+  it('hero renders the single mono microline replacing S2 («Read-only · Every major broker · Cited per answer»)', () => {
+    render(<ProvedoHeroV2 />);
+    const microline = screen.getByTestId('hero-proof-microline');
+    expect(microline).toBeInTheDocument();
+    expect(microline.textContent).toMatch(/read-only · every major broker · cited per answer/i);
+  });
+
+  it('hero microline uses JBM-mono register (matches mono-token vocabulary)', () => {
+    render(<ProvedoHeroV2 />);
+    const microline = screen.getByTestId('hero-proof-microline') as HTMLElement;
+    const inline = microline.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-family:\s*var\(--provedo-font-mono\)/);
+  });
+});
+
+describe('Slice-LP6 §gap-4 — Sources chrome diet (max 2 visible mounts on landing)', () => {
+  it('landing page mounts at most 2 visible Sources receipts (hero + S4 Teaser 1)', () => {
+    const { container } = render(<MarketingHomePage />);
+    const sources = container.querySelectorAll('[data-testid="provedo-sources"]');
+    // Hero ChatMockup mounts Sources once the response completes (typing-
+    // sequence reduced-motion path renders synchronously). S4 Teaser 1
+    // (Why?) mounts Sources for the chart-mention beat. S4 Teaser 2,
+    // S5 InsightsBullets, and S6 EditorialNarrative all UNMOUNTED in
+    // Slice-LP6 §gap-4.
+    expect(sources.length).toBeLessThanOrEqual(2);
+  });
+
+  it('S4 Teaser 2 (Aggregate) does NOT mount a Sources receipt', () => {
+    render(<ProvedoDemoTeasersBento />);
+    const teaser2 = screen.getByLabelText('Provedo answer · Aggregate');
+    expect(teaser2.querySelector('[data-testid="provedo-sources"]')).toBeNull();
+  });
+});
+
+describe('Slice-LP6 §gap-5a — Hero-adjacent read-only trust line', () => {
+  it('hero renders the read-only trust line («Read-only. Never touches a trade.»)', () => {
+    render(<ProvedoHeroV2 />);
+    const trustLine = screen.getByTestId('hero-readonly-line');
+    expect(trustLine).toBeInTheDocument();
+    expect(trustLine.textContent).toMatch(/read-only\. never touches a trade\./i);
+  });
+
+  it('trust line renders ABOVE the «Ask Provedo» CTA in source order', () => {
+    render(<ProvedoHeroV2 />);
+    const trustLine = screen.getByTestId('hero-readonly-line');
+    const cta = screen.getAllByRole('link', { name: /ask provedo/i })[0];
+    expect(cta).toBeDefined();
+    if (!cta) return;
+    // eslint-disable-next-line no-bitwise
+    expect(trustLine.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('trust line uses italic register + slate-tertiary color (quiet, not shouty)', () => {
+    render(<ProvedoHeroV2 />);
+    const trustLine = screen.getByTestId('hero-readonly-line') as HTMLElement;
+    const inline = trustLine.getAttribute('style') ?? '';
+    expect(inline).toMatch(/font-style:\s*italic/);
+    expect(inline).toMatch(/color:\s*var\(--provedo-text-tertiary\)/);
+  });
+});
+
+describe('Slice-LP6 §gap-6 — Voice cuts (5 verbatim from content-lead)', () => {
+  it('cut #1: S4 header drops «Two answers. Same shape on every question.»', () => {
+    render(<ProvedoDemoTeasersBento />);
+    expect(screen.queryByText(/two answers. same shape on every question/i)).toBeNull();
+  });
+
+  it('cut #2: S4 sub drops «read, mono tokens, sources» design-system vocabulary', () => {
+    const { container } = render(<ProvedoDemoTeasersBento />);
+    expect(container.textContent ?? '').not.toMatch(/read,\s*mono tokens,\s*sources/i);
+    expect(container.textContent ?? '').not.toMatch(/same shape on every one/i);
+  });
+
+  it('cut #3: «Information, not advice.» is single-mounted at the footer (not in S2 since S2 is gone)', () => {
+    // The proof-bar mount was already dropped in Slice-LP5-BCD C3; S2 is
+    // now fully unmounted in Slice-LP6 §gap-3 — anti-regression confirms
+    // no marketing surface above the footer carries the disclaim.
+    render(<MarketingHomePage />);
+    // Hero region must not contain the disclaim.
+    const heroRegion = screen.getByRole('heading', { level: 1 }).closest('section');
+    expect(heroRegion?.textContent ?? '').not.toMatch(/information, not advice/i);
+  });
+
+  it('cut #4: «5 min / a week / the whole habit» is gone from the landing (S2 unmount)', () => {
+    const { container } = render(<MarketingHomePage />);
+    expect(container.textContent ?? '').not.toMatch(/the whole habit/i);
+  });
+
+  it('cut #5: S8 marquee tail «— and growing» is gone entirely', () => {
+    render(<ProvedoAggregationSection />);
+    expect(screen.queryByTestId('broker-list-tail')).toBeNull();
+  });
+});
+
+describe('Slice-LP6 §gap-7 — FAQ Q6 «pre-alpha» rewrite', () => {
+  it('Q6 answer is rewritten to runs-on-real-holdings-today framing (drops «Free tier is locked»)', () => {
+    render(<ProvedoFAQ />);
+    expect(screen.getByText(/it runs on your real holdings today/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/some screens are rough, some features land week by week/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/you're early — which is the point/i)).toBeInTheDocument();
+  });
+
+  it('Q6 answer DROPS «Free tier is locked» (read as «unavailable» = trust collapse)', () => {
+    render(<ProvedoFAQ />);
+    const { container } = render(<ProvedoFAQ />);
+    expect(container.textContent ?? '').not.toMatch(/free tier is locked/i);
+    expect(container.textContent ?? '').not.toMatch(/some surfaces are still being polished/i);
   });
 });

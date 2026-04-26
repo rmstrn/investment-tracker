@@ -29,48 +29,29 @@
 // surface, but Slice-LP5-A removes the CitationChip / DigestHeader siblings
 // that previously consumed it (§K.1 first-impression simplification).
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Sources } from '../Sources';
 import { useInView } from '../hooks/useInView';
 import { ChatAppShell } from './ChatAppShell';
 import { TypingDots } from './TypingDots';
+import { CHAT_PROMPTS, type ChatPrompt, type ChatSegment, getPromptById } from './chat-prompts';
 
 // ─── Content invariants (verbatim per brand-voice §2.5 — DO NOT paraphrase) ───
+//
+// Slice-LP6: the hero's default prompt is now sourced from the shared
+// chat-prompts catalog so the new ChatPromptPicker can swap content via the
+// `prompt` prop. The HERO_* re-exports are preserved bit-for-bit so existing
+// content-invariant tests + downstream consumers keep their shipped paths.
 
-export const HERO_USER_MESSAGE = 'Why is my portfolio down this month?';
+const DEFAULT_PROMPT = getPromptById('why');
 
-type SegmentKind = 'text' | 'mono' | 'neg';
-interface ResponseSegment {
-  kind: SegmentKind;
-  text: string;
-}
+export const HERO_USER_MESSAGE = DEFAULT_PROMPT.userMessage;
 
-export const HERO_RESPONSE_SEGMENTS: readonly ResponseSegment[] = [
-  { kind: 'text', text: "You're down " },
-  { kind: 'neg', text: '−4.2%' },
-  { kind: 'text', text: ' this month. ' },
-  { kind: 'mono', text: '62%' },
-  { kind: 'text', text: ' of the drawdown is two positions: ' },
-  { kind: 'mono', text: 'Apple (−11%)' },
-  { kind: 'text', text: ' after Q3 earnings on ' },
-  { kind: 'mono', text: '2025-10-31' },
-  { kind: 'text', text: ', and ' },
-  { kind: 'mono', text: 'Tesla (−8%)' },
-  { kind: 'text', text: ' after the ' },
-  { kind: 'mono', text: '2025-10-22' },
-  { kind: 'text', text: ' delivery miss. The rest of your portfolio is roughly flat.' },
-];
+export const HERO_RESPONSE_SEGMENTS: readonly ChatSegment[] = DEFAULT_PROMPT.responseSegments;
 
-export const HERO_SOURCES_ITEMS: ReadonlyArray<string> = [
-  'AAPL Q3 earnings 2025-10-31',
-  'TSLA Q3 delivery report 2025-10-22',
-  'holdings via Schwab statement 2025-11-01',
-] as const;
+export const HERO_SOURCES_ITEMS: ReadonlyArray<string> = DEFAULT_PROMPT.sources;
 
 export const HERO_SOURCES_LINE = `Sources: ${HERO_SOURCES_ITEMS.join(' · ')}.`;
-
-const RESPONSE_TOTAL_LENGTH = HERO_RESPONSE_SEGMENTS.reduce((acc, seg) => acc + seg.text.length, 0);
-const RESPONSE_FULL_TEXT = HERO_RESPONSE_SEGMENTS.map((s) => s.text).join('');
 
 // Typing-speed knobs — slice-LP3.4 motion polish (Proposal A) preserved.
 const TYPING_BASE_MS_PER_CHAR = 35;
@@ -97,11 +78,23 @@ function nextDelayForChar(char: string): number {
   return TYPING_BASE_MS_PER_CHAR + jitter + (isSentenceEnd ? SENTENCE_PUNCTUATION_PAUSE_MS : 0);
 }
 
-function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypingSequenceReturn {
+function useTypingSequence(
+  prefersReduced: boolean,
+  replayKey: number | string,
+  prompt: ChatPrompt,
+): UseTypingSequenceReturn {
   const [userText, setUserText] = useState('');
   const [responseIndex, setResponseIndex] = useState(0);
   const [phase, setPhase] = useState<ChatPhase>('idle');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Memoize derived strings per prompt — recomputed only when the prompt swaps.
+  const responseFullText = useMemo(
+    () => prompt.responseSegments.map((s) => s.text).join(''),
+    [prompt],
+  );
+  const responseTotalLength = responseFullText.length;
+  const userMessage = prompt.userMessage;
 
   useEffect(() => {
     void replayKey;
@@ -111,8 +104,8 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
     setPhase('idle');
 
     if (prefersReduced) {
-      setUserText(HERO_USER_MESSAGE);
-      setResponseIndex(RESPONSE_TOTAL_LENGTH);
+      setUserText(userMessage);
+      setResponseIndex(responseTotalLength);
       setPhase('done');
       return;
     }
@@ -121,7 +114,7 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [prefersReduced, replayKey]);
+  }, [prefersReduced, replayKey, userMessage, responseTotalLength]);
 
   useEffect(() => {
     if (phase !== 'user') return undefined;
@@ -133,8 +126,8 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
     function tick(): void {
       if (cancelled) return;
       idx += 1;
-      setUserText(HERO_USER_MESSAGE.slice(0, idx));
-      if (idx >= HERO_USER_MESSAGE.length) {
+      setUserText(userMessage.slice(0, idx));
+      if (idx >= userMessage.length) {
         // Slice-LP5-A: enter the explicit `pause` phase once the user message
         // finishes typing. The pause window is what powers the new typing-
         // dots indicator below — we still transition to `response` after
@@ -146,17 +139,17 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
         }, INTER_BUBBLE_PAUSE_MS);
         return;
       }
-      const char = HERO_USER_MESSAGE.charAt(idx - 1);
+      const char = userMessage.charAt(idx - 1);
       localTimer = setTimeout(tick, nextDelayForChar(char));
     }
 
-    localTimer = setTimeout(tick, nextDelayForChar(HERO_USER_MESSAGE.charAt(0)));
+    localTimer = setTimeout(tick, nextDelayForChar(userMessage.charAt(0)));
 
     return () => {
       cancelled = true;
       if (localTimer) clearTimeout(localTimer);
     };
-  }, [phase]);
+  }, [phase, userMessage]);
 
   useEffect(() => {
     if (phase !== 'response') return undefined;
@@ -169,21 +162,21 @@ function useTypingSequence(prefersReduced: boolean, replayKey: number): UseTypin
       if (cancelled) return;
       idx += 1;
       setResponseIndex(idx);
-      if (idx >= RESPONSE_TOTAL_LENGTH) {
+      if (idx >= responseTotalLength) {
         setPhase('done');
         return;
       }
-      const char = RESPONSE_FULL_TEXT.charAt(idx - 1);
+      const char = responseFullText.charAt(idx - 1);
       localTimer = setTimeout(tick, nextDelayForChar(char));
     }
 
-    localTimer = setTimeout(tick, nextDelayForChar(RESPONSE_FULL_TEXT.charAt(0)));
+    localTimer = setTimeout(tick, nextDelayForChar(responseFullText.charAt(0)));
 
     return () => {
       cancelled = true;
       if (localTimer) clearTimeout(localTimer);
     };
-  }, [phase]);
+  }, [phase, responseFullText, responseTotalLength]);
 
   const isTypingUser = phase === 'user';
   const isTypingResponse = phase === 'response';
@@ -267,12 +260,15 @@ function NegToken({ children }: { children: React.ReactNode }): React.ReactEleme
   );
 }
 
-function renderResponseSegments(revealedChars: number): React.ReactElement[] {
+function renderResponseSegments(
+  segments: readonly ChatSegment[],
+  revealedChars: number,
+): React.ReactElement[] {
   const out: React.ReactElement[] = [];
   let consumed = 0;
 
-  for (let i = 0; i < HERO_RESPONSE_SEGMENTS.length; i += 1) {
-    const seg = HERO_RESPONSE_SEGMENTS[i];
+  for (let i = 0; i < segments.length; i += 1) {
+    const seg = segments[i];
     if (!seg) continue;
     if (revealedChars <= consumed) break;
     const remaining = revealedChars - consumed;
@@ -301,6 +297,7 @@ interface ProvedoResponseBubbleProps {
   isTypingResponse: boolean;
   isComplete: boolean;
   prefersReduced: boolean;
+  sourcesItems: readonly string[];
 }
 
 function ProvedoResponseBubble({
@@ -308,6 +305,7 @@ function ProvedoResponseBubble({
   isTypingResponse,
   isComplete,
   prefersReduced,
+  sourcesItems,
 }: ProvedoResponseBubbleProps): React.ReactElement {
   return (
     <div className="flex justify-start">
@@ -344,7 +342,7 @@ function ProvedoResponseBubble({
                   : 'provedo-sources-fade-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards',
               }}
             >
-              <Sources items={HERO_SOURCES_ITEMS} />
+              <Sources items={sourcesItems} />
             </div>
           )}
         </div>
@@ -364,6 +362,20 @@ interface ChatMockupProps {
    * consumed it).
    */
   onPhaseChange?: (phase: ChatPhase) => void;
+  /**
+   * Slice-LP6 §gap-2: optional canned prompt drives the user message + Provedo
+   * answer + sources. Defaults to «Why is my portfolio down?» (verbatim §S1
+   * hero answer). The new ChatPromptPicker passes one of the 4 catalog
+   * prompts; existing callers omit the prop and get the locked hero default.
+   */
+  prompt?: ChatPrompt;
+  /**
+   * Slice-LP6 §gap-2: external replay-key bump from the chip picker forces a
+   * fresh typing replay even when the prompt object identity is the same as
+   * the current one (e.g. clicking «Why?» twice). Combined internally with
+   * the in-view replay so both triggers feed the same sequence reset.
+   */
+  externalReplayKey?: number;
 }
 
 // Layout-shift lock per PD §K.1.c. The new picture-first variant drops the
@@ -374,17 +386,29 @@ interface ChatMockupProps {
 const MESSAGE_MIN_HEIGHT_MOBILE = '320px';
 const MESSAGE_MIN_HEIGHT_DESKTOP = '360px';
 
-export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): React.ReactElement {
+export function ChatMockup({
+  prefersReduced,
+  onPhaseChange,
+  prompt: promptProp,
+  externalReplayKey = 0,
+}: ChatMockupProps): React.ReactElement {
+  const prompt = promptProp ?? DEFAULT_PROMPT;
   const { ref, inView } = useInView({ threshold: 0.4, triggerOnce: false });
-  const [replayKey, setReplayKey] = useState(0);
+  const [inViewReplayKey, setInViewReplayKey] = useState(0);
   const wasInViewRef = useRef(false);
 
   useEffect(() => {
     if (inView && !wasInViewRef.current) {
-      setReplayKey((k) => k + 1);
+      setInViewReplayKey((k) => k + 1);
     }
     wasInViewRef.current = inView;
   }, [inView]);
+
+  // Combine in-view replay + external (chip-driven) replay + prompt-id swap
+  // into a single key passed to the typing sequence. Any of the three
+  // triggers a fresh replay from the start — exactly what the chip picker
+  // expects when a user clicks a chip.
+  const replayKey = `${prompt.id}-${inViewReplayKey}-${externalReplayKey}`;
 
   const {
     userText,
@@ -394,7 +418,7 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
     phase,
     showResponseBubble,
     showTypingDots,
-  } = useTypingSequence(prefersReduced, replayKey);
+  } = useTypingSequence(prefersReduced, replayKey, prompt);
 
   // Notify parent on every phase transition. The dependency on `onPhaseChange`
   // is captured by ref so callers can pass an inline arrow without retriggering.
@@ -406,9 +430,10 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
     onPhaseChangeRef.current?.(phase);
   }, [phase]);
 
+  const totalResponseLength = prompt.responseSegments.reduce((acc, s) => acc + s.text.length, 0);
   const responseElements = prefersReduced
-    ? renderResponseSegments(RESPONSE_TOTAL_LENGTH)
-    : renderResponseSegments(responseIndex);
+    ? renderResponseSegments(prompt.responseSegments, totalResponseLength)
+    : renderResponseSegments(prompt.responseSegments, responseIndex);
 
   const isResponseVisible = phase === 'response' || phase === 'done';
 
@@ -442,7 +467,7 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
               minHeight: '2.25rem',
             }}
           >
-            {userText || <span style={{ opacity: 0.3 }}>Why is my portfolio…</span>}
+            {userText || <span style={{ opacity: 0.3 }}>{prompt.userMessage.slice(0, 22)}…</span>}
             <TypingCursor visible={isTypingUser} />
           </div>
         </div>
@@ -463,6 +488,7 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
               isTypingResponse={isTypingResponse}
               isComplete={phase === 'done'}
               prefersReduced={prefersReduced}
+              sourcesItems={prompt.sources}
             />
           </div>
         )}
@@ -470,3 +496,8 @@ export function ChatMockup({ prefersReduced, onPhaseChange }: ChatMockupProps): 
     </div>
   );
 }
+
+// Re-export the prompt catalog so consumers (the new ChatPromptPicker) can
+// drive ChatMockup without importing the underlying chat-prompts module.
+export { CHAT_PROMPTS, getPromptById };
+export type { ChatPrompt };
