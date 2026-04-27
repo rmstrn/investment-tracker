@@ -167,7 +167,8 @@
     background: transparent; color: var(--text-2);
     padding: 11px 14px;
   }
-  .btn-ghost:hover { color: var(--ink); transform: none; }
+  .btn-ghost:hover { color: var(--ink); transform: none; background: rgba(0,0,0,0.04); }
+  .dark .btn-ghost:hover { background: rgba(255,255,255,0.05); }
   .btn-danger {
     background: var(--terra); color: var(--card);
     box-shadow: var(--shadow-terra-extrude);
@@ -184,7 +185,7 @@
     background: var(--ink); color: var(--card);
     box-shadow: var(--shadow-primary-extrude);
   }
-  .btn-disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+  .btn-disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; pointer-events: none; }
   .btn-sm { padding: 7px 14px; font-size: 11px; border-radius: 10px; }
   .btn-lg { padding: 14px 28px; font-size: 14px; border-radius: 18px; }
 
@@ -278,10 +279,16 @@
     width: 12px; height: 12px; border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 0 3px var(--accent-glow);
+    position: relative;
   }
+  /* warn = donut-ring shape (color-blind safe differentiator from solid pulse) */
   .pulse.warn {
     background: var(--terra);
-    box-shadow: 0 0 0 3px rgba(155,92,62,0.18);
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--terra) 18%, transparent);
+  }
+  .pulse.warn::after {
+    content: ''; position: absolute; inset: 4px;
+    border-radius: 50%; background: var(--card);
   }
 
   .card-insight {
@@ -430,30 +437,35 @@
 
   /* ============ CHAT ============ */
   .chat-thread { display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+  /* user bubble = depressed «slot» (как input field) — both themes */
   .bub-user {
     align-self: flex-end;
-    background: var(--ink); color: var(--card);
+    background: var(--inset); color: var(--ink);
     border-radius: 18px 18px 4px 18px; padding: 12px 18px;
     font-size: 13px; line-height: 1.5;
     max-width: 78%;
-    box-shadow: var(--shadow-primary-extrude);
+    box-shadow: var(--shadow-inset-light);
   }
+  /* assistant bubble = lifted card with subtle jade tint at top edge */
   .bub-ai {
     align-self: flex-start;
     background: var(--card); border-radius: 18px 18px 18px 4px;
     padding: 16px 20px; box-shadow: var(--shadow-card);
     max-width: 86%;
+    border-top: 1px solid color-mix(in oklch, var(--card) 70%, var(--accent) 30%);
   }
   .bub-ai .label { font-family: 'Geist Mono', monospace;
     font-size: 9px; font-weight: 500; color: var(--accent);
     letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
   .bub-ai .body { font-size: 13px; line-height: 1.55; color: var(--ink); }
-  .bub-ai .body .accent { color: var(--accent); font-weight: 600; }
+  /* drop accent color inside chat bubble body — bold weight only (paper-restraint voice) */
+  .bub-ai .body .accent { color: var(--ink); font-weight: 600; }
   .citation { display: inline-flex; align-items: center; gap: 4px;
     background: var(--inset); color: var(--text-2);
     font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
     padding: 2px 8px; border-radius: 6px;
     box-shadow: var(--shadow-inset-light);
+    border: 1px solid color-mix(in oklch, var(--accent) 25%, transparent);
     margin: 0 2px; }
   .citation::before { content: '✦'; font-size: 9px; color: var(--accent); }
 
@@ -472,7 +484,7 @@
     box-shadow: inset 0 -1px 2px rgba(0,0,0,0.04); }
   .tr.head > * {
     font-family: 'Geist Mono', monospace; font-size: 9px;
-    color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--text-2); letter-spacing: 0.18em; text-transform: uppercase;
     font-weight: 500;
   }
   /* ticker = proper 2-line flex column, left-aligned */
@@ -524,9 +536,9 @@
     --accent-light: #3F7A66;
     --accent-shadow: rgba(45,95,78,0.32);
     --accent-glow: rgba(45,95,78,0.22);
-    --terra: #9B5C3E;        /* dustier bronze — NOT bright orange */
+    --terra: #A04A3D;        /* red-bronze — old leather / iron-oxide (not orange) */
     --border: rgba(20,20,20,0.10);
-    --modal-overlay: rgba(20,20,20,0.4);
+    --modal-overlay: rgba(50,40,30,0.45);  /* warmer than cool-grey */
 
     --shadow-soft: 0 1px 3px rgba(20,20,20,0.06), 0 6px 18px rgba(20,20,20,0.05);
     --shadow-card: 5px 5px 14px rgba(140,100,55,0.16), -3px -3px 10px rgba(255,250,240,0.95), inset 1px 1px 0 rgba(255,255,255,0.5);
@@ -547,7 +559,7 @@
   .dark {
     --bg: #0F0F11;           /* neutral cool-dark — NOT warm cocoa */
     --card: #16161A;
-    --inset: #1F1F25;
+    --inset: #0A0A0C;        /* darker than card → properly «depressed» */
     --ink: #F4F1EA;
     --text-2: #B5B5B5;
     --text-3: #7A7A7A;
@@ -555,9 +567,9 @@
     --accent-light: #5FA08C;
     --accent-shadow: rgba(74,135,117,0.3);
     --accent-glow: rgba(74,135,117,0.2);
-    --terra: #B87560;        /* slightly lifted dusty bronze */
+    --terra: #BD6A55;        /* red-shifted bronze for dark */
     --border: rgba(255,255,255,0.08);
-    --modal-overlay: rgba(0,0,0,0.7);
+    --modal-overlay: rgba(0,0,0,0.65);
 
     /* DARK shadows — no double-shadow glow, just clean depth */
     --shadow-soft: 0 1px 3px rgba(0,0,0,0.4);
@@ -578,7 +590,7 @@
   .dark .checkbox.checked { background: var(--ink); color: var(--bg); }
   .dark .switch.on { background: var(--ink); }
   .dark .radio.checked::after { background: var(--ink); }
-  .dark .bub-user { background: var(--ink); color: var(--bg); }
+  /* user bubble in dark = same depressed slot logic, no flip */
   .dark .avatar { background: var(--ink); color: var(--bg); }
   .dark .btn-icon.primary { background: var(--ink); color: var(--bg); }
   .dark .chip.ink { background: var(--ink); color: var(--bg); }
@@ -704,7 +716,7 @@
     <div class="head"><h3>Cards</h3><span class="meta">portfolio · insight · empty</span></div>
     <div class="grid-3">
       <div class="card-pf"><div class="card-row"><div><div class="pf-broker">IBKR · LYNX</div><div class="pf-amt">$184,210</div><div class="pf-tiny">+2.4% week · 12 positions</div></div><div class="pulse"></div></div></div>
-      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:#9B5C3E">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:var(--text-1);font-weight:500">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
       <div class="card-insight"><div class="insight-eyebrow">INSIGHT · 02</div><div class="insight-head">A pattern <span class="accent">across</span> accounts.</div><div class="insight-body">NVDA appears in 3 of your accounts. Combined exposure 18% — concentrated more than it looks broker-by-broker.</div></div>
     </div>
     <div class="ds-row" style="margin-top:18px"><div style="max-width:420px"><div class="card-empty"><div class="empty-icon">⌕</div><h4>No insights yet.</h4><p>Connect your first broker and Provedo will surface patterns within a minute.</p></div></div></div>
@@ -889,7 +901,7 @@
     <div class="head"><h3>Cards</h3><span class="meta">all 3 types</span></div>
     <div class="grid-3">
       <div class="card-pf"><div class="card-row"><div><div class="pf-broker">IBKR · LYNX</div><div class="pf-amt">$184,210</div><div class="pf-tiny">+2.4% week · 12 positions</div></div><div class="pulse"></div></div></div>
-      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:#B87560">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:var(--text-1);font-weight:500">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
       <div class="card-insight"><div class="insight-eyebrow">INSIGHT · 02</div><div class="insight-head">A pattern across accounts.</div><div class="insight-body">NVDA appears in 3 of your accounts. Combined exposure 18% — concentrated more than it looks broker-by-broker.</div></div>
     </div>
   </div>
