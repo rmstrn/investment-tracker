@@ -700,6 +700,11 @@
     outline: 2px solid var(--accent, #2D5F4E);
     outline-offset: 2px;
   }
+  /* error input must keep terra in BOTH border and outline ring — the
+     generic accent outline above leaks green otherwise (PO flag 2026-04-27) */
+  .input.error:focus-visible {
+    outline-color: var(--terra);
+  }
   /* honour reduced-motion */
   @media (prefers-reduced-motion: reduce) {
     .btn, .switch::after, .switch, .input { transition: none !important; }
