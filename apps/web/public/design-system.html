@@ -159,10 +159,14 @@
     background: var(--ink); color: var(--card);
     box-shadow: var(--shadow-primary-extrude);
   }
+  /* secondary = outlined (NOT depressed — depressed reads as «disabled» to users) */
   .btn-secondary {
-    background: var(--inset); color: var(--ink);
-    box-shadow: var(--shadow-inset-light);
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--border);
+    box-shadow: none;
   }
+  .btn-secondary:hover { background: rgba(0,0,0,0.03); }
+  .dark .btn-secondary:hover { background: rgba(255,255,255,0.04); }
   .btn-ghost {
     background: transparent; color: var(--text-2);
     padding: 11px 14px;
@@ -226,10 +230,11 @@
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
+  /* active states use accent (forest-jade) — not ink */
   .checkbox.checked {
-    background: var(--ink); color: var(--card);
-    box-shadow: var(--shadow-primary-extrude);
-    font-size: 13px; font-weight: 600;
+    background: var(--accent); color: white;
+    box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.18);
+    font-size: 13px; font-weight: 700;
   }
   .switch {
     width: 44px; height: 26px; border-radius: 100px;
@@ -244,8 +249,8 @@
     transition: left 200ms;
   }
   .switch.on {
-    background: var(--ink);
-    box-shadow: var(--shadow-primary-extrude);
+    background: var(--accent);
+    box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
   }
   .switch.on::after { left: 21px; }
   .radio {
@@ -254,9 +259,11 @@
     display: inline-flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
+  /* radio inner dot enlarged (12px) + accent color */
   .radio.checked::after {
-    content: ''; width: 10px; height: 10px; border-radius: 50%;
-    background: var(--ink);
+    content: ''; width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 1px 2px var(--accent-shadow);
   }
 
   /* ============ CARDS ============ */
@@ -281,14 +288,10 @@
     box-shadow: 0 0 0 3px var(--accent-glow);
     position: relative;
   }
-  /* warn = donut-ring shape (color-blind safe differentiator from solid pulse) */
+  /* warn = solid (consistent with success pulse) — colorblind safety covered by pf-tiny ink+sign */
   .pulse.warn {
     background: var(--terra);
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--terra) 18%, transparent);
-  }
-  .pulse.warn::after {
-    content: ''; position: absolute; inset: 4px;
-    border-radius: 50%; background: var(--card);
   }
 
   .card-insight {
@@ -413,8 +416,9 @@
   .nav-items { display: flex; gap: 4px; }
   .nav-item { font-size: 12px; font-weight: 500;
     color: var(--text-2); padding: 7px 14px; border-radius: 10px;
-    cursor: pointer; transition: background 150ms; letter-spacing: -0.005em; }
-  .nav-item:hover { background: var(--inset); box-shadow: var(--shadow-inset-light); }
+    cursor: pointer; transition: background 150ms, color 150ms; letter-spacing: -0.005em; }
+  .nav-item:hover { background: rgba(0,0,0,0.04); color: var(--ink); }
+  .dark .nav-item:hover { background: rgba(255,255,255,0.05); color: var(--ink); }
   .nav-item.active {
     background: var(--ink); color: var(--card);
     box-shadow: var(--shadow-primary-extrude); }
@@ -472,10 +476,13 @@
   /* ============ TABLE ============ */
   .table { background: var(--card); border-radius: 14px; overflow: hidden;
     box-shadow: var(--shadow-card); }
-  .tr { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr;
-    padding: 14px 20px; align-items: center; gap: 16px;
+  .tr { display: grid; grid-template-columns: 2.4fr 0.7fr 1.2fr 1fr;
+    padding: 14px 0; align-items: center; gap: 0;
     border-bottom: 1px solid var(--border); }
   .tr:last-child { border-bottom: none; }
+  .tr > * { padding: 0 18px; }
+  /* dotted column separators between cells */
+  .tr > *:not(:last-child) { border-right: 1px dotted var(--border); }
   /* right-align numerical columns (qty / val / delta) — both head and data */
   .tr > *:nth-child(2),
   .tr > *:nth-child(3),
@@ -587,13 +594,11 @@
   /* in dark, primary CTA = ink (cream) on background — flip semantics */
   .dark .btn-primary { background: var(--ink); color: var(--bg); }
   .dark .nav-item.active { background: var(--ink); color: var(--bg); }
-  .dark .checkbox.checked { background: var(--ink); color: var(--bg); }
-  .dark .switch.on { background: var(--ink); }
-  .dark .radio.checked::after { background: var(--ink); }
-  /* user bubble in dark = same depressed slot logic, no flip */
   .dark .avatar { background: var(--ink); color: var(--bg); }
   .dark .btn-icon.primary { background: var(--ink); color: var(--bg); }
   .dark .chip.ink { background: var(--ink); color: var(--bg); }
+  /* user bubble in dark — subtle teal-tinted dark surface (different from inset) */
+  .dark .bub-user { background: #1A2520; }
 </style>
 
 <h2>Provedo Design System v2 — refined</h2>
