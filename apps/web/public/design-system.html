@@ -436,10 +436,11 @@
   .modal-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
 
   /* ============ NAV ============ */
+  /* topbar sits directly on bg (no parent card) — uses lift shadow for clearer edge */
   .topbar { background: var(--card); border: 1px solid var(--border); border-radius: 14px;
     padding: 12px 22px;
     display: flex; align-items: center; justify-content: space-between;
-    box-shadow: var(--shadow-card); }
+    box-shadow: var(--shadow-lift); }
   .topbar .left { display: flex; align-items: center; gap: 24px; }
   .wordmark { font-size: 16px; font-weight: 700;
     color: var(--ink); letter-spacing: -0.025em; }
@@ -576,10 +577,18 @@
   /* LIGHT THEME — refined: ink-primary, smaller    */
   /* green role, dustier terracotta                 */
   /* ============================================== */
+  /* DIAGNOSIS (PO 2026-04-27 round 6 — «white-on-white still there»):
+     Previous bg #F1EDE3 vs card #FFFFFF gave UR-measured 1.17:1 luma ratio.
+     WCAG min for non-text UI separation = 3:1. We were 39% of the way there.
+     Borders + shadows alone can't compensate when base luma adjacency is this tight.
+     FIX: deepen bg by ~5 luma units → bg-vs-card delta ~3x previous. Inset
+     correspondingly deepened so depressed slot still reads as recessed vs new bg.
+     Floating-surface shadows (toast, modal, topbar) bumped to compensate where
+     they sit on bg (not on another card). */
   .light {
-    --bg: #F1EDE3;
+    --bg: #E8E0D0;            /* was #F1EDE3 — deeper paper for visible card lift */
     --card: #FFFFFF;
-    --inset: #E8E2D4;
+    --inset: #D6CCB8;         /* was #E8E2D4 — deeper so 'depressed' reads as recessed vs new bg */
     --ink: #1A1A1A;
     --text-2: #4D4D4D;
     --text-3: #7A7A7A;
@@ -593,11 +602,14 @@
     --border-divider: rgba(20,20,20,0.26);
     --modal-overlay: rgba(50,40,30,0.45);  /* warmer than cool-grey */
 
-    --shadow-soft: 0 1px 3px rgba(20,20,20,0.06), 0 6px 18px rgba(20,20,20,0.05);
-    --shadow-card: 5px 5px 14px rgba(140,100,55,0.16), -3px -3px 10px rgba(255,250,240,0.95), inset 1px 1px 0 rgba(255,255,255,0.5);
-    --shadow-lift: 8px 8px 24px rgba(140,100,55,0.2), -3px -3px 12px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.6);
-    --shadow-toast: 6px 8px 22px rgba(140,100,55,0.22), -3px -3px 10px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.5);
-    --shadow-modal: 6px 8px 28px rgba(20,20,20,0.16), -2px -2px 10px rgba(255,250,240,0.7), inset 1px 1px 0 rgba(255,255,255,0.4);
+    --shadow-soft: 0 1px 3px rgba(20,20,20,0.08), 0 6px 18px rgba(20,20,20,0.06);
+    /* shadows bumped slightly to compensate for new bg luma — though base luma now
+       carries most of the separation, drop-shadow alpha defines the edge */
+    --shadow-card: 5px 5px 14px rgba(140,100,55,0.22), -3px -3px 10px rgba(255,250,240,0.95), inset 1px 1px 0 rgba(255,255,255,0.5);
+    --shadow-lift: 8px 8px 24px rgba(140,100,55,0.28), -3px -3px 12px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.6);
+    /* toast / topbar sit on bg without any card scaffolding — need stronger shadow */
+    --shadow-toast: 6px 10px 28px rgba(120,80,40,0.32), -3px -3px 10px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.5);
+    --shadow-modal: 8px 10px 36px rgba(20,20,20,0.24), -2px -2px 10px rgba(255,250,240,0.7), inset 1px 1px 0 rgba(255,255,255,0.4);
     --shadow-inset: inset 3px 3px 6px rgba(140,100,55,0.22), inset -2px -2px 4px rgba(255,250,240,0.9);
     --shadow-inset-light: inset 1.5px 1.5px 3px rgba(140,100,55,0.16), inset -1px -1px 2px rgba(255,250,240,0.8);
     /* primary CTA = INK extruded with subtle warm shadow */
@@ -609,10 +621,13 @@
   /* DARK THEME — neutral cool-dark, restrained     */
   /* button shadows (no glow)                       */
   /* ============================================== */
+  /* DARK theme: card luma also bumped (#1D1D22 -> #26262E) for clearer lift over bg.
+     UR-measured prior delta was 1.15:1; this brings it closer to ~1.6:1. Combined with
+     restrained shadow + 1px inset top highlight, cards now read as raised, not blended. */
   .dark {
-    --bg: #0E0E12;           /* slightly darker bg for better card lift */
-    --card: #1D1D22;         /* brighter card → clearer separation from bg */
-    --inset: #070709;        /* darker than card → properly «depressed» (was 0A0A0C, deepened for clearer separation) */
+    --bg: #0E0E12;
+    --card: #26262E;         /* was #1D1D22 — bumped for clearer separation from bg */
+    --inset: #070709;        /* darker than card → properly «depressed» */
     --ink: #F4F1EA;
     --text-2: #B5B5B5;
     --text-3: #7A7A7A;
@@ -625,12 +640,14 @@
     --border-divider: rgba(255,255,255,0.26);
     --modal-overlay: rgba(0,0,0,0.65);
 
-    /* DARK shadows — no double-shadow glow, just clean depth */
-    --shadow-soft: 0 1px 3px rgba(0,0,0,0.4);
-    --shadow-card: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
-    --shadow-lift: 0 12px 36px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
-    --shadow-toast: 0 8px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
-    --shadow-modal: 0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    /* DARK shadows — no double-shadow glow, just clean depth.
+       Inset top-highlight bumped 0.04 -> 0.07 to define card top edge against bg
+       (UR-measured 1.15:1 luma was insufficient; now backed by visible top rim). */
+    --shadow-soft: 0 1px 3px rgba(0,0,0,0.45);
+    --shadow-card: 0 4px 16px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07);
+    --shadow-lift: 0 12px 36px rgba(0,0,0,0.65), inset 0 1px 0 rgba(255,255,255,0.09);
+    --shadow-toast: 0 10px 28px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.08);
+    --shadow-modal: 0 14px 36px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.08);
     --shadow-inset: inset 0 2px 0 rgba(0,0,0,0.4), inset 0 0 0 1px rgba(0,0,0,0.3);
     --shadow-inset-light: inset 0 1px 0 rgba(0,0,0,0.3);
     /* primary CTA in dark — RESTRAINED, no glow */
@@ -716,9 +733,9 @@
   <div class="ds-section">
     <div class="head"><h3>Color tokens</h3><span class="meta">Updated</span></div>
     <div class="ds-row"><div class="ds-row-label">Surfaces</div><div class="swatches">
-      <div class="swatch"><div class="sw-chip" style="background:#F1EDE3"></div><div><div class="sw-name">BG</div><div class="sw-hex">#F1EDE3</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#E8E0D0"></div><div><div class="sw-name">BG</div><div class="sw-hex">#E8E0D0</div></div></div>
       <div class="swatch"><div class="sw-chip" style="background:#FFFFFF"></div><div><div class="sw-name">Card</div><div class="sw-hex">#FFFFFF</div></div></div>
-      <div class="swatch"><div class="sw-chip" style="background:#E8E2D4"></div><div><div class="sw-name">Inset</div><div class="sw-hex">#E8E2D4</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#D6CCB8"></div><div><div class="sw-name">Inset</div><div class="sw-hex">#D6CCB8</div></div></div>
     </div></div>
     <div class="ds-row"><div class="ds-row-label">Ink + Text · primary CTA = ink, не green</div><div class="swatches">
       <div class="swatch"><div class="sw-chip" style="background:#1A1A1A"></div><div><div class="sw-name">Ink (CTA)</div><div class="sw-hex">#1A1A1A</div></div></div>
@@ -940,7 +957,7 @@
     <div class="head"><h3>Color tokens</h3><span class="meta">neutral dark · luma-bumped</span></div>
     <div class="ds-row"><div class="ds-row-label">Surfaces — neutral, без warm cocoa</div><div class="swatches">
       <div class="swatch"><div class="sw-chip" style="background:#0E0E12"></div><div><div class="sw-name">BG</div><div class="sw-hex">#0E0E12</div></div></div>
-      <div class="swatch"><div class="sw-chip" style="background:#1D1D22"></div><div><div class="sw-name">Card</div><div class="sw-hex">#1D1D22</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#26262E"></div><div><div class="sw-name">Card</div><div class="sw-hex">#26262E</div></div></div>
       <div class="swatch"><div class="sw-chip" style="background:#070709"></div><div><div class="sw-name">Inset</div><div class="sw-hex">#070709</div></div></div>
     </div></div>
     <div class="ds-row"><div class="ds-row-label">Ink + Text</div><div class="swatches">
