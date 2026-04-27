@@ -259,7 +259,9 @@
     box-sizing: border-box;
   }
   .switch::after {
-    content: ''; position: absolute; top: 3px; left: 3px;
+    content: ''; position: absolute;
+    /* explicit centering accounts for 1px border on .switch (box-sizing: border-box) */
+    top: calc(50% - 10px); left: 2px;
     width: 20px; height: 20px; border-radius: 50%;
     background: var(--card);
     box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
@@ -269,7 +271,8 @@
     background: var(--accent);
     box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.15);
   }
-  .switch.on::after { left: 21px; }
+  /* on-state: 44 (track) - 2 (border*2) - 20 (thumb) - 2 (left margin) = 20 → leftover travel */
+  .switch.on::after { left: calc(100% - 22px); }
   .radio {
     width: 22px; height: 22px; border-radius: 50%;
     background: var(--inset); border: 1px solid var(--border);
@@ -435,8 +438,9 @@
   .nav-item { font-size: 12px; font-weight: 500;
     color: var(--text-2); padding: 7px 14px; border-radius: 10px;
     cursor: pointer; transition: background 150ms, color 150ms; letter-spacing: -0.005em; }
-  .nav-item:hover { background: rgba(20,20,20,0.07); color: var(--ink); }
-  .dark .nav-item:hover { background: rgba(255,255,255,0.10); color: var(--ink); }
+  /* nav hover bumped to be perceptible at glance (PO feedback x3) */
+  .nav-item:hover { background: rgba(20,20,20,0.13); color: var(--ink); }
+  .dark .nav-item:hover { background: rgba(255,255,255,0.16); color: var(--ink); }
   .nav-item.active {
     background: var(--ink); color: var(--card);
     box-shadow: var(--shadow-primary-extrude); }
@@ -446,8 +450,9 @@
   .tab { font-size: 12px; font-weight: 500;
     color: var(--text-2); padding: 8px 16px; border-radius: 10px; cursor: pointer;
     letter-spacing: -0.005em; transition: background 150ms, color 150ms; }
-  .tab:not(.active):hover { background: rgba(20,20,20,0.05); color: var(--ink); }
-  .dark .tab:not(.active):hover { background: rgba(255,255,255,0.06); color: var(--ink); }
+  /* tab hover bumped to match nav-item perceptibility */
+  .tab:not(.active):hover { background: rgba(20,20,20,0.10); color: var(--ink); }
+  .dark .tab:not(.active):hover { background: rgba(255,255,255,0.12); color: var(--ink); }
   .tab.active {
     background: var(--card); color: var(--ink);
     box-shadow: var(--shadow-soft);
@@ -500,8 +505,9 @@
     border-bottom: 1px solid var(--border); }
   .tr:last-child { border-bottom: none; }
   .tr > * { padding: 0 18px; box-sizing: border-box; }
-  /* dotted column separators between cells */
-  .tr > *:not(:last-child) { border-right: 1px dotted var(--border); }
+  /* solid 1px column separators between cells — uses dedicated divider token so they remain visible
+     even though base --border is intentionally subtle on surfaces */
+  .tr > *:not(:last-child) { border-right: 1px solid var(--border-divider); }
   /* right-align numerical columns (qty / val / delta) in BODY rows */
   .tr > *:nth-child(2),
   .tr > *:nth-child(3),
@@ -567,6 +573,9 @@
     --accent-glow: rgba(45,95,78,0.22);
     --terra: #A04A3D;        /* red-bronze — old leather / iron-oxide (not orange) */
     --border: rgba(20,20,20,0.16);
+    /* dedicated divider token — explicitly higher alpha so column separators / section underlines
+       remain visible without bumping --border globally (which would over-emphasise card edges) */
+    --border-divider: rgba(20,20,20,0.26);
     --modal-overlay: rgba(50,40,30,0.45);  /* warmer than cool-grey */
 
     --shadow-soft: 0 1px 3px rgba(20,20,20,0.06), 0 6px 18px rgba(20,20,20,0.05);
@@ -597,6 +606,8 @@
     --accent-glow: rgba(74,135,117,0.2);
     --terra: #BD6A55;        /* red-shifted bronze for dark */
     --border: rgba(255,255,255,0.18);
+    /* dedicated divider token for dark — slightly higher alpha than --border for visible column splits */
+    --border-divider: rgba(255,255,255,0.26);
     --modal-overlay: rgba(0,0,0,0.65);
 
     /* DARK shadows — no double-shadow glow, just clean depth */
