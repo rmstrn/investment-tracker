@@ -1,0 +1,987 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+  /* ===== nav ===== */
+  .ds-nav {
+    position: sticky; top: 0; z-index: 50;
+    background: #0e0e0e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px 18px;
+    margin-top: 20px; margin-bottom: 24px;
+    display: flex; gap: 10px; flex-wrap: wrap; align-items: center;
+  }
+  .ds-nav .nav-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: rgba(255,255,255,0.5); letter-spacing: 0.18em; text-transform: uppercase;
+  }
+  .ds-nav a {
+    font-family: 'Geist', sans-serif; font-size: 12px; font-weight: 500;
+    color: rgba(255,255,255,0.85); padding: 7px 14px;
+    background: rgba(255,255,255,0.06); border-radius: 8px;
+    text-decoration: none; transition: background 150ms;
+  }
+  .ds-nav a:hover { background: rgba(255,255,255,0.12); }
+  .ds-nav a.light { color: #1A1A1A; background: #F4F1EA; }
+  .ds-nav a.dark { color: #F4F1EA; background: #0F0F11; border: 1px solid rgba(255,255,255,0.1); }
+
+  /* ===== stage ===== */
+  .stage {
+    background: var(--bg);
+    color: var(--ink);
+    border-radius: 18px;
+    margin-bottom: 28px;
+    padding: 36px 40px 44px;
+    font-family: 'Geist', sans-serif;
+    font-feature-settings: 'tnum' 1, 'cv11' 1;
+  }
+  .stage-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px; margin-bottom: 36px;
+  }
+  .stage-head .left .eyebrow {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--accent); letter-spacing: 0.22em; text-transform: uppercase;
+    margin-bottom: 12px; font-weight: 500;
+  }
+  .stage-head .left h2 {
+    font-family: 'Geist', sans-serif;
+    font-size: 48px; font-weight: 600;
+    color: var(--ink); margin: 0; letter-spacing: -0.035em; line-height: 1;
+  }
+  .stage-head .left h2 .accent { color: var(--accent); font-weight: 700; }
+  .stage-head .right {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-3); letter-spacing: 0.04em; line-height: 1.6;
+    text-align: right;
+  }
+
+  .ds-section { margin-bottom: 44px; }
+  .ds-section .head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 1px dotted var(--border);
+  }
+  .ds-section .head h3 {
+    font-family: 'Geist', sans-serif;
+    font-size: 22px; font-weight: 600; line-height: 1;
+    color: var(--ink); letter-spacing: -0.025em; margin: 0;
+  }
+  .ds-section .head .meta {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em;
+    color: var(--text-3); text-transform: uppercase;
+  }
+
+  .ds-row { margin-bottom: 22px; }
+  .ds-row:last-child { margin-bottom: 0; }
+  .ds-row-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px; letter-spacing: 0.22em;
+    color: var(--text-3); text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .flex { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  @media (max-width: 900px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+  /* swatches */
+  .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+  .swatch {
+    background: var(--card); border-radius: 10px; padding: 12px 14px;
+    box-shadow: var(--shadow-soft);
+    display: flex; gap: 10px; align-items: center; min-width: 180px;
+  }
+  .sw-chip { width: 36px; height: 36px; border-radius: 8px;
+    box-shadow: 0 0 0 1px var(--border); flex-shrink: 0; }
+  .sw-name { font-size: 12px; font-weight: 500; color: var(--ink); }
+  .sw-hex { font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-3); margin-top: 2px; letter-spacing: 0.04em; }
+
+  /* type scale */
+  .type-row {
+    background: var(--card); border-radius: 10px;
+    padding: 14px 18px; margin-bottom: 8px;
+    box-shadow: var(--shadow-soft);
+    display: flex; align-items: baseline; gap: 18px;
+  }
+  .type-row .label {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: 0.18em; color: var(--text-3);
+    text-transform: uppercase; min-width: 110px;
+  }
+  .type-row .sample { color: var(--ink); }
+
+  /* shadows */
+  .shadow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 16px; }
+  .shadow-block {
+    background: var(--card);
+    border-radius: 14px; padding: 22px; text-align: center;
+  }
+  .shadow-block.s-soft { box-shadow: var(--shadow-soft); }
+  .shadow-block.s-card { box-shadow: var(--shadow-card); }
+  .shadow-block.s-lift { box-shadow: var(--shadow-lift); }
+  .shadow-block.s-toast { box-shadow: var(--shadow-toast); }
+  .shadow-block.s-inset { background: var(--inset); box-shadow: var(--shadow-inset); }
+  .shadow-block.s-inset-light { background: var(--inset); box-shadow: var(--shadow-inset-light); }
+  .shadow-block.s-primary {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .shadow-block .name { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 4px; }
+  .shadow-block.s-primary .name { color: var(--card); }
+  .shadow-block .meta { font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-3); letter-spacing: 0.1em; }
+  .shadow-block.s-primary .meta { color: rgba(255,255,255,0.55); }
+
+  /* radius */
+  .radius-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+  .radius-block { background: var(--card); padding: 18px;
+    box-shadow: var(--shadow-card); text-align: center;
+    font-size: 11px; font-weight: 500; color: var(--ink); }
+  .radius-block .meta { font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-3); letter-spacing: 0.1em; margin-top: 4px; font-weight: 400; }
+
+  /* ============ BUTTONS ============ */
+  .btn {
+    font-family: 'Geist', sans-serif; font-weight: 500;
+    border: none; cursor: pointer; transition: transform 100ms ease-in;
+    font-size: 13px; padding: 11px 20px; border-radius: 14px;
+    letter-spacing: -0.01em;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); transition-duration: 80ms; }
+
+  /* PRIMARY = INK (black extruded), not green */
+  .btn-primary {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .btn-secondary {
+    background: var(--inset); color: var(--ink);
+    box-shadow: var(--shadow-inset-light);
+  }
+  .btn-ghost {
+    background: transparent; color: var(--text-2);
+    padding: 11px 14px;
+  }
+  .btn-ghost:hover { color: var(--ink); transform: none; }
+  .btn-danger {
+    background: var(--terra); color: var(--card);
+    box-shadow: var(--shadow-terra-extrude);
+  }
+  .btn-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--inset); color: var(--text-2);
+    box-shadow: var(--shadow-inset-light);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; border: none;
+  }
+  .btn-icon:hover { color: var(--ink); }
+  .btn-icon.primary {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .btn-disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+  .btn-sm { padding: 7px 14px; font-size: 11px; border-radius: 10px; }
+  .btn-lg { padding: 14px 28px; font-size: 14px; border-radius: 18px; }
+
+  /* ============ INPUTS ============ */
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label { font-size: 11px; font-weight: 500;
+    color: var(--text-2); letter-spacing: 0.04em; }
+  .input {
+    background: var(--inset); border: none; border-radius: 14px;
+    padding: 12px 16px; font-family: 'Geist', sans-serif; font-size: 13px;
+    color: var(--ink); width: 100%;
+    box-shadow: var(--shadow-inset);
+    outline: none; transition: box-shadow 150ms;
+  }
+  .input::placeholder { color: var(--text-3); }
+  .input:focus { box-shadow: var(--shadow-inset), 0 0 0 3px var(--accent-glow); }
+  .input.error { box-shadow: var(--shadow-inset), 0 0 0 2px rgba(155,92,62,0.4); }
+  .input-help { font-size: 11px; color: var(--text-3); }
+  .input-help.error { color: var(--terra); }
+
+  .search-wrap { position: relative; max-width: 420px; }
+  .search-wrap::before {
+    content: '⌕'; position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); color: var(--text-3); font-size: 16px;
+  }
+  .search-input {
+    background: var(--inset); border-radius: 100px;
+    padding: 11px 16px 11px 38px;
+    box-shadow: var(--shadow-inset);
+    font-family: 'Geist', sans-serif; font-size: 13px;
+    color: var(--ink); width: 100%; border: none; outline: none;
+  }
+  .search-input::placeholder { color: var(--text-3); }
+
+  .checkbox {
+    width: 22px; height: 22px; border-radius: 7px;
+    background: var(--inset); box-shadow: var(--shadow-inset-light);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .checkbox.checked {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude);
+    font-size: 13px; font-weight: 600;
+  }
+  .switch {
+    width: 44px; height: 26px; border-radius: 100px;
+    background: var(--inset); box-shadow: var(--shadow-inset-light);
+    position: relative; cursor: pointer; transition: background 200ms;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 3px; left: 3px;
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--card);
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.15);
+    transition: left 200ms;
+  }
+  .switch.on {
+    background: var(--ink);
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .switch.on::after { left: 21px; }
+  .radio {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--inset); box-shadow: var(--shadow-inset-light);
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .radio.checked::after {
+    content: ''; width: 10px; height: 10px; border-radius: 50%;
+    background: var(--ink);
+  }
+
+  /* ============ CARDS ============ */
+  .card-pf {
+    background: var(--card); border-radius: 18px; padding: 18px 22px;
+    box-shadow: var(--shadow-card);
+  }
+  .card-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .pf-broker { font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+    color: var(--text-3); letter-spacing: 0.16em; text-transform: uppercase; }
+  .pf-amt {
+    font-family: 'Geist', sans-serif;
+    font-feature-settings: 'tnum' 1, 'ss01' 1;
+    font-size: 28px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.035em; line-height: 1; margin-top: 6px;
+  }
+  .pf-tiny { font-size: 11px; color: var(--text-2); margin-top: 6px;
+    font-feature-settings: 'tnum' 1; }
+  .pulse {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+  .pulse.warn {
+    background: var(--terra);
+    box-shadow: 0 0 0 3px rgba(155,92,62,0.18);
+  }
+
+  .card-insight {
+    background: var(--card); border-radius: 18px; padding: 20px 22px;
+    box-shadow: var(--shadow-card);
+    position: relative; overflow: hidden;
+  }
+  .insight-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--accent); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 10px; font-weight: 500; }
+  .insight-head {
+    font-family: 'Geist', sans-serif;
+    font-size: 20px; font-weight: 600; line-height: 1.2;
+    color: var(--ink); letter-spacing: -0.025em; margin-bottom: 8px;
+  }
+  .insight-head .accent { color: var(--accent); font-weight: 600; }
+  .insight-body { font-size: 13px; line-height: 1.5; color: var(--text-2); }
+
+  .card-empty {
+    background: var(--card); border-radius: 18px; padding: 32px 24px;
+    box-shadow: var(--shadow-card); text-align: center;
+  }
+  .empty-icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--inset); box-shadow: var(--shadow-inset-light);
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: var(--text-3);
+  }
+  .card-empty h4 { font-size: 15px; font-weight: 600;
+    color: var(--ink); margin: 0 0 6px; letter-spacing: -0.015em; }
+  .card-empty p { font-size: 12px; line-height: 1.5;
+    color: var(--text-3); margin: 0; }
+
+  /* signature card */
+  .card-signature {
+    background: var(--card); border-radius: 22px; padding: 28px 32px;
+    box-shadow: var(--shadow-lift);
+  }
+  .sig-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--accent); letter-spacing: 0.22em; text-transform: uppercase;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px dotted var(--border); width: fit-content; font-weight: 500; }
+  .sig-headline {
+    font-family: 'Geist', sans-serif;
+    font-size: 40px; font-weight: 600; line-height: 1;
+    color: var(--ink); letter-spacing: -0.035em; margin-bottom: 8px;
+  }
+  /* «what» — bold + accent color, no background decoration */
+  .sig-headline .accent { color: var(--accent); font-weight: 700; }
+  .sig-sub { font-size: 14px;
+    color: var(--text-2); margin-bottom: 18px; line-height: 1.5; }
+
+  /* ============ CHIPS ============ */
+  .chip { display: inline-flex; align-items: center; gap: 5px;
+    background: var(--inset); color: var(--text-2);
+    font-size: 11px; font-weight: 500;
+    padding: 6px 12px; border-radius: 100px;
+    box-shadow: var(--shadow-inset-light);
+    letter-spacing: -0.005em; }
+  .chip.accent {
+    background: var(--accent); color: var(--card);
+    box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .chip.ink {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .chip.warning { background: var(--terra); color: var(--card);
+    box-shadow: 0 1px 3px rgba(155,92,62,0.32), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .chip-close {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: rgba(0,0,0,0.08);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; cursor: pointer;
+  }
+  .chip.accent .chip-close,
+  .chip.ink .chip-close,
+  .chip.warning .chip-close { background: rgba(255,255,255,0.2); }
+
+  /* ============ TOASTS ============ */
+  .toast { background: var(--card); border-radius: 14px;
+    padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start;
+    box-shadow: var(--shadow-toast); max-width: 380px; }
+  .toast-icon { width: 32px; height: 32px; border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    color: var(--card); font-size: 15px; font-weight: 600; }
+  .toast-icon.success { background: var(--accent);
+    box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .toast-icon.warning { background: var(--terra);
+    box-shadow: 0 1px 3px rgba(155,92,62,0.3), inset 0 1px 0 rgba(255,255,255,0.12); }
+  .toast-icon.info { background: var(--inset); color: var(--text-2);
+    box-shadow: var(--shadow-inset-light); }
+  .toast-title { font-size: 13px; font-weight: 600;
+    color: var(--ink); margin-bottom: 2px; letter-spacing: -0.01em; }
+  .toast-msg { font-size: 12px; color: var(--text-2); line-height: 1.4; }
+
+  /* ============ MODAL ============ */
+  .modal-stage { background: var(--modal-overlay); padding: 30px;
+    border-radius: 18px; backdrop-filter: blur(2px); }
+  .modal { background: var(--card); border-radius: 22px;
+    padding: 26px 28px; max-width: 460px; margin: 0 auto;
+    box-shadow: var(--shadow-modal); }
+  .modal-eyebrow { font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--accent); letter-spacing: 0.22em; text-transform: uppercase;
+    margin-bottom: 10px; font-weight: 500; }
+  .modal h4 {
+    font-family: 'Geist', sans-serif;
+    font-size: 24px; font-weight: 600;
+    color: var(--ink); letter-spacing: -0.03em; margin: 0 0 12px; line-height: 1.15;
+  }
+  .modal p { font-size: 14px; line-height: 1.55; color: var(--text-2); margin: 0 0 22px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+
+  /* ============ NAV ============ */
+  .topbar { background: var(--card); border-radius: 14px;
+    padding: 12px 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: var(--shadow-card); }
+  .topbar .left { display: flex; align-items: center; gap: 24px; }
+  .wordmark { font-size: 16px; font-weight: 700;
+    color: var(--ink); letter-spacing: -0.025em; }
+  .nav-items { display: flex; gap: 4px; }
+  .nav-item { font-size: 12px; font-weight: 500;
+    color: var(--text-2); padding: 7px 14px; border-radius: 10px;
+    cursor: pointer; transition: background 150ms; letter-spacing: -0.005em; }
+  .nav-item:hover { background: var(--inset); box-shadow: var(--shadow-inset-light); }
+  .nav-item.active {
+    background: var(--ink); color: var(--card);
+    box-shadow: var(--shadow-primary-extrude); }
+
+  .tabs { display: inline-flex; background: var(--inset); padding: 4px;
+    border-radius: 14px; box-shadow: var(--shadow-inset-light); }
+  .tab { font-size: 12px; font-weight: 500;
+    color: var(--text-2); padding: 8px 16px; border-radius: 10px; cursor: pointer;
+    letter-spacing: -0.005em; }
+  .tab.active {
+    background: var(--card); color: var(--ink);
+    box-shadow: var(--shadow-soft);
+  }
+
+  .breadcrumb { font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--text-3); letter-spacing: 0.06em;
+    display: flex; align-items: center; gap: 8px; }
+  .breadcrumb .sep { opacity: 0.5; }
+  .breadcrumb .here { color: var(--ink); font-weight: 500; }
+
+  /* ============ CHAT ============ */
+  .chat-thread { display: flex; flex-direction: column; gap: 14px; max-width: 640px; }
+  .bub-user {
+    align-self: flex-end;
+    background: var(--ink); color: var(--card);
+    border-radius: 18px 18px 4px 18px; padding: 12px 18px;
+    font-size: 13px; line-height: 1.5;
+    max-width: 78%;
+    box-shadow: var(--shadow-primary-extrude);
+  }
+  .bub-ai {
+    align-self: flex-start;
+    background: var(--card); border-radius: 18px 18px 18px 4px;
+    padding: 16px 20px; box-shadow: var(--shadow-card);
+    max-width: 86%;
+  }
+  .bub-ai .label { font-family: 'Geist Mono', monospace;
+    font-size: 9px; font-weight: 500; color: var(--accent);
+    letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 6px; }
+  .bub-ai .body { font-size: 13px; line-height: 1.55; color: var(--ink); }
+  .bub-ai .body .accent { color: var(--accent); font-weight: 600; }
+  .citation { display: inline-flex; align-items: center; gap: 4px;
+    background: var(--inset); color: var(--text-2);
+    font-family: 'Geist Mono', monospace; font-size: 10px; font-weight: 500;
+    padding: 2px 8px; border-radius: 6px;
+    box-shadow: var(--shadow-inset-light);
+    margin: 0 2px; }
+  .citation::before { content: '✦'; font-size: 9px; color: var(--accent); }
+
+  /* ============ TABLE ============ */
+  .table { background: var(--card); border-radius: 14px; overflow: hidden;
+    box-shadow: var(--shadow-card); }
+  .tr { display: grid; grid-template-columns: 2fr 1fr 1.2fr 1fr;
+    padding: 14px 20px; align-items: center; gap: 16px;
+    border-bottom: 1px solid var(--border); }
+  .tr:last-child { border-bottom: none; }
+  /* right-align numerical columns (qty / val / delta) — both head and data */
+  .tr > *:nth-child(2),
+  .tr > *:nth-child(3),
+  .tr > *:nth-child(4) { text-align: right; }
+  .tr.head { background: var(--inset);
+    box-shadow: inset 0 -1px 2px rgba(0,0,0,0.04); }
+  .tr.head > * {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-3); letter-spacing: 0.18em; text-transform: uppercase;
+    font-weight: 500;
+  }
+  /* ticker = proper 2-line flex column, left-aligned */
+  .tr .ticker {
+    display: flex; flex-direction: column; align-items: flex-start;
+    gap: 2px;
+    font-size: 13px; font-weight: 600; color: var(--ink); letter-spacing: -0.005em;
+  }
+  .tr .ticker .name { font-size: 11px; font-weight: 400; color: var(--text-3);
+    letter-spacing: 0; }
+  .tr .qty, .tr .val, .tr .delta {
+    font-family: 'Geist', sans-serif;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+  .tr .qty, .tr .val { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .tr .delta { font-size: 13px; font-weight: 600; }
+  .tr .delta.pos { color: var(--accent); }
+  .tr .delta.neg { color: var(--terra); }
+
+  /* ============ AVATAR ============ */
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--ink); color: var(--card);
+    font-weight: 600; font-size: 13px; letter-spacing: -0.01em;
+    display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-primary-extrude);
+    position: relative;
+  }
+  .avatar.accent { background: var(--accent); }
+  .avatar.terra { background: var(--terra); }
+  .status-dot { position: absolute; bottom: -2px; right: -2px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent); border: 2px solid var(--card); }
+
+  /* ============================================== */
+  /* LIGHT THEME — refined: ink-primary, smaller    */
+  /* green role, dustier terracotta                 */
+  /* ============================================== */
+  .light {
+    --bg: #F4F1EA;
+    --card: #FAF7F0;
+    --inset: #ECE7DC;
+    --ink: #1A1A1A;
+    --text-2: #4D4D4D;
+    --text-3: #7A7A7A;
+    --accent: #2D5F4E;       /* deeper forest-jade — NOT teal, NOT money-green */
+    --accent-light: #3F7A66;
+    --accent-shadow: rgba(45,95,78,0.32);
+    --accent-glow: rgba(45,95,78,0.22);
+    --terra: #9B5C3E;        /* dustier bronze — NOT bright orange */
+    --border: rgba(20,20,20,0.10);
+    --modal-overlay: rgba(20,20,20,0.4);
+
+    --shadow-soft: 0 1px 3px rgba(20,20,20,0.06), 0 6px 18px rgba(20,20,20,0.05);
+    --shadow-card: 5px 5px 14px rgba(140,100,55,0.16), -3px -3px 10px rgba(255,250,240,0.95), inset 1px 1px 0 rgba(255,255,255,0.5);
+    --shadow-lift: 8px 8px 24px rgba(140,100,55,0.2), -3px -3px 12px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.6);
+    --shadow-toast: 6px 8px 22px rgba(140,100,55,0.22), -3px -3px 10px rgba(255,250,240,1), inset 1px 1px 0 rgba(255,255,255,0.5);
+    --shadow-modal: 6px 8px 28px rgba(20,20,20,0.16), -2px -2px 10px rgba(255,250,240,0.7), inset 1px 1px 0 rgba(255,255,255,0.4);
+    --shadow-inset: inset 3px 3px 6px rgba(140,100,55,0.22), inset -2px -2px 4px rgba(255,250,240,0.9);
+    --shadow-inset-light: inset 1.5px 1.5px 3px rgba(140,100,55,0.16), inset -1px -1px 2px rgba(255,250,240,0.8);
+    /* primary CTA = INK extruded with subtle warm shadow */
+    --shadow-primary-extrude: 4px 4px 12px rgba(20,20,20,0.18), -1px -1px 4px rgba(255,250,240,0.6), inset 1px 1px 0 rgba(255,255,255,0.06);
+    --shadow-terra-extrude: 3px 3px 10px rgba(155,92,62,0.28), -1px -1px 4px rgba(255,250,240,0.5), inset 1px 1px 0 rgba(255,255,255,0.12);
+  }
+
+  /* ============================================== */
+  /* DARK THEME — neutral cool-dark, restrained     */
+  /* button shadows (no glow)                       */
+  /* ============================================== */
+  .dark {
+    --bg: #0F0F11;           /* neutral cool-dark — NOT warm cocoa */
+    --card: #16161A;
+    --inset: #1F1F25;
+    --ink: #F4F1EA;
+    --text-2: #B5B5B5;
+    --text-3: #7A7A7A;
+    --accent: #4A8775;       /* lighter forest-jade for dark */
+    --accent-light: #5FA08C;
+    --accent-shadow: rgba(74,135,117,0.3);
+    --accent-glow: rgba(74,135,117,0.2);
+    --terra: #B87560;        /* slightly lifted dusty bronze */
+    --border: rgba(255,255,255,0.08);
+    --modal-overlay: rgba(0,0,0,0.7);
+
+    /* DARK shadows — no double-shadow glow, just clean depth */
+    --shadow-soft: 0 1px 3px rgba(0,0,0,0.4);
+    --shadow-card: 0 4px 16px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+    --shadow-lift: 0 12px 36px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06);
+    --shadow-toast: 0 8px 24px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.05);
+    --shadow-modal: 0 12px 32px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+    --shadow-inset: inset 0 2px 0 rgba(0,0,0,0.4), inset 0 0 0 1px rgba(0,0,0,0.3);
+    --shadow-inset-light: inset 0 1px 0 rgba(0,0,0,0.3);
+    /* primary CTA in dark — RESTRAINED, no glow */
+    --shadow-primary-extrude: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+    --shadow-terra-extrude: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+
+  /* in dark, primary CTA = ink (cream) on background — flip semantics */
+  .dark .btn-primary { background: var(--ink); color: var(--bg); }
+  .dark .nav-item.active { background: var(--ink); color: var(--bg); }
+  .dark .checkbox.checked { background: var(--ink); color: var(--bg); }
+  .dark .switch.on { background: var(--ink); }
+  .dark .radio.checked::after { background: var(--ink); }
+  .dark .bub-user { background: var(--ink); color: var(--bg); }
+  .dark .avatar { background: var(--ink); color: var(--bg); }
+  .dark .btn-icon.primary { background: var(--ink); color: var(--bg); }
+  .dark .chip.ink { background: var(--ink); color: var(--bg); }
+</style>
+
+<h2>Provedo Design System v2 — refined</h2>
+<p class="subtitle">Geist (no italic, beautiful tabular numbers) · ink-primary CTA (без зелёного «pop») · zelень и terracotta как мелкие утилитарные акценты · neutral dark BG (без warm cocoa) · restrained dark shadows.</p>
+
+<div class="ds-nav">
+  <span class="nav-label">JUMP TO →</span>
+  <a href="#light-v2" class="light">☀ Light theme</a>
+  <a href="#dark-v2" class="dark">☾ Dark theme</a>
+</div>
+
+<!-- ===================================================== -->
+<!-- LIGHT THEME — REFINED                                 -->
+<!-- ===================================================== -->
+<div id="light-v2" class="stage light">
+  <div class="stage-head">
+    <div class="left">
+      <div class="eyebrow">PROVEDO · DESIGN SYSTEM v2 · LIGHT</div>
+      <h2>Notice <span class="accent">what</span> you'd miss.</h2>
+    </div>
+    <div class="right">
+      Geist · Geist Mono<br/>
+      Locked palette + ink CTA<br/>
+      No italic · tabular nums
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Color tokens</h3><span class="meta">Updated</span></div>
+    <div class="ds-row"><div class="ds-row-label">Surfaces</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#F4F1EA"></div><div><div class="sw-name">BG</div><div class="sw-hex">#F4F1EA</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#FAF7F0"></div><div><div class="sw-name">Card</div><div class="sw-hex">#FAF7F0</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#ECE7DC"></div><div><div class="sw-name">Inset</div><div class="sw-hex">#ECE7DC</div></div></div>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Ink + Text · primary CTA = ink, не green</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#1A1A1A"></div><div><div class="sw-name">Ink (CTA)</div><div class="sw-hex">#1A1A1A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#4D4D4D"></div><div><div class="sw-name">Text 2</div><div class="sw-hex">#4D4D4D</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#7A7A7A"></div><div><div class="sw-name">Text 3</div><div class="sw-hex">#7A7A7A</div></div></div>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Small accents · только для статусов / цитат / успеха</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#2D5F4E"></div><div><div class="sw-name">Forest-jade</div><div class="sw-hex">#2D5F4E</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#9B5C3E"></div><div><div class="sw-name">Bronze</div><div class="sw-hex">#9B5C3E</div></div></div>
+    </div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Typography — Geist only</h3><span class="meta">no italic · tabular numerals</span></div>
+    <div class="type-row"><div class="label">Display 48</div><span class="sample" style="font-size:48px;font-weight:600;letter-spacing:-0.035em;line-height:1">Notice <span style="color:#2D5F4E;font-weight:700">what</span> you'd miss.</span></div>
+    <div class="type-row"><div class="label">H1 / 32</div><span class="sample" style="font-size:32px;font-weight:600;letter-spacing:-0.03em">Your portfolio, finally legible.</span></div>
+    <div class="type-row"><div class="label">H2 / 22</div><span class="sample" style="font-size:22px;font-weight:600;letter-spacing:-0.025em">Every account. One conversation.</span></div>
+    <div class="type-row"><div class="label">Body / 13</div><span class="sample" style="font-size:13px;line-height:1.55">Your IBKR account drifted 3.2% from target last week.</span></div>
+    <div class="type-row"><div class="label">Numerals</div><span class="sample" style="font-size:24px;font-weight:600;font-feature-settings:'tnum' 1;letter-spacing:-0.03em">$184,210 · 12.4% · 142 lots</span></div>
+    <div class="type-row"><div class="label">Mono / 11</div><span class="sample" style="font-family:'Geist Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#4D4D4D">PORTFOLIO · ANSWER · ENGINE</span></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Shadow / elevation</h3><span class="meta">tactile preserved</span></div>
+    <div class="shadow-grid">
+      <div class="shadow-block s-soft"><div class="name">soft</div><div class="meta">paper lift</div></div>
+      <div class="shadow-block s-card"><div class="name">card</div><div class="meta">tactile double</div></div>
+      <div class="shadow-block s-lift"><div class="name">lift</div><div class="meta">hero / focused</div></div>
+      <div class="shadow-block s-toast"><div class="name">toast</div><div class="meta">floating</div></div>
+      <div class="shadow-block s-inset"><div class="name">inset</div><div class="meta">depressed</div></div>
+      <div class="shadow-block s-inset-light"><div class="name">inset light</div><div class="meta">chip</div></div>
+      <div class="shadow-block s-primary"><div class="name">primary CTA</div><div class="meta">ink extrude</div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Signature hero card</h3><span class="meta">extra lift · ink CTA</span></div>
+    <div class="card-signature">
+      <div class="sig-eyebrow">PORTFOLIO ANSWER ENGINE · 01</div>
+      <div class="sig-headline">Notice <span class="accent">what</span><br/>you'd miss.</div>
+      <div class="sig-sub">Provedo reads every account in your name and points at things hiding between brokers — then explains why they matter, with sources.</div>
+      <div class="flex">
+        <button class="btn btn-primary">Get early access</button>
+        <button class="btn btn-ghost">See how it works →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Buttons</h3><span class="meta">primary = ink (not green)</span></div>
+    <div class="ds-row"><div class="ds-row-label">Primary CTA — ink extruded</div><div class="flex">
+      <button class="btn btn-primary btn-sm">Get early access</button>
+      <button class="btn btn-primary">Get early access</button>
+      <button class="btn btn-primary btn-lg">Get early access</button>
+      <button class="btn btn-primary btn-disabled">Disabled</button>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Secondary — inset cream</div><div class="flex">
+      <button class="btn btn-secondary">Watch demo</button>
+      <button class="btn btn-secondary btn-lg">Watch demo</button>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Ghost · danger · icon</div><div class="flex">
+      <button class="btn btn-ghost">Skip →</button>
+      <button class="btn btn-danger">Delete</button>
+      <button class="btn-icon">+</button>
+      <button class="btn-icon primary">→</button>
+    </div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Form fields</h3><span class="meta">inset + ink-on toggles</span></div>
+    <div class="ds-row"><div class="grid-2">
+      <div class="input-group"><label class="input-label">Email</label><input class="input" placeholder="you@inbox.com" value="ruslan@provedo.app"><div class="input-help">We'll only ping for early access.</div></div>
+      <div class="input-group"><label class="input-label">Portfolio name</label><input class="input error" placeholder="My main portfolio"><div class="input-help error">⚠ Already exists.</div></div>
+    </div></div>
+    <div class="ds-row"><div class="search-wrap"><input class="search-input" placeholder="Ask about your portfolio…"></div></div>
+    <div class="ds-row"><div class="flex" style="gap:32px">
+      <div class="flex" style="gap:10px"><div class="switch on"></div><span style="font-size:13px">Push alerts</span></div>
+      <div class="flex" style="gap:10px"><div class="switch"></div><span style="font-size:13px;color:#7A7A7A">Weekly digest</span></div>
+      <div class="flex" style="gap:10px"><div class="checkbox checked">✓</div><span style="font-size:13px">Anonymise</span></div>
+      <div class="flex" style="gap:10px"><div class="checkbox"></div><span style="font-size:13px;color:#7A7A7A">Telemetry</span></div>
+      <div class="flex" style="gap:10px"><div class="radio checked"></div><span style="font-size:13px">Lane A</span></div>
+      <div class="flex" style="gap:10px"><div class="radio"></div><span style="font-size:13px;color:#7A7A7A">Lane B</span></div>
+    </div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Cards</h3><span class="meta">portfolio · insight · empty</span></div>
+    <div class="grid-3">
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">IBKR · LYNX</div><div class="pf-amt">$184,210</div><div class="pf-tiny">+2.4% week · 12 positions</div></div><div class="pulse"></div></div></div>
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:#9B5C3E">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
+      <div class="card-insight"><div class="insight-eyebrow">INSIGHT · 02</div><div class="insight-head">A pattern <span class="accent">across</span> accounts.</div><div class="insight-body">NVDA appears in 3 of your accounts. Combined exposure 18% — concentrated more than it looks broker-by-broker.</div></div>
+    </div>
+    <div class="ds-row" style="margin-top:18px"><div style="max-width:420px"><div class="card-empty"><div class="empty-icon">⌕</div><h4>No insights yet.</h4><p>Connect your first broker and Provedo will surface patterns within a minute.</p></div></div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Chips · badges</h3><span class="meta">ink-primary · forest-status · bronze-warning</span></div>
+    <div class="flex">
+      <span class="chip ink">Lane A</span>
+      <span class="chip accent">Verified</span>
+      <span class="chip warning">Drift +3.2%</span>
+      <span class="chip">Crypto</span>
+      <span class="chip">7 brokers</span>
+      <span class="chip">YTD<span class="chip-close">×</span></span>
+      <span class="chip ink">NVDA<span class="chip-close">×</span></span>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Toasts</h3><span class="meta">success · warning · info</span></div>
+    <div class="grid-3">
+      <div class="toast"><div class="toast-icon success">✓</div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago. 7 positions imported.</div></div></div>
+      <div class="toast"><div class="toast-icon warning">!</div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
+      <div class="toast"><div class="toast-icon info">i</div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern across 3 brokers.</div></div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Modal</h3><span class="meta">paywall</span></div>
+    <div class="modal-stage">
+      <div class="modal">
+        <div class="modal-eyebrow">UNLOCK · PROVEDO PLUS</div>
+        <h4>See the pattern in detail.</h4>
+        <p>Provedo found 3 cross-broker patterns this week. Free reveals subjects; Plus reveals the breakdown — which positions, which brokers, what changed.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Maybe later</button>
+          <button class="btn btn-primary">Start 14-day trial</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Navigation</h3><span class="meta">ink-active</span></div>
+    <div class="ds-row"><div class="topbar">
+      <div class="left">
+        <div class="wordmark">Provedo</div>
+        <div class="nav-items">
+          <div class="nav-item active">Dashboard</div>
+          <div class="nav-item">Positions</div>
+          <div class="nav-item">Chat</div>
+          <div class="nav-item">Insights</div>
+          <div class="nav-item">Settings</div>
+        </div>
+      </div>
+      <div class="flex">
+        <button class="btn-icon">🔔</button>
+        <div class="avatar">RM<div class="status-dot"></div></div>
+      </div>
+    </div></div>
+    <div class="ds-row" style="margin-top:14px"><div class="tabs">
+      <div class="tab active">Overview</div>
+      <div class="tab">Positions</div>
+      <div class="tab">Activity</div>
+      <div class="tab">Documents</div>
+    </div></div>
+    <div class="ds-row" style="margin-top:14px"><div class="breadcrumb"><span>Dashboard</span><span class="sep">/</span><span>Positions</span><span class="sep">/</span><span class="here">NVDA</span></div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Chat</h3><span class="meta">ink user · cream assistant</span></div>
+    <div class="chat-thread">
+      <div class="bub-user">What changed in my IBKR account since March?</div>
+      <div class="bub-ai">
+        <div class="label">PROVEDO REPLIES</div>
+        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. The change came mostly from equities — tech overweight on <span class="citation">NVDA · 14 lots</span> and a partial trim on <span class="citation">MSFT · 8 lots</span>. Cash position rose from 4% to 7%.</div>
+      </div>
+      <div class="bub-user">Is that intentional or drift?</div>
+      <div class="bub-ai">
+        <div class="label">PROVEDO REPLIES</div>
+        <div class="body">Looking at your activity log — both NVDA buys this period were manual entries, no rebalance was scheduled. Reads as <span class="accent">opportunistic</span>, not drift.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Table · positions</h3><span class="meta">tabular numerals (Geist)</span></div>
+    <div class="table">
+      <div class="tr head"><div>SYMBOL</div><div>QTY</div><div>VALUE</div><div style="text-align:right">DELTA</div></div>
+      <div class="tr"><div class="ticker">NVDA<div class="name">NVIDIA Corp · IBKR</div></div><div class="qty">142</div><div class="val">$28,420</div><div class="delta pos">+12.4%</div></div>
+      <div class="tr"><div class="ticker">MSFT<div class="name">Microsoft · IBKR</div></div><div class="qty">68</div><div class="val">$31,250</div><div class="delta pos">+3.1%</div></div>
+      <div class="tr"><div class="ticker">BTC<div class="name">Bitcoin · Binance</div></div><div class="qty">0.42</div><div class="val">$18,640</div><div class="delta neg">−5.8%</div></div>
+      <div class="tr"><div class="ticker">ETH<div class="name">Ethereum · Coinbase</div></div><div class="qty">8.2</div><div class="val">$22,140</div><div class="delta neg">−2.4%</div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Avatars</h3><span class="meta">ink primary · status dot</span></div>
+    <div class="flex" style="gap:18px">
+      <div class="avatar">RM<div class="status-dot"></div></div>
+      <div class="avatar accent">PR<div class="status-dot"></div></div>
+      <div class="avatar terra">AI</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ===================================================== -->
+<!-- DARK THEME — REFINED                                  -->
+<!-- ===================================================== -->
+<div id="dark-v2" class="stage dark">
+  <div class="stage-head">
+    <div class="left">
+      <div class="eyebrow">PROVEDO · DESIGN SYSTEM v2 · DARK</div>
+      <h2>Notice <span class="accent">what</span> you'd miss.</h2>
+    </div>
+    <div class="right">
+      Neutral cool dark · #0F0F11<br/>
+      Restrained shadows (no glow)<br/>
+      Cream-on-dark CTA flip
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Color tokens</h3><span class="meta">neutral dark · luma-bumped</span></div>
+    <div class="ds-row"><div class="ds-row-label">Surfaces — neutral, без warm cocoa</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#0F0F11"></div><div><div class="sw-name">BG</div><div class="sw-hex">#0F0F11</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#16161A"></div><div><div class="sw-name">Card</div><div class="sw-hex">#16161A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#1F1F25"></div><div><div class="sw-name">Inset</div><div class="sw-hex">#1F1F25</div></div></div>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Ink + Text</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#F4F1EA"></div><div><div class="sw-name">Cream (CTA)</div><div class="sw-hex">#F4F1EA</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#B5B5B5"></div><div><div class="sw-name">Text 2</div><div class="sw-hex">#B5B5B5</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#7A7A7A"></div><div><div class="sw-name">Text 3</div><div class="sw-hex">#7A7A7A</div></div></div>
+    </div></div>
+    <div class="ds-row"><div class="ds-row-label">Small accents</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:#4A8775"></div><div><div class="sw-name">Forest-jade</div><div class="sw-hex">#4A8775</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:#B87560"></div><div><div class="sw-name">Bronze</div><div class="sw-hex">#B87560</div></div></div>
+    </div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Signature hero card</h3><span class="meta">cream-on-dark CTA</span></div>
+    <div class="card-signature">
+      <div class="sig-eyebrow">PORTFOLIO ANSWER ENGINE · 01</div>
+      <div class="sig-headline">Notice <span class="accent">what</span><br/>you'd miss.</div>
+      <div class="sig-sub">Provedo reads every account in your name and points at things hiding between brokers — then explains why they matter, with sources.</div>
+      <div class="flex">
+        <button class="btn btn-primary">Get early access</button>
+        <button class="btn btn-ghost">See how it works →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Buttons</h3><span class="meta">cream-on-dark · no glow</span></div>
+    <div class="flex">
+      <button class="btn btn-primary">Get early access</button>
+      <button class="btn btn-secondary">Watch demo</button>
+      <button class="btn btn-ghost">Skip →</button>
+      <button class="btn btn-danger">Delete</button>
+      <button class="btn-icon">+</button>
+      <button class="btn-icon primary">→</button>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Form fields</h3><span class="meta">all variants</span></div>
+    <div class="ds-row"><div class="grid-2">
+      <div class="input-group"><label class="input-label">Email</label><input class="input" placeholder="you@inbox.com" value="ruslan@provedo.app"></div>
+      <div class="input-group"><label class="input-label">Search</label><input class="input" placeholder="Ask about your portfolio…"></div>
+    </div></div>
+    <div class="ds-row"><div class="flex" style="gap:24px">
+      <div class="flex" style="gap:10px"><div class="switch on"></div><span style="font-size:13px;color:#F4F1EA">Push alerts</span></div>
+      <div class="flex" style="gap:10px"><div class="switch"></div><span style="font-size:13px;color:#7A7A7A">Weekly digest</span></div>
+      <div class="flex" style="gap:10px"><div class="checkbox checked">✓</div><span style="font-size:13px;color:#F4F1EA">Anonymise</span></div>
+      <div class="flex" style="gap:10px"><div class="radio checked"></div><span style="font-size:13px;color:#F4F1EA">Lane A</span></div>
+    </div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Cards</h3><span class="meta">all 3 types</span></div>
+    <div class="grid-3">
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">IBKR · LYNX</div><div class="pf-amt">$184,210</div><div class="pf-tiny">+2.4% week · 12 positions</div></div><div class="pulse"></div></div></div>
+      <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:#B87560">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
+      <div class="card-insight"><div class="insight-eyebrow">INSIGHT · 02</div><div class="insight-head">A pattern across accounts.</div><div class="insight-body">NVDA appears in 3 of your accounts. Combined exposure 18% — concentrated more than it looks broker-by-broker.</div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Chips</h3><span class="meta">all variants</span></div>
+    <div class="flex">
+      <span class="chip ink">Lane A</span>
+      <span class="chip accent">Verified</span>
+      <span class="chip warning">Drift +3.2%</span>
+      <span class="chip">Crypto</span>
+      <span class="chip">7 brokers</span>
+      <span class="chip">YTD<span class="chip-close">×</span></span>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Toasts</h3><span class="meta">all variants</span></div>
+    <div class="grid-3">
+      <div class="toast"><div class="toast-icon success">✓</div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago.</div></div></div>
+      <div class="toast"><div class="toast-icon warning">!</div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
+      <div class="toast"><div class="toast-icon info">i</div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern.</div></div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Modal</h3><span class="meta">paywall</span></div>
+    <div class="modal-stage">
+      <div class="modal">
+        <div class="modal-eyebrow">UNLOCK · PROVEDO PLUS</div>
+        <h4>See the pattern in detail.</h4>
+        <p>Provedo found 3 cross-broker patterns this week. Free reveals subjects; Plus reveals the breakdown.</p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost">Maybe later</button>
+          <button class="btn btn-primary">Start 14-day trial</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Navigation</h3><span class="meta">cream-active</span></div>
+    <div class="ds-row"><div class="topbar">
+      <div class="left">
+        <div class="wordmark">Provedo</div>
+        <div class="nav-items">
+          <div class="nav-item active">Dashboard</div>
+          <div class="nav-item">Positions</div>
+          <div class="nav-item">Chat</div>
+          <div class="nav-item">Settings</div>
+        </div>
+      </div>
+      <div class="flex">
+        <button class="btn-icon">🔔</button>
+        <div class="avatar">RM<div class="status-dot"></div></div>
+      </div>
+    </div></div>
+    <div class="ds-row" style="margin-top:14px"><div class="tabs">
+      <div class="tab active">Overview</div>
+      <div class="tab">Positions</div>
+      <div class="tab">Activity</div>
+    </div></div>
+    <div class="ds-row" style="margin-top:14px"><div class="breadcrumb"><span>Dashboard</span><span class="sep">/</span><span>Positions</span><span class="sep">/</span><span class="here">NVDA</span></div></div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Chat</h3><span class="meta">cream user bubble</span></div>
+    <div class="chat-thread">
+      <div class="bub-user">What changed in my IBKR account since March?</div>
+      <div class="bub-ai">
+        <div class="label">PROVEDO REPLIES</div>
+        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. Change came mostly from equities — tech overweight on <span class="citation">NVDA · 14 lots</span>. Cash position rose from 4% to 7%.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Table · positions</h3><span class="meta">tabular numerals</span></div>
+    <div class="table">
+      <div class="tr head"><div>SYMBOL</div><div>QTY</div><div>VALUE</div><div style="text-align:right">DELTA</div></div>
+      <div class="tr"><div class="ticker">NVDA<div class="name">NVIDIA Corp · IBKR</div></div><div class="qty">142</div><div class="val">$28,420</div><div class="delta pos">+12.4%</div></div>
+      <div class="tr"><div class="ticker">MSFT<div class="name">Microsoft · IBKR</div></div><div class="qty">68</div><div class="val">$31,250</div><div class="delta pos">+3.1%</div></div>
+      <div class="tr"><div class="ticker">BTC<div class="name">Bitcoin · Binance</div></div><div class="qty">0.42</div><div class="val">$18,640</div><div class="delta neg">−5.8%</div></div>
+    </div>
+  </div>
+
+  <div class="ds-section">
+    <div class="head"><h3>Avatars</h3><span class="meta">cream gradient</span></div>
+    <div class="flex" style="gap:18px">
+      <div class="avatar">RM<div class="status-dot"></div></div>
+      <div class="avatar accent">PR<div class="status-dot"></div></div>
+      <div class="avatar terra">AI</div>
+    </div>
+  </div>
+</div>
