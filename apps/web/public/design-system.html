@@ -635,6 +635,24 @@
     /* primary CTA = INK extruded with subtle warm shadow */
     --shadow-primary-extrude: 4px 4px 12px rgba(20,20,20,0.18), -1px -1px 4px rgba(255,250,240,0.6), inset 1px 1px 0 rgba(255,255,255,0.06);
     --shadow-terra-extrude: 3px 3px 10px rgba(155,92,62,0.28), -1px -1px 4px rgba(255,250,240,0.5), inset 1px 1px 0 rgba(255,255,255,0.12);
+
+    /* CHART PALETTE — 7-hue color-blind-safe series, scoped to charts only.
+       Per CHARTS_SPEC.md v1.1 §2.5. Series 4 + 7 are jade derivatives; 6 is bronze derivative.
+       Do NOT consume these tokens outside charts — they are NOT ambient design tokens. */
+    --chart-series-1: #2D5F4E;
+    --chart-series-2: #A04A3D;
+    --chart-series-3: #1A1A1A;
+    --chart-series-4: #5C8A77;
+    --chart-series-5: #7A7A7A;
+    --chart-series-6: #C77A6A;
+    --chart-series-7: #1F4135;
+    --chart-grid: rgba(20,20,20,0.10);
+    --chart-grid-strong: rgba(20,20,20,0.16);
+    --chart-axis-label: var(--text-3);
+    --chart-tooltip-bg: var(--card);
+    --chart-tooltip-border: var(--border);
+    --chart-tooltip-shadow: var(--shadow-lift);
+    --chart-cursor: rgba(20,20,20,0.20);
   }
 
   /* ============================================== */
@@ -674,6 +692,24 @@
     /* primary CTA in dark — RESTRAINED, no glow */
     --shadow-primary-extrude: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
     --shadow-terra-extrude: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+
+    /* CHART PALETTE — dark theme, per CHARTS_SPEC.md v1.1 §2.5.
+       Note: --chart-series-7 #2E5B4D is ~2:1 on dark bg (fails 3:1 UI). Renderer must
+       only use it FILLED on adjacent surfaces, never alone. See spec §2.3 caveat. */
+    --chart-series-1: #4A8775;
+    --chart-series-2: #BD6A55;
+    --chart-series-3: #F4F1EA;
+    --chart-series-4: #7DAA9A;
+    --chart-series-5: #B5B5B5;
+    --chart-series-6: #D89C8C;
+    --chart-series-7: #2E5B4D;
+    --chart-grid: rgba(255,255,255,0.10);
+    --chart-grid-strong: rgba(255,255,255,0.18);
+    --chart-axis-label: var(--text-3);
+    --chart-tooltip-bg: var(--card);
+    --chart-tooltip-border: var(--border);
+    --chart-tooltip-shadow: var(--shadow-lift);
+    --chart-cursor: rgba(255,255,255,0.24);
   }
 
   /* in dark, primary CTA = ink (cream) on background — flip semantics */
@@ -728,6 +764,170 @@
   /* enforce line-height:0 on all icon containers so SVG sits dead-centre
      (text line-height would otherwise add half-leading above) */
   .toast-icon, .empty-icon, .btn-icon, .chip-close, .citation .citation-glyph { line-height: 0; }
+
+  /* ============ CHARTS (per CHARTS_SPEC.md v1.1 §8.3) ============
+     Static SVG mocks live here for the showcase only — production renders via
+     Recharts in packages/ui/src/charts/*.tsx using the patterns in spec §4. */
+  .ds-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 8px; }
+  @media (max-width: 900px) { .ds-charts { grid-template-columns: 1fr; } }
+
+  .chart-card {
+    background: var(--card);
+    border-radius: 18px;
+    padding: 22px 24px 20px;
+    box-shadow: var(--shadow-card);
+    font-family: 'Geist', sans-serif;
+    font-feature-settings: 'tnum' 1, 'cv11' 1;
+  }
+  .chart-card .chart-eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 500; margin-bottom: 8px;
+  }
+  .chart-card .chart-tier-badge {
+    display: inline-block; margin-left: 8px; padding: 2px 6px;
+    border-radius: 4px; background: var(--inset);
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: 0.18em; color: var(--terra);
+    border: 1px solid var(--terra);
+  }
+  .chart-card .chart-title {
+    font-family: 'Geist', sans-serif;
+    font-size: 18px; font-weight: 600; color: var(--ink);
+    letter-spacing: -0.025em; margin-bottom: 4px;
+  }
+  .chart-card .chart-sub {
+    font-size: 12px; color: var(--text-2); margin-bottom: 16px;
+  }
+  .chart-card .chart-body { width: 100%; }
+  .chart-card .chart-note {
+    margin-top: 10px; font-size: 11px; color: var(--text-2);
+    line-height: 1.5;
+  }
+  .chart-card .chart-lane-a {
+    margin-top: 10px; padding: 8px 10px;
+    border-left: 2px solid var(--terra);
+    background: var(--inset);
+    font-size: 11px; color: var(--text-2); line-height: 1.5;
+    border-radius: 0 6px 6px 0;
+  }
+  .chart-card .chart-lane-a strong {
+    color: var(--terra); font-weight: 600;
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    letter-spacing: 0.16em; text-transform: uppercase;
+  }
+
+  .chart-legend {
+    display: flex; gap: 16px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px dotted var(--border-divider);
+    font-size: 11px; color: var(--text-2); font-weight: 500;
+  }
+  .chart-legend .leg-item {
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chart-legend .leg-dot {
+    width: 8px; height: 8px; border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  /* donut centre label */
+  .donut-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+  .donut-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .donut-center .dc-value {
+    font-family: 'Geist', sans-serif; font-size: 28px; font-weight: 600;
+    letter-spacing: -0.035em; color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .donut-center .dc-label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-3); font-weight: 500; margin-top: 2px;
+  }
+
+  /* sparkline inline */
+  .spark-inline {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Geist', sans-serif; font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+  .spark-inline .spark-value { font-weight: 500; color: var(--ink); }
+  .spark-inline .spark-delta { color: var(--accent); font-weight: 600; }
+  .spark-inline .spark-delta.down { color: var(--terra); }
+  .spark-inline .spark-svg { width: 60px; height: 20px; }
+
+  /* empty state */
+  .chart-empty {
+    position: relative; height: 220px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--card); border-radius: 14px;
+    border: 1px dashed var(--border);
+  }
+  .chart-empty .ce-eyebrow {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--text-3); margin-bottom: 12px; font-weight: 500;
+  }
+  .chart-empty .ce-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    background: var(--inset);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow-inset-light);
+    margin-bottom: 12px;
+  }
+  .chart-empty .ce-head {
+    font-size: 14px; font-weight: 600; color: var(--ink);
+    margin-bottom: 4px; letter-spacing: -0.01em;
+  }
+  .chart-empty .ce-body {
+    font-size: 12px; color: var(--text-2); max-width: 260px;
+    text-align: center; line-height: 1.5;
+  }
+
+  /* loading skeleton */
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+  .chart-skeleton {
+    height: 220px; border-radius: 14px;
+    background: linear-gradient(90deg, var(--inset) 0%, var(--card) 50%, var(--inset) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .chart-skeleton { animation: none; background: var(--inset); }
+  }
+
+  /* ============ CALENDAR (per spec §4.9 + §8.3) ============ */
+  .cal-grid { font-family: 'Geist', sans-serif; color: var(--ink); }
+  .cal-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+  .cal-month { font-size: 14px; font-weight: 600; letter-spacing: -0.025em; margin: 0; color: var(--ink); }
+  .cal-totals { display: flex; gap: 14px; font-family: 'Geist Mono', monospace; font-size: 11px; color: var(--text-2); }
+  .cal-totals strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-bottom: 6px; }
+  .cal-dow > span { font-family: 'Geist Mono', monospace; font-size: 9px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-3); padding: 4px 8px; }
+  .cal-grid-body { display: grid; grid-template-columns: repeat(7, 1fr); grid-auto-rows: minmax(56px, auto); gap: 4px; }
+  .cal-cell { padding: 6px 8px; border-radius: 8px; background: var(--inset); display: flex; flex-direction: column; gap: 4px; min-height: 56px; }
+  .cal-cell.out { background: transparent; opacity: 0.4; }
+  .cal-cell.today .cal-daynum { color: var(--ink); font-weight: 600; border-bottom: 2px solid var(--accent); padding-bottom: 1px; align-self: flex-start; }
+  .cal-daynum { font-size: 11px; font-weight: 500; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  .cal-pill { padding: 3px 6px; border-radius: 4px; font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 500; font-variant-numeric: tabular-nums; line-height: 1.1; align-self: flex-start; }
+  .cal-pill.dividend.received { background: var(--accent); color: #F4F1EA; }
+  .cal-pill.dividend.scheduled { background: var(--chart-series-4); color: #F4F1EA; }
+  .cal-pill.dividend.announced { background: transparent; border: 1px solid var(--chart-series-7); color: var(--chart-series-7); }
+  .dark .cal-pill.dividend.announced { color: var(--chart-series-4); border-color: var(--chart-series-4); }
+  .cal-pill.corp_action { background: var(--terra); color: #F4F1EA; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); padding: 4px 12px; }
+  @media (max-width: 480px) {
+    .cal-grid-body { grid-auto-rows: minmax(44px, auto); gap: 2px; }
+    .cal-cell { padding: 4px 5px; min-height: 44px; }
+    .cal-pill { font-size: 8px; padding: 2px 4px; }
+    .cal-dow > span { font-size: 8px; padding: 4px 2px; }
+  }
   </style>
 </head>
 <body>
@@ -739,6 +939,8 @@
   <span class="nav-label">JUMP TO →</span>
   <a href="#light-v2" class="light">☀ Light theme</a>
   <a href="#dark-v2" class="dark">☾ Dark theme</a>
+  <a href="#charts-light">Charts (light)</a>
+  <a href="#charts-dark">Charts (dark)</a>
 </nav>
 
 <!-- ===================================================== -->
@@ -961,6 +1163,442 @@
       <div class="avatar terra">AI</div>
     </div>
   </div>
+
+  <!-- ===== CHARTS (per CHARTS_SPEC.md v1.1 §8.4) ===== -->
+  <div id="charts-light" class="ds-section">
+    <div class="head"><h3>Charts</h3><span class="meta">11 TYPES · RECHARTS 3.8 + CSS-GRID CALENDAR</span></div>
+
+    <div class="ds-row"><div class="ds-row-label">CHART SERIES — 7-HUE COLOR-BLIND-SAFE PALETTE</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-1)"></div><div><div class="sw-name">series-1 jade</div><div class="sw-hex">#2D5F4E</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-2)"></div><div><div class="sw-name">series-2 bronze</div><div class="sw-hex">#A04A3D</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-3)"></div><div><div class="sw-name">series-3 ink</div><div class="sw-hex">#1A1A1A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-4)"></div><div><div class="sw-name">series-4 mid-jade</div><div class="sw-hex">#5C8A77</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-5)"></div><div><div class="sw-name">series-5 grey</div><div class="sw-hex">#7A7A7A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-6)"></div><div><div class="sw-name">series-6 soft-bronze</div><div class="sw-hex">#C77A6A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-7)"></div><div><div class="sw-name">series-7 deep-jade</div><div class="sw-hex">#1F4135</div></div></div>
+    </div></div>
+
+    <div class="ds-row"><div class="ds-row-label">TIER 1 — MUST-SHIP MVP</div></div>
+
+    <div class="ds-charts">
+
+      <!-- 1. Line -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">LINE · TIER 1</div>
+        <div class="chart-title">Portfolio value</div>
+        <div class="chart-sub">Last 30 days · all brokers</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Line chart of portfolio value over 30 days">
+            <line x1="0" y1="36" x2="400" y2="36" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="72" x2="400" y2="72" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="108" x2="400" y2="108" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="144" x2="400" y2="144" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <path d="M 0 130 C 30 122 60 138 90 124 S 150 80 180 92 S 240 60 270 70 S 330 50 360 40 L 400 38" fill="none" stroke="var(--chart-series-1)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Total</span>
+        </div>
+      </div>
+
+      <!-- 2. Area -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">AREA · TIER 1</div>
+        <div class="chart-title">Cumulative P&amp;L</div>
+        <div class="chart-sub">Year to date</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Area chart of cumulative profit and loss">
+            <defs>
+              <linearGradient id="ds-area-grad-l" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--chart-series-1)" stop-opacity="0.30"/>
+                <stop offset="100%" stop-color="var(--chart-series-1)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <line x1="0" y1="36" x2="400" y2="36" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="144" x2="400" y2="144" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <path d="M 0 140 C 40 132 80 120 120 110 S 200 80 240 70 S 320 48 400 32 L 400 180 L 0 180 Z" fill="url(#ds-area-grad-l)"/>
+            <path d="M 0 140 C 40 132 80 120 120 110 S 200 80 240 70 S 320 48 400 32" fill="none" stroke="var(--chart-series-1)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Cumulative</span>
+        </div>
+      </div>
+
+      <!-- 3. Bar drift -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">BAR · TIER 1</div>
+        <div class="chart-title">Position drift</div>
+        <div class="chart-sub">Top 6 vs rebalance band</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Bar chart of top 6 positions by drift, three over-weighted and three under-weighted">
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid-strong)"/>
+            <rect x="20" y="32" width="40" height="58" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="80" y="50" width="40" height="40" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="140" y="62" width="40" height="28" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="200" y="90" width="40" height="22" fill="var(--chart-series-2)"/>
+            <rect x="260" y="90" width="40" height="38" fill="var(--chart-series-2)"/>
+            <rect x="320" y="90" width="40" height="52" fill="var(--chart-series-2)"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Over-weighted</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Under-weighted</span>
+        </div>
+      </div>
+
+      <!-- 4. Donut -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">DONUT · TIER 1</div>
+        <div class="chart-title">Allocation by sector</div>
+        <div class="chart-sub">5 sectors</div>
+        <div class="chart-body" style="display:flex;align-items:center;justify-content:center;height:200px">
+          <div class="donut-wrap" style="width:180px;height:180px">
+            <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="Donut chart of sector allocation. Total 226 thousand US dollars across 5 sectors. Tech 41 percent, Financials 24 percent, Energy 17 percent, Healthcare 10 percent, Other 8 percent.">
+              <g transform="translate(90,90)">
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-1)" stroke-width="22" stroke-dasharray="190 465" stroke-dashoffset="0" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-4)" stroke-width="22" stroke-dasharray="112 465" stroke-dashoffset="-194" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-7)" stroke-width="22" stroke-dasharray="79 465" stroke-dashoffset="-310" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-5)" stroke-width="22" stroke-dasharray="46 465" stroke-dashoffset="-393" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-2)" stroke-width="22" stroke-dasharray="38 465" stroke-dashoffset="-443" transform="rotate(-90)"/>
+              </g>
+            </svg>
+            <div class="donut-center">
+              <div class="dc-value">$226K</div>
+              <div class="dc-label">PORTFOLIO</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Tech 41%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Financials 24%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-7)"></span>Energy 17%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-5)"></span>Healthcare 10%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Other 8%</span>
+        </div>
+      </div>
+
+      <!-- 5. Sparkline -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">SPARKLINE · TIER 1</div>
+        <div class="chart-title">Inline trend</div>
+        <div class="chart-sub">Used inside cards, table cells, chat replies</div>
+        <div class="chart-body" style="display:flex;flex-direction:column;gap:16px">
+          <div class="spark-inline">
+            <span class="spark-value">$226,390</span>
+            <span class="spark-delta">+2.4% wk</span>
+            <svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Sparkline up trend"><path d="M 0 14 L 10 12 L 20 13 L 30 9 L 40 6 L 50 7 L 60 4" fill="none" stroke="var(--chart-series-1)" stroke-width="1.5"/></svg>
+          </div>
+          <div class="spark-inline">
+            <span class="spark-value">$42,180</span>
+            <span class="spark-delta down">−5.8% wk</span>
+            <svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Sparkline down trend"><path d="M 0 4 L 10 6 L 20 5 L 30 9 L 40 12 L 50 14 L 60 16" fill="none" stroke="var(--chart-series-2)" stroke-width="1.5"/></svg>
+          </div>
+          <div class="spark-inline">
+            <span class="spark-value">$184,210</span>
+            <span class="spark-delta">+0.9% wk</span>
+            <svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Sparkline mostly flat"><path d="M 0 10 L 10 11 L 20 9 L 30 10 L 40 8 L 50 9 L 60 8" fill="none" stroke="var(--chart-series-1)" stroke-width="1.5"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Calendar -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">CALENDAR · TIER 1 · NEW v1.1</div>
+        <div class="chart-title">Dividend calendar — April 2026</div>
+        <div class="chart-sub">3 received · 2 scheduled · 1 corp action</div>
+        <div class="chart-body">
+          <div class="cal-grid" role="img" aria-label="Dividend calendar April 2026 showing 3 received and 2 scheduled events plus 1 corporate action">
+            <div class="cal-head">
+              <h4 class="cal-month">April 2026</h4>
+              <div class="cal-totals">
+                <span>Received <strong>$284</strong></span>
+                <span>Scheduled <strong>$412</strong></span>
+              </div>
+            </div>
+            <div class="cal-dow"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+            <div class="cal-grid-body">
+              <div class="cal-cell out"><span class="cal-daynum">30</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">31</span></div>
+              <div class="cal-cell"><span class="cal-daynum">1</span></div>
+              <div class="cal-cell"><span class="cal-daynum">2</span></div>
+              <div class="cal-cell"><span class="cal-daynum">3</span></div>
+              <div class="cal-cell"><span class="cal-daynum">4</span></div>
+              <div class="cal-cell"><span class="cal-daynum">5</span></div>
+              <div class="cal-cell"><span class="cal-daynum">6</span></div>
+              <div class="cal-cell"><span class="cal-daynum">7</span></div>
+              <div class="cal-cell"><span class="cal-daynum">8</span><span class="cal-pill dividend received">KO $48</span></div>
+              <div class="cal-cell"><span class="cal-daynum">9</span></div>
+              <div class="cal-cell"><span class="cal-daynum">10</span><span class="cal-pill dividend received">VYM $112</span></div>
+              <div class="cal-cell"><span class="cal-daynum">11</span></div>
+              <div class="cal-cell"><span class="cal-daynum">12</span><span class="cal-pill dividend received">PEP $124</span></div>
+              <div class="cal-cell"><span class="cal-daynum">13</span></div>
+              <div class="cal-cell"><span class="cal-daynum">14</span></div>
+              <div class="cal-cell today"><span class="cal-daynum">15</span><span class="cal-pill corp_action">GOOGL 2:1</span></div>
+              <div class="cal-cell"><span class="cal-daynum">16</span></div>
+              <div class="cal-cell"><span class="cal-daynum">17</span></div>
+              <div class="cal-cell"><span class="cal-daynum">18</span></div>
+              <div class="cal-cell"><span class="cal-daynum">19</span></div>
+              <div class="cal-cell"><span class="cal-daynum">20</span></div>
+              <div class="cal-cell"><span class="cal-daynum">21</span></div>
+              <div class="cal-cell"><span class="cal-daynum">22</span></div>
+              <div class="cal-cell"><span class="cal-daynum">23</span></div>
+              <div class="cal-cell"><span class="cal-daynum">24</span></div>
+              <div class="cal-cell"><span class="cal-daynum">25</span></div>
+              <div class="cal-cell"><span class="cal-daynum">26</span></div>
+              <div class="cal-cell"><span class="cal-daynum">27</span></div>
+              <div class="cal-cell"><span class="cal-daynum">28</span></div>
+              <div class="cal-cell"><span class="cal-daynum">29</span><span class="cal-pill dividend scheduled">JNJ $59</span></div>
+              <div class="cal-cell"><span class="cal-daynum">30</span><span class="cal-pill dividend announced">XOM $42</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">1</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">2</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">3</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--accent)"></span>Received</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Scheduled</span>
+          <span class="leg-item"><span class="leg-dot" style="background:transparent;border:1px solid var(--chart-series-7)"></span>Announced</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--terra);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)"></span>Corp action</span>
+        </div>
+      </div>
+
+      <!-- 7. Treemap -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">TREEMAP · TIER 1 · NEW v1.1</div>
+        <div class="chart-title">Concentration</div>
+        <div class="chart-sub">Tile size = weight; color = today's change</div>
+        <div class="chart-body">
+          <svg width="100%" height="280" viewBox="0 0 400 280" preserveAspectRatio="none" role="img" aria-label="Treemap of portfolio concentration with NVDA, MSFT, AAPL, GOOGL, BRK.B, JNJ, XOM and Other tile, color encodes today price change">
+            <rect x="2" y="2" width="170" height="160" fill="var(--chart-series-1)" fill-opacity="0.85" stroke="var(--card)" stroke-width="1"/>
+            <text x="14" y="26" font-family="Geist" font-size="13" font-weight="600" fill="#F4F1EA">NVDA</text>
+            <text x="14" y="42" font-family="Geist Mono" font-size="10" fill="#F4F1EA" opacity="0.7">14.2% · +2.1%</text>
+            <rect x="174" y="2" width="138" height="100" fill="var(--chart-series-1)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="186" y="26" font-family="Geist" font-size="13" font-weight="600" fill="#F4F1EA">MSFT</text>
+            <text x="186" y="42" font-family="Geist Mono" font-size="10" fill="#F4F1EA" opacity="0.7">11.8% · +0.6%</text>
+            <rect x="314" y="2" width="84" height="100" fill="var(--chart-series-2)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="326" y="26" font-family="Geist" font-size="13" font-weight="600" fill="#F4F1EA">AAPL</text>
+            <text x="326" y="42" font-family="Geist Mono" font-size="10" fill="#F4F1EA" opacity="0.7">9.4% · −1.2%</text>
+            <rect x="174" y="104" width="84" height="58" fill="var(--chart-series-1)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="186" y="124" font-family="Geist" font-size="12" font-weight="600" fill="#F4F1EA">GOOGL</text>
+            <text x="186" y="139" font-family="Geist Mono" font-size="9" fill="#F4F1EA" opacity="0.7">7.1%</text>
+            <rect x="260" y="104" width="74" height="58" fill="var(--chart-series-5)" fill-opacity="0.30" stroke="var(--card)" stroke-width="1"/>
+            <text x="272" y="124" font-family="Geist" font-size="12" font-weight="600" fill="var(--ink)">BRK.B</text>
+            <text x="272" y="139" font-family="Geist Mono" font-size="9" fill="var(--text-2)">6.8%</text>
+            <rect x="336" y="104" width="62" height="58" fill="var(--chart-series-5)" fill-opacity="0.30" stroke="var(--card)" stroke-width="1"/>
+            <text x="346" y="124" font-family="Geist" font-size="12" font-weight="600" fill="var(--ink)">JNJ</text>
+            <text x="346" y="139" font-family="Geist Mono" font-size="9" fill="var(--text-2)">5.2%</text>
+            <rect x="2" y="164" width="80" height="114" fill="var(--chart-series-1)" fill-opacity="0.85" stroke="var(--card)" stroke-width="1"/>
+            <text x="14" y="186" font-family="Geist" font-size="12" font-weight="600" fill="#F4F1EA">XOM</text>
+            <text x="14" y="201" font-family="Geist Mono" font-size="9" fill="#F4F1EA" opacity="0.7">4.6% · +3.2%</text>
+            <rect x="84" y="164" width="314" height="114" fill="var(--chart-series-5)" fill-opacity="0.40" stroke="var(--card)" stroke-width="1"/>
+            <text x="100" y="186" font-family="Geist Mono" font-size="10" font-weight="500" letter-spacing="0.18em" fill="var(--text-2)">OTHER · 12 ITEMS</text>
+            <text x="100" y="206" font-family="Geist Mono" font-size="11" fill="var(--text-2)">40.9%</text>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);opacity:0.85"></span>Up ≥ +2%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);opacity:0.55"></span>Up</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-5);opacity:0.30"></span>Flat</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2);opacity:0.55"></span>Down</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2);opacity:0.85"></span>Down ≤ −2%</span>
+        </div>
+        <div class="chart-note">Tile size = % of portfolio; color = today's price change. Concentration thresholds are factual conventions per FINRA, not Provedo recommendations.</div>
+      </div>
+    </div>
+
+    <div class="ds-row" style="margin-top:28px"><div class="ds-row-label">TIER 2 — NEXT-WAVE</div></div>
+
+    <div class="ds-charts">
+      <!-- 8. Stacked bar -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">STACKED BAR · TIER 2</div>
+        <div class="chart-title">Broker contribution</div>
+        <div class="chart-sub">Last 6 months</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Stacked bar chart of broker contribution over 6 months across IBKR, Binance, LYNX">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="var(--chart-grid)"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid)"/>
+            <line x1="0" y1="140" x2="400" y2="140" stroke="var(--chart-grid)"/>
+            <g><rect x="20" y="100" width="40" height="40" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="20" y="78" width="40" height="22" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="20" y="60" width="40" height="18" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="80" y="98" width="40" height="42" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="80" y="74" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="80" y="54" width="40" height="20" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="140" y="92" width="40" height="48" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="140" y="68" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="140" y="46" width="40" height="22" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="200" y="86" width="40" height="54" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="200" y="60" width="40" height="26" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="200" y="36" width="40" height="24" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="260" y="80" width="40" height="60" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="260" y="56" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="260" y="32" width="40" height="24" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="320" y="74" width="40" height="66" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="320" y="50" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="320" y="28" width="40" height="22" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>IBKR</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Binance</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-7)"></span>LYNX</span>
+        </div>
+      </div>
+
+      <!-- 9. Scatter -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">SCATTER · TIER 2</div>
+        <div class="chart-title">Return vs volatility</div>
+        <div class="chart-sub">Each dot = one position</div>
+        <div class="chart-body">
+          <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="none" role="img" aria-label="Scatter plot of position return versus volatility, three asset-class groups">
+            <line x1="0" y1="100" x2="400" y2="100" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <line x1="200" y1="0" x2="200" y2="200" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <circle cx="100" cy="60" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="160" cy="80" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="120" cy="40" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="190" cy="68" r="5" fill="var(--chart-series-1)"/>
+            <rect x="245" y="55" width="10" height="10" fill="var(--chart-series-2)"/>
+            <rect x="285" y="135" width="10" height="10" fill="var(--chart-series-2)"/>
+            <rect x="320" y="115" width="10" height="10" fill="var(--chart-series-2)"/>
+            <polygon points="220,170 226,160 232,170" fill="var(--chart-series-4)"/>
+            <polygon points="160,140 166,130 172,140" fill="var(--chart-series-4)"/>
+            <polygon points="60,150 66,140 72,150" fill="var(--chart-series-4)"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);border-radius:50%"></span>Equity</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Crypto</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4);clip-path:polygon(50% 0%,0% 100%,100% 100%)"></span>ETF</span>
+        </div>
+      </div>
+
+      <!-- 10. Cash-flow waterfall -->
+      <div class="chart-card" style="grid-column: 1 / -1">
+        <div class="chart-eyebrow">WATERFALL · TIER 2 · NEW v1.1</div>
+        <div class="chart-title">Where your value came from</div>
+        <div class="chart-sub">YTD · 2026-01-01 to 2026-04-26</div>
+        <div class="chart-body">
+          <svg width="100%" height="240" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Cash-flow waterfall from $220,000 starting value to $247,000 ending value across deposits, withdrawals, realized gains, unrealized gains, dividends, interest, fees and FX components">
+            <line x1="0" y1="40" x2="600" y2="40" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="100" x2="600" y2="100" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="160" x2="600" y2="160" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <rect x="20" y="80" width="40" height="120" fill="var(--chart-series-3)" fill-opacity="0.85" rx="4"/>
+            <text x="40" y="74" font-family="Geist Mono" font-size="11" fill="var(--ink)" text-anchor="middle">$220K</text>
+            <text x="40" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Start</text>
+            <line x1="60" y1="80" x2="80" y2="80" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="80" y="74" width="40" height="6" fill="var(--chart-series-1)" rx="2"/>
+            <text x="100" y="68" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$10K</text>
+            <text x="100" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Deposits</text>
+            <line x1="120" y1="74" x2="140" y2="74" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="140" y="74" width="40" height="2" fill="var(--chart-series-2)" rx="2"/>
+            <text x="160" y="68" font-family="Geist Mono" font-size="10" fill="var(--chart-series-2)" font-weight="500" text-anchor="middle">−$2K</text>
+            <text x="160" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Withdraw</text>
+            <line x1="180" y1="76" x2="200" y2="76" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="200" y="71" width="40" height="5" fill="var(--chart-series-1)" rx="2"/>
+            <text x="220" y="65" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$4.2K</text>
+            <text x="220" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Realized</text>
+            <line x1="240" y1="71" x2="260" y2="71" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="260" y="61" width="40" height="10" fill="var(--chart-series-1)" rx="2"/>
+            <text x="280" y="55" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$8.4K</text>
+            <text x="280" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Unrealized</text>
+            <line x1="300" y1="61" x2="320" y2="61" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="320" y="57" width="40" height="4" fill="var(--chart-series-1)" rx="2"/>
+            <text x="340" y="51" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$1.9K</text>
+            <text x="340" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Dividends</text>
+            <line x1="360" y1="57" x2="380" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="380" y="55" width="40" height="2" fill="var(--chart-series-1)" rx="2"/>
+            <text x="400" y="49" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$240</text>
+            <text x="400" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Interest</text>
+            <line x1="420" y1="55" x2="440" y2="55" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="440" y="55" width="40" height="2" fill="var(--chart-series-2)" rx="2"/>
+            <text x="460" y="49" font-family="Geist Mono" font-size="10" fill="var(--chart-series-2)" font-weight="500" text-anchor="middle">−$90</text>
+            <text x="460" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Fees</text>
+            <line x1="480" y1="57" x2="500" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="500" y="54" width="40" height="3" fill="var(--chart-series-1)" rx="2"/>
+            <text x="520" y="48" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$270</text>
+            <text x="520" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">FX</text>
+            <line x1="540" y1="57" x2="560" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="560" y="60" width="40" height="140" fill="var(--chart-series-3)" fill-opacity="0.85" rx="4"/>
+            <text x="580" y="54" font-family="Geist Mono" font-size="11" fill="var(--ink)" text-anchor="middle">$247K</text>
+            <text x="580" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">End</text>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-3);opacity:0.85"></span>Anchor (start / end)</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Positive contribution</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Negative contribution</span>
+        </div>
+        <div class="chart-note">Decomposes change in portfolio value into mechanical components: cash you added, gains your positions made, dividends and interest received, FX effects. Does not predict future contributions.</div>
+      </div>
+    </div>
+
+    <div class="ds-row" style="margin-top:28px"><div class="ds-row-label">TIER 3 — POST-MVP CANDIDATE</div></div>
+
+    <div class="ds-charts">
+      <!-- 11. Candlestick -->
+      <div class="chart-card" style="grid-column: 1 / -1">
+        <div class="chart-eyebrow">CANDLESTICK <span class="chart-tier-badge">TIER 3 · LANE-A CONSTRAINED</span></div>
+        <div class="chart-title">NVDA · last 10 sessions</div>
+        <div class="chart-sub">OHLC daily</div>
+        <div class="chart-body">
+          <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="none" role="img" aria-label="Candlestick chart of NVDA last 10 sessions">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="100" x2="400" y2="100" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="160" x2="400" y2="160" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <g><line x1="20" y1="60" x2="20" y2="120" stroke="var(--ink)"/><rect x="14" y="80" width="12" height="30" fill="var(--chart-series-1)"/></g>
+            <g><line x1="56" y1="50" x2="56" y2="100" stroke="var(--ink)"/><rect x="50" y="70" width="12" height="20" fill="var(--chart-series-1)"/></g>
+            <g><line x1="92" y1="60" x2="92" y2="115" stroke="var(--ink)"/><rect x="86" y="74" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="128" y1="80" x2="128" y2="140" stroke="var(--ink)"/><rect x="122" y="98" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="164" y1="70" x2="164" y2="130" stroke="var(--ink)"/><rect x="158" y="92" width="12" height="30" fill="var(--chart-series-1)"/></g>
+            <g><line x1="200" y1="60" x2="200" y2="120" stroke="var(--ink)"/><rect x="194" y="78" width="12" height="32" fill="var(--chart-series-1)"/></g>
+            <g><line x1="236" y1="55" x2="236" y2="115" stroke="var(--ink)"/><rect x="230" y="68" width="12" height="38" fill="var(--chart-series-1)"/></g>
+            <g><line x1="272" y1="65" x2="272" y2="130" stroke="var(--ink)"/><rect x="266" y="88" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="308" y1="50" x2="308" y2="105" stroke="var(--ink)"/><rect x="302" y="62" width="12" height="34" fill="var(--chart-series-1)"/></g>
+            <g><line x1="344" y1="40" x2="344" y2="95" stroke="var(--ink)"/><rect x="338" y="52" width="12" height="30" fill="var(--chart-series-1)"/></g>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Bull (close ≥ open)</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Bear (close &lt; open)</span>
+        </div>
+        <div class="chart-lane-a">
+          <strong>Lane A note</strong> — payload schema STRUCTURALLY excludes support / resistance / trend / channel / moving-average / RSI / MACD / Bollinger fields. Chart renders OHLC only; line variant is the default for chat answers per Lane A guardrail. Per <code>CHARTS_SPEC.md</code> §4.11 + §5.
+        </div>
+      </div>
+    </div>
+
+    <!-- States: empty + loading -->
+    <div class="ds-row" style="margin-top:28px"><div class="ds-row-label">STATES — EMPTY / LOADING</div></div>
+    <div class="ds-charts">
+      <div class="chart-card">
+        <div class="chart-eyebrow">LINE · EMPTY</div>
+        <div class="chart-title">Portfolio value</div>
+        <div class="chart-sub">Last 30 days</div>
+        <div class="chart-empty">
+          <div class="ce-eyebrow">NO DATA · LINE</div>
+          <div class="ce-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg></div>
+          <div class="ce-head">No data yet</div>
+          <div class="ce-body">Connect a broker to see your portfolio history.</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-eyebrow">DONUT · EMPTY</div>
+        <div class="chart-title">Allocation</div>
+        <div class="chart-sub">Across all accounts</div>
+        <div class="chart-empty">
+          <div class="ce-eyebrow">NO DATA · DONUT</div>
+          <div class="ce-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-3)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></div>
+          <div class="ce-head">No allocations yet</div>
+          <div class="ce-body">Once positions sync, sectors and brokers appear here.</div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-eyebrow">LOADING · LINE</div>
+        <div class="chart-title">Portfolio value</div>
+        <div class="chart-sub">…</div>
+        <div class="chart-skeleton"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-eyebrow">LOADING · BAR</div>
+        <div class="chart-title">Position drift</div>
+        <div class="chart-sub">…</div>
+        <div class="chart-skeleton"></div>
+      </div>
+    </div>
+  </div>
 </section>
 
 
@@ -1137,6 +1775,366 @@
       <div class="avatar">RM<div class="status-dot"></div></div>
       <div class="avatar accent">PR<div class="status-dot"></div></div>
       <div class="avatar terra">AI</div>
+    </div>
+  </div>
+
+  <!-- ===== CHARTS — DARK (verifies palette flips correctly) ===== -->
+  <div id="charts-dark" class="ds-section">
+    <div class="head"><h3>Charts</h3><span class="meta">11 TYPES · DARK PALETTE</span></div>
+
+    <div class="ds-row"><div class="ds-row-label">DARK SERIES PALETTE — luma-bumped per spec §2.3</div><div class="swatches">
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-1)"></div><div><div class="sw-name">series-1 jade</div><div class="sw-hex">#4A8775</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-2)"></div><div><div class="sw-name">series-2 bronze</div><div class="sw-hex">#BD6A55</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-3)"></div><div><div class="sw-name">series-3 cream</div><div class="sw-hex">#F4F1EA</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-4)"></div><div><div class="sw-name">series-4 mid-jade</div><div class="sw-hex">#7DAA9A</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-5)"></div><div><div class="sw-name">series-5 grey</div><div class="sw-hex">#B5B5B5</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-6)"></div><div><div class="sw-name">series-6 soft-bronze</div><div class="sw-hex">#D89C8C</div></div></div>
+      <div class="swatch"><div class="sw-chip" style="background:var(--chart-series-7)"></div><div><div class="sw-name">series-7 deep-jade</div><div class="sw-hex">#2E5B4D</div></div></div>
+    </div></div>
+
+    <div class="ds-charts">
+      <!-- Line -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">LINE · TIER 1</div>
+        <div class="chart-title">Portfolio value</div>
+        <div class="chart-sub">Last 30 days</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Line chart of portfolio value">
+            <line x1="0" y1="36" x2="400" y2="36" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="72" x2="400" y2="72" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="108" x2="400" y2="108" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="144" x2="400" y2="144" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <path d="M 0 130 C 30 122 60 138 90 124 S 150 80 180 92 S 240 60 270 70 S 330 50 360 40 L 400 38" fill="none" stroke="var(--chart-series-1)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="chart-legend"><span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Total</span></div>
+      </div>
+
+      <!-- Area -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">AREA · TIER 1</div>
+        <div class="chart-title">Cumulative P&amp;L</div>
+        <div class="chart-sub">YTD</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Area chart of cumulative P and L">
+            <defs><linearGradient id="ds-area-grad-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--chart-series-1)" stop-opacity="0.30"/><stop offset="100%" stop-color="var(--chart-series-1)" stop-opacity="0"/></linearGradient></defs>
+            <line x1="0" y1="36" x2="400" y2="36" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="144" x2="400" y2="144" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <path d="M 0 140 C 40 132 80 120 120 110 S 200 80 240 70 S 320 48 400 32 L 400 180 L 0 180 Z" fill="url(#ds-area-grad-d)"/>
+            <path d="M 0 140 C 40 132 80 120 120 110 S 200 80 240 70 S 320 48 400 32" fill="none" stroke="var(--chart-series-1)" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="chart-legend"><span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Cumulative</span></div>
+      </div>
+
+      <!-- Bar -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">BAR · TIER 1</div>
+        <div class="chart-title">Position drift</div>
+        <div class="chart-sub">Top 6 vs rebalance band</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Bar chart of position drift">
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid-strong)"/>
+            <rect x="20" y="32" width="40" height="58" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="80" y="50" width="40" height="40" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="140" y="62" width="40" height="28" rx="6" ry="6" fill="var(--chart-series-1)"/>
+            <rect x="200" y="90" width="40" height="22" fill="var(--chart-series-2)"/>
+            <rect x="260" y="90" width="40" height="38" fill="var(--chart-series-2)"/>
+            <rect x="320" y="90" width="40" height="52" fill="var(--chart-series-2)"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Over-weighted</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Under-weighted</span>
+        </div>
+      </div>
+
+      <!-- Donut -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">DONUT · TIER 1</div>
+        <div class="chart-title">Allocation by sector</div>
+        <div class="chart-sub">5 sectors</div>
+        <div class="chart-body" style="display:flex;align-items:center;justify-content:center;height:200px">
+          <div class="donut-wrap" style="width:180px;height:180px">
+            <svg width="180" height="180" viewBox="0 0 180 180" role="img" aria-label="Donut chart of sector allocation">
+              <g transform="translate(90,90)">
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-1)" stroke-width="22" stroke-dasharray="190 465" stroke-dashoffset="0" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-4)" stroke-width="22" stroke-dasharray="112 465" stroke-dashoffset="-194" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-7)" stroke-width="22" stroke-dasharray="79 465" stroke-dashoffset="-310" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-5)" stroke-width="22" stroke-dasharray="46 465" stroke-dashoffset="-393" transform="rotate(-90)"/>
+                <circle r="74" cx="0" cy="0" fill="none" stroke="var(--chart-series-2)" stroke-width="22" stroke-dasharray="38 465" stroke-dashoffset="-443" transform="rotate(-90)"/>
+              </g>
+            </svg>
+            <div class="donut-center">
+              <div class="dc-value">$226K</div>
+              <div class="dc-label">PORTFOLIO</div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Tech 41%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Fin 24%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-7)"></span>Energy 17%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-5)"></span>Health 10%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Other 8%</span>
+        </div>
+      </div>
+
+      <!-- Sparkline -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">SPARKLINE · TIER 1</div>
+        <div class="chart-title">Inline trend</div>
+        <div class="chart-sub">Inside cards · table cells · chat replies</div>
+        <div class="chart-body" style="display:flex;flex-direction:column;gap:16px">
+          <div class="spark-inline"><span class="spark-value">$226,390</span><span class="spark-delta">+2.4% wk</span><svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Up trend"><path d="M 0 14 L 10 12 L 20 13 L 30 9 L 40 6 L 50 7 L 60 4" fill="none" stroke="var(--chart-series-1)" stroke-width="1.5"/></svg></div>
+          <div class="spark-inline"><span class="spark-value">$42,180</span><span class="spark-delta down">−5.8% wk</span><svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Down trend"><path d="M 0 4 L 10 6 L 20 5 L 30 9 L 40 12 L 50 14 L 60 16" fill="none" stroke="var(--chart-series-2)" stroke-width="1.5"/></svg></div>
+          <div class="spark-inline"><span class="spark-value">$184,210</span><span class="spark-delta">+0.9% wk</span><svg class="spark-svg" viewBox="0 0 60 20" role="img" aria-label="Flat"><path d="M 0 10 L 10 11 L 20 9 L 30 10 L 40 8 L 50 9 L 60 8" fill="none" stroke="var(--chart-series-1)" stroke-width="1.5"/></svg></div>
+        </div>
+      </div>
+
+      <!-- Calendar -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">CALENDAR · TIER 1 · NEW v1.1</div>
+        <div class="chart-title">Dividend calendar — April 2026</div>
+        <div class="chart-sub">3 received · 2 scheduled · 1 corp action</div>
+        <div class="chart-body">
+          <div class="cal-grid" role="img" aria-label="Dividend calendar April 2026">
+            <div class="cal-head">
+              <h4 class="cal-month">April 2026</h4>
+              <div class="cal-totals"><span>Received <strong>$284</strong></span><span>Scheduled <strong>$412</strong></span></div>
+            </div>
+            <div class="cal-dow"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
+            <div class="cal-grid-body">
+              <div class="cal-cell out"><span class="cal-daynum">30</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">31</span></div>
+              <div class="cal-cell"><span class="cal-daynum">1</span></div>
+              <div class="cal-cell"><span class="cal-daynum">2</span></div>
+              <div class="cal-cell"><span class="cal-daynum">3</span></div>
+              <div class="cal-cell"><span class="cal-daynum">4</span></div>
+              <div class="cal-cell"><span class="cal-daynum">5</span></div>
+              <div class="cal-cell"><span class="cal-daynum">6</span></div>
+              <div class="cal-cell"><span class="cal-daynum">7</span></div>
+              <div class="cal-cell"><span class="cal-daynum">8</span><span class="cal-pill dividend received">KO $48</span></div>
+              <div class="cal-cell"><span class="cal-daynum">9</span></div>
+              <div class="cal-cell"><span class="cal-daynum">10</span><span class="cal-pill dividend received">VYM $112</span></div>
+              <div class="cal-cell"><span class="cal-daynum">11</span></div>
+              <div class="cal-cell"><span class="cal-daynum">12</span><span class="cal-pill dividend received">PEP $124</span></div>
+              <div class="cal-cell"><span class="cal-daynum">13</span></div>
+              <div class="cal-cell"><span class="cal-daynum">14</span></div>
+              <div class="cal-cell today"><span class="cal-daynum">15</span><span class="cal-pill corp_action">GOOGL 2:1</span></div>
+              <div class="cal-cell"><span class="cal-daynum">16</span></div>
+              <div class="cal-cell"><span class="cal-daynum">17</span></div>
+              <div class="cal-cell"><span class="cal-daynum">18</span></div>
+              <div class="cal-cell"><span class="cal-daynum">19</span></div>
+              <div class="cal-cell"><span class="cal-daynum">20</span></div>
+              <div class="cal-cell"><span class="cal-daynum">21</span></div>
+              <div class="cal-cell"><span class="cal-daynum">22</span></div>
+              <div class="cal-cell"><span class="cal-daynum">23</span></div>
+              <div class="cal-cell"><span class="cal-daynum">24</span></div>
+              <div class="cal-cell"><span class="cal-daynum">25</span></div>
+              <div class="cal-cell"><span class="cal-daynum">26</span></div>
+              <div class="cal-cell"><span class="cal-daynum">27</span></div>
+              <div class="cal-cell"><span class="cal-daynum">28</span></div>
+              <div class="cal-cell"><span class="cal-daynum">29</span><span class="cal-pill dividend scheduled">JNJ $59</span></div>
+              <div class="cal-cell"><span class="cal-daynum">30</span><span class="cal-pill dividend announced">XOM $42</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">1</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">2</span></div>
+              <div class="cal-cell out"><span class="cal-daynum">3</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--accent)"></span>Received</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Scheduled</span>
+          <span class="leg-item"><span class="leg-dot" style="background:transparent;border:1px solid var(--chart-series-4)"></span>Announced</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--terra);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%)"></span>Corp action</span>
+        </div>
+      </div>
+
+      <!-- Treemap -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">TREEMAP · TIER 1 · NEW v1.1</div>
+        <div class="chart-title">Concentration</div>
+        <div class="chart-sub">Tile size = weight; color = today's change</div>
+        <div class="chart-body">
+          <svg width="100%" height="280" viewBox="0 0 400 280" preserveAspectRatio="none" role="img" aria-label="Treemap of portfolio concentration">
+            <rect x="2" y="2" width="170" height="160" fill="var(--chart-series-1)" fill-opacity="0.85" stroke="var(--card)" stroke-width="1"/>
+            <text x="14" y="26" font-family="Geist" font-size="13" font-weight="600" fill="var(--bg)">NVDA</text>
+            <text x="14" y="42" font-family="Geist Mono" font-size="10" fill="var(--bg)" opacity="0.7">14.2% · +2.1%</text>
+            <rect x="174" y="2" width="138" height="100" fill="var(--chart-series-1)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="186" y="26" font-family="Geist" font-size="13" font-weight="600" fill="var(--ink)">MSFT</text>
+            <text x="186" y="42" font-family="Geist Mono" font-size="10" fill="var(--ink)" opacity="0.7">11.8% · +0.6%</text>
+            <rect x="314" y="2" width="84" height="100" fill="var(--chart-series-2)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="326" y="26" font-family="Geist" font-size="13" font-weight="600" fill="var(--ink)">AAPL</text>
+            <text x="326" y="42" font-family="Geist Mono" font-size="10" fill="var(--ink)" opacity="0.7">9.4% · −1.2%</text>
+            <rect x="174" y="104" width="84" height="58" fill="var(--chart-series-1)" fill-opacity="0.55" stroke="var(--card)" stroke-width="1"/>
+            <text x="186" y="124" font-family="Geist" font-size="12" font-weight="600" fill="var(--ink)">GOOGL</text>
+            <text x="186" y="139" font-family="Geist Mono" font-size="9" fill="var(--ink)" opacity="0.7">7.1%</text>
+            <rect x="260" y="104" width="74" height="58" fill="var(--chart-series-5)" fill-opacity="0.30" stroke="var(--card)" stroke-width="1"/>
+            <text x="272" y="124" font-family="Geist" font-size="12" font-weight="600" fill="var(--ink)">BRK.B</text>
+            <text x="272" y="139" font-family="Geist Mono" font-size="9" fill="var(--text-2)">6.8%</text>
+            <rect x="336" y="104" width="62" height="58" fill="var(--chart-series-5)" fill-opacity="0.30" stroke="var(--card)" stroke-width="1"/>
+            <text x="346" y="124" font-family="Geist" font-size="12" font-weight="600" fill="var(--ink)">JNJ</text>
+            <text x="346" y="139" font-family="Geist Mono" font-size="9" fill="var(--text-2)">5.2%</text>
+            <rect x="2" y="164" width="80" height="114" fill="var(--chart-series-1)" fill-opacity="0.85" stroke="var(--card)" stroke-width="1"/>
+            <text x="14" y="186" font-family="Geist" font-size="12" font-weight="600" fill="var(--bg)">XOM</text>
+            <text x="14" y="201" font-family="Geist Mono" font-size="9" fill="var(--bg)" opacity="0.7">4.6% · +3.2%</text>
+            <rect x="84" y="164" width="314" height="114" fill="var(--chart-series-5)" fill-opacity="0.40" stroke="var(--card)" stroke-width="1"/>
+            <text x="100" y="186" font-family="Geist Mono" font-size="10" font-weight="500" letter-spacing="0.18em" fill="var(--text-2)">OTHER · 12 ITEMS</text>
+            <text x="100" y="206" font-family="Geist Mono" font-size="11" fill="var(--text-2)">40.9%</text>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);opacity:0.85"></span>Up ≥ +2%</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);opacity:0.55"></span>Up</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-5);opacity:0.30"></span>Flat</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2);opacity:0.55"></span>Down</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2);opacity:0.85"></span>Down ≤ −2%</span>
+        </div>
+      </div>
+
+      <!-- Stacked bar -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">STACKED BAR · TIER 2</div>
+        <div class="chart-title">Broker contribution</div>
+        <div class="chart-sub">Last 6 months</div>
+        <div class="chart-body">
+          <svg width="100%" height="180" viewBox="0 0 400 180" preserveAspectRatio="none" role="img" aria-label="Stacked bar chart of broker contribution">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="var(--chart-grid)"/>
+            <line x1="0" y1="90" x2="400" y2="90" stroke="var(--chart-grid)"/>
+            <line x1="0" y1="140" x2="400" y2="140" stroke="var(--chart-grid)"/>
+            <g><rect x="20" y="100" width="40" height="40" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="20" y="78" width="40" height="22" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="20" y="60" width="40" height="18" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="80" y="98" width="40" height="42" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="80" y="74" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="80" y="54" width="40" height="20" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="140" y="92" width="40" height="48" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="140" y="68" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="140" y="46" width="40" height="22" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="200" y="86" width="40" height="54" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="200" y="60" width="40" height="26" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="200" y="36" width="40" height="24" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="260" y="80" width="40" height="60" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="260" y="56" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="260" y="32" width="40" height="24" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+            <g><rect x="320" y="74" width="40" height="66" fill="var(--chart-series-1)" stroke="var(--card)"/><rect x="320" y="50" width="40" height="24" fill="var(--chart-series-4)" stroke="var(--card)"/><rect x="320" y="28" width="40" height="22" rx="6" ry="6" fill="var(--chart-series-7)" stroke="var(--card)"/></g>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>IBKR</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4)"></span>Binance</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-7)"></span>LYNX</span>
+        </div>
+      </div>
+
+      <!-- Scatter -->
+      <div class="chart-card">
+        <div class="chart-eyebrow">SCATTER · TIER 2</div>
+        <div class="chart-title">Return vs volatility</div>
+        <div class="chart-sub">Each dot = one position</div>
+        <div class="chart-body">
+          <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="none" role="img" aria-label="Scatter plot of position return versus volatility">
+            <line x1="0" y1="100" x2="400" y2="100" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <line x1="200" y1="0" x2="200" y2="200" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <circle cx="100" cy="60" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="160" cy="80" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="120" cy="40" r="5" fill="var(--chart-series-1)"/>
+            <circle cx="190" cy="68" r="5" fill="var(--chart-series-1)"/>
+            <rect x="245" y="55" width="10" height="10" fill="var(--chart-series-2)"/>
+            <rect x="285" y="135" width="10" height="10" fill="var(--chart-series-2)"/>
+            <rect x="320" y="115" width="10" height="10" fill="var(--chart-series-2)"/>
+            <polygon points="220,170 226,160 232,170" fill="var(--chart-series-4)"/>
+            <polygon points="160,140 166,130 172,140" fill="var(--chart-series-4)"/>
+            <polygon points="60,150 66,140 72,150" fill="var(--chart-series-4)"/>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1);border-radius:50%"></span>Equity</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Crypto</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-4);clip-path:polygon(50% 0%,0% 100%,100% 100%)"></span>ETF</span>
+        </div>
+      </div>
+
+      <!-- Waterfall -->
+      <div class="chart-card" style="grid-column: 1 / -1">
+        <div class="chart-eyebrow">WATERFALL · TIER 2 · NEW v1.1</div>
+        <div class="chart-title">Where your value came from</div>
+        <div class="chart-sub">YTD · 2026-01-01 to 2026-04-26</div>
+        <div class="chart-body">
+          <svg width="100%" height="240" viewBox="0 0 600 240" preserveAspectRatio="none" role="img" aria-label="Cash-flow waterfall">
+            <line x1="0" y1="40" x2="600" y2="40" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="100" x2="600" y2="100" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="160" x2="600" y2="160" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <rect x="20" y="80" width="40" height="120" fill="var(--chart-series-3)" fill-opacity="0.85" rx="4"/>
+            <text x="40" y="74" font-family="Geist Mono" font-size="11" fill="var(--ink)" text-anchor="middle">$220K</text>
+            <text x="40" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Start</text>
+            <line x1="60" y1="80" x2="80" y2="80" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="80" y="74" width="40" height="6" fill="var(--chart-series-1)" rx="2"/>
+            <text x="100" y="68" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$10K</text>
+            <text x="100" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Deposits</text>
+            <line x1="120" y1="74" x2="140" y2="74" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="140" y="74" width="40" height="2" fill="var(--chart-series-2)" rx="2"/>
+            <text x="160" y="68" font-family="Geist Mono" font-size="10" fill="var(--chart-series-2)" font-weight="500" text-anchor="middle">−$2K</text>
+            <text x="160" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Withdraw</text>
+            <line x1="180" y1="76" x2="200" y2="76" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="200" y="71" width="40" height="5" fill="var(--chart-series-1)" rx="2"/>
+            <text x="220" y="65" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$4.2K</text>
+            <text x="220" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Realized</text>
+            <line x1="240" y1="71" x2="260" y2="71" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="260" y="61" width="40" height="10" fill="var(--chart-series-1)" rx="2"/>
+            <text x="280" y="55" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$8.4K</text>
+            <text x="280" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Unrealized</text>
+            <line x1="300" y1="61" x2="320" y2="61" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="320" y="57" width="40" height="4" fill="var(--chart-series-1)" rx="2"/>
+            <text x="340" y="51" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$1.9K</text>
+            <text x="340" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Dividends</text>
+            <line x1="360" y1="57" x2="380" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="380" y="55" width="40" height="2" fill="var(--chart-series-1)" rx="2"/>
+            <text x="400" y="49" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$240</text>
+            <text x="400" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Interest</text>
+            <line x1="420" y1="55" x2="440" y2="55" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="440" y="55" width="40" height="2" fill="var(--chart-series-2)" rx="2"/>
+            <text x="460" y="49" font-family="Geist Mono" font-size="10" fill="var(--chart-series-2)" font-weight="500" text-anchor="middle">−$90</text>
+            <text x="460" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">Fees</text>
+            <line x1="480" y1="57" x2="500" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="500" y="54" width="40" height="3" fill="var(--chart-series-1)" rx="2"/>
+            <text x="520" y="48" font-family="Geist Mono" font-size="10" fill="var(--chart-series-1)" font-weight="500" text-anchor="middle">+$270</text>
+            <text x="520" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">FX</text>
+            <line x1="540" y1="57" x2="560" y2="57" stroke="var(--chart-grid-strong)" stroke-dasharray="2 4"/>
+            <rect x="560" y="60" width="40" height="140" fill="var(--chart-series-3)" fill-opacity="0.85" rx="4"/>
+            <text x="580" y="54" font-family="Geist Mono" font-size="11" fill="var(--ink)" text-anchor="middle">$247K</text>
+            <text x="580" y="220" font-family="Geist Mono" font-size="10" fill="var(--text-2)" text-anchor="middle">End</text>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-3);opacity:0.85"></span>Anchor</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Positive</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Negative</span>
+        </div>
+      </div>
+
+      <!-- Candlestick -->
+      <div class="chart-card" style="grid-column: 1 / -1">
+        <div class="chart-eyebrow">CANDLESTICK <span class="chart-tier-badge">TIER 3 · LANE-A CONSTRAINED</span></div>
+        <div class="chart-title">NVDA · last 10 sessions</div>
+        <div class="chart-sub">OHLC daily</div>
+        <div class="chart-body">
+          <svg width="100%" height="200" viewBox="0 0 400 200" preserveAspectRatio="none" role="img" aria-label="Candlestick chart of NVDA last 10 sessions">
+            <line x1="0" y1="40" x2="400" y2="40" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="100" x2="400" y2="100" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <line x1="0" y1="160" x2="400" y2="160" stroke="var(--chart-grid)" stroke-dasharray="2 4"/>
+            <g><line x1="20" y1="60" x2="20" y2="120" stroke="var(--ink)"/><rect x="14" y="80" width="12" height="30" fill="var(--chart-series-1)"/></g>
+            <g><line x1="56" y1="50" x2="56" y2="100" stroke="var(--ink)"/><rect x="50" y="70" width="12" height="20" fill="var(--chart-series-1)"/></g>
+            <g><line x1="92" y1="60" x2="92" y2="115" stroke="var(--ink)"/><rect x="86" y="74" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="128" y1="80" x2="128" y2="140" stroke="var(--ink)"/><rect x="122" y="98" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="164" y1="70" x2="164" y2="130" stroke="var(--ink)"/><rect x="158" y="92" width="12" height="30" fill="var(--chart-series-1)"/></g>
+            <g><line x1="200" y1="60" x2="200" y2="120" stroke="var(--ink)"/><rect x="194" y="78" width="12" height="32" fill="var(--chart-series-1)"/></g>
+            <g><line x1="236" y1="55" x2="236" y2="115" stroke="var(--ink)"/><rect x="230" y="68" width="12" height="38" fill="var(--chart-series-1)"/></g>
+            <g><line x1="272" y1="65" x2="272" y2="130" stroke="var(--ink)"/><rect x="266" y="88" width="12" height="32" fill="var(--chart-series-2)"/></g>
+            <g><line x1="308" y1="50" x2="308" y2="105" stroke="var(--ink)"/><rect x="302" y="62" width="12" height="34" fill="var(--chart-series-1)"/></g>
+            <g><line x1="344" y1="40" x2="344" y2="95" stroke="var(--ink)"/><rect x="338" y="52" width="12" height="30" fill="var(--chart-series-1)"/></g>
+          </svg>
+        </div>
+        <div class="chart-legend">
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-1)"></span>Bull (close ≥ open)</span>
+          <span class="leg-item"><span class="leg-dot" style="background:var(--chart-series-2)"></span>Bear (close &lt; open)</span>
+        </div>
+        <div class="chart-lane-a">
+          <strong>Lane A note</strong> — payload schema STRUCTURALLY excludes support / resistance / trend / channel / moving-average / RSI / MACD / Bollinger fields. Per <code>CHARTS_SPEC.md</code> §4.11 + §5.
+        </div>
+      </div>
     </div>
   </div>
 </section>
