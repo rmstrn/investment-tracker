@@ -196,8 +196,9 @@
     background: var(--inset); color: var(--text-2);
     box-shadow: var(--shadow-inset-light);
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 16px; cursor: pointer; border: none;
+    cursor: pointer; border: none;
   }
+  .btn-icon svg { width: 18px; height: 18px; display: block; }
   .btn-icon:hover { color: var(--ink); }
   .btn-icon.primary {
     background: var(--ink); color: var(--card);
@@ -225,10 +226,15 @@
   .input-help.error { color: var(--terra); }
 
   .search-wrap { position: relative; max-width: 420px; }
-  .search-wrap::before {
-    content: '⌕'; position: absolute; left: 14px; top: 50%;
-    transform: translateY(-50%); color: var(--text-3); font-size: 16px;
+  /* glyph is now an inline SVG positioned absolutely so it stays vertically centred */
+  .search-wrap .search-glyph {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%); color: var(--text-3);
+    width: 14px; height: 14px;
+    pointer-events: none;
+    display: inline-flex; align-items: center; justify-content: center;
   }
+  .search-wrap .search-glyph svg { width: 100%; height: 100%; display: block; }
   .search-input {
     background: var(--inset); border: 1px solid var(--border); border-radius: 100px;
     padding: 11px 16px 11px 38px;
@@ -249,8 +255,8 @@
   .checkbox.checked {
     background: var(--accent); color: white;
     box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.18);
-    font-size: 13px; font-weight: 700;
   }
+  .checkbox svg { width: 14px; height: 14px; display: block; }
   .switch {
     width: 44px; height: 26px; border-radius: 100px;
     background: var(--inset); border: 1px solid var(--border);
@@ -339,8 +345,9 @@
     background: var(--inset); box-shadow: var(--shadow-inset-light);
     margin: 0 auto 16px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 24px; color: var(--text-3);
+    color: var(--text-3);
   }
+  .empty-icon svg { width: 22px; height: 22px; display: block; }
   .card-empty h4 { font-size: 15px; font-weight: 600;
     color: var(--ink); margin: 0 0 6px; letter-spacing: -0.015em; }
   .card-empty p { font-size: 12px; line-height: 1.5;
@@ -386,8 +393,9 @@
     width: 14px; height: 14px; border-radius: 50%;
     background: rgba(0,0,0,0.08);
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 10px; cursor: pointer;
+    cursor: pointer; flex-shrink: 0;
   }
+  .chip-close svg { width: 8px; height: 8px; display: block; }
   .chip.accent .chip-close,
   .chip.ink .chip-close,
   .chip.warning .chip-close { background: rgba(255,255,255,0.2); }
@@ -398,7 +406,8 @@
     box-shadow: var(--shadow-toast); max-width: 380px; }
   .toast-icon { width: 32px; height: 32px; border-radius: 50%;
     flex-shrink: 0; display: flex; align-items: center; justify-content: center;
-    color: var(--card); font-size: 15px; font-weight: 600; }
+    color: var(--card); }
+  .toast-icon svg { width: 16px; height: 16px; display: block; }
   .toast-icon.success { background: var(--accent);
     box-shadow: 0 1px 3px var(--accent-shadow), inset 0 1px 0 rgba(255,255,255,0.12); }
   .toast-icon.warning { background: var(--terra);
@@ -495,7 +504,13 @@
     box-shadow: var(--shadow-inset-light);
     border: 1px solid color-mix(in oklch, var(--accent) 25%, transparent);
     margin: 0 2px; }
-  .citation::before { content: '✦'; font-size: 9px; color: var(--text-3); }
+  .citation .citation-glyph {
+    width: 10px; height: 10px;
+    color: var(--accent);
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .citation .citation-glyph svg { width: 100%; height: 100%; display: block; }
 
   /* ============ TABLE ============ */
   .table { background: var(--card); border: 1px solid var(--border); border-radius: 14px; overflow: hidden;
@@ -651,6 +666,24 @@
     .btn, .switch::after, .switch, .input { transition: none !important; }
     .btn:hover, .btn:active { transform: none !important; }
   }
+
+  /* ===== inline icons (Lucide-style) =====
+     Standard sizes used:
+       --icon-sm: 12  (chip-close, citation glyph)
+       --icon-md: 14  (toast bullet, search input glyph, chip glyph)
+       --icon-lg: 16  (btn-icon glyph, btn inline glyph)
+       --icon-xl: 22  (empty-state glyph)
+     Always render via flex-centered parent so vertical alignment is exact;
+     stroke-currentColor + fill:none lets inheritance pick up theme color. */
+  .icon { flex-shrink: 0; display: inline-block; vertical-align: middle; }
+  .icon svg { display: block; width: 100%; height: 100%; }
+  .icon-sm { width: 12px; height: 12px; }
+  .icon-md { width: 14px; height: 14px; }
+  .icon-lg { width: 16px; height: 16px; }
+  .icon-xl { width: 22px; height: 22px; }
+  /* enforce flex-centering on all icon containers we write to so SVG sits dead-centre */
+  .toast-icon, .empty-icon, .btn-icon, .chip-close, .citation, .search-wrap::before { line-height: 0; }
+  /* search-wrap glyph is now a child SVG, drop the ::before pseudo */
   </style>
 </head>
 <body>
@@ -749,8 +782,10 @@
     <div class="ds-row"><div class="ds-row-label">Ghost · danger · icon</div><div class="flex">
       <button class="btn btn-ghost">Skip →</button>
       <button class="btn btn-danger">Delete</button>
-      <button class="btn-icon">+</button>
-      <button class="btn-icon primary">→</button>
+      <button class="btn-icon" aria-label="Add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+      <button class="btn-icon" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="btn-icon" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2"/><circle cx="12" cy="12" r="3"/></svg></button>
+      <button class="btn-icon primary" aria-label="Continue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
     </div></div>
   </div>
 
@@ -758,13 +793,13 @@
     <div class="head"><h3>Form fields</h3><span class="meta">inset + ink-on toggles</span></div>
     <div class="ds-row"><div class="grid-2">
       <div class="input-group"><label class="input-label" for="ds-email-light">Email</label><input id="ds-email-light" class="input" type="email" placeholder="you@inbox.com" value="ruslan@provedo.app" aria-describedby="ds-email-light-help"><div id="ds-email-light-help" class="input-help">We'll only ping for early access.</div></div>
-      <div class="input-group"><label class="input-label" for="ds-portfolio-light">Portfolio name</label><input id="ds-portfolio-light" class="input error" placeholder="My main portfolio" aria-invalid="true" aria-describedby="ds-portfolio-light-help"><div id="ds-portfolio-light-help" class="input-help error">⚠ Already exists.</div></div>
+      <div class="input-group"><label class="input-label" for="ds-portfolio-light">Portfolio name</label><input id="ds-portfolio-light" class="input error" placeholder="My main portfolio" aria-invalid="true" aria-describedby="ds-portfolio-light-help"><div id="ds-portfolio-light-help" class="input-help error" style="display:inline-flex;align-items:center;gap:6px"><span aria-hidden="true" style="display:inline-flex;width:12px;height:12px;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:100%;height:100%"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></span>Already exists.</div></div>
     </div></div>
-    <div class="ds-row"><div class="search-wrap"><label for="ds-search-light" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Ask about your portfolio</label><input id="ds-search-light" class="search-input" type="search" placeholder="Ask about your portfolio…"></div></div>
+    <div class="ds-row"><div class="search-wrap"><label for="ds-search-light" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Ask about your portfolio</label><span class="search-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span><input id="ds-search-light" class="search-input" type="search" placeholder="Ask about your portfolio…"></div></div>
     <div class="ds-row"><div class="flex" style="gap:32px">
       <div class="flex" style="gap:10px"><div class="switch on" role="switch" aria-checked="true" tabindex="0" aria-label="Push alerts"></div><span style="font-size:13px">Push alerts</span></div>
       <div class="flex" style="gap:10px"><div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="Weekly digest"></div><span style="font-size:13px;color:#7A7A7A">Weekly digest</span></div>
-      <div class="flex" style="gap:10px"><div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0" aria-label="Anonymise">✓</div><span style="font-size:13px">Anonymise</span></div>
+      <div class="flex" style="gap:10px"><div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0" aria-label="Anonymise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px">Anonymise</span></div>
       <div class="flex" style="gap:10px"><div class="checkbox" role="checkbox" aria-checked="false" tabindex="0" aria-label="Telemetry"></div><span style="font-size:13px;color:#7A7A7A">Telemetry</span></div>
       <div class="flex" style="gap:10px"><div class="radio checked" role="radio" aria-checked="true" tabindex="0" aria-label="Lane A"></div><span style="font-size:13px">Lane A</span></div>
       <div class="flex" style="gap:10px"><div class="radio" role="radio" aria-checked="false" tabindex="-1" aria-label="Lane B"></div><span style="font-size:13px;color:#7A7A7A">Lane B</span></div>
@@ -778,7 +813,7 @@
       <div class="card-pf"><div class="card-row"><div><div class="pf-broker">BINANCE</div><div class="pf-amt">$42,180</div><div class="pf-tiny" style="color:var(--ink);font-weight:600">−5.8% week · 7 positions</div></div><div class="pulse warn"></div></div></div>
       <div class="card-insight"><div class="insight-eyebrow">INSIGHT · 02</div><div class="insight-head">A pattern <span class="accent">across</span> accounts.</div><div class="insight-body">NVDA appears in 3 of your accounts. Combined exposure 18% — concentrated more than it looks broker-by-broker.</div></div>
     </div>
-    <div class="ds-row" style="margin-top:18px"><div style="max-width:420px"><div class="card-empty"><div class="empty-icon">⌕</div><h4>No insights yet.</h4><p>Connect your first broker and Provedo will surface patterns within a minute.</p></div></div></div>
+    <div class="ds-row" style="margin-top:18px"><div style="max-width:420px"><div class="card-empty"><div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div><h4>No insights yet.</h4><p>Connect your first broker and Provedo will surface patterns within a minute.</p></div></div></div>
   </div>
 
   <div class="ds-section">
@@ -789,17 +824,17 @@
       <span class="chip warning">Drift +3.2%</span>
       <span class="chip">Crypto</span>
       <span class="chip">7 brokers</span>
-      <span class="chip">YTD<span class="chip-close">×</span></span>
-      <span class="chip ink">NVDA<span class="chip-close">×</span></span>
+      <span class="chip">YTD<button class="chip-close" aria-label="Remove YTD filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
+      <span class="chip ink">NVDA<button class="chip-close" aria-label="Remove NVDA filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
     </div>
   </div>
 
   <div class="ds-section">
     <div class="head"><h3>Toasts</h3><span class="meta">success · warning · info</span></div>
     <div class="grid-3">
-      <div class="toast"><div class="toast-icon success">✓</div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago. 7 positions imported.</div></div></div>
-      <div class="toast"><div class="toast-icon warning">!</div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
-      <div class="toast"><div class="toast-icon info">i</div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern across 3 brokers.</div></div></div>
+      <div class="toast"><div class="toast-icon success" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago. 7 positions imported.</div></div></div>
+      <div class="toast"><div class="toast-icon warning" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
+      <div class="toast"><div class="toast-icon info" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern across 3 brokers.</div></div></div>
     </div>
   </div>
 
@@ -853,7 +888,7 @@
       <div class="bub-user">What changed in my IBKR account since March?</div>
       <div class="bub-ai">
         <div class="label">PROVEDO REPLIES</div>
-        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. The change came mostly from equities — tech overweight on <span class="citation">NVDA · 14 lots</span> and a partial trim on <span class="citation">MSFT · 8 lots</span>. Cash position rose from 4% to 7%.</div>
+        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. The change came mostly from equities — tech overweight on <span class="citation"><span class="citation-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>NVDA · 14 lots</span> and a partial trim on <span class="citation"><span class="citation-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>MSFT · 8 lots</span>. Cash position rose from 4% to 7%.</div>
       </div>
       <div class="bub-user">Is that intentional or drift?</div>
       <div class="bub-ai">
@@ -939,8 +974,9 @@
       <button class="btn btn-secondary">Watch demo</button>
       <button class="btn btn-ghost">Skip →</button>
       <button class="btn btn-danger">Delete</button>
-      <button class="btn-icon">+</button>
-      <button class="btn-icon primary">→</button>
+      <button class="btn-icon" aria-label="Add"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg></button>
+      <button class="btn-icon" aria-label="Search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="btn-icon primary" aria-label="Continue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
     </div>
   </div>
 
@@ -953,7 +989,7 @@
     <div class="ds-row"><div class="flex" style="gap:24px">
       <div class="flex" style="gap:10px"><div class="switch on" role="switch" aria-checked="true" tabindex="0" aria-label="Push alerts"></div><span style="font-size:13px;color:#F4F1EA">Push alerts</span></div>
       <div class="flex" style="gap:10px"><div class="switch" role="switch" aria-checked="false" tabindex="0" aria-label="Weekly digest"></div><span style="font-size:13px;color:#7A7A7A">Weekly digest</span></div>
-      <div class="flex" style="gap:10px"><div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0" aria-label="Anonymise">✓</div><span style="font-size:13px;color:#F4F1EA">Anonymise</span></div>
+      <div class="flex" style="gap:10px"><div class="checkbox checked" role="checkbox" aria-checked="true" tabindex="0" aria-label="Anonymise"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></div><span style="font-size:13px;color:#F4F1EA">Anonymise</span></div>
       <div class="flex" style="gap:10px"><div class="radio checked" role="radio" aria-checked="true" tabindex="0" aria-label="Lane A"></div><span style="font-size:13px;color:#F4F1EA">Lane A</span></div>
     </div></div>
   </div>
@@ -975,16 +1011,16 @@
       <span class="chip warning">Drift +3.2%</span>
       <span class="chip">Crypto</span>
       <span class="chip">7 brokers</span>
-      <span class="chip">YTD<span class="chip-close">×</span></span>
+      <span class="chip">YTD<button class="chip-close" aria-label="Remove YTD filter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button></span>
     </div>
   </div>
 
   <div class="ds-section">
     <div class="head"><h3>Toasts</h3><span class="meta">all variants</span></div>
     <div class="grid-3">
-      <div class="toast"><div class="toast-icon success">✓</div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago.</div></div></div>
-      <div class="toast"><div class="toast-icon warning">!</div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
-      <div class="toast"><div class="toast-icon info">i</div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern.</div></div></div>
+      <div class="toast"><div class="toast-icon success" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="toast-title">Binance synced</div><div class="toast-msg">Last update 2 sec ago.</div></div></div>
+      <div class="toast"><div class="toast-icon warning" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg></div><div><div class="toast-title">Drift detected</div><div class="toast-msg">Your IBKR allocation moved 3.2% from target.</div></div></div>
+      <div class="toast"><div class="toast-icon info" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg></div><div><div class="toast-title">New insight</div><div class="toast-msg">Provedo found a pattern.</div></div></div>
     </div>
   </div>
 
@@ -1036,7 +1072,7 @@
       <div class="bub-user">What changed in my IBKR account since March?</div>
       <div class="bub-ai">
         <div class="label">PROVEDO REPLIES</div>
-        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. Change came mostly from equities — tech overweight on <span class="citation">NVDA · 14 lots</span>. Cash position rose from 4% to 7%.</div>
+        <div class="body">Your IBKR account drifted <span class="accent">3.2%</span> from target since March 1. Change came mostly from equities — tech overweight on <span class="citation"><span class="citation-glyph" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/></svg></span>NVDA · 14 lots</span>. Cash position rose from 4% to 7%.</div>
       </div>
     </div>
   </div>
