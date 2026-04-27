@@ -2,7 +2,7 @@
 
 **Verdict:** TIGHTEN STATIC (fixes already applied this PR; no further blockers)
 **Confidence:** high
-**Branch:** `fix/design-system-fe-review` · PR pending push
+**Branch:** `fix/design-system-fe-review` · PR #74
 **Reviewed file:** `apps/web/public/design-system.html` (1013 LOC pre-fix → 1055 LOC post-fix)
 **Reviewed against:** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` (spec is intentionally idealised; static showcase is the v2 «Geist + ink-CTA» evolution)
 
