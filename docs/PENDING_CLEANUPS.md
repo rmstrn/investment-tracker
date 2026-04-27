@@ -13,6 +13,16 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Scope:** Add explicit ADR entry in `DECISIONS.md` clarifying: «English-first (day-1 launch locked). Wave-2 language order: Spanish → Portuguese (LATAM) → DE → IT → FR → NL (EU). Russian drafted parallel but NOT launch-gating (Russian Federation market out-of-scope per Q7; CIS non-RF diaspora still covered).» Currently implied by combining 3 locks but not explicit anywhere.
 **Owner:** Navigator + content-lead.
 
+### 7. Predecessor-name residue in 2 product docs (SMALL — Rule 4 latent violation)
+**Trigger:** Anytime — flagged by brand-strategist 2026-04-27 during palette research.
+**Scope:** `docs/product/02_POSITIONING.md` and `docs/product/03_NAMING.md` still reference the rejected predecessor name as «locked» (residue from naming workshops before Provedo was locked 2026-04-25). Per HARD RULE «No predecessor references» (PO directive 2026-04-27), these need to be swept to Provedo. Items to address:
+- Replace predecessor name with «Provedo» throughout body content
+- Bump document title/version to reflect Provedo lock (date 2026-04-25)
+- Preserve naming workshop history in archived form (don't delete the rejected-candidates analysis — it's still useful for «do not revisit these names»)
+- Spot-check: `grep -rn` for old name in `docs/product/` to ensure no other files affected
+**PO deferred 2026-04-27:** non-blocking for current sprint (palette + design system); flagged for cleanup pass.
+**Owner:** Right-Hand (drafts replacement) + brand-strategist (verifies positioning copy still composes after sweep).
+
 ### 6. Physical address for commercial email compliance (SMALL — do before first commercial email send)
 **Trigger:** Before first commercial email (marketing / newsletter / trial-expiry / upgrade-offer) fires to any recipient. Transactional emails (welcome / password reset / receipt) may not need it depending on jurisdiction.
 **Scope:**

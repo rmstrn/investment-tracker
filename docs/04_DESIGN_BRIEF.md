@@ -1,5 +1,15 @@
 # 04 — Design Brief v1.3
 
+> **STATUS: SUPERSEDED 2026-04-27** — color, typography, shadow, radius, motion, and components are now owned by `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md`. This document is preserved as historical reference.
+>
+> **Authoritative successor:** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` (warm-cream palette + tactile depth + dark mode + Fraunces display). PO lock 2026-04-27.
+>
+> **Sections still authoritative in this v1.3:** §0 (Anti-pattern list), §5 (Spacing & layout), §9 (Iconography), §11 (Layout patterns), §12 (Accessibility — extended in v1.0 §10), §13–§19 (freemium / AI module / tier screens / notifications / security / account management / KPI map).
+>
+> **Sections superseded by v1.0:** §3 Color, §4 Typography, §6 Elevation & shadows, §7 Border radius, §8 Motion, §10 Components.
+>
+> Memoro → Provedo product-name renaming was finalized 2026-04-25; references below to «Memoro» are historical and read «Provedo» in the v1.0 successor.
+
 Source of truth for the visual, interaction, and content design of Memoro. Consumed by TASK_02 (design system implementation) and TASK_07 (web frontend), with parallel guidance for TASK_08 (iOS).
 
 **Version history**
