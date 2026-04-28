@@ -335,3 +335,60 @@ Tech-lead picks up this ADR and:
 3. Writes QA kickoff with the four Lane-A schema-rejection tests as CI gates.
 
 Architect closes this ADR. No further architectural questions in scope. Any new chart type, schema-breaking change, or composition-API revision opens a new ADR.
+
+---
+
+## Post-verification deltas (2026-04-28 self-review against finance audit §5)
+
+Self-spotcheck against finance-advisor's §5 «Cross-team flags → For architect» raised three deltas. Currency-required (finance flag C-5) is already correct in §9 Calendar contract above (required, no default). The three deltas below patch the data-binding contract.
+
+### Δ1 — BLESS shared sum-to-total invariant (finance flags D-1 / T-5 / SB-1)
+
+Three discriminated-union members carry the same arithmetic invariant: segment / tile / per-bar values must sum to a declared aggregate. Rather than duplicating the `.refine()` across three Zod schemas, architect blesses a shared **`MetaFinancialAggregate`** mixin in `packages/shared-types/src/charts.ts`:
+
+```ts
+const MetaFinancialAggregate = z.object({
+  reportedTotal: z.number().positive(),
+  reportedTotalCurrency: z.string().length(3).optional(),
+  toleranceMode: z.enum(['absolute', 'relative']).default('relative'),
+  toleranceValue: z.number().nonnegative().default(0.005),
+});
+```
+
+Applied to:
+- `DonutChartPayload.meta` extended with `MetaFinancialAggregate`; `.refine(Σ segments.value ∈ tolerance window of reportedTotal)`.
+- `TreemapPayload.meta` extended with `MetaFinancialAggregate` where `reportedTotal === 100` (percentage); `.refine(Σ tiles.weightPct ∈ tolerance window)`.
+- `StackedBarPayload.data[].meta` per-row optional aggregate; `.refine(Σ row series values ∈ tolerance window)` when present.
+
+Net effect: one mixin definition, three identical refinement helpers, one CI test pattern reused. This is the right architectural placement (shared invariant → shared schema fragment), confirmed.
+
+### Δ2 — BLESS waterfall conservation as block-merge CI severity (finance flag W-1)
+
+The `startValue + Σ non-anchor deltas === endValue` rule is the load-bearing numeric-integrity invariant of the entire chart catalog. Architect blesses this as **block-merge CI severity, on par with Lane-A structural-exclusion tests** mandated in CHARTS_SPEC §9.7.
+
+Implementation guidance for tech-lead's QA kickoff:
+- Test fixture: canonical waterfall payload + intentionally-broken variants (start+Σ off by $5, off by $5000, signs reversed on fees, missing start anchor, missing end anchor).
+- Tolerance: $1.00 absolute for FX rounding (per finance W-1).
+- Failure mode: schema parse rejects with explicit error code `WATERFALL_CONSERVATION_VIOLATION` distinct from generic Zod errors so monitoring can alert on this specifically in production.
+- Severity classification: same gate as Bar `targetWeight` rejection — non-negotiable, blocks merge.
+
+### Δ3 — REMOVE `ScatterChartPayload` from MVP `ChartPayload` discriminated union (finance flag S-1)
+
+Architect concurs with finance-advisor's recommendation: option (a) cleaner contract over option (b) feature-flag dispatcher gate.
+
+Rationale: feature-flag in dispatcher is a runtime guard; if AI agent emits `kind: scatter` it parses successfully then renders an error state. Cleaner contract: remove from union → AI-agent emission of scatter fails at Zod parse time at the api-client boundary, never reaches the renderer. Same defense-in-depth principle as the `.strict()` policy applied to candlestick exclusions.
+
+Implementation:
+- `packages/shared-types/src/charts.ts`: `ChartPayload` discriminated union for MVP excludes `ScatterChartPayload`. The `ScatterChartPayload` definition itself remains in the file (for V2) but is NOT exported as a union member.
+- Schema version `1.0` ships without scatter. Schema bump to `1.1` (or `1.2`) when V2 PO greenlight + legal-advisor sign-off lands re-adds scatter to the union.
+- Renderer: `<ScatterChart />` component is NOT included in the 11 exports for MVP; the chart-component count for MVP becomes **10 typed components**, not 11.
+
+Note on ADR consistency: §«Decision summary» above states «11 components»; §«Component composition strategy» rejected-alternatives discusses 11. After this delta, the MVP count is 10. The 11th (Scatter) remains designed and schema-defined but is V2-gated. Tech-lead's FE kickoff cites 10 components for MVP delivery; the «11 typed components» language refers to the long-term catalog post-V2.
+
+### Net of post-verification deltas
+
+- One additive schema construct (`MetaFinancialAggregate` mixin).
+- One block-merge CI severity classification (waterfall conservation).
+- One MVP-scope reduction (Scatter excluded from MVP union; 11 → 10 components for MVP).
+- All three changes are additive or restrictive — none break the data-binding contract above.
+
