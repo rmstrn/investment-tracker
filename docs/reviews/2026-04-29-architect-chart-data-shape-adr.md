@@ -392,3 +392,47 @@ Note on ADR consistency: §«Decision summary» above states «11 components»; 
 - One MVP-scope reduction (Scatter excluded from MVP union; 11 → 10 components for MVP).
 - All three changes are additive or restrictive — none break the data-binding contract above.
 
+
+---
+
+## Brainstorm-pass addendum (2026-04-28 fresh-eyes review)
+
+Architect re-read this ADR with brainstorming framing — «if I started fresh today, would I make the same choices?». Five decisions challenged: composition pattern, schemaVersion timing, ChartContext for locale/units, 11-typed vs generic-with-discriminant, AI-agent integration boundary. Four held with stronger rejection reasoning recorded inline above. One genuine refinement surfaced — see Δ4 below.
+
+### Δ4 — BLESS dual-side payload validation as explicit architectural boundary
+
+**Finding.** The ADR §«Risks → 2» implicitly assumes dual-side validation but never names it as an architectural pattern. Brainstorm review surfaced this as the strongest fresh-eyes question: «is FE-only Zod parse the right trust boundary, or should validation also live on the Python AI-service side before payload crosses the wire?»
+
+**Answer: BOTH, with explicit role separation.**
+
+The right architecture is dual-side validation with one canonical source-of-truth and clear role separation:
+
+| Layer | Tool | Responsibility | Failure mode |
+|-------|------|----------------|--------------|
+| `apps/ai/` (Python) | Pydantic v2 | **Structural pre-emit validation** — Anthropic tool-use response → typed Pydantic model → wire JSON. Catches malformed agent emissions BEFORE network. | Agent retry / prompt re-roll. Never reaches FE. |
+| `apps/web/` api-client | Zod `.strict()` | **Structural + business-invariant validation at trust boundary** — Waterfall conservation, sum-to-total tolerance windows, forbidden overlay whitelist, restricted event types. Catches malformed network input AND backend-bug payloads. | UI error state + `console.error` + (V2) Sentry alert. |
+
+**Source-of-truth policy.** The Zod schema in `packages/shared-types/src/charts.ts` is the canonical definition. Pydantic models in `apps/ai/` are GENERATED from the OpenAPI schema (which is itself generated from Zod via `zod-to-openapi` already in stack per blueprint §AI-agent-integration). One spec, two runtime validators.
+
+**Why this matters architecturally.**
+1. **Defense-in-depth.** A bug in Pydantic generation, a hand-edited model, or a mid-flight Anthropic response mutation cannot bypass the Zod gate. Conversely, Zod-only means a malformed agent emission costs a network roundtrip + FE error state per failure; Pydantic catches it at the cheapest possible point.
+2. **Lane-A regulatory enforcement layered.** Structural exclusions (no `targetWeight`, no `moving_average`) live in BOTH validators; business invariants (waterfall conservation, sum-to-total) live ONLY in Zod because they require cross-field arithmetic that's clearer in a single language. This separation is intentional — Pydantic guards shape, Zod guards shape + math.
+3. **Failure economics.** Pydantic failure = agent prompt-engineering issue, debuggable in `apps/ai/` logs. Zod failure = backend-FE drift, debuggable at api-client boundary. Different error provenance → different remediation paths.
+
+**Implementation handoff impact.**
+- Tech-lead's backend kickoff already cites OpenAPI codegen of `ChartEnvelope` types. Add: «AND Pydantic models generated from same OpenAPI for `apps/ai/` consumption.» This was implicit; making it explicit closes the architectural gap.
+- Tech-lead's QA kickoff Lane-A schema-rejection tests run AT BOTH layers — the four canonical rejections (`targetWeight` on bar, `moving_average` overlay on line, `earnings` event on calendar, extra field on candlestick) get one Pydantic test in `apps/ai/tests/` and one Zod test in `packages/shared-types/`. Identical fixtures, two language runtimes.
+- The waterfall conservation test (Δ2) and sum-to-total invariants (Δ1) live ONLY in Zod — Pydantic does not duplicate cross-field math. Documented for QA kickoff.
+
+**Rejected alternatives this delta closes:**
+- **FE-only validation.** Cheaper (one schema runtime) but pushes failure cost to network roundtrip and creates blind spot if FE schema lags backend. Rejected.
+- **Python-only validation.** Would remove Zod from FE bundle (~13kB gz savings) but eliminates trust boundary at the actual untrusted edge (network input). Rejected — the trust boundary IS the api-client; Pydantic is a cheaper-failure optimization, not a replacement.
+- **Single shared schema language (e.g. JSON Schema everywhere).** Rejected — Zod's TypeScript-first ergonomics + `z.infer<>` type generation is load-bearing for FE DX; Pydantic's Python-first ergonomics is load-bearing for AI agent code. Forcing one language wins on duplication, loses on both DX surfaces.
+
+### Net of brainstorm-pass addendum
+
+- One architectural-pattern blessing (dual-side validation made explicit).
+- Four prior decisions re-confirmed with stronger rejection reasoning for compound-API, ChartContext, generic-with-discriminant, and FE-only validation alternatives.
+- No changes to the data-binding contract §29-211. No changes to Δ1-Δ3.
+- Net schema impact: zero (canonical source already Zod; Pydantic generated, not hand-written).
+
