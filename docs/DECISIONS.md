@@ -798,3 +798,28 @@ PO confirms Free tier stays free forever. Content-lead built landing + paywall c
 - Free cap: measure actual Free burn at 1K / 10K / 100K users; adjust cap if unit economics break.
 - Coach UX: A/B test contextual vs dedicated route post-alpha if engagement weak.
 - Free-forever: anchor commitment — do NOT revisit under normal product-market pressure; only reconsider if company existential risk.
+
+## 2026-04-29 — Theme mechanism: `data-theme` attribute on `<html>` (chart subsystem + production app)
+
+**Decision.** Production app and chart subsystem use `data-theme="light"` / `data-theme="dark"` attribute on `<html>` for theme switching. The `.light` / `.dark` class selectors in the static showcase (`apps/web/public/design-system.html`) and the legacy `.dark` references in `apps/web/src/app/globals.css` are tolerated short-term but are NOT the production mechanism — they remain for the frozen showcase only.
+
+**Why.**
+
+1. **Spec alignment.** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §11.4 (locked v1.1) explicitly prescribes `data-theme` on `<html>` as production mechanism («mechanism: data-attribute on `<html>` toggled by user preference, falls back to `prefers-color-scheme`»). Migration kickoff `docs/engineering/kickoffs/2026-04-27-design-system-migration.md` §4.3 mandates the same. Chart blueprint `docs/reviews/2026-04-27-chart-implementation-blueprint.md` flagged this as Open Question 3 — picking `data-theme` resolves it without contradicting either spec.
+2. **Zero token-rebuild cost.** `packages/design-tokens/build.js:162` already emits dual selectors: `.dark, [data-theme="dark"] { … }`. Both work today out of the box. No tokens regeneration needed; charts using `var(--chart-series-N)` flip live regardless of which selector wins.
+3. **Industry-standard pattern.** Mercury / Linear / Vercel all use `data-theme` on `<html>`. The `next-themes` package (~2kb, MIT) is the de-facto reference implementation and composes cleanly with App Router SSR.
+4. **HTML semantics.** A theme is metadata about the document, not a class on it. `data-theme` attribute reads correctly to assistive tech that exposes `aria-*` and `data-*` attributes and aligns with `<meta name="color-scheme">` elsewhere in `<head>`.
+5. **Per-subtree theming optionality (future).** If a future surface needs a forced light theme inside a dark page (e.g. an embed preview), `[data-theme="light"]` wins under specificity at any subtree level without class-collision risk against Tailwind's `dark:` variant utilities.
+
+**Implications.**
+
+- `apps/web/src/app/layout.tsx`: add SSR no-flicker inline `<script>` in `<head>` that resolves `localStorage.theme → prefers-color-scheme → 'light'` and writes `data-theme` on `<html>` BEFORE React hydrates. `next-themes` does this out of the box; if `next-themes` conflicts with `providers.tsx` (Clerk + TanStack Query), fall back to a hand-rolled 12-line script.
+- `packages/design-tokens/build.js`: keep dual emit `.dark, [data-theme="dark"]` for one transition cycle. Once production app is on `data-theme` and showcase is fully retired (per blueprint Phase 8 redirect), drop the `.dark` half via a follow-on TD.
+- `packages/ui/src/charts/tokens.ts`: chart series tokens are referenced as `var(--chart-series-N)` strings — these are theme-agnostic by definition. No chart code needs to know which selector triggers the theme. Live theme switching via `var()` resolution works automatically per chart blueprint architectural decision 3.
+- Static showcase (`apps/web/public/design-system.html`): stays on class-toggle; flagged for retirement per migration kickoff §4.3. No tactical change in this decision.
+- Tailwind v4 `@custom-variant dark` (currently emitted as `&:where(.dark, .dark *)` per `build.js:322`): this needs widening to also recognise `[data-theme="dark"]`. Tracked as P2 follow-on for the design-system migration slice (already in scope of SLICE-DSM-V1).
+
+**Owner.** Right-Hand (this ADR) + frontend-engineer (implementation in SLICE-DSM-V1 + chart slices SLICE-CHARTS-FE/BACKEND/QA-V1).
+**Revisit.** Only if a hydration-mismatch warning surfaces that cannot be resolved by the standard `next-themes` pattern; or if assistive-tech testing surfaces an unexpected interaction between `data-theme` and `aria-` semantics. Neither is anticipated.
+
+**Cross-references.** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §11.4; `docs/engineering/kickoffs/2026-04-27-design-system-migration.md` §4.3; `docs/reviews/2026-04-27-chart-implementation-blueprint.md` Open Question 3 (resolved); `docs/engineering/kickoffs/2026-04-29-charts-fe.md`; `docs/engineering/kickoffs/2026-04-29-charts-backend.md`; `docs/engineering/kickoffs/2026-04-29-charts-qa.md`.
