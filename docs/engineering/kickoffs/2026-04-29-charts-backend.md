@@ -1,5 +1,11 @@
 # Kickoff — Charts Backend v1 (Zod schemas + Lane-A structural guardrails + parser)
 
+> **Scope alignment 2026-04-29:** post-verification deltas from architect ADR (commit `08c31fd`) apply:
+> - **Δ1** — bless shared `MetaFinancialAggregate` mixin in `packages/shared-types/src/charts.ts` for Donut / Treemap / StackedBar sum-to-total invariants. One mixin, three reuses.
+> - **Δ2** — waterfall conservation invariant elevated to **block-merge CI severity** with explicit error code `WATERFALL_CONSERVATION_VIOLATION` (distinct from generic ZodError). Tolerance $1.00 absolute for FX rounding.
+> - **Δ3** — `ScatterChartPayload` schema definition stays in the file (for V2) but is **NOT exported as a member of the MVP `ChartPayload` discriminated union**. Schema version `1.0` ships without scatter; bump to `1.1` (or later) when V2 PO greenlight + legal-advisor sign-off lands.
+> See architect ADR «Post-verification deltas» section.
+
 **Date:** 2026-04-29
 **Author:** tech-lead (Right-Hand)
 **Owner:** backend-engineer
@@ -8,7 +14,7 @@
 **Branch:** `feat/charts-backend-v1`
 **Base SHA:** verify on dispatch — current `main` tip (HEAD of `chore` integration after architect ADR lands; check `git log --oneline -5 origin/main` first)
 **Worktree:** main repo working tree (no separate worktree needed)
-**Scope sizing:** small-medium surface — single PR with Zod schemas in `packages/shared-types/` + `packages/api-client/` integration + tests. Quality gate: 11 schemas exported with TypeScript types, 3 risk flags from CHARTS_SPEC v1.1 §5 enforced as Zod refinements (not just runtime checks), parser rejects every Lane-A-violating payload identified in finance audit.
+**Scope sizing:** small-medium surface — single PR with Zod schemas in `packages/shared-types/` + `packages/api-client/` integration + tests. Quality gate: 11 schema definitions present (10 in MVP `ChartPayload` union, ScatterChartPayload defined-but-not-unioned per Δ3), `MetaFinancialAggregate` mixin shared across Donut/Treemap/StackedBar (Δ1), 3 risk flags from CHARTS_SPEC v1.1 §5 enforced as Zod refinements, waterfall conservation invariant produces explicit `WATERFALL_CONSERVATION_VIOLATION` error code at block-merge severity (Δ2), parser rejects every Lane-A-violating payload identified in finance audit.
 **PR target:** `main`; single PR
 
 ---
@@ -76,13 +82,24 @@ If item 1 is missing when you pick this up — STOP and surface to Right-Hand. T
 
 - **`packages/shared-types/src/charts.ts`** — new file containing:
   - 7 primitive Zod schemas: `ValueFormat`, `XAxisFormat`, `Currency`, `ChartMeta`, `TimePoint`, `CategoryPoint`, `MultiSeriesPoint`, `ScatterPoint`, `CandlePoint`, `Series`.
-  - 11 payload schemas (one per chart kind): `LineChartPayload`, `AreaChartPayload`, `BarChartPayload`, `DonutChartPayload`, `SparklinePayload`, `CalendarPayload`, `TreemapPayload`, `StackedBarChartPayload`, `ScatterChartPayload`, `WaterfallPayload`, `CandlestickChartPayload`.
-  - 1 envelope schema: `ChartEnvelope` (discriminated on `payload.kind`, plus optional `schemaVersion: z.string().optional().default('1.0')` per blueprint AI-agent integration boundary).
-  - All 11 inferred TypeScript types via `z.infer<...>`.
+  - **`MetaFinancialAggregate` mixin** (architect Δ1) — shared schema fragment for sum-to-total invariants:
+    ```ts
+    const MetaFinancialAggregate = z.object({
+      reportedTotal: z.number().positive(),
+      reportedTotalCurrency: z.string().length(3).optional(),
+      toleranceMode: z.enum(['absolute', 'relative']).default('relative'),
+      toleranceValue: z.number().nonnegative().default(0.005),
+    });
+    ```
+    Applied to `DonutChartPayload.meta` (Σ segments.value), `TreemapPayload.meta` (Σ tiles.weightPct, reportedTotal=100), `StackedBarPayload.data[].meta` (per-row optional Σ row series values). One mixin, three identical `.refine(Σ ∈ tolerance)` helpers.
+  - 11 payload schemas (one per chart kind): `LineChartPayload`, `AreaChartPayload`, `BarChartPayload`, `DonutChartPayload`, `SparklinePayload`, `CalendarPayload`, `TreemapPayload`, `StackedBarChartPayload`, `ScatterChartPayload`, `WaterfallPayload`, `CandlestickChartPayload`. **Note:** `ScatterChartPayload` is defined in this file but is NOT exported from the MVP `ChartPayload` union (architect Δ3). It is V2-gated.
+  - 1 envelope schema: `ChartEnvelope` (discriminated on `payload.kind`, plus optional `schemaVersion: z.string().optional().default('1.0')` per blueprint AI-agent integration boundary). MVP discriminated union members: 10 (Scatter excluded).
+  - All 11 inferred TypeScript types via `z.infer<...>` (Scatter type still inferred + exported for V2 import-readiness, but not part of MVP union).
   - The 3 Lane-A structural guardrails per CHARTS_SPEC §5.2 + finance audit:
     - **Risk Flag 1 (Line + Candlestick — forbidden overlays):** `LineOverlay` is a discriminated union containing only `TradeMarker`. Forbidden types (`support_line`, `resistance_line`, `trend_line`, `channel_band`, `moving_average`, `ema`, `sma`, `bollinger`, `rsi`, `macd`, `atr`, `stochastic`, `adx`, `ichimoku`, `fibonacci`, `pivot_point`, `buy_marker`, `sell_marker`, `signal_annotation`, `recommendation_annotation`, `target_price`, `price_target`, `projected_price`) have no branches. A secondary `.refine()` checks `FORBIDDEN_OVERLAY_TYPES` for future-proofing. `CandlestickChartPayload` schema STRUCTURALLY EXCLUDES every indicator / signal field via `.strict()` mode — extra keys cause `ZodError`.
     - **Risk Flag 2 (Bar + StackedBar — zero-only reference line):** `BarReferenceLine.axis` is `z.literal('zero')`. No `'target'` / `'benchmark'` branches. `BarChartPayload` and `StackedBarChartPayload` use `.strict()` so any unknown key including `targetWeight` causes `ZodError`. The schemas have NO `targetWeight: number` field at all — not optional, not commented out — absent.
     - **Risk Flag 3 (Calendar — V2 eventType gate):** `CalendarEventType` is `z.enum(['dividend', 'corp_action'])`. `'earnings'` and `'news'` are intentionally absent. Any payload with `eventType: 'earnings'` fails validation. Adding these requires a schema version bump and PO sign-off under R1 (paid-data feed).
+  - **Waterfall conservation invariant (architect Δ2 — block-merge CI severity):** `WaterfallPayload.refine(startValue + Σ non-anchor deltas === endValue, tolerance: $1.00 absolute)`. Failure surfaces as a Zod issue with explicit error code `WATERFALL_CONSERVATION_VIOLATION` (use `z.ZodIssueCode.custom` with `params: { code: 'WATERFALL_CONSERVATION_VIOLATION' }` so monitoring can alert on this specifically distinct from generic ZodError). Severity = same as `targetWeight` rejection: non-negotiable, blocks merge. QA kickoff owns the canonical + intentionally-broken fixture suite.
   - Export of `FORBIDDEN_OVERLAY_TYPES` as a `readonly` tuple so test code can iterate it.
 - **`packages/shared-types/package.json`**:
   - Add `./charts` subpath export entry (mirror `./openapi` shape — both `types` and `default` fields per `docs/DECISIONS.md` 2026-04-19 «Design tokens subpath exports require types»).
@@ -101,7 +118,10 @@ If item 1 is missing when you pick this up — STOP and surface to Right-Hand. T
   - Risk Flag 1 (Candlestick): `CandlestickChartPayload` with extra `movingAverage: [...]` field → `ZodError` (because `.strict()` rejects unknown keys).
   - Risk Flag 2: `BarChartPayload` with `targetWeight: 0.25` → `ZodError`. `BarReferenceLine` with `axis: 'target'` → `ZodError`. Same for `StackedBarChartPayload`.
   - Risk Flag 3: `CalendarPayload` with `eventType: 'earnings'` → `ZodError`. Same for `'news'`.
-  - `parseChartEnvelope` happy-path: pass any §5.3 example, assert `.ok === true && .data.kind === expected`.
+  - **Δ2 — Waterfall conservation:** canonical `WaterfallPayload` parses; intentionally-broken fixture (start+Σ off by $5; off by $5000; signs reversed on fees; missing start anchor; missing end anchor) produces issue with `params.code === 'WATERFALL_CONSERVATION_VIOLATION'`. Tolerance boundary: $1.00 absolute passes, $1.01 fails.
+  - **Δ1 — Sum-to-total mixin:** valid Donut payload with `meta.reportedTotal=1000` and segments summing to 1000±tolerance parses; broken Donut summing to 950 fails. Same pattern for Treemap (reportedTotal=100, tiles.weightPct sum) and StackedBar per-row aggregate.
+  - **Δ3 — MVP union exclusion:** `ChartPayload` discriminated union does NOT include `ScatterChartPayload` as a member. `parseChartEnvelope({ kind: 'scatter', ... })` returns `{ ok: false, ... }` because the discriminator does not match.
+  - `parseChartEnvelope` happy-path: pass any §5.3 example (excluding scatter), assert `.ok === true && .data.kind === expected`.
   - `parseChartEnvelope` failure-path: pass a malformed object, assert `.ok === false`, `.error instanceof ZodError`, `.raw === input`.
 - **Documentation**:
   - JSDoc on every exported schema explaining the Lane-A guardrails it carries (so future contributors know NOT to add `targetWeight` / `support_line` / etc. as «improvements»).
@@ -131,11 +151,12 @@ If item 1 is missing when you pick this up — STOP and surface to Right-Hand. T
 3. Create `packages/shared-types/src/charts.ts` — implement schemas in this order:
    - Header JSDoc with cross-references.
    - Primitives: `ValueFormat` / `XAxisFormat` / `Currency` / `ChartMeta` / `TimePoint` / `CategoryPoint` / `MultiSeriesPoint` / `ScatterPoint` / `CandlePoint` / `Series`.
+   - **`MetaFinancialAggregate` mixin (Δ1)** — define before payload schemas; reuse across Donut / Treemap / StackedBar `.meta` extensions.
    - Lane-A constraint constants: `FORBIDDEN_OVERLAY_TYPES` (readonly tuple) + JSDoc explaining each forbidden type.
    - `LineOverlay` discriminated union (only `TradeMarker` branch + `.refine()` future-proofing).
-   - 11 payload schemas with `.strict()` per blueprint Lane-A enforcement summary.
-   - `ChartEnvelope` (discriminated on `payload.kind`, optional `schemaVersion`).
-   - `z.infer` exports for all 11 payload types + envelope type.
+   - 11 payload schemas with `.strict()` per blueprint Lane-A enforcement summary. Apply `MetaFinancialAggregate.refine()` on Donut / Treemap / StackedBar. Apply waterfall conservation `.refine()` on `WaterfallPayload` with `WATERFALL_CONSERVATION_VIOLATION` error code (Δ2).
+   - `ChartEnvelope` (discriminated on `payload.kind`, optional `schemaVersion`). **MVP union members: 10 — exclude `ScatterChartPayload` (Δ3).**
+   - `z.infer` exports for all 11 payload types + envelope type. Scatter type still exported for V2 readiness, but not in `ChartPayload` union.
 
 ### Phase 2 — Wire exports
 
@@ -180,7 +201,10 @@ If item 1 is missing when you pick this up — STOP and surface to Right-Hand. T
 
 ## 7. Acceptance criteria (testable; every box must be checked or explicitly deferred + rationale)
 
-- [ ] `packages/shared-types/src/charts.ts` exists with all 11 payload schemas + `ChartEnvelope` + 11 inferred types + `FORBIDDEN_OVERLAY_TYPES` constant + `LineOverlay` discriminated union.
+- [ ] `packages/shared-types/src/charts.ts` exists with all 11 payload schema definitions + `MetaFinancialAggregate` mixin (Δ1) + `ChartEnvelope` discriminated on 10 MVP union members (Scatter excluded per Δ3, definition retained for V2) + 11 inferred types + `FORBIDDEN_OVERLAY_TYPES` constant + `LineOverlay` discriminated union.
+- [ ] `MetaFinancialAggregate` mixin applied to Donut + Treemap + StackedBar with sum-to-total `.refine()` per Δ1.
+- [ ] Waterfall conservation `.refine()` produces issue with `params.code === 'WATERFALL_CONSERVATION_VIOLATION'`; tolerance $1.00 absolute (Δ2). Severity: block-merge.
+- [ ] `ChartPayload` MVP union has 10 members; `ScatterChartPayload` is defined-but-not-unioned (Δ3). `parseChartEnvelope({ kind: 'scatter', ... })` fails parse.
 - [ ] `packages/shared-types/package.json` exports `./charts` subpath with both `types` and `default` fields per ADR-2026-04-19.
 - [ ] `packages/shared-types/src/index.ts` re-exports from `./charts.js`.
 - [ ] Zod added to `packages/shared-types/package.json` `dependencies` (NOT `devDependencies`); pinned per architect ADR or `^3.23.0` default.
@@ -253,7 +277,14 @@ pnpm --filter @investment-tracker/web build
 ```
 feat(shared-types): chart payload schemas with Lane-A structural guardrails
 
-- packages/shared-types/src/charts.ts: 11 Zod payload schemas + ChartEnvelope
+- packages/shared-types/src/charts.ts: 11 Zod payload schema definitions;
+  ChartEnvelope MVP union = 10 members (Scatter V2-deferred per architect Δ3)
+- MetaFinancialAggregate mixin (architect Δ1) shared across Donut / Treemap /
+  StackedBar sum-to-total invariants
+- Waterfall conservation invariant (architect Δ2): startValue + Σ deltas ===
+  endValue with tolerance $1.00; explicit error code
+  WATERFALL_CONSERVATION_VIOLATION distinct from generic ZodError;
+  block-merge severity per architect ADR
 - 3 Lane-A Risk Flags baked structurally (CHARTS_SPEC §5.2):
   - Risk Flag 1: LineOverlay discriminated union excludes 23 forbidden TA
     indicator/signal types; CandlestickChartPayload .strict() rejects all
@@ -266,8 +297,8 @@ feat(shared-types): chart payload schemas with Lane-A structural guardrails
 - packages/shared-types/src/index.ts: re-export from ./charts.js
 - packages/api-client/src/index.ts: parseChartEnvelope(raw) — sole Zod
   parsing entry point per blueprint AI-agent integration boundary
-- charts.test.ts: 11 positive parses + Risk Flag rejection suites + parser
-  happy/failure path
+- charts.test.ts: 10 positive parses + Δ1/Δ2/Δ3 + Risk Flag rejection
+  suites + parser happy/failure path
 
 Implements code-architect blueprint γ Phase 0 (Schema, no React, no Recharts).
 Per docs/engineering/kickoffs/2026-04-29-charts-backend.md.
