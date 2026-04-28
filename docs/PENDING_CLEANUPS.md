@@ -32,7 +32,7 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 - PO deferred 2026-04-23: no commercial emails being sent yet, so not blocking
 **Owner:** PO (entity + address decision) → content-lead (template update) → legal-advisor (compliance verification).
 
-### 7. plankton-code-quality auto-format hook (SMALL — defer until reviewer noise becomes painful)
+### 10. plankton-code-quality auto-format hook (SMALL — defer until reviewer noise becomes painful)
 **Trigger:** When tech-lead notices ≥3 PRs in a row with style-only review comments (formatter drift), or when biome/eslint/gofmt drift surfaces in code-reviewer reports.
 **Scope:**
 - Evaluate `everything-claude-code:plankton-code-quality` skill — write-time auto-format / lint enforcement
@@ -41,7 +41,7 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Why deferred:** Low ROI right now (CI catches drift, no signal that team is feeling friction). Cheap to add when justified.
 **Owner:** tech-lead.
 
-### 8. ui-ux-pro-max search.py path version-pin TD (SMALL — open as TD when next ui-ux-pro-max version bumps)
+### 11. ui-ux-pro-max search.py path version-pin TD (SMALL — open as TD when next ui-ux-pro-max version bumps)
 **Trigger:** First time `ui-ux-pro-max-skill` plugin updates past v2.5.0 (causing the hard-coded `~/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/...` path in product-designer.md and frontend-engineer.md to silently break).
 **Scope:**
 - Replace hard-coded version path with either (a) wildcard `2.*.0` Bash glob, (b) helper script at `scripts/uipm-search.sh` that resolves latest cached version, or (c) env-var indirection
@@ -49,7 +49,7 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Why deferred:** No signal of breakage yet (plugin stable since 2026-04-24). Trivial fix when triggered.
 **Owner:** product-designer + frontend-engineer (single shared edit), tech-lead reviews.
 
-### 9. finance-skills + c-level-skills upstream structure mismatch (LOW — track for plugin maintainer)
+### 12. finance-skills + c-level-skills upstream structure mismatch (LOW — track for plugin maintainer)
 **Trigger:** If `claude-code-skills` plugin maintainer ships a structural fix (top-level `skills/` subdirectory) — then we can remove the user-level copies and re-enable plugin loading.
 **Scope:**
 - Currently 9 skills (3 finance + 6 c-level) live as direct copies in `~/.claude/skills/` — see `docs/ADR-2026-04-29-plugin-architecture.md`

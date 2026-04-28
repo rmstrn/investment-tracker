@@ -103,7 +103,7 @@ Plugin agent existed since enablement but no workflow trigger. Provedo handles C
 - `ECC_HOOK_PROFILE=minimal` — current hook noise level appropriate
 - `quantitative-trading` plugin — wrong domain (Lane A ≠ trading) but enabled cheaply; no skills wired into agents
 - 27 ECC MCP templates — opt-in, not installed
-- `everything-claude-code:plankton-code-quality` write-time-format hook — deferred (PENDING_CLEANUPS #7), low ROI vs. current CI coverage
+- `everything-claude-code:plankton-code-quality` write-time-format hook — deferred (PENDING_CLEANUPS #10), low ROI vs. current CI coverage
 
 ## Layer rule (going forward)
 
@@ -123,8 +123,8 @@ When evaluating any future plugin add or remove:
 - devops gains 2 narrowly-useful skills for prod cutover window
 
 **Negative / risks:**
-- 9 user-level skill copies — duplicated content; if upstream plugin maintainer fixes the structure issue, we have stale copies until manual re-deploy (tracked: PENDING_CLEANUPS #9)
-- Hard-coded ui-ux-pro-max version path in 2 agent files — silently breaks on plugin version bump (tracked: PENDING_CLEANUPS #8)
+- 9 user-level skill copies — duplicated content; if upstream plugin maintainer fixes the structure issue, we have stale copies until manual re-deploy (tracked: PENDING_CLEANUPS #12)
+- Hard-coded ui-ux-pro-max version path in 2 agent files — silently breaks on plugin version bump (tracked: PENDING_CLEANUPS #11)
 - right-hand.md is now slightly longer; on-demand block adds context cost per session
 
 **Cost incurred:** $0 (Rule 1 respected; all moves use already-paid skills + project-local files).
@@ -134,7 +134,7 @@ When evaluating any future plugin add or remove:
 ### Tracked in git (will commit)
 
 ```
-docs/PENDING_CLEANUPS.md                   (+ items #7, #8, #9)
+docs/PENDING_CLEANUPS.md                   (+ items #10, #11, #12)
 docs/ADR-2026-04-29-plugin-architecture.md (this file — new)
 ```
 
@@ -169,5 +169,5 @@ The project's `.gitignore` excludes `.claude/` entirely (per-developer permissio
 
 - New plugin pack added to `enabledPlugins` → run a 5-min skill-list diff to verify activation (catch the F1 failure mode early).
 - Quarterly: re-run `everything-claude-code:workspace-surface-audit` to keep plugin coverage honest.
-- Plugin version bump on any pack with explicit Bash-invocation pattern in agent files → PENDING_CLEANUPS #8 trigger.
-- If `claude-code-skills` plugin maintainer fixes structure → PENDING_CLEANUPS #9 trigger.
+- Plugin version bump on any pack with explicit Bash-invocation pattern in agent files → PENDING_CLEANUPS #11 trigger.
+- If `claude-code-skills` plugin maintainer fixes structure → PENDING_CLEANUPS #12 trigger.
