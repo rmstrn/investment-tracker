@@ -367,3 +367,66 @@ Net: 3 CRITICAL · 8 HIGH · 18 MEDIUM · 12 LOW · 41 findings total.
 ---
 
 **End of audit. 41 findings across 11 chart types. Net status: 2 PASS / 8 WARN / 1 RED. Top-3 critical: Waterfall conservation (W-1), Treemap staleness (T-1), Scatter MVP gate (S-1).**
+
+---
+
+## 9. Brainstorm-pass addendum (2026-04-29 fresh-eyes review against architect Δ1-Δ4)
+
+Re-read this audit with brainstorming framing after architect's ADR deltas landed. Three deltas to my own findings record below; no other severity calls revised.
+
+### Δa — S-2 (HIGH) re-tagged as V2-deferred-gate
+
+**Original.** S-2 [HIGH]: scatter `referenceLines.label` permits prescriptive vocabulary («aspirational», «aggressive», «efficient»); proposed Zod `.refine()` rejecting the blacklist.
+
+**Revision.** Architect's Δ3 removes `ScatterChartPayload` from MVP `ChartPayload` discriminated union. The schema definition remains in `packages/shared-types/src/charts.ts` for V2 but is unreachable from MVP because Zod parse fails before reaching the renderer. S-2 is therefore **mooted for MVP** and **MUST be re-activated as a precondition for V2 scatter re-introduction** alongside the legal-advisor sign-off gate (catalog §H5 + my §5 «For legal-advisor»).
+
+**Net.** S-2 remains a HIGH-severity finding in the catalog of work, but its enforcement timeline shifts from MVP block-CI to V2 schema-bump precondition. Tech-lead's QA kickoff does NOT need to land this test for MVP; legal-advisor's V2 sign-off checklist DOES need this as a gate item.
+
+### Δb — W-1 (CRITICAL) re-tagged as CRITICAL-mitigated
+
+**Original.** W-1 [CRITICAL]: waterfall `startValue + Σ non-anchor deltas === endValue` invariant unenforced; schema published example off by $4,000.
+
+**Revision.** Architect's Δ2 blesses this rule as **block-merge CI severity** with distinct error code `WATERFALL_CONSERVATION_VIOLATION`, $1.00 absolute tolerance for FX rounding, and named test fixtures including intentionally-broken variants. The structural enforcement gap is now closed at the architect level. W-1 retains CRITICAL classification because severity describes WHAT-IF-IT-LANDED-IN-PROD, not current mitigation status; tagged **CRITICAL-mitigated** for tracking.
+
+**Outstanding from finance side.** PD must still correct the spec example payload at `CHARTS_SPEC.md:1761–1771` (the published math is off by $4,000 — see §5 «For product-designer»). Per §7 Open Q3 default, this is PD's repair as part of v1.2 spec polish, not a finance patch.
+
+### Δc — NEW finding T-8 [MEDIUM]: treemap `dailyChangePct` cross-currency unit ambiguity
+
+**Discovered on brainstorm pass; missed in v1 audit.**
+
+**Finding.** Treemap tiles for multi-currency portfolios face a unit ambiguity in the `dailyChangePct` field. For a USD-base user holding SAP (EUR) and TSLA (USD), the schema's `tile.dailyChangePct: number` is a single float per tile but can mean either:
+
+(a) **Local-currency price change** — SAP price moved +2.3% in EUR today; ignores FX impact on user's USD-denominated position value.
+
+(b) **Base-currency total change** — SAP position value moved +2.3% in USD today, combining EUR price change + EUR/USD FX move.
+
+These can differ by 0.5-2% on volatile FX days. A user reading «SAP +2.3% today» on a USD-base treemap and asking AI «why did my position move» gets the wrong answer if the agent computed (a) but the user assumes (b) — or vice versa.
+
+**Lane A risk.** LOW (descriptive number, not advice). **Correctness risk.** MEDIUM — same number, two valid meanings, no contract enforcing which. AI agent could emit either; user has no way to know.
+
+**Remediation.** Two options:
+
+1. **Schema discriminator** — add `treemap.dailyChangeBasis: 'local-currency' | 'base-currency'` as a payload-level required field (not per-tile, since mixing within a treemap is incoherent). Renderer displays the basis in the caption: «Color = today's price change in local currency» or «Color = today's price change in your base currency (USD), including FX».
+
+2. **AI-prompt-layer rule** — require AI agent to always emit base-currency-basis for multi-currency portfolios (so the number is what the user actually experiences in their account); single-currency portfolios are unambiguous. Document in `AI_CONTENT_VALIDATION_TEMPLATES.md`.
+
+**Recommendation.** Both. Option 1 is the structural fix (make the basis explicit always); Option 2 is the agent-side default policy. Defense-in-depth same shape as architect's Δ4 dual-side pattern.
+
+**File.** `CHARTS_SPEC.md:993` (treemap caption) + schema `:1492` (TreemapPayload root) + `AI_CONTENT_VALIDATION_TEMPLATES.md` chart-rendering section.
+
+**Severity.** MEDIUM. Adds one MEDIUM finding to §6 tally → **3 CRITICAL · 8 HIGH · 19 MEDIUM · 12 LOW · 42 findings total.**
+
+### Δd — §4.4 Lane-A vocabulary regex reasoning strengthened (no change to rule)
+
+Architect's Δ4 makes explicit that Pydantic AI-side validates structure, Zod FE-side validates structure + cross-field math. **Neither natively guards prose vocabulary in `meta.title` / `meta.subtitle` / `meta.alt` / captions / `referenceLines.label`.** My §4 rule 4 (renderer-layer regex check against `AI_CONTENT_VALIDATION_TEMPLATES.md` §3 verb blacklist) is therefore the SOLE vocabulary gate, not redundant defense-in-depth.
+
+**Net.** No rule change; reasoning sharpened. Tech-lead's FE kickoff acceptance criteria for §4.4 should explicitly note: «vocab regex is the ONLY layer catching prose drift; do not skip».
+
+### Net of brainstorm-pass
+
+- **0 guardrails dropped.**
+- **0 guardrails added** to §4 cross-cutting list (T-8 remediation lives in §2.7 + AI prompt layer, not as a renderer rule).
+- **1 new finding** (T-8 MEDIUM, cross-currency `dailyChangePct` basis ambiguity).
+- **2 severity re-tags** (S-2 HIGH → V2-deferred-gate; W-1 CRITICAL → CRITICAL-mitigated).
+- **1 reasoning strengthened** (§4.4 vocab regex sole-gate role).
+- Updated tally: **3 CRITICAL · 8 HIGH · 19 MEDIUM · 12 LOW · 42 findings total.**
