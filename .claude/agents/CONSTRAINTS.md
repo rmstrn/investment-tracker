@@ -179,6 +179,8 @@ Not allowed:
 
 **Every `Agent` tool dispatch prompt MUST include an explicit list of relevant plugin skills the dispatched agent should activate up-front. Auto-discovery via the agent's own `using-superpowers` flow is the fallback, not the primary discipline.**
 
+**`superpowers:brainstorming` is the mandatory baseline skill** — it is included in every agent's default skill stack and must appear in the «Skills to activate up-front» list of every dispatch, regardless of task type. Brainstorming-first discipline is non-negotiable: agents reach for `superpowers:brainstorming` before any creative, design, or judgment-call decision, even routine ones. The skill itself opts out cheaply when the task is purely mechanical, so always-include is safe.
+
 Reason: PO directive 2026-04-29. Auto-discovery may miss cross-cutting skills (e.g. `accessibility` for FE, `typescript-reviewer` for any TS slice, `documentation-lookup` for unfamiliar libraries) because the agent's discovery loop is not exhaustive. Phase 2 chart review found that explicit skill briefs caught real bugs that auto-discovery missed.
 
 ### Format in dispatch prompt
@@ -229,7 +231,7 @@ Never violate the rules to meet a deadline, unblock a pipeline, or because «the
 
 ---
 
-**Last updated:** 2026-04-29 (Rules 4-8 added; Rule 5 added from chart-subsystem review-pass lesson; Navigator references retained as legacy alongside canonical Right-Hand).
+**Last updated:** 2026-04-29 (Rules 4-8 added; Rule 5 added from chart-subsystem review-pass lesson; Rule 7 amended to mandate `superpowers:brainstorming` as universal baseline skill across all 17 recipes; Navigator references retained as legacy alongside canonical Right-Hand).
 
 ---
 
@@ -241,6 +243,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **backend-engineer** (Go in `apps/api`, Python in `apps/ai`, TypeScript in `packages/shared-types`):
 ```
+- superpowers:brainstorming
 - everything-claude-code:typescript-reviewer
 - everything-claude-code:tdd-workflow
 - everything-claude-code:go-reviewer
@@ -253,6 +256,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **frontend-engineer** (Next.js in `apps/web`, design-system consumer in `packages/ui`):
 ```
+- superpowers:brainstorming
 - everything-claude-code:frontend-design
 - everything-claude-code:frontend-patterns
 - everything-claude-code:design-system
@@ -265,6 +269,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **tech-lead** (slice decomposition, kickoffs, TD ledger):
 ```
+- superpowers:brainstorming
 - everything-claude-code:architecture-decision-records
 - everything-claude-code:code-review
 - everything-claude-code:project-flow-ops
@@ -274,6 +279,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **architect** (system design, ADRs, tech audits):
 ```
+- superpowers:brainstorming
 - everything-claude-code:architect
 - everything-claude-code:architecture-decision-records
 - everything-claude-code:code-review
@@ -283,6 +289,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **devops-engineer** (CI/CD, Docker, deploys):
 ```
+- superpowers:brainstorming
 - everything-claude-code:deployment-patterns
 - everything-claude-code:docker-patterns
 - everything-claude-code:github-ops
@@ -291,6 +298,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **qa-engineer** (test strategy, contract tests, visual regression):
 ```
+- superpowers:brainstorming
 - everything-claude-code:tdd-workflow
 - everything-claude-code:e2e-testing
 - everything-claude-code:browser-qa
@@ -302,6 +310,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **code-reviewer** (post-merge / large-PR pre-merge review):
 ```
+- superpowers:brainstorming
 - everything-claude-code:code-review
 - everything-claude-code:typescript-reviewer
 - everything-claude-code:security-review
@@ -323,6 +332,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **finance-advisor** (Lane-A validation, startup finance):
 ```
+- superpowers:brainstorming
 - financial-analyst
 - cfo-advisor
 - saas-metrics-coach
@@ -333,6 +343,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **legal-advisor** (privacy, ToS, regulatory boundary):
 ```
+- superpowers:brainstorming
 - hr-legal-compliance:legal-advisor
 - hr-legal-compliance:gdpr-data-handling
 - everything-claude-code:security-review
@@ -342,6 +353,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **product-designer** (UX flows, surface design):
 ```
+- superpowers:brainstorming
 - everything-claude-code:design-system
 - ux-design:refactoring-ui
 - ux-design:ux-heuristics
@@ -351,6 +363,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **brand-strategist** (naming, positioning, archetype):
 ```
+- superpowers:brainstorming
 - everything-claude-code:brand-voice
 - strategy-growth:obviously-awesome
 - marketing-cro:storybrand-messaging
@@ -358,12 +371,14 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **brand-voice-curator** (taste-reference log, voice profiling):
 ```
+- superpowers:brainstorming
 - everything-claude-code:brand-voice
 - everything-claude-code:content-engine
 ```
 
 **content-lead** (landing copy, microcopy, paywall):
 ```
+- superpowers:brainstorming
 - everything-claude-code:brand-voice
 - everything-claude-code:article-writing
 - everything-claude-code:content-engine
@@ -372,6 +387,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **user-researcher** (ICP validation, JTBD, interviews):
 ```
+- superpowers:brainstorming
 - product-strategy:jobs-to-be-done
 - product-strategy:mom-test
 - ux-design:lean-ux
@@ -380,5 +396,6 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 
 **seo-specialist** (technical + on-page SEO):
 ```
+- superpowers:brainstorming
 - everything-claude-code:seo
 ```
