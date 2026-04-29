@@ -49,6 +49,13 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Why deferred:** No signal of breakage yet (plugin stable since 2026-04-24). Trivial fix when triggered.
 **Owner:** product-designer + frontend-engineer (single shared edit), tech-lead reviews.
 
+### 13. Embed `## Default skill stack` section per agent (gradual rollout)
+**Trigger:** Whenever an agent file in `.claude/agents/` is opened for edit (scope change / skill discovery / persona refresh).
+**Scope:** Per `.claude/agents/CONSTRAINTS.md` Rule 7 «Default skill stack per agent». The CONSTRAINTS «Common skill recipes» appendix currently serves as fallback for all 17 agent files; per-agent sections are not embedded yet (deferred to keep the chore(agents) consolidation commit reviewable). Each touch of an agent file → add the matching CONSTRAINTS appendix recipe as a `## Default skill stack` section. When all 17 agents have explicit sections, simplify CONSTRAINTS Rule 7 wording (drop the fallback clause).
+**PO deferred 2026-04-29:** non-blocking; gradual rollout aligned with natural agent edits.
+**Owner:** Right-Hand (drafts) + per-agent persona owners (review).
+**Linked TD:** TD-104.
+
 ### 12. finance-skills + c-level-skills upstream structure mismatch (LOW — track for plugin maintainer)
 **Trigger:** If `claude-code-skills` plugin maintainer ships a structural fix (top-level `skills/` subdirectory) — then we can remove the user-level copies and re-enable plugin loading.
 **Scope:**

@@ -14,6 +14,102 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-104 — Embed `## Default skill stack` section in remaining agent .md files
+
+**Added:** 2026-04-29 (chore(agents) consolidation).
+**Priority:** P3.
+**Source:** Per `.claude/agents/CONSTRAINTS.md` Rule 7 «Default skill stack per agent», each agent file should carry a `## Default skill stack` section listing its canonical plugin skills. The CONSTRAINTS «Common skill recipes» appendix currently serves as fallback for all 17 agent files; per-agent sections are not yet embedded (rolled-out gradually to keep the migration commit reviewable).
+**Recommendation:** as each agent file is opened for any reason (scope change, skill discovery, persona refresh), add a `## Default skill stack` section using the matching CONSTRAINTS appendix recipe as starting point. When all 17 agents have explicit sections, simplify CONSTRAINTS Rule 7 wording (drop the «where missing, fallback» clause).
+**Owner:** Right-Hand (drafts) + per-agent persona owners (review).
+**Trigger to revisit:** any time an agent file is touched.
+**Links:** `.claude/agents/CONSTRAINTS.md` (Rule 7 + appendix); `.claude/agents/README.md` (editing convention).
+
+---
+
+### TD-103 — ADR addendum: Δ1 placement + renderer-baked caption clarification
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` LOW-2. Implementation correctly placed `MetaFinancialAggregate` mixin on `meta` for Donut/Treemap and as a payload-level `rowAggregates` array for StackedBar (the `MultiSeriesPoint.catchall(z.number())` shape makes per-row `meta` structurally impossible). Cross-field refinement runs at `ChartEnvelope.superRefine` because Zod `discriminatedUnion` rejects `ZodEffects` members. All correct, all documented inline at `packages/shared-types/src/charts.ts:679-694`, but the architect ADR itself does not yet reflect the realization. Same gap for renderer-baked captions (Waterfall §C6, Drift §B8, Treemap T-8) — correct call but not stated as a policy in the ADR.
+**Recommendation:** back-port a one-paragraph clarification to `docs/reviews/2026-04-29-architect-chart-data-shape-adr.md` Δ1 section + add a small «Theme + locale + units» note that mandatory regulatory captions are renderer-baked, not payload-driven, when wording must remain regulatorily stable.
+**Owner:** architect (project agent) — drafts addendum.
+**Trigger to revisit:** any time the architect ADR is touched OR before consolidated PR opens (so PR description doesn't reference an ADR that doesn't match the implementation).
+**Links:** architect ADR; `packages/shared-types/src/charts.ts:679-694`; `Waterfall.tsx`, `Treemap.tsx`, `BarChart.tsx` for caption-bake pattern.
+
+---
+
+### TD-102 — Compile-time `Expect<Equal<>>` assertion for `CHART_KINDS` ↔ `ChartPayload['kind']`
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` LOW-1. `packages/ui/src/charts/types.ts` exports a hand-maintained `CHART_KINDS` tuple whose 10 literals match the Zod discriminated union exactly today, but there is no compile-time check. Adding chart kind 11 (e.g. when Scatter re-enters the union post-V2-greenlight) could silently diverge if the tuple isn't bumped.
+**Recommendation:** add a type-level test using `Expect<Equal<(typeof CHART_KINDS)[number], ChartPayload['kind']>>` (or equivalent helper) in `packages/ui/src/charts/types.ts` or a sibling `*.type-test.ts` file. Forces a noisy compile failure on drift.
+**Owner:** FE.
+**Trigger to revisit:** when any new chart kind is added (Scatter V2 re-entry, or net-new kind).
+**Links:** `packages/ui/src/charts/types.ts` (CHART_KINDS); `packages/shared-types/src/charts.ts` (ChartPayload union).
+
+---
+
+### TD-101 — `validateCrossFieldInvariants` cognitive complexity refactor
+
+**Added:** 2026-04-29 (charts pre-QA TypeScript review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-typescript-review.md` M-1. The cross-field `superRefine` callback at `packages/shared-types/src/charts.ts` (around line 695) has cognitive complexity 26 — Biome limit is 15. This is the most critical correctness gate in the codebase (Donut/Treemap sum-to-total Δ1 + Waterfall conservation Δ2) and is hard to audit as a single function.
+**Recommendation:** extract per-invariant helpers (`donutSumToTotal`, `treemapSumToTotal`, `stackedBarRowSums`, `waterfallConservation`) each returning `ZodIssue[]`. Main `superRefine` orchestrates by running each helper with the right payload narrowing and pushing issues. Tests cover each helper in isolation.
+**Owner:** backend (Zod schemas).
+**Trigger to revisit:** next time a new cross-field invariant lands (likely SLICE-AI-CHARTS-V1 or scatter V2 re-introduction).
+**Links:** `packages/shared-types/src/charts.ts:695+` (current monolith).
+
+---
+
+### TD-100 — Page-level «information only, not advice» disclaimer pre-launch
+
+**Added:** 2026-04-29 (charts pre-QA legal review).
+**Priority:** P1 — pre-launch blocker.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-legal-review.md` M-1. No persistent disclaimer on user-facing routes. Acceptable for `/design` (showcase only), mandatory before any production surface that renders charts to real users. Required by SEC publisher-exclusion «general» prong + MiFID II information-vs-advice line + FCA + 39-ФЗ analogues.
+**Recommendation:** add persistent footer (or sub-hero) disclaimer to every public route that renders chart content, in both languages. Bilingual EN + RU. Specific wording owned by content-lead with legal-advisor sign-off.
+**Owner:** legal-advisor (boundary) + content-lead (copy) + product-designer (placement).
+**Trigger to revisit:** before public alpha launch.
+**Links:** `docs/product/02_POSITIONING.md` (Lane A locked); legal review report.
+
+---
+
+### TD-099 — AI-prose vocabulary regex at api-client trust boundary
+
+**Added:** 2026-04-29 (charts pre-QA legal + finance reviews).
+**Priority:** P1 — Lane-A enforcement gate before AI-emitted production charts.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-legal-review.md` M-3 + `2026-04-29-charts-pre-qa-finance-revalidation.md` N1. Architect Δ4 explicitly shifts cross-field math + structural enforcement to Zod / Pydantic; prose drift (advice-tone leakage in `meta.title` / `meta.subtitle` / `meta.alt` / `CalendarEvent.description`) is the SOLE remaining channel for Lane-A breach. Currently no automated check.
+**Recommendation:** at `packages/api-client/src/index.ts` `parseChartEnvelope`, add post-parse vocabulary check on every string field in the envelope. Forbidden-verb list (recommend, suggest, advise, should, must, expect, predict, target) maintained in a constant; check produces a Zod-issue-shaped failure if any forbidden token appears. Vocabulary list owned by legal + content-lead jointly.
+**Owner:** backend (api-client wiring) + legal-advisor + content-lead (vocabulary).
+**Trigger to revisit:** SLICE-AI-CHARTS-V1 — when the AI agent first emits `ChartEnvelope` payloads via a real prompt template (not test fixtures).
+**Links:** architect ADR §Δ4; `docs/AI_CONTENT_VALIDATION_TEMPLATES.md` if referenced; `packages/api-client/src/index.ts` (parser).
+
+---
+
+### TD-098 — `?debug=1` payload-reveal hostname/PII guard
+
+**Added:** 2026-04-29 (charts pre-QA security + legal reviews).
+**Priority:** P2.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-security-review.md` M3 + `2026-04-29-charts-pre-qa-legal-review.md` M-2. `ChartError.tsx:42-50` reveals raw payload JSON when URL has `?debug=1`. Today the showcase route `/design` is staff-only so the leak surface is bounded. When chart errors render in user-facing routes (chat, dashboard), this becomes (a) a PII leak vector — `brokerSource`, position values, account identifiers in plain text — and (b) iframe-parent attack — embedding context could force-enable debug.
+**Recommendation:** before any user-facing route renders `ChartError`, gate the payload reveal by hostname allowlist (`localhost` + staging only) AND/OR move behind staff-auth (`isAdmin` claim from Clerk) AND/OR field-redaction (mask broker / amount / account-id). Document choice in JSDoc on the gate.
+**Owner:** FE (gate edit) + security-auditor (validation) + legal-advisor (PII boundary).
+**Trigger to revisit:** before any user-facing route renders `ChartError` (currently bounded to `/design`).
+**Links:** `packages/ui/src/charts/_shared/ChartError.tsx` (gate); security review §M3; legal review §M-2.
+
+---
+
+### TD-097 — CI grep gate for single-parser invariant
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P2.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` MEDIUM. The single-parser invariant («`ChartEnvelope.safeParse` is callable from exactly one production-code site, `packages/api-client/src/index.ts:132`») is currently enforced by social contract + a JSDoc comment + manual grep verification — no automated CI gate. Production count = 1 today, but the invariant decays silently as the codebase grows.
+**Recommendation:** add a CI step (in `.github/workflows/ci.yml` Node job) that runs the production-code grep and fails if matches !== 1. Suggested matcher: `grep -rn "ChartEnvelope\.\(safeParse\|parse\)" --include="*.ts" --include="*.tsx" --exclude="*.test.ts" --exclude-dir=node_modules .` then assert exit-code = 0 AND `wc -l` = 1. JSDoc comments mentioning the symbol need an exclusion convention (e.g. only count lines that are not commented).
+**Owner:** devops (CI step) + backend (grep tuning).
+**Trigger to revisit:** before MVP launch OR next time CI workflow is touched.
+**Links:** `packages/api-client/src/index.ts:132`; architect-project review report.
+
+---
+
 ### TD-096 — Drift-bar caption trigger uses fragile substring match
 
 **Added:** 2026-04-29 (FIX-1 a11y blockers).
