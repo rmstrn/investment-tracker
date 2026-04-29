@@ -6,10 +6,18 @@
  * No axes, no tooltip, no legend, no gridlines. Pre-axis renderer for
  * table cells, KPI tiles, and inline answers. Schema-restricted to a
  * single time series with 2..120 points.
+ *
+ * **A11y per spec §4.5:** default is NON-focusable. Sparklines sit alongside
+ * a number that already conveys the value; the SVG is `aria-hidden="true"`.
+ * The accompanying number IS the data; the sparkline is a glance.
+ *
+ * **Standalone exception (`standalone={true}`):** sparkline used without an
+ * adjacent number (e.g. inline chat reply) opts in to `role="img"` +
+ * `aria-label` + `tabIndex={0}` + arrow-key nav + visible focus ring.
  */
 
 import type { SparklinePayload } from '@investment-tracker/shared-types/charts';
-import { useId, useRef, useState } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import {
   Area,
   Line,
@@ -17,7 +25,9 @@ import {
   LineChart as ReLineChart,
   ResponsiveContainer,
 } from 'recharts';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, SERIES_VARS } from './tokens';
 
@@ -26,13 +36,30 @@ export interface SparklineProps {
   height?: number;
   width?: number;
   className?: string;
+  /**
+   * Opt-in to focusable + arrow-key nav when the sparkline is the primary
+   * data surface (no adjacent number). Defaults to `false` per CHARTS_SPEC
+   * §4.5: SVG is aria-hidden and not in the tab order.
+   */
+  standalone?: boolean;
 }
 
-export function Sparkline({ payload, height = 32, width, className }: SparklineProps) {
+export function Sparkline({
+  payload,
+  height = 32,
+  width,
+  className,
+  standalone = false,
+}: SparklineProps) {
   const dataTableId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const prefersReducedMotion = useReducedMotion();
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  // Hook is a no-op when dataLength is 0; safe to call unconditionally even
+  // for non-standalone sparklines (it sees `node === null` since the container
+  // ref doesn't carry tabIndex and won't fire keydown anyway).
+  useChartKeyboardNav(containerRef, standalone ? payload.data.length : 0, onIndexChange);
 
   const data = payload.data.map((d) => ({ x: d.x, y: d.y }));
   const last = data[data.length - 1]?.y ?? 0;
@@ -47,19 +74,31 @@ export function Sparkline({ payload, height = 32, width, className }: SparklineP
     trend === 'down' ? SERIES_VARS[1] : trend === 'flat' ? SERIES_VARS[4] : SERIES_VARS[0];
 
   const ariaLabel = payload.meta.alt ?? `${payload.meta.title} sparkline (${trend})`;
+  const hostA11yProps = standalone
+    ? {
+        role: 'img' as const,
+        'aria-label': ariaLabel,
+        'aria-describedby': dataTableId,
+        tabIndex: 0,
+      }
+    : {
+        'aria-hidden': true as const,
+      };
 
   return (
     <div
       ref={containerRef}
-      role="img"
-      aria-label={ariaLabel}
-      aria-describedby={dataTableId}
-      // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
-      tabIndex={0}
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: standalone sparkline opts into keyboard focus per CHARTS_SPEC §4.5 exception.
+      {...hostA11yProps}
       data-testid="chart-sparkline"
       data-trend={trend}
-      className={className}
-      style={{ width: width ?? '100%', height, outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={
+        standalone
+          ? `${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`
+          : (className ?? undefined)
+      }
+      style={{ width: width ?? '100%', height }}
       onMouseLeave={() => setActiveIndex(null)}
     >
       <ResponsiveContainer width="100%" height="100%">

@@ -8,7 +8,7 @@
  * arithmetic) are owned by the QA kickoff.
  */
 
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { Suspense } from 'react';
 import { describe, expect, it } from 'vitest';
 
@@ -157,6 +157,51 @@ describe('Waterfall conservation transform', () => {
     );
     const caption = await findByTestId('chart-waterfall-caption');
     expect(caption.textContent).toMatch(/Decomposes change in portfolio value/);
+  });
+});
+
+describe('Chart keyboard navigation (CHARTS_SPEC §3.8 + §7.4)', () => {
+  it('LineChart updates active-index on ArrowRight after focus', () => {
+    const { getByTestId } = render(<LineChart payload={LINE_FIXTURE} />);
+    const host = getByTestId('chart-line');
+    host.focus();
+    fireEvent.keyDown(host, { key: 'ArrowRight' });
+    expect(host.getAttribute('data-active-index')).toBe('1');
+  });
+
+  it('DonutChart cycles through segments and Home resets to first', () => {
+    const { getByTestId } = render(<DonutChart payload={DONUT_FIXTURE} />);
+    const host = getByTestId('chart-donut');
+    host.focus();
+    fireEvent.keyDown(host, { key: 'ArrowRight' });
+    fireEvent.keyDown(host, { key: 'ArrowRight' });
+    expect(host.getAttribute('data-active-index')).toBe('2');
+    fireEvent.keyDown(host, { key: 'Home' });
+    expect(host.getAttribute('data-active-index')).toBe('0');
+  });
+
+  it('Calendar exposes role=img + tabIndex on container', () => {
+    const { getByTestId } = render(<Calendar payload={CALENDAR_FIXTURE} />);
+    const host = getByTestId('chart-calendar');
+    expect(host.getAttribute('role')).toBe('img');
+    expect(host.tabIndex).toBe(0);
+  });
+
+  it('Sparkline default is non-focusable + aria-hidden per CHARTS_SPEC §4.5', () => {
+    const { getByTestId } = render(<Sparkline payload={SPARKLINE_FIXTURE} />);
+    const host = getByTestId('chart-sparkline');
+    expect(host.getAttribute('aria-hidden')).toBe('true');
+    expect(host.getAttribute('role')).toBeNull();
+    // tabIndex={undefined} on a div renders no tabindex attribute → tabIndex defaults to -1.
+    expect(host.tabIndex).toBe(-1);
+  });
+
+  it('Sparkline standalone={true} opts in to focusable role=img per §4.5 exception', () => {
+    const { getByTestId } = render(<Sparkline payload={SPARKLINE_FIXTURE} standalone />);
+    const host = getByTestId('chart-sparkline');
+    expect(host.getAttribute('role')).toBe('img');
+    expect(host.tabIndex).toBe(0);
+    expect(host.getAttribute('aria-hidden')).toBeNull();
   });
 });
 

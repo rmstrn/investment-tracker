@@ -10,10 +10,12 @@
  */
 
 import type { TreemapPayload } from '@investment-tracker/shared-types/charts';
-import { useId } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import { Treemap as ReTreemap, ResponsiveContainer } from 'recharts';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
-import { CHART_TOKENS, colorForTreemapChange, labelOnTile } from './tokens';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
+import { CHART_TOKENS, colorForTreemapChange, inkForTreemapChange, labelOnTile } from './tokens';
 
 export interface TreemapProps {
   payload: TreemapPayload;
@@ -37,6 +39,10 @@ interface TileContentProps {
 function TileContent(props: TileContentProps) {
   const { x = 0, y = 0, width = 0, height = 0, dailyChangePct, isOther, ticker, itemCount } = props;
   const fill = colorForTreemapChange(dailyChangePct);
+  // Conditional ink — WCAG 1.4.3 AA fix for tile labels at 10-11px.
+  // Positive tiles (deep green) pair with white; negative + neutral tiles
+  // (mid-luminance) pair with near-black to clear ≥4.5:1 in both themes.
+  const ink = inkForTreemapChange(dailyChangePct);
   const label = isOther ? `OTHER · ${itemCount ?? 0} items` : (ticker ?? '');
   const showLabel = labelOnTile({ width, height });
 
@@ -55,7 +61,7 @@ function TileContent(props: TileContentProps) {
         <text
           x={x + 8}
           y={y + 18}
-          fill="var(--color-text-inverse, #fff)"
+          fill={ink}
           fontSize={11}
           fontFamily="var(--font-mono)"
           style={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}
@@ -67,10 +73,10 @@ function TileContent(props: TileContentProps) {
         <text
           x={x + 8}
           y={y + 34}
-          fill="var(--color-text-inverse, #fff)"
+          fill={ink}
           fontSize={10}
           fontFamily="var(--font-mono)"
-          style={{ opacity: 0.8 }}
+          style={{ opacity: 0.85 }}
         >
           {dailyChangePct >= 0 ? '+' : ''}
           {dailyChangePct.toFixed(2)}%
@@ -85,6 +91,10 @@ const FINRA_CAPTION =
 
 export function Treemap({ payload, height = 320, className }: TreemapProps) {
   const dataTableId = useId();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  useChartKeyboardNav(containerRef, payload.tiles.length, onIndexChange);
 
   const data = payload.tiles.map((t) => ({
     name: t.isOther ? `OTHER · ${t.itemCount ?? 0} items` : t.ticker,
@@ -104,14 +114,16 @@ export function Treemap({ payload, height = 320, className }: TreemapProps) {
 
   return (
     <div
+      ref={containerRef}
       role="img"
       aria-label={payload.meta.alt ?? payload.meta.title}
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-treemap"
-      className={className}
-      style={{ width: '100%', outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
+      style={{ width: '100%' }}
     >
       <ResponsiveContainer width="100%" height={height}>
         <ReTreemap

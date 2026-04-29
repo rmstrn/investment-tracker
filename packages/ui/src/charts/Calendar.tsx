@@ -19,9 +19,11 @@ import type {
   CorpActionEvent,
   DividendEvent,
 } from '@investment-tracker/shared-types/charts';
-import { useId, useMemo } from 'react';
+import { useCallback, useId, useMemo, useRef, useState } from 'react';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { formatValue } from './_shared/formatters';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { CHART_TOKENS } from './tokens';
 
 export interface CalendarProps {
@@ -133,19 +135,25 @@ export function Calendar({ payload, className }: CalendarProps) {
     () => buildMonthGrid(payload.periodStart, payload.events),
     [payload.periodStart, payload.events],
   );
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  useChartKeyboardNav(containerRef, payload.events.length, onIndexChange);
 
   const isList = payload.view === 'list';
 
   return (
     <div
+      ref={containerRef}
       role="img"
       aria-label={payload.meta.alt ?? payload.meta.title}
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-calendar"
-      className={className}
-      style={{ width: '100%', outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
+      style={{ width: '100%' }}
     >
       {isList ? (
         <ul className="space-y-2">

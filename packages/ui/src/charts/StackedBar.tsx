@@ -10,7 +10,7 @@
  */
 
 import type { StackedBarChartPayload } from '@investment-tracker/shared-types/charts';
-import { useId } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import {
   Bar,
   CartesianGrid,
@@ -22,9 +22,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, CHART_TOKENS, SERIES_VARS } from './tokens';
 
@@ -38,6 +40,10 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
   const prefersReducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  useChartKeyboardNav(containerRef, payload.data.length, onIndexChange);
 
   const fmtValue = (n: number) => formatValue(n, payload.yAxis.format, payload.yAxis.currency);
   const fmtX = (v: string | number) => formatXAxis(v, payload.xAxis.format);
@@ -45,14 +51,16 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
 
   return (
     <div
+      ref={containerRef}
       role="img"
       aria-label={payload.meta.alt ?? payload.meta.title}
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-stacked-bar"
-      className={className}
-      style={{ width: '100%', outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
+      style={{ width: '100%' }}
     >
       <ResponsiveContainer width="100%" height={height}>
         <ReBarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>

@@ -18,7 +18,7 @@
  */
 
 import type { LineChartPayload } from '@investment-tracker/shared-types/charts';
-import { useEffect, useId, useState } from 'react';
+import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import {
   CartesianGrid,
   Legend,
@@ -31,9 +31,11 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, CHART_TOKENS, SERIES_VARS } from './tokens';
 
@@ -75,6 +77,10 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
   const tooltip = buildTooltipProps();
   const prefersReducedMotion = useReducedMotion();
   const dark = useDarkTheme();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  useChartKeyboardNav(containerRef, payload.data.length, onIndexChange);
 
   const fmtValue = (n: number) => formatValue(n, payload.yAxis.format, payload.yAxis.currency);
   const fmtX = (v: string | number) => formatXAxis(v, payload.xAxis.format);
@@ -84,14 +90,10 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
   const series = payload.series.map((s, i) => {
     let color = s.color ?? SERIES_VARS[i % SERIES_VARS.length];
     if (payload.series.length === 1 && color === SERIES_7_VAR && dark) {
-      // Dev-only diagnostic per CHARTS_SPEC §2.3. We avoid a hard dependency
-      // on `process.env.NODE_ENV` (no @types/node in this package). The
-      // hostname check approximates "dev only" without leaking diagnostic
-      // noise to staging/prod, which run on real domains.
-      if (
-        typeof window !== 'undefined' &&
-        (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-      ) {
+      // Dev-only diagnostic per CHARTS_SPEC §2.3. Uses NODE_ENV (Node typings
+      // ship via @types/node devDep, swapped in for the previous hostname
+      // probe so staging dev-builds also surface the warning).
+      if (process.env.NODE_ENV !== 'production') {
         console.warn(
           '[charts] Solo series-7 in dark mode auto-swapped to series-1 — see CHARTS_SPEC §2.3.',
         );
@@ -105,14 +107,16 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
 
   return (
     <div
+      ref={containerRef}
       role="img"
       aria-label={payload.meta.alt ?? payload.meta.title}
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-line"
-      className={className}
-      style={{ width: '100%', outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
+      style={{ width: '100%' }}
     >
       <ResponsiveContainer width="100%" height={height}>
         <ReLineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>

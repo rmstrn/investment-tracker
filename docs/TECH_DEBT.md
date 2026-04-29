@@ -14,6 +14,16 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-096 — Drift-bar caption trigger uses fragile substring match
+
+**Added:** 2026-04-29 (FIX-1 a11y blockers).
+**Priority:** P3.
+**Source:** `packages/ui/src/charts/BarChart.tsx:isDriftBar` detects drift bars via `payload.meta.subtitle?.toLowerCase().includes('drift')`. Two failure modes: (a) locale-fragile — a Russian payload subtitle like «Дрифт по портфелю» bypasses the trigger and the mandatory FINRA caption is silently omitted; (b) false-positive prone — a non-drift subtitle that happens to contain «drift» (e.g. «Drift in valuation method» as a chart title flavour) renders the regulatory caption spuriously. The kickoff §7 acceptance phrasing was `payload.subtype === 'drift'` but `BarChartPayload` schema (`packages/shared-types/src/charts.ts`) is `.strict()` and has no `subtype` field; adding one is a backend schema bump beyond FIX-1 scope.
+**Recommendation:** add `subtype: z.enum(['standard', 'drift']).default('standard')` (or similar) to `BarChartPayload`; coordinate with backend (FIX-2 or follow-on slice). Once landed, switch `isDriftBar` to a pure `payload.subtype === 'drift'` discriminator. Until then, the substring sniff is acceptable since the AI agent is English-only at MVP and emits drift bars via a fixed prompt template.
+**Owner:** Backend (Zod schemas) + FE.
+**Trigger to revisit:** when AI agent emits drift bars in production from non-English locales OR when the next schema-bump of `BarChartPayload` is on the table — whichever comes first.
+**Links:** `packages/ui/src/charts/BarChart.tsx` (`isDriftBar` helper); `packages/shared-types/src/charts.ts` (`BarChartPayload` schema); `docs/reviews/2026-04-29-charts-pre-qa-fe-self-review.md` §M1.
+
 ### TD-095 — lift chart-series CSS vars from globals.css into design-tokens DTCG
 
 **Added:** 2026-04-29 (SLICE-CHARTS-FE-V1).

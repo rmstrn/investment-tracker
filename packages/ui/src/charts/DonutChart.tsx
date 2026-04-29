@@ -10,12 +10,14 @@
  */
 
 import type { DonutChartPayload } from '@investment-tracker/shared-types/charts';
-import { useId } from 'react';
+import { useCallback, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue } from './_shared/formatters';
+import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, DONUT_ORDER } from './tokens';
 
@@ -31,6 +33,10 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
   const prefersReducedMotion = useReducedMotion();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const onIndexChange = useCallback((next: number) => setActiveIndex(next), []);
+  useChartKeyboardNav(containerRef, payload.segments.length, onIndexChange);
 
   const outerR = size / 2 - 4;
   const innerR = outerR * 0.6;
@@ -49,14 +55,16 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
 
   return (
     <div
+      ref={containerRef}
       role="img"
       aria-label={payload.meta.alt ?? payload.meta.title}
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-donut"
-      className={className}
-      style={{ width: '100%', outline: 'none' }}
+      data-active-index={activeIndex ?? undefined}
+      className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
+      style={{ width: '100%' }}
     >
       <div
         className="relative inline-flex items-center justify-center"
