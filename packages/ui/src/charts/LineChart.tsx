@@ -146,7 +146,13 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
             axisLine={theme.axis.axisLine}
             tickFormatter={(v) => fmtValue(Number(v))}
             domain={yDomain}
-            width={52}
+            // PO feedback (2026-04-29): «$184,210»-format labels were clipped
+            // at left edge with width=52. Bumped to 68 so 7-char comma-formatted
+            // currency values (e.g. $184,210, 1.42M) render fully inside the
+            // axis gutter. Pair with `tickMargin=4` for breathing room between
+            // tick text and the (invisible) axis line.
+            width={68}
+            tickMargin={4}
           />
           <Tooltip
             contentStyle={tooltip.contentStyle}

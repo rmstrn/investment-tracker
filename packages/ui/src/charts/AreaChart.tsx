@@ -101,7 +101,11 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
             tickLine={theme.axis.tickLine}
             axisLine={theme.axis.axisLine}
             tickFormatter={(v) => fmtValue(Number(v))}
-            width={52}
+            // PO feedback (2026-04-29): cumulative-currency labels were clipped
+            // at left edge with width=52. Match LineChart's 68px gutter for
+            // consistent left rail across the line + area family.
+            width={68}
+            tickMargin={4}
           />
           <Tooltip
             contentStyle={tooltip.contentStyle}

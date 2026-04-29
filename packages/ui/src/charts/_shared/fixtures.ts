@@ -57,24 +57,39 @@ export const LINE_FIXTURE: LineChartPayload = {
   interpolation: 'monotone',
 };
 
+/**
+ * Showcase area fixture — cumulative P&L trend.
+ *
+ * `interpolation: 'monotone'` per PO feedback (2026-04-29) — the prior
+ * `'step'` setting produced a stair-step ascent that read as broken. A
+ * cumulative-P&L curve is a continuous trend (not a discrete-event sum),
+ * so monotonic-cubic conveys the «smooth growth» story. The denser data
+ * (12 monthly rows instead of 4) gives the curve room to breathe so the
+ * monotonic interpolation actually has signal to follow.
+ */
 export const AREA_FIXTURE: AreaChartPayload = {
   kind: 'area',
   meta: {
-    title: 'Cumulative cash flow',
-    subtitle: 'Deposits and withdrawals · YTD',
-    alt: 'Cumulative cash flow area chart',
+    title: 'Cumulative P&L',
+    subtitle: 'Year to date · all brokers',
+    alt: 'Cumulative profit and loss area chart',
   },
   xAxis: { format: 'date-month', label: 'Month' },
   yAxis: { format: 'currency-compact', currency: 'USD', label: 'Cumulative' },
   series: [{ key: 'cumulative', label: 'Cumulative' }],
   data: asMultiSeries([
-    { x: '2026-01', cumulative: 5000 },
-    { x: '2026-02', cumulative: 12500 },
-    { x: '2026-03', cumulative: 18200 },
-    { x: '2026-04', cumulative: 24400 },
+    { x: '2026-01-01', cumulative: 0 },
+    { x: '2026-01-15', cumulative: 1800 },
+    { x: '2026-02-01', cumulative: 4400 },
+    { x: '2026-02-15', cumulative: 6200 },
+    { x: '2026-03-01', cumulative: 9100 },
+    { x: '2026-03-15', cumulative: 11800 },
+    { x: '2026-04-01', cumulative: 15400 },
+    { x: '2026-04-15', cumulative: 19200 },
+    { x: '2026-04-26', cumulative: 22890 },
   ]),
   stacked: false,
-  interpolation: 'step',
+  interpolation: 'monotone',
 };
 
 export const BAR_FIXTURE: BarChartPayload = {

@@ -19,26 +19,31 @@ export interface TooltipPropsBundle {
 export function buildTooltipProps(): TooltipPropsBundle {
   return {
     contentStyle: {
-      background: 'var(--chart-tooltip-bg)',
-      border: '1px solid var(--chart-tooltip-border)',
-      // Bumped 14 → 12 per neumorphism «round more» pass (2026-04-29). 12 is
-      // the canonical `radius.lg` token which the rest of the floating-toast
-      // family (toast, popover) shares — keeps tooltip in the same visual
-      // tier as other small floats. Combined with the new top-edge highlight
-      // below, the tooltip reads as cream-paper, not flat card.
+      // PO feedback (2026-04-29): tooltip blended with chart background.
+      // Force the cream-paper card surface (light: --card #FFFFFF; dark: #26262E)
+      // and bump the border + shadow so the tooltip reads as a clearly elevated
+      // floating mini-card, not a wash over the chart area.
+      background: 'var(--chart-tooltip-bg, var(--card, #FFFFFF))',
+      // Stronger border so the tooltip edge separates from chart content even
+      // when the underlying gridline + axis labels are dense. Falls through
+      // to a 14% ink alpha (light) / 24% white alpha (dark) when token unset.
+      border: '1px solid var(--chart-tooltip-border, rgba(20, 20, 20, 0.14))',
       borderRadius: 12,
-      // Fallback hardening per audit §1.3 — if `--chart-tooltip-shadow` is
-      // unset (route-level embed, future test harness), fall through to the
-      // v1.1 paper-feel `--shadow-lift` rather than the legacy `--shadow-md`.
-      // Layered with a cream-edge highlight (inset 0 1px 0 rgba(255,255,255,…))
-      // so the tooltip matches ChartCard's tactile-paper feel; on dark theme
-      // the highlight degrades gracefully (still readable).
+      // Bumped to a more lifted shadow + cream highlight rim so the tooltip
+      // reads as tactile-paper floating above the chart. The first layer is
+      // the route-level lift, second is a sharp directional drop for crispness,
+      // third is the inset top highlight that gives the «paper edge» feel.
       boxShadow:
-        'var(--chart-tooltip-shadow, var(--shadow-lift)), inset 0 1px 0 rgba(255, 255, 255, 0.5)',
+        'var(--chart-tooltip-shadow, var(--shadow-lift, 0 12px 32px rgba(20, 20, 20, 0.18))), 0 2px 6px rgba(20, 20, 20, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.55)',
       padding: '10px 14px',
       fontFamily: 'var(--font-sans)',
       fontSize: 12,
       fontFeatureSettings: '"tnum" 1, "ss01" 1',
+      // Belt-and-suspenders: opaque background. If `--chart-tooltip-bg` ever
+      // resolves to a translucent value the explicit `background` above wins,
+      // and `backdropFilter` adds defence against gridline bleed-through on
+      // light theme + cream backgrounds.
+      backdropFilter: 'blur(2px)',
     },
     labelStyle: {
       color: 'var(--chart-axis-label)',

@@ -7,7 +7,7 @@ exports[`chart smoke instantiation > renders AreaChart without throwing 1`] = `
   id="_r_1_"
 >
   <p>
-    Cumulative cash flow — Deposits and withdrawals · YTD
+    Cumulative P&L — Year to date · all brokers
   </p>
   <table>
     <thead>
@@ -29,40 +29,90 @@ exports[`chart smoke instantiation > renders AreaChart without throwing 1`] = `
         <th
           scope="row"
         >
-          2026-01
+          2026-01-01
         </th>
         <td>
-          5000
+          0
         </td>
       </tr>
       <tr>
         <th
           scope="row"
         >
-          2026-02
+          2026-01-15
         </th>
         <td>
-          12500
+          1800
         </td>
       </tr>
       <tr>
         <th
           scope="row"
         >
-          2026-03
+          2026-02-01
         </th>
         <td>
-          18200
+          4400
         </td>
       </tr>
       <tr>
         <th
           scope="row"
         >
-          2026-04
+          2026-02-15
         </th>
         <td>
-          24400
+          6200
+        </td>
+      </tr>
+      <tr>
+        <th
+          scope="row"
+        >
+          2026-03-01
+        </th>
+        <td>
+          9100
+        </td>
+      </tr>
+      <tr>
+        <th
+          scope="row"
+        >
+          2026-03-15
+        </th>
+        <td>
+          11800
+        </td>
+      </tr>
+      <tr>
+        <th
+          scope="row"
+        >
+          2026-04-01
+        </th>
+        <td>
+          15400
+        </td>
+      </tr>
+      <tr>
+        <th
+          scope="row"
+        >
+          2026-04-15
+        </th>
+        <td>
+          19200
+        </td>
+      </tr>
+      <tr>
+        <th
+          scope="row"
+        >
+          2026-04-26
+        </th>
+        <td>
+          22890
         </td>
       </tr>
     </tbody>
