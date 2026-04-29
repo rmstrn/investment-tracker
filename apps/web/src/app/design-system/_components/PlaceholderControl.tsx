@@ -23,7 +23,6 @@ export function PlaceholderSwitch({
   return (
     <span className="showcase-control">
       <span
-        // biome-ignore lint/a11y/useSemanticElements: showcase-only visual stub; native <input> renders OS chrome which the static visual reference deliberately avoids. Real Switch primitive lands in Phase γ.
         role="switch"
         aria-checked={on}
         aria-label={ariaLabel ?? label}
@@ -49,7 +48,6 @@ export function PlaceholderCheckbox({
   return (
     <span className="showcase-control">
       <span
-        // biome-ignore lint/a11y/useSemanticElements: showcase-only visual stub; native <input> renders OS chrome which the static visual reference deliberately avoids. Real Checkbox primitive lands in Phase γ.
         role="checkbox"
         aria-checked={checked}
         aria-label={ariaLabel ?? label}
@@ -79,7 +77,6 @@ export function PlaceholderRadio({
   return (
     <span className="showcase-control">
       <span
-        // biome-ignore lint/a11y/useSemanticElements: showcase-only visual stub; native <input> renders OS chrome which the static visual reference deliberately avoids. Real Radio primitive lands in Phase γ.
         role="radio"
         aria-checked={checked}
         aria-label={ariaLabel ?? label}

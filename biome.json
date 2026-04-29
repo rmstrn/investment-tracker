@@ -97,6 +97,17 @@
           }
         }
       }
+    },
+    {
+      "include": ["**/apps/web/src/app/design-system/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useValidAriaRole": "off",
+            "useSemanticElements": "off"
+          }
+        }
+      }
     }
   ]
 }
