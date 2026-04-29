@@ -823,3 +823,68 @@ PO confirms Free tier stays free forever. Content-lead built landing + paywall c
 **Revisit.** Only if a hydration-mismatch warning surfaces that cannot be resolved by the standard `next-themes` pattern; or if assistive-tech testing surfaces an unexpected interaction between `data-theme` and `aria-` semantics. Neither is anticipated.
 
 **Cross-references.** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §11.4; `docs/engineering/kickoffs/2026-04-27-design-system-migration.md` §4.3; `docs/reviews/2026-04-27-chart-implementation-blueprint.md` Open Question 3 (resolved); `docs/engineering/kickoffs/2026-04-29-charts-fe.md`; `docs/engineering/kickoffs/2026-04-29-charts-backend.md`; `docs/engineering/kickoffs/2026-04-29-charts-qa.md`.
+
+## 2026-04-29 — Charts palette: museum-palette extension + ink tonal default (NOT forest-jade ramp)
+
+**Decision.** Adopt **Hybrid (Option C)** with brand-strategist's «museum-palette extension» as the categorical layer. Default chart hue family is **ink/cream tonal**, NOT forest-jade. Forest-jade and bronze remain reserved for their semantic roles (gain / loss / verified) per the existing brand-floor lock. When categorical encoding is unavoidable (≥4 unordered series — asset class, sector, broker), draw from a **5-hue museum-vitrine extension family** (deep slate, paper-stone, fog-blue, dusty plum, muted ochre — exact OKLCH/hex deferred to follow-on product-designer dispatch). All P&L sign encoding replaces green/red with the locked jade/bronze pair, redundantly encoded with sign glyph + zero-axis position.
+
+**Per-chart-kind palette mode** (consensus-synthesised across product-designer, finance-advisor, brand-strategist):
+
+| Chart kind | Default mode | Rationale |
+|---|---|---|
+| Line | ink for single series; museum-categorical for ≤4 multi-series | Tonal default; categorical only when truly multi-series |
+| Area | jade above 0 / bronze below 0 (semantic) | Sign-bearing |
+| Bar (drift) | diverging jade ↔ neutral grey ↔ bronze | Sign-bearing |
+| Donut | museum-categorical for unordered (asset class, broker); ink tonal ramp for ordinal-by-magnitude | Type-of-data → type-of-palette match |
+| Sparkline | ink default; jade/bronze tint at endpoint | Single trend |
+| Calendar | per CHARTS_SPEC §2.6 status-categorical | Non-semantic, already locked |
+| Treemap | hybrid (ink-tone size + diverging jade↔bronze delta) | Two-channel encoding |
+| Stacked bar | museum-categorical ≤7 + locked semantic when sign | Multi-series |
+| Scatter | museum-categorical ≤3 groups | Group membership |
+| Waterfall | jade=add, bronze=subtract, ink=start/end | Sign-bearing |
+| Candlestick | jade up / bronze down (semantic, already locked) | Per-bar sign |
+
+**Why this over forest-jade ramp** (PO's initial intuition):
+
+1. **Brand §13.2 cap is binding.** Forest-jade carries a hard 13-surface cap in the brand system. Ramping it through chart series alone could exceed the cap. Brand-strategist surfaced this constraint; it overrides product-designer's «just ramp the jade» direction.
+2. **Data-viz canon.** Sequential palette on **unordered** nominal data (asset class, sector) implies false ranking. Industry canon — Morningstar (the wealth-data benchmark, uses multi-hue categorical for asset class), Atlassian, ColorArchive, CleanChart — treats this as categorical encoding. Finance-advisor concurred: «mono ramp WARN — only ordinal/sequential».
+3. **Editorial register.** Bloomberg, FT, Datawrapper, Wealthfront — the «calm-analytical caretaker» reference set Provedo aligns with — lead with ink/cream/grey tonal charts and use color rarely. Reserving jade for its semantic role (verified / accent / gain) is what makes it earn attention.
+4. **2-of-3 specialist consensus.** Brand-strategist + finance-advisor explicitly rejected forest-jade-as-default-chart-hue. Product-designer was the lone supporter and did not address the §13.2 cap.
+5. **PO directive — quality over speed.** The brand-strategist override is the more conservative move; given «спешить некуда, нужно качество», the smaller-blast-radius decision wins.
+
+**P&L green/red replacement (3-of-3 consensus).** All three specialists supported replacing green/red with locked jade/bronze, redundantly encoded with sign glyph + zero-axis position. Industry deuteranopia-safe pattern (Cleveland-Robbins blue/orange, Bloomberg orange/blue) — Provedo's jade/bronze fills the same role in brand voice.
+
+**Implications.**
+
+- **`docs/design/CHARTS_SPEC.md` §2** — palette taxonomy update needed. Replace ad-hoc 7-hue assignments with the per-chart-kind mode mapping above.
+- **`packages/ui/src/charts/DonutChart.tsx`** — switch from per-slice categorical to museum-palette categorical default; expose a `palette: 'categorical' | 'sequential' | 'monochromatic'` prop for explicit caller override (e.g. when caller knows data is ordinal-by-magnitude).
+- **`packages/design-tokens/tokens/`** — add 5-hue museum extension family + sequential ink ramp tokens. Keep forest-jade and bronze unchanged.
+- **AI-agent prompts** — chart-emission defaults must match new palette taxonomy. Eliminates per-slice random colors; backend chooses mode (categorical/sequential/diverging) by data shape, palette family pinned by mode.
+- **Visual regression tests** — TD-112 covers the showcase regression caused by the donut palette change. Refresh chart-tests checkpoint β.1.4 (commit 109e4de) baselines after the new palette lands.
+- **Showcase** (`/design-system#charts`) — DonutChart visible diff; update is part of the same PR as the palette change.
+
+**Owner.** Right-Hand (this ADR + decision) + product-designer (museum-palette hex draft, in flight) + frontend-engineer (DonutChart palette swap + AI-agent prompt update, follow-on slice).
+**Revisit.** After 5 V2 charts adopt the new palette in production AND user research surfaces a clarity issue. Otherwise, locked.
+
+**Cross-references.** `docs/reviews/2026-04-29-charts-palette-aggregate.md` (full per-specialist transcripts + agreement matrix); `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §13.2 (forest-jade 13-surface cap that drove the override); `docs/design/CHARTS_SPEC.md` §2.2 (palette taxonomy section to be updated).
+
+## 2026-04-29 — PR split deferred; today's changes commit as logical groups on existing branch
+
+**Decision.** Defer the physical PR split recommended by tech-lead H6 («design-system hygiene PR-1» + «chart infra PR-2»). Today's 3 slices (A dark-stage removal, B theme-aware fix, C console-errors fix) + Bundle 1 fixes commit as **5–6 logical commits on the existing `chore/plugin-architecture-2026-04-29` branch** in this order: docs/ADRs first, then visual-hygiene group (Slice A + B + Bundle H4/H5 + tests), then favicon + middleware group, then chart infra group (Slice C + Bundle H1/H2/H3 + tests + env). Branch is NOT pushed and no PRs are opened by Right-Hand — that is PO's decision.
+
+**Why deferred (despite tech-lead H6 recommendation).** The branch carries **80+ commits ahead of main** — months of charts α + β + design-system migration + agent-persona consolidation work pre-dating this session. Tech-lead's split recommendation was scoped to today's 3 slices and did NOT account for this historical depth. A physical split into «PR-1 hygiene + PR-2 chart-infra» would require:
+
+1. **PR-0 (historical)** — α + β charts foundation (~75 commits, ~40K LOC) since today's Slice C dispatcher imports from `packages/ui/src/charts/index.ts` whose V1/V2 chart components were built across those 75 commits. Slice C cannot land without them.
+2. **PR-1 (visual hygiene)** — depends on PR-0 (StagedSections/StageFrame are part of the design-system migration also in PR-0).
+3. **PR-2 (chart infra)** — depends on PR-0 and is independent of PR-1.
+
+That's a 3-PR sequence, not a 2-PR split. Building it correctly is a multi-hour cherry-pick / rebase exercise on a Windows host where Rule 8.3 dispatch hygiene rules already flag NTFS reliability concerns. The cost / value ratio at this stage (pre-alpha, single contributor) does not justify it; a single-PR-on-branch with section-by-section commit history is honest and reviewable.
+
+**What we keep instead.** Logical commits in dependency order, so a future cherry-pick-into-2-PRs (if PO wants) is a small operation rather than re-discovering the partitioning. Each commit message tags its slice (`[slice-A]`, `[slice-B]`, `[slice-C]`, `[bundle-1]`) and group (`hygiene` or `chart-infra`) so a `git log --grep` query selects the partition.
+
+**When to revisit.** If PO opens this branch as a PR and reviewer-overload is reported (CI noise, comment fatigue, unclear scope) — split via cherry-pick-rebase from main into 2 (or 3) sequential PRs at that point, with a clear cost.
+
+**Owner.** Right-Hand (today's commit work) + PO (push + PR open decision).
+**Revisit.** Trigger = PO opens PR and asks for split, OR Phase 2 builder dispatch needs Slice C alone landed and Slice C is blocked behind unrelated review traffic.
+
+**Cross-references.** `docs/reviews/2026-04-29-design-system-fixes-aggregate.md` H6 (the original split recommendation); CONSTRAINTS.md Rule 8.3 (Windows dispatch hygiene); branch `chore/plugin-architecture-2026-04-29` git log for the historical depth.

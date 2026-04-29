@@ -14,6 +14,102 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-118 — Document V1→V2 chart-backend two-frame flicker in CHARTS_SPEC §3
+
+**Added:** 2026-04-29 (review-aggregate `2026-04-29-design-system-fixes-aggregate.md` M13).
+**Priority:** P3 — documentation, not behaviour.
+**Source:** `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` renders V1 on SSR + first paint, then `useEffect` swaps to V2 if env flag is `'primitives'`. Visible flicker on every chart instance — minor for DonutChart (different arc generators), more pronounced for Phase 2 LineChart/AreaChart with gradient fills.
+**Recommendation:** add a «backend swap» subsection to `docs/design/CHARTS_SPEC.md` §3 that explains the trade-off + suggests a higher-level wrapper in `apps/web` that imports V2 directly when env is statically known at build (Next.js inlines `NEXT_PUBLIC_*` for `apps/web` source) — bypasses the dispatcher. Workspace-package consumers stay on dispatcher.
+**Scope:** doc edit, ≤ 1 hour.
+**Owner:** doc-updater + frontend-engineer review.
+**Trigger:** before Phase 2 LineChart/AreaChart V2 dispatch lands.
+
+---
+
+### TD-117 — `ACTIVE_CHART_BACKEND` resolver for non-`apps/web` consumers
+
+**Added:** 2026-04-29 (review-aggregate H7).
+**Priority:** P2 — blocks confidence that Storybook + unit tests + future mobile bundle resolve the chart backend symmetrically.
+**Source:** `apps/web/next.config.ts` `env:` block makes `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` build-time-constant only for `apps/web`. Other consumers (Storybook setup, Vitest, future mobile) re-read `process.env` at module-eval and would risk SSR/CSR asymmetry. Dispatcher saves them at runtime, but architectural footgun remains.
+**Recommendation:** add `ACTIVE_CHART_BACKEND` resolver — single function in `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` that reads env once and caches; document expected setup for each consumer (Storybook `preview.tsx`, Vitest `setup.ts`, mobile bundle).
+**Scope:** ~50 LOC + docs in `CHARTS_SPEC.md` §3, ≤ 2 hours.
+**Owner:** frontend-engineer.
+**Trigger:** before Storybook adoption or before mobile bundle ships (currently neither exists; trigger if added).
+
+---
+
+### TD-116 — CSP missing app-wide for `apps/web`
+
+**Added:** 2026-04-29 (review-aggregate M9; pre-existing — not introduced by recent slices).
+**Priority:** P2 — α-cutover blocker. Defence-in-depth XSS mitigation absent.
+**Source:** `apps/web/next.config.ts` `headers()` block sets `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` — but no `Content-Security-Policy`. Any future XSS vector (third-party script, user-content rendering) lacks the CSP backstop. `ImageResponse` (`/icon`) renders SVG+PNG server-side; CSP isn't strictly required for that route but absence weakens app-wide.
+**Recommendation:** add nonce-based CSP in `headers()` per `~/.claude/rules/web/security.md` template — `default-src 'self'; script-src 'self' 'nonce-{random}' …; style-src 'self' 'unsafe-inline' …; img-src 'self' data: …; connect-src 'self' …; frame-src 'none'; object-src 'none'; base-uri 'self';`. Adjust origins for Clerk + Polygon + PostHog + Sentry once known.
+**Scope:** medium — requires inventorying all third-party origins + nonce middleware integration. ≤ 1 day.
+**Owner:** devops-engineer (header config) + frontend-engineer (nonce middleware).
+**Trigger:** α-cutover date — must land before public launch.
+
+---
+
+### TD-115 — Dispatcher sunset gate criteria
+
+**Added:** 2026-04-29 (review-aggregate Architect M10/M2).
+**Priority:** P2 — without an explicit gate, `chart-backend-dispatch.tsx` becomes permanent infrastructure when its purpose was migration-only.
+**Source:** `makeBackendDispatch` exists to cover V1→V2 chart migration during the recharts → primitives port. Each new chart kind in Phase 2 wraps a (V1, V2) pair. Without a sunset criterion the dispatcher becomes load-bearing forever; dual-maintenance cost compounds.
+**Recommendation:** add to `docs/ADR-2026-04-29-plugin-architecture.md` (or a new chart-subsystem ADR) explicit gate: «when ≥3 V2 charts ship in production AND 2 weeks pass with zero hydration regressions reported, V1 + dispatcher are removed; V2 is promoted to the bare `Sparkline` / `DonutChart` / etc. exports.» Right-Hand schedules a follow-up agent to perform the removal once the gate fires.
+**Scope:** doc + scheduled cleanup agent. ≤ 30 min initial, ~2 hours when gate fires.
+**Owner:** tech-lead + frontend-engineer (when gate triggers).
+**Trigger:** ≥3 V2 charts in production + 2 weeks zero regressions.
+
+---
+
+### TD-114 — Lift showcase theme to project-wide ThemeProvider before Phase 2
+
+**Added:** 2026-04-29 (review-aggregate Architect M3 / a11y M4).
+**Priority:** P2 — needed before Phase 2 LineChart/AreaChart V2 ship.
+**Source:** `apps/web/src/app/design-system/_hooks/useShowcaseTheme.ts` subscribes to `<html data-theme>` mutations via `MutationObserver`. Acceptable for the showcase. But every V2 chart that needs theme will subscribe independently — N observers for N charts on one page, and the observer fires on every `class` mutation (Tailwind `dark:` toggle, Clerk theme injection) not just the showcase toggle.
+**Recommendation:** lift to a single `ThemeContext` provider mounted at the showcase root (or app root). Provider owns the observer once (or, better, subscribes to a custom event from `ShowcaseHeader`) and broadcasts via context. Hook becomes `useContext(ThemeContext)`. Optionally migrate to `useSyncExternalStore` for React 18+ concurrent-rendering safety.
+**Scope:** ~80 LOC, ≤ 4 hours.
+**Owner:** frontend-engineer.
+**Trigger:** before Phase 2 LineChart V2 dispatch lands.
+
+---
+
+### TD-113 — `app/icon.tsx` `ImageResponse` pulls satori (~200KB) for static favicon
+
+**Added:** 2026-04-29 (review-aggregate M17).
+**Priority:** P3 — bundle-budget polish, not behaviour.
+**Source:** `apps/web/src/app/icon.tsx` uses Next 15 `ImageResponse` (powered by `satori`) to render the favicon. Satori adds ~200KB to the runtime bundle for what is effectively a static asset.
+**Recommendation:** replace dynamic `app/icon.tsx` with a pre-rendered `apps/web/public/favicon.ico` (or `apps/web/src/app/favicon.ico`) + standard `<link rel="icon">`. Drop the satori dependency.
+**Scope:** ≤ 30 min — generate the PNG once from current design, drop the dynamic route.
+**Owner:** frontend-engineer.
+**Trigger:** bundle-size audit pass; or when satori is found in bundle analyzer output as a top-N dep.
+
+---
+
+### TD-112 — Visual regression test for `/design-system` (light + dark)
+
+**Added:** 2026-04-29 (review-aggregate M16).
+**Priority:** P2 — tracking the actual cause of the «light island on dark page» bug that shipped silently 2026-04-29.
+**Source:** `/design-system` showcase has no Playwright snapshot or visual regression coverage. The recent dark-stage removal + theme-aware fix was caught in code review only because right-hand explicitly inspected — no automated gate would have flagged the «light island» issue.
+**Recommendation:** add Playwright visual regression test gating the showcase route in both themes. Test: navigate, snapshot light, click theme toggle, snapshot dark. Compare against baseline. Phase 2 also benefits.
+**Scope:** ~80 LOC + baseline snapshots in `apps/web/e2e/visual/`. ≤ 4 hours.
+**Owner:** qa-engineer.
+**Trigger:** before Phase 2 builder dispatch (so each new chart kind lands with a baseline).
+
+---
+
+### TD-111 — Chart dispatcher double-render cost on dense dashboards
+
+**Added:** 2026-04-29 (review-aggregate M14).
+**Priority:** P2 — measure-then-decide.
+**Source:** `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` does `useState(false)` + `useEffect → setUsePrimitives(true)` per chart instance when env = `'primitives'`. On the dashboard page rendering 6+ charts, this multiplies into 6+ extra re-renders + 6+ observer registrations per page load.
+**Recommendation:** measure INP (Interaction-to-Next-Paint) on Phase 2 dashboard with N≥6 charts. If degradation visible, hoist the flag read to a top-level Provider (single read, single broadcast). Otherwise document the known cost in CHARTS_SPEC §3 and leave.
+**Scope:** measurement first (≤ 1 hour). Mitigation if needed (~80 LOC, ≤ 3 hours) — overlaps with TD-114 ThemeProvider lift.
+**Owner:** qa-engineer (measurement) + frontend-engineer (mitigation if triggered).
+**Trigger:** Phase 2 dashboard route renders ≥6 charts on one page; or INP measurement >200ms on Lighthouse.
+
+---
+
 ### TD-110 — LLM observability (Langfuse or analog) for AI service
 
 **Added:** 2026-04-29 (PO directive).

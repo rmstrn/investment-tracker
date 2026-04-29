@@ -109,3 +109,10 @@ tools/openapi/generated/*
 
 .vercel
 .env*.local
+
+# Playwright MCP screenshots / page snapshots / console logs (per-developer)
+.playwright-mcp/
+# Dev server stderr capture (per-developer)
+.dev-server.err
+# Stray screenshots dropped to repo root (move under .playwright-mcp/ or delete)
+design-system-*.png
