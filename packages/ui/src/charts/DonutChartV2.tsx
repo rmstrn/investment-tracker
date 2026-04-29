@@ -31,7 +31,7 @@
  * Visual:
  *   - 60% inner radius default (donut ring, not pie)
  *   - Stroke between sectors: `var(--card)` 2px (clean paper-cut separation)
- *   - Active sector: 1.02× scale + 4px `var(--accent-glow)` rim on hover/focus
+ *   - Active sector: 1.06× scale + 4px `var(--accent-glow)` rim on hover/focus
  *   - centerLabel: 24px Geist 600 number + 11px Geist Mono uppercase eyebrow
  *   - Sweep-in animation: stroke-dashoffset on circle arc
  *   - Reduced-motion: instant render
@@ -315,22 +315,39 @@ const MUSEUM_HUE_ORDER: ReadonlyArray<MuseumHueName> = [
   'stone',
 ] as const;
 
-/** Light theme stops — `DONUT_GRADIENT_v2_draft.md` §«Light theme» table. */
+/**
+ * Light theme stops — PO-feedback bump 2026-04-29: ΔL widened from ~0.10 to
+ * ~0.20 so the «свет изнутри» direction reads clearly on live page. Original
+ * draft values preserved as comments for reference.
+ */
 const GRADIENT_STOPS_LIGHT: Readonly<Record<MuseumHueName, GradientStops>> = {
-  slate: { center: '#3F454C', rim: '#6B7280' },
-  stone: { center: '#594F40', rim: '#867A66' },
-  'fog-blue': { center: '#385763', rim: '#5F8794' },
-  plum: { center: '#523644', rim: '#7E5C6E' },
-  ochre: { center: '#5D4B23', rim: '#8C7448' },
+  // slate: was { #3F454C, #6B7280 } — ΔL≈17%
+  slate: { center: '#262A2F', rim: '#7C8590' },
+  // stone: was { #594F40, #867A66 } — ΔL≈13%
+  stone: { center: '#3A3328', rim: '#9C8E78' },
+  // fog-blue: was { #385763, #5F8794 } — ΔL≈15%
+  'fog-blue': { center: '#1F3640', rim: '#7099A8' },
+  // plum: was { #523644, #7E5C6E } — ΔL≈14%
+  plum: { center: '#321E2A', rim: '#946F82' },
+  // ochre: was { #5D4B23, #8C7448 } — ΔL≈14%
+  ochre: { center: '#3A2E14', rim: '#A28958' },
 } as const;
 
-/** Dark theme stops — `DONUT_GRADIENT_v2_draft.md` §«Dark theme» table. */
+/**
+ * Dark theme stops — PO-feedback bump 2026-04-29: ΔL widened similarly. In
+ * dark theme the «center darker → rim brighter» direction still applies.
+ */
 const GRADIENT_STOPS_DARK: Readonly<Record<MuseumHueName, GradientStops>> = {
-  slate: { center: '#7B838F', rim: '#A8AFBC' },
-  stone: { center: '#928876', rim: '#C5BBA8' },
-  'fog-blue': { center: '#7892A0', rim: '#A8C6D0' },
-  plum: { center: '#896E7C', rim: '#B79CA8' },
-  ochre: { center: '#967D54', rim: '#CAB07E' },
+  // slate: was { #7B838F, #A8AFBC }
+  slate: { center: '#5C6470', rim: '#BFC5D0' },
+  // stone: was { #928876, #C5BBA8 }
+  stone: { center: '#6E6553', rim: '#D6CCB8' },
+  // fog-blue: was { #7892A0, #A8C6D0 }
+  'fog-blue': { center: '#536D7A', rim: '#BFD8E2' },
+  // plum: was { #896E7C, #B79CA8 }
+  plum: { center: '#674E5C', rim: '#CAB1BD' },
+  // ochre: was { #967D54, #CAB07E }
+  ochre: { center: '#6E5A38', rim: '#DCC392' },
 } as const;
 
 function getGradientStops(theme: ThemeMode, hue: MuseumHueName): GradientStops {
@@ -636,11 +653,28 @@ export function DonutChartV2({
                     gradientUnits="userSpaceOnUse"
                     cx={cx}
                     cy={cy}
+                    // PO-feedback fix 2026-04-29: anchor the bright stop at
+                    // the actual outer rim of the donut ring (`outerR`) and
+                    // anchor the dark stop at the actual inner ring radius
+                    // (`innerR`) using a non-zero gradient floor. Previously
+                    // the gradient spanned 0..outerR which placed the
+                    // ring's inner edge already 60% of the way to bright —
+                    // slices read flat. Now the dark→bright sweep happens
+                    // exactly across the visible ring band.
                     r={outerR}
                     fx={cx}
                     fy={cy}
                   >
-                    <stop offset="0%" stopColor={stops.center} />
+                    {/* Dark center stop is offset to where the donut's
+                        inner radius actually lives (innerR / outerR ≈ 0.6).
+                        Below that, the gradient is solid dark — meaning the
+                        inner edge of every slice is firmly in the dark
+                        zone, and the «свет изнутри» dark→bright sweep
+                        plays out across the full ring band. */}
+                    <stop
+                      offset={`${(innerR / outerR) * 100}%`}
+                      stopColor={stops.center}
+                    />
                     <stop offset="100%" stopColor={stops.rim} />
                   </radialGradient>
                 );
@@ -818,7 +852,7 @@ function FastDonutRing({
         const translateY = HOVER_BISECTOR_TRANSLATE_PX * Math.sin(bisector);
         const hoverTransform =
           isActive && !prefersReducedMotion
-            ? `translate(${translateX}px, ${translateY}px) scale(1.02)`
+            ? `translate(${translateX}px, ${translateY}px) scale(1.06)`
             : undefined;
 
         // Entrance fade — sister slices stay opaque (no dim on hover, ADR
@@ -993,7 +1027,7 @@ function RoundedDonutPath({
         const translateY = -HOVER_BISECTOR_TRANSLATE_PX * Math.cos(bisector);
         const hoverTransform =
           isActive && !prefersReducedMotion
-            ? `translate(${translateX}px, ${translateY}px) scale(1.02)`
+            ? `translate(${translateX}px, ${translateY}px) scale(1.06)`
             : undefined;
 
         // Entrance fade — sister slices stay opaque on hover (ADR §«Hover»
