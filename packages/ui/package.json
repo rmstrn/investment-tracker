@@ -20,7 +20,9 @@
       "default": "./src/charts/lazy.ts"
     }
   },
-  "files": ["src"],
+  "files": [
+    "src"
+  ],
   "scripts": {
     "build": "tsc --noEmit",
     "lint": "biome check .",
@@ -38,6 +40,10 @@
     "@investment-tracker/design-tokens": "workspace:*",
     "@investment-tracker/shared-types": "workspace:*",
     "clsx": "^2.1.1",
+    "d3-hierarchy": "^3.1.2",
+    "d3-scale": "^4.0.2",
+    "d3-shape": "^3.2.0",
+    "d3-time": "^3.1.0",
     "lucide-react": "^0.468.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^2.6.0"
@@ -45,6 +51,10 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/d3-hierarchy": "^3.1.7",
+    "@types/d3-scale": "^4.0.9",
+    "@types/d3-shape": "^3.1.8",
+    "@types/d3-time": "^3.0.4",
     "@types/node": "^25.6.0",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
