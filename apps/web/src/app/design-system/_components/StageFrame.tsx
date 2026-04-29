@@ -29,6 +29,36 @@ export interface StageFrameProps {
   id?: string;
 }
 
+/**
+ * Split a headline around an accent word on a word boundary, preserving
+ * inter-word whitespace on both sides. Returns `null` when the accent
+ * word isn't present so the caller can render the headline unchanged.
+ *
+ * Examples:
+ *   splitOnAccent("Notice what you'd miss.", "what") =>
+ *     { before: "Notice ", accent: "what", after: " you'd miss." }
+ *   splitOnAccent("Strong opinions", "strong") =>
+ *     null  // case-sensitive, no match
+ */
+function splitOnAccent(
+  headline: string,
+  accentWord: string,
+): { before: string; accent: string; after: string } | null {
+  if (!accentWord) return null;
+  // Word-boundary match — `\b` keeps surrounding whitespace inside the
+  // before/after slices instead of consuming it like `split` would.
+  const escaped = accentWord.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`\\b${escaped}\\b`);
+  const match = re.exec(headline);
+  if (!match) return null;
+  const start = match.index;
+  return {
+    before: headline.slice(0, start),
+    accent: headline.slice(start, start + accentWord.length),
+    after: headline.slice(start + accentWord.length),
+  };
+}
+
 export function StageFrame({
   variant,
   eyebrow,
@@ -38,8 +68,7 @@ export function StageFrame({
   children,
   id,
 }: StageFrameProps) {
-  const beforeAccent = headline.split(accentWord)[0] ?? '';
-  const afterAccent = headline.slice(beforeAccent.length + accentWord.length);
+  const segments = splitOnAccent(headline, accentWord);
   return (
     <section
       id={id}
@@ -51,9 +80,15 @@ export function StageFrame({
         <div>
           <p className="showcase-stage-v2__eyebrow">{eyebrow}</p>
           <h2 className="showcase-stage-v2__headline">
-            {beforeAccent}
-            <span className="showcase-stage-v2__headline-accent">{accentWord}</span>
-            {afterAccent}
+            {segments ? (
+              <>
+                {segments.before}
+                <span className="showcase-stage-v2__headline-accent">{segments.accent}</span>
+                {segments.after}
+              </>
+            ) : (
+              headline
+            )}
           </h2>
         </div>
         <div className="showcase-stage-v2__meta">{meta}</div>
@@ -62,3 +97,5 @@ export function StageFrame({
     </section>
   );
 }
+
+export { splitOnAccent };
