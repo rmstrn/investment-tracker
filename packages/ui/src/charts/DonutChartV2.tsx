@@ -640,52 +640,80 @@ export function DonutChartV2({
                 Do not flip — confirmed PO directive 2026-04-29 (DONUT_GRADIENT_v2_draft.md).
 
               Strategy: 5 `<radialGradient>` elements per render (active-
-              theme set only), centered at the donut's geometric center
-              (`cx`, `cy`, `r = outerR`). `userSpaceOnUse` requires hex
-              values; we toggle the active set via `useThemeMode`.
+              theme set only), centered at the donut's geometric center.
+              `userSpaceOnUse` requires hex values; we toggle the active set
+              via `useThemeMode`.
+
+              IMPORTANT — `userSpaceOnUse` coord space (PO polish #3 fix
+              2026-04-29):
+                Per SVG2 spec, `userSpaceOnUse` evaluates the gradient's
+                cx/cy/r in the user coord system in effect AT THE PLACE
+                WHERE THE GRADIENT IS REFERENCED — not where the
+                `<radialGradient>` element lives in the DOM. The slice
+                paths sit inside `<g transform="translate(cx, cy)">`
+                (RoundedDonutPath) which means the gradient's cx/cy must be
+                expressed in THAT translated frame. In the rounded-path
+                local space, the donut center is `(0, 0)`, not `(cx, cy)`.
+                The previous polish #1 used `cx={cx} cy={cy}` and pushed
+                the gradient origin to world `(2*cx, 2*cy)` — entirely off
+                the donut ring — which is why every slice rendered at the
+                rim stop's solid color (smoking-gun pixel sample 2026-04-29:
+                inner-edge / midline / outer-edge all `#bfc5d0` rim).
+
+                FastDonutRing uses `<g transform="rotate(-90 cx cy)">`,
+                a rotation pivoted at `(cx, cy)`. That keeps `(cx, cy)` as
+                the fixed point in both local and world coord spaces, so
+                its branch needs `cx={cx} cy={cy}`. Two render paths, two
+                origin conventions — encoded in `gradOriginX/Y` below.
 
               Only emitted when `palette === 'categorical'` — sequential +
               monochromatic keep flat fills (gradient muddies magnitude
               read in sequential). */}
-          {palette === 'categorical' ? (
-            <defs data-testid="donut-gradient-defs">
-              {MUSEUM_HUE_ORDER.map((hue) => {
-                const stops = getGradientStops(themeMode, hue);
+          {palette === 'categorical'
+            ? (() => {
+                // RoundedDonutPath: parent <g translate(cx,cy)> shifts the
+                //   local origin to the donut center → gradient origin (0,0).
+                // FastDonutRing: parent <g rotate(-90, cx, cy)> leaves
+                //   (cx, cy) as the fixed point → gradient origin (cx, cy).
+                const gradOriginX = useRoundedPath ? 0 : cx;
+                const gradOriginY = useRoundedPath ? 0 : cy;
                 return (
-                  <radialGradient
-                    key={hue}
-                    id={`donut-grad-${hue}-${gradientIdScope}`}
-                    gradientUnits="userSpaceOnUse"
-                    cx={cx}
-                    cy={cy}
-                    // PO-feedback fix 2026-04-29: anchor the bright stop at
-                    // the actual outer rim of the donut ring (`outerR`) and
-                    // anchor the dark stop at the actual inner ring radius
-                    // (`innerR`) using a non-zero gradient floor. Previously
-                    // the gradient spanned 0..outerR which placed the
-                    // ring's inner edge already 60% of the way to bright —
-                    // slices read flat. Now the dark→bright sweep happens
-                    // exactly across the visible ring band.
-                    r={outerR}
-                    fx={cx}
-                    fy={cy}
-                  >
-                    {/* Dark center stop is offset to where the donut's
-                        inner radius actually lives (innerR / outerR ≈ 0.6).
-                        Below that, the gradient is solid dark — meaning the
-                        inner edge of every slice is firmly in the dark
-                        zone, and the «свет изнутри» dark→bright sweep
-                        plays out across the full ring band. */}
-                    <stop
-                      offset={`${(innerR / outerR) * 100}%`}
-                      stopColor={stops.center}
-                    />
-                    <stop offset="100%" stopColor={stops.rim} />
-                  </radialGradient>
+                  <defs data-testid="donut-gradient-defs">
+                    {MUSEUM_HUE_ORDER.map((hue) => {
+                      const stops = getGradientStops(themeMode, hue);
+                      return (
+                        <radialGradient
+                          key={hue}
+                          id={`donut-grad-${hue}-${gradientIdScope}`}
+                          gradientUnits="userSpaceOnUse"
+                          cx={gradOriginX}
+                          cy={gradOriginY}
+                          // Polish #1 floor: dark stop sits at offset
+                          // `innerR/outerR` (~60%), so the dark→bright sweep
+                          // plays across the visible ring band only.
+                          r={outerR}
+                          fx={gradOriginX}
+                          fy={gradOriginY}
+                        >
+                          {/* Dark center stop offset to where the donut's
+                              inner radius actually lives (innerR/outerR
+                              ≈ 0.6). Below that the gradient is solid dark
+                              — but with a correctly-located origin, that
+                              solid-dark zone falls inside the donut hole
+                              (invisible), and the dark→bright sweep plays
+                              out across the visible ring band. */}
+                          <stop
+                            offset={`${(innerR / outerR) * 100}%`}
+                            stopColor={stops.center}
+                          />
+                          <stop offset="100%" stopColor={stops.rim} />
+                        </radialGradient>
+                      );
+                    })}
+                  </defs>
                 );
-              })}
-            </defs>
-          ) : null}
+              })()
+            : null}
 
           {/* Backplate ring removed (PO polish #2 — 2026-04-29). It was
               reading as a visible gray halo around the donut perimeter. The
