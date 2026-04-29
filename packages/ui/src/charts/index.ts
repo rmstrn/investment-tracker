@@ -18,14 +18,13 @@
  * route migrated chart kinds to the custom SVG primitives layer
  * (`packages/ui/src/charts/primitives/{math,svg}/`).
  *
- * Phase β.1.1 (this commit) adds the flag scaffold + `ACTIVE_CHART_BACKEND`
- * export — no chart kinds re-route yet. Phase β.1.2 (Sparkline) and β.1.3
- * (Donut) add the per-kind branches.
+ * Phase β.1.1 added the flag scaffold + `ACTIVE_CHART_BACKEND` export.
+ * Phase β.1.2 (Sparkline) + β.1.3 (Donut) wired the per-kind branches.
+ * Phase β.1.5 (TD-117 closure) consolidated the env read into the single
+ * `getActiveBackend()` resolver in `_shared/chart-backend-dispatch.tsx` —
+ * the barrel re-exports its result as `ACTIVE_CHART_BACKEND`.
  *
- * Read at module evaluation time (not inside a component) so the choice
- * propagates as a static export.
- *
- * IMPORTANT — hydration safety. Because this read sits in a workspace
+ * IMPORTANT — hydration safety. Because the read sits in a workspace
  * package (`@investment-tracker/ui`), Next.js 15 + Turbopack do NOT
  * inline `NEXT_PUBLIC_*` symmetrically across the server / client
  * bundle boundary the way they do for `apps/web` source. Server reads
@@ -33,34 +32,36 @@
  * package's client bundle falls back to `'recharts'`. This produces a
  * React hydration mismatch on `<DonutChart>` / `<Sparkline>`.
  *
- * Mitigation = TWO LAYERS:
+ * Mitigation = TWO LAYERS + per-consumer setup:
  *   1. `apps/web/next.config.ts` echoes the var into its `env:` block —
- *      pins the value for the apps/web bundle.
- *   2. Below: dispatch happens on the *server-side baseline* (`'recharts'`)
- *      for the FIRST paint and is upgraded to `'primitives'` only after
- *      mount via `useChartBackend()`. SSR === client-first-render === V1;
- *      V2 swaps in after `useEffect` fires. Hydration is now safe even if
- *      Layer 1 misfires (e.g. consumer app forgets to echo the env block).
+ *      pins the value for the apps/web bundle. Other consumers (Vitest,
+ *      Storybook, mobile) must mirror this (see `CHARTS_SPEC.md` §3.13).
+ *   2. `makeBackendDispatch` renders V1 on the *server-side baseline*
+ *      for the FIRST paint and upgrades to V2 only after mount via
+ *      `useEffect`. SSR === client-first-render === V1; V2 swaps in
+ *      after mount. Hydration is now safe even if Layer 1 misfires.
  */
-const PROVEDO_CHART_BACKEND =
-  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PROVEDO_CHART_BACKEND) || 'recharts';
-
-/**
- * Active backend, exposed for tests + dev tooling. Per-kind switches (added
- * in β.1.2+) read from this constant.
- *
- * NOTE: this resolves at module-eval time on whichever side reads it (server
- * sees `.env.local`, client sees the `next.config.ts`-pinned value). It is
- * NOT used directly in render paths — those go through the SSR-safe
- * `chart-backend-dispatch` helpers below.
- */
-export const ACTIVE_CHART_BACKEND = PROVEDO_CHART_BACKEND as 'recharts' | 'primitives';
-
+import {
+  getActiveBackend,
+  makeBackendDispatch,
+  type ChartBackend,
+} from './_shared/chart-backend-dispatch';
 import { DonutChart as DonutChartV1, type DonutChartProps } from './DonutChart';
 import { DonutChartV2, type DonutChartV2Props } from './DonutChartV2';
 import { Sparkline as SparklineV1, type SparklineProps } from './Sparkline';
 import { SparklineV2, type SparklineV2Props } from './SparklineV2';
-import { makeBackendDispatch } from './_shared/chart-backend-dispatch';
+
+/**
+ * Active backend, exposed for tests + dev tooling. Per-kind switches read
+ * from this constant. Resolved via the canonical `getActiveBackend()`
+ * resolver — single source of truth, cached at module-eval per consumer.
+ *
+ * NOT used directly in render paths — those go through the SSR-safe
+ * `chart-backend-dispatch` helpers below.
+ */
+export const ACTIVE_CHART_BACKEND: ChartBackend = getActiveBackend();
+
+export { getActiveBackend, type ChartBackend } from './_shared/chart-backend-dispatch';
 
 /**
  * Per-kind SSR-safe dispatchers. The dispatcher generic `<P1, P2 extends P1>`

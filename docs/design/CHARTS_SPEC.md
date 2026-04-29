@@ -393,6 +393,25 @@ The «Show payload» button reveals a `<details>` with the raw JSON in `--inset`
 - Cursor track: `0ms` (instant; no transition on the cursor line itself — feels laggy otherwise).
 - Reduced-motion: `animate=false` on every chart, which is `isAnimationActive={!prefersReducedMotion}` in Recharts.
 
+### 3.13 Chart backend resolver — per-consumer setup matrix
+
+**Closes TD-117.** The `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` flag is read by `getActiveBackend()` in `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` — single source of truth, cached at module-evaluation time. The barrel re-exports the cached value as `ACTIVE_CHART_BACKEND`. The dispatcher's post-mount swap calls `getActiveBackend()` directly.
+
+Because `@investment-tracker/ui` is a workspace package, Next.js / Turbopack do NOT inline `NEXT_PUBLIC_*` symmetrically for it the way they do for `apps/web` source. Each consumer must echo the env var into its own bundle config; otherwise the workspace package falls back to `'recharts'` while the consumer's own code may resolve `'primitives'`, producing the SSR/CSR asymmetry that the dispatcher's render-V1-then-swap mitigates but does not eliminate at the value-resolution layer.
+
+**Per-consumer setup expectations:**
+
+| Consumer | Where to set | Pattern |
+|---|---|---|
+| `apps/web` | `apps/web/next.config.ts` `env:` block | `NEXT_PUBLIC_PROVEDO_CHART_BACKEND: process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND ?? 'recharts'` (already wired) |
+| Vitest unit tests | `packages/ui/vitest.setup.ts` (or per-package equivalent) | `process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND ??= 'recharts'` — set before any chart module is imported. Alternatively pass via `--env NEXT_PUBLIC_PROVEDO_CHART_BACKEND=primitives` for a primitives test pass. |
+| Storybook (when adopted) | `.storybook/preview.tsx` top-of-file | `process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND ??= 'recharts'` — set before any decorator imports a chart. Or echo into `.storybook/main.ts` `env()` callback. |
+| Mobile bundle (future) | bundler config (Metro / esbuild / Vite) | Mirror the `apps/web/next.config.ts` pattern — inline `NEXT_PUBLIC_*` at bundle config time so the workspace package's module-eval read sees the same value as consumer code. |
+
+**Cache semantics:** the resolver reads env once per module instance. Workspace-package boundary means each consumer gets its own module instance, so the cache is per-consumer (NOT global). Mutating `process.env` at runtime after module load does NOT change the result — for tests that need to flip the backend, set the env var before importing chart modules, or use `vi.resetModules()` between cases.
+
+**Render-path discipline:** `getActiveBackend()` is for tests, dev tooling, the barrel re-export, and the dispatcher's post-mount swap. Render paths must NOT call it directly — they go through `makeBackendDispatch(V1, V2, name)`, which renders V1 on the SSR + first-client-paint baseline, then upgrades to V2 inside `useEffect` if the resolver returns `'primitives'`. This guarantees hydration parity even when Layer 1 (consumer-side env echo) misfires.
+
 ---
 
 ## 4. Per-chart spec

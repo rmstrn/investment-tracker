@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * SSR-safe V1/V2 chart backend dispatcher.
+ * SSR-safe V1/V2 chart backend dispatcher + active-backend resolver.
  *
  * Workspace-package boundary makes `process.env.NEXT_PUBLIC_*` resolve
  * asymmetrically across the server / client bundle (see commentary in
@@ -15,19 +15,62 @@
  *
  * V1 + V2 share the same `*Props` type contract; the dispatcher does not
  * narrow or alter props.
+ *
+ * ────────────────────────────────────────────────────────────────────
+ * `getActiveBackend()` — single source of truth
+ * ────────────────────────────────────────────────────────────────────
+ * `getActiveBackend()` is the canonical resolver for the chart-backend
+ * flag. It reads `process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND` ONCE at
+ * module-evaluation time and caches the value as a module-level constant.
+ * Every other module in `@investment-tracker/ui/charts` delegates to it
+ * (the barrel's `ACTIVE_CHART_BACKEND` const + the dispatcher's render
+ * gate). Closes TD-117.
+ *
+ * Per-consumer cache (NOT global):
+ * The workspace-package boundary means each consumer (apps/web, Vitest
+ * unit tests, future Storybook, future mobile bundle) gets its own
+ * module instance, so the cache is per-consumer. Each consumer is
+ * responsible for echoing the env var into its own bundle config:
+ *
+ *   - apps/web        — `next.config.ts` `env:` block (already wired).
+ *   - Vitest          — `setup.ts` should `process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND ??= 'recharts'`.
+ *   - Storybook       — `preview.tsx` should set the env var before charts render.
+ *   - Mobile bundle   — bundler config must inline `NEXT_PUBLIC_*` symmetrically.
+ *
+ * See `docs/design/CHARTS_SPEC.md` §3.13 for the full consumer-setup matrix.
  */
 
 import { useEffect, useState, type ComponentType } from 'react';
 
-function readBackend(): 'recharts' | 'primitives' {
-  // `process.env` is non-nullable in `@types/node`; we only need the
-  // `typeof process !== 'undefined'` guard for non-Node runtimes
-  // (e.g. browser bundle pre-Turbopack-inline). The optional chain on
-  // `process.env` was dead-typed and confused readers.
+export type ChartBackend = 'recharts' | 'primitives';
+
+/**
+ * Read the env var once at module-eval time. The optional chain on
+ * `process.env` defends against non-Node runtimes (e.g. browser bundle
+ * pre-Turbopack-inline). The narrow `=== 'primitives'` test rejects any
+ * unexpected value and falls back to the safe default.
+ */
+const ACTIVE_BACKEND: ChartBackend = (() => {
   const raw =
-    (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_PROVEDO_CHART_BACKEND) ||
-    'recharts';
+    (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PROVEDO_CHART_BACKEND) || 'recharts';
   return raw === 'primitives' ? 'primitives' : 'recharts';
+})();
+
+/**
+ * Returns the active chart backend resolved from
+ * `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` at module-evaluation time.
+ *
+ * Per-consumer cached — each workspace-package consumer instance has its
+ * own cached read. Within a consumer, every call returns the same value;
+ * mutating `process.env` after module load does NOT change the result.
+ *
+ * Render paths must NOT call this directly — go through
+ * `makeBackendDispatch` which handles the SSR / first-paint baseline.
+ * `getActiveBackend` is for: tests, dev tooling, the barrel's
+ * `ACTIVE_CHART_BACKEND` re-export, and the dispatcher's post-mount swap.
+ */
+export function getActiveBackend(): ChartBackend {
+  return ACTIVE_BACKEND;
 }
 
 /**
@@ -61,7 +104,7 @@ export function makeBackendDispatch<P1 extends object, P2 extends P1>(
     const [usePrimitives, setUsePrimitives] = useState(false);
 
     useEffect(() => {
-      if (readBackend() === 'primitives') {
+      if (getActiveBackend() === 'primitives') {
         setUsePrimitives(true);
       }
     }, []);

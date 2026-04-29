@@ -26,18 +26,6 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ---
 
-### TD-117 — `ACTIVE_CHART_BACKEND` resolver for non-`apps/web` consumers
-
-**Added:** 2026-04-29 (review-aggregate H7).
-**Priority:** P2 — blocks confidence that Storybook + unit tests + future mobile bundle resolve the chart backend symmetrically.
-**Source:** `apps/web/next.config.ts` `env:` block makes `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` build-time-constant only for `apps/web`. Other consumers (Storybook setup, Vitest, future mobile) re-read `process.env` at module-eval and would risk SSR/CSR asymmetry. Dispatcher saves them at runtime, but architectural footgun remains.
-**Recommendation:** add `ACTIVE_CHART_BACKEND` resolver — single function in `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` that reads env once and caches; document expected setup for each consumer (Storybook `preview.tsx`, Vitest `setup.ts`, mobile bundle).
-**Scope:** ~50 LOC + docs in `CHARTS_SPEC.md` §3, ≤ 2 hours.
-**Owner:** frontend-engineer.
-**Trigger:** before Storybook adoption or before mobile bundle ships (currently neither exists; trigger if added).
-
----
-
 ### TD-116 — CSP missing app-wide for `apps/web`
 
 **Added:** 2026-04-29 (review-aggregate M9; pre-existing — not introduced by recent slices).
@@ -841,6 +829,15 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R117 — `ACTIVE_CHART_BACKEND` resolver for non-`apps/web` consumers
+
+**Resolved:** 2026-04-29 by `<commit-pending>` (Phase β.1.5 — TD-117 closure on `chore/plugin-architecture-2026-04-29`).
+**Was:** `apps/web/next.config.ts` `env:` block made `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` build-time-constant only for `apps/web`. Other consumers (Storybook setup, Vitest, future mobile) re-read `process.env` at module-eval and risked SSR/CSR asymmetry. Dispatcher saved them at runtime, but architectural footgun remained.
+**Fix:** added `getActiveBackend(): ChartBackend` resolver in `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` — reads env once at module-eval, caches as a module-level constant. Barrel `index.ts` exports `ACTIVE_CHART_BACKEND` as the resolver result and re-exports `getActiveBackend` + `ChartBackend` type. Dispatcher's post-mount swap delegates to the same resolver. Per-consumer cache (workspace-package boundary) keeps each consumer isolated; the canonical setup matrix lives in `docs/design/CHARTS_SPEC.md` §3.13 (apps/web `next.config.ts` already wired; Vitest `setup.ts`, Storybook `preview.tsx`, future mobile bundle config documented).
+**Why approach (A) module-level singleton over (B) lazy memoise:** value never changes at runtime, eager read surfaces config drift at module-eval (not at first chart render), zero measurable benefit to deferring. Belt-and-braces `next.config.ts` env block kept — single source of truth + bundle pin together cover all four mitigation layers.
+**Verification:** `pnpm tsc --noEmit` clean across `packages/ui`; `pnpm test backend-flag` 7/7 green; visual smoke at `/design-system` zero hydration errors.
+**Links:** session 2026-04-29 phase β.1.5 commit; review aggregate `2026-04-29-design-system-fixes-aggregate.md` H7.
 
 ### TD-R086 — CI gate for AI Service Docker build
 
