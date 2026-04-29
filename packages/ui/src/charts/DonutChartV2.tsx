@@ -62,6 +62,34 @@ import { CHART_ANIMATION_MS } from './tokens';
 
 export type DonutLabelPosition = 'center' | 'outside' | 'leader-line';
 
+/**
+ * Arc geometry sugar layer (D2 — kickoff §«arcMode»). `'full'` keeps the
+ * default 12-o'clock anchored 360° sweep. `'270'` resolves to a bottom-
+ * opening 270° sweep (start `−3π/4`, end `+3π/4`) — leaves a 90° wedge at
+ * the bottom for the legend to sit in (D5 detail).
+ *
+ * Sugar resolution rule: `arcMode` only takes effect when BOTH
+ * `startAngleRadians` AND `endAngleRadians` are unset by the caller.
+ * Explicit raw-radian values always win — anatomy ADR §«Slice geometry».
+ */
+export type DonutArcMode = 'full' | '270';
+
+/**
+ * Palette taxonomy (D2 — `CHART_PALETTE_v2_draft.md` Section 4 + kickoff
+ * §«palette»). Slice fills resolve via different token streams per mode:
+ *
+ * - `'categorical'` (default) — `--chart-categorical-1..5` cycling. The
+ *   museum-vitrine 5-hue family (slate · ochre · fog-blue · plum · stone)
+ *   re-pointed in D1 via `chart-categorical.*` semantic aliases.
+ * - `'sequential'` — slices sorted desc-by-value get the 7-step
+ *   `--chart-sequential-1..7` ink ramp (largest = darkest / brightest in
+ *   dark theme; smallest = lightest / dimmest). 7-slice cap; >7 slices
+ *   recycles the floor token (TD candidate for D5+ refinement).
+ * - `'monochromatic'` — single hue (categorical-1) with progressive
+ *   opacity 1.0 → 0.4 across N slices. Initial impl; refine post-D2.
+ */
+export type DonutPalette = 'categorical' | 'sequential' | 'monochromatic';
+
 export interface DonutChartV2Props {
   payload: DonutChartPayload;
   size?: number;
@@ -78,18 +106,37 @@ export interface DonutChartV2Props {
    *
    * NOTE: We use SVG-native angle convention here (0 = top, clockwise+).
    * The math layer `arcPath` follows d3's identical convention.
+   *
+   * If left undefined together with `endAngleRadians`, `arcMode` decides.
    */
   startAngleRadians?: number;
   /**
    * End angle in radians. Default `2π` (full circle). Set to `π` for a
    * 180° semi-circle starting from `startAngleRadians` (typically `0`).
+   *
+   * If left undefined together with `startAngleRadians`, `arcMode` decides.
    */
   endAngleRadians?: number;
   /**
-   * Corner radius in pixels. Default 0 (uses fast circle-stroke ring path).
-   * Any positive value switches to the d3-shape `<path>` rounded path.
+   * Sugar layer for arc geometry. `'full'` (default) → standard 360° donut
+   * anchored at 12 o'clock; `'270'` → bottom-opening 270° wedge. Only
+   * applies when neither `startAngleRadians` nor `endAngleRadians` is
+   * explicitly supplied (raw-angle props win).
+   */
+  arcMode?: DonutArcMode;
+  /**
+   * Corner radius in pixels. Default `3` (D2 — anatomy ADR §«Slice
+   * geometry»). The cap rule `min(specifiedR, ringWidth/2,
+   * sliceArcLengthAtCenterline/4)` is applied per-slice inside the
+   * rounded-path branch to prevent «pinching» on <8% slices.
+   * Pass `0` to opt back into the fast circle-stroke ring path.
    */
   cornerRadius?: number;
+  /**
+   * Slice palette mode. Default `'categorical'` — museum-vitrine 5-hue
+   * cycling. See `DonutPalette` for `'sequential'` and `'monochromatic'`.
+   */
+  palette?: DonutPalette;
   /**
    * Label placement strategy. Default `'center'` — falls back to legend below.
    * Future: `'outside'` (slice-aligned tangent text), `'leader-line'`
@@ -107,33 +154,118 @@ export interface DonutChartV2Props {
 const TWO_PI = Math.PI * 2;
 const INNER_RADIUS_RATIO = 0.6;
 
+/** D2 default `cornerRadius` (anatomy ADR §«Slice geometry»). */
+const DEFAULT_CORNER_RADIUS = 3;
+
+/**
+ * Bottom-opening 270° arc — start `−3π/4` (≈225° / lower-left), end
+ * `+3π/4` (≈135° / lower-right), sweeping clockwise across the top, with a
+ * 90° wedge missing at the bottom (anatomy ADR §«Arc mode»).
+ */
+const ARC_270_START = -Math.PI * (3 / 4);
+const ARC_270_END = Math.PI * (3 / 4);
+
 /* Resolved sector type — `color` is non-optional after fallback resolution. */
 interface ResolvedSegment {
   readonly key: string;
   readonly label: string;
   readonly value: number;
   readonly color: string;
+  /** Per-slice fill opacity, used by `'monochromatic'` palette mode. */
+  readonly fillOpacity?: number;
+  /** Original payload index — preserves caller order even when sorted. */
+  readonly originalIndex: number;
 }
 
 /**
- * Donut palette (carry-over from V1 — DO NOT change without product-designer
- * sign-off). Perceptually-distinct sector allocation: deep-jade · ink ·
- * ochre · soft-bronze · cobalt-ink · graphite · …
+ * Museum-vitrine categorical cycle (D1 — `chart-categorical-1..5` semantic
+ * aliases). Slot order = slate → ochre → fog-blue → plum → stone per
+ * `CHART_PALETTE_v2_draft.md` §4 «Order rationale» (max hue separation for
+ * 2-series and 3-series cases).
  */
-const ALLOCATION_PALETTE = [
-  'var(--chart-series-1)',
-  'var(--chart-series-3)',
-  'var(--chart-series-9)',
-  'var(--chart-series-6)',
-  'var(--chart-series-10)',
-  'var(--chart-series-5)',
-  'var(--chart-series-11)',
-  'var(--chart-series-4)',
-  'var(--chart-series-2)',
-  'var(--chart-series-12)',
-  'var(--chart-series-7)',
-  'var(--chart-series-8)',
+const CATEGORICAL_PALETTE = [
+  'var(--chart-categorical-1)',
+  'var(--chart-categorical-2)',
+  'var(--chart-categorical-3)',
+  'var(--chart-categorical-4)',
+  'var(--chart-categorical-5)',
 ] as const;
+
+/**
+ * 7-step ink ramp for sequential / ordinal-by-magnitude palette
+ * (`chart-sequential-1..7`). Index 0 = top magnitude (darkest in light
+ * theme, brightest in dark theme); index 6 = bottom magnitude.
+ */
+const SEQUENTIAL_PALETTE = [
+  'var(--chart-sequential-1)',
+  'var(--chart-sequential-2)',
+  'var(--chart-sequential-3)',
+  'var(--chart-sequential-4)',
+  'var(--chart-sequential-5)',
+  'var(--chart-sequential-6)',
+  'var(--chart-sequential-7)',
+] as const;
+
+/**
+ * Apply the corner-radius cap rule per anatomy ADR §«Slice geometry»:
+ *
+ *     effectiveR = min(specifiedR, ringWidth / 2, sliceArcLengthAtCenterline / 4)
+ *
+ * Prevents the «pinching» artefact on thin slices below ~8% of total
+ * sweep. Below the cap, d3-shape gracefully falls back to a mitered
+ * (un-rounded) corner — no special handling needed downstream.
+ */
+function capCornerRadius(
+  specifiedR: number,
+  ringWidth: number,
+  sliceArcLengthAtCenterline: number,
+): number {
+  if (specifiedR <= 0) return 0;
+  return Math.min(specifiedR, ringWidth / 2, sliceArcLengthAtCenterline / 4);
+}
+
+/**
+ * Resolve a slice's fill token from the active palette mode + render index.
+ *
+ * - `'categorical'` → cycles `--chart-categorical-1..5` modulo 5. The
+ *   museum-vitrine 5-hue family covers the 5-categorical cap; charts that
+ *   exceed 5 series are expected to migrate to «top-4 + Other» grouping
+ *   (CHART_PALETTE_v2_draft.md §5.3).
+ * - `'sequential'` → maps `renderIdx` (post-sort) onto
+ *   `--chart-sequential-1..7`. Above 7 slices, the floor token (`-7`) is
+ *   reused; flagged as TD in D5 if real fixtures stress this.
+ * - `'monochromatic'` → all slices = `--chart-categorical-1`; per-slice
+ *   `fillOpacity` carries the visual differentiation.
+ */
+function resolvePaletteColor(
+  mode: DonutPalette,
+  renderIdx: number,
+  totalSegments: number,
+): string {
+  if (mode === 'sequential') {
+    const i = Math.min(renderIdx, SEQUENTIAL_PALETTE.length - 1);
+    return SEQUENTIAL_PALETTE[i] as string;
+  }
+  if (mode === 'monochromatic') {
+    return CATEGORICAL_PALETTE[0] as string;
+  }
+  // 'categorical' — wrap around the 5-hue cycle. `noUncheckedIndexedAccess`
+  // forces the assertion; modulo with a non-empty constant is safe.
+  void totalSegments;
+  return CATEGORICAL_PALETTE[renderIdx % CATEGORICAL_PALETTE.length] as string;
+}
+
+/**
+ * `'monochromatic'` opacity ramp: 1.0 → 0.4 across N slices, even spacing.
+ * Initial implementation per kickoff D2 §«palette wiring» — refinement
+ * (e.g. tonal HSL fade in lieu of opacity) tracked as a follow-on TD.
+ */
+function resolveMonochromaticOpacity(renderIdx: number, totalSegments: number): number {
+  if (totalSegments <= 1) return 1;
+  const top = 1.0;
+  const floor = 0.4;
+  return top - ((top - floor) * renderIdx) / (totalSegments - 1);
+}
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* Component                                                               */
@@ -144,9 +276,11 @@ export function DonutChartV2({
   size = 220,
   centerLabel,
   className,
-  startAngleRadians = 0,
-  endAngleRadians = TWO_PI,
-  cornerRadius = 0,
+  startAngleRadians,
+  endAngleRadians,
+  arcMode = 'full',
+  cornerRadius = DEFAULT_CORNER_RADIUS,
+  palette = 'categorical',
   labelPosition = 'center',
 }: DonutChartV2Props) {
   const dataTableId = useId();
@@ -167,6 +301,25 @@ export function DonutChartV2({
     [payload.format, payload.currency],
   );
 
+  // ─── Arc geometry resolution (D2) ────────────────────────────────────
+  // `arcMode` is sugar — caller-supplied raw radians always win. Only when
+  // BOTH raw props are unset do we resolve `arcMode` to start/end.
+  const callerSetExplicitAngles =
+    startAngleRadians !== undefined || endAngleRadians !== undefined;
+  let resolvedStart: number;
+  let resolvedEnd: number;
+  if (callerSetExplicitAngles) {
+    resolvedStart = startAngleRadians ?? 0;
+    resolvedEnd = endAngleRadians ?? TWO_PI;
+  } else if (arcMode === '270') {
+    resolvedStart = ARC_270_START;
+    resolvedEnd = ARC_270_END;
+  } else {
+    // 'full' default — preserves prior 12-o'clock-anchored 360° behaviour.
+    resolvedStart = 0;
+    resolvedEnd = TWO_PI;
+  }
+
   // ─── Geometry ────────────────────────────────────────────────────────
   const cx = size / 2;
   const cy = size / 2;
@@ -177,29 +330,41 @@ export function DonutChartV2({
   const circumference = TWO_PI * radius;
 
   // Total available sweep (handles semi-circle / arbitrary ranges).
-  const totalSweep = endAngleRadians - startAngleRadians;
+  const totalSweep = resolvedEnd - resolvedStart;
   const totalValue = payload.segments.reduce((acc, s) => acc + s.value, 0) || 1;
 
-  // Resolve segments + colours. Explicit shape — spread of the optional
-  // `color?: string` from the schema would propagate `string | undefined`
-  // into downstream non-optional `color: string` slots.
-  const segments: ResolvedSegment[] = payload.segments.map((s, i) => {
-    // `noUncheckedIndexedAccess` makes `ALLOCATION_PALETTE[…]` return
-    // `string | undefined`; assert non-undefined via the modulo invariant
-    // — `i % len` is always within bounds of a non-empty palette.
-    const fallback = ALLOCATION_PALETTE[i % ALLOCATION_PALETTE.length] as string;
+  // ─── Palette + ordering (D2) ─────────────────────────────────────────
+  // For `'sequential'` palette, slice render order is sorted desc-by-value
+  // — index 0 (largest) gets the darkest ramp step. `originalIndex` is
+  // preserved so legend / data-table / keyboard-nav stay caller-stable.
+  // `'categorical'` and `'monochromatic'` keep payload order.
+  const sortedSegments =
+    palette === 'sequential'
+      ? [...payload.segments]
+          .map((s, i) => ({ s, i }))
+          .sort((a, b) => b.s.value - a.s.value)
+      : payload.segments.map((s, i) => ({ s, i }));
+
+  const segmentCount = sortedSegments.length;
+  const segments: ResolvedSegment[] = sortedSegments.map(({ s, i }, renderIdx) => {
+    const fallback = resolvePaletteColor(palette, renderIdx, segmentCount);
     return {
       key: s.key,
       label: s.label,
       value: s.value,
       color: s.color ?? fallback,
+      fillOpacity:
+        palette === 'monochromatic'
+          ? resolveMonochromaticOpacity(renderIdx, segmentCount)
+          : undefined,
+      originalIndex: i,
     };
   });
 
   // Pre-compute angular boundaries for each sector.
   const sectorBounds = (() => {
     const acc: Array<{ start: number; end: number; sweep: number; pct: number }> = [];
-    let cursor = startAngleRadians;
+    let cursor = resolvedStart;
     for (const seg of segments) {
       const pct = seg.value / totalValue;
       const sweep = pct * totalSweep;
@@ -241,6 +406,8 @@ export function DonutChartV2({
       data-active-index={activeIndex ?? undefined}
       data-corner-rounded={useRoundedPath || undefined}
       data-half-circle={Math.abs(totalSweep - Math.PI) < 1e-6 || undefined}
+      data-arc-mode={callerSetExplicitAngles ? 'custom' : arcMode}
+      data-palette={palette}
       className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
       style={{ width: '100%' }}
       onMouseLeave={() => setHoverState(null)}
@@ -275,6 +442,7 @@ export function DonutChartV2({
               cy={cy}
               innerR={innerR}
               outerR={outerR}
+              ringWidth={ringWidth}
               cornerRadius={cornerRadius}
               activeIndex={activeIndex}
               hoverIndex={hoverState?.index ?? null}
@@ -291,7 +459,7 @@ export function DonutChartV2({
               radius={radius}
               ringWidth={ringWidth}
               circumference={circumference}
-              startAngle={startAngleRadians}
+              startAngle={resolvedStart}
               activeIndex={activeIndex}
               hoverIndex={hoverState?.index ?? null}
               sweepReady={sweepReady}
@@ -420,6 +588,10 @@ function FastDonutRing({
             r={radius}
             fill="none"
             stroke={seg.color}
+            // FastDonutRing renders the slice as a stroked arc, so the
+            // monochromatic palette's per-slice opacity rides on the
+            // stroke channel (vs `fillOpacity` in the rounded path).
+            strokeOpacity={seg.fillOpacity}
             strokeWidth={ringWidth}
             strokeDasharray={`${arcLen} ${circumference}`}
             strokeDashoffset={targetDashoffset}
@@ -457,10 +629,11 @@ function FastDonutRing({
           />
         );
       })}
-      {/* 2px paper-cut between sectors — drawn as N short radial line caps
-          centred on each boundary. We use a single overlay group of `<line>`
-          elements at sector boundaries; the cream colour breaks the strokes
-          into individually-readable arcs. */}
+      {/* 1px hairline paper-cut between sectors (anatomy ADR §«Slice
+          borders») — drawn as N short radial line caps centred on each
+          boundary. `--card` cream stroke + `non-scaling-stroke` keeps the
+          hairline crisp on retina + through hover scale transforms.
+          MANDATORY for WCAG: mitigates stone↔ochre tritanopia ΔL=0. */}
       <g aria-hidden="true">
         {sectorBounds.map((bound, i) => {
           const a = bound.start;
@@ -478,7 +651,8 @@ function FastDonutRing({
               x2={x2}
               y2={y2}
               stroke="var(--card, #FFFFFF)"
-              strokeWidth={2}
+              strokeWidth={1}
+              vectorEffect="non-scaling-stroke"
               strokeLinecap="butt"
             />
           );
@@ -499,6 +673,8 @@ interface RoundedDonutPathProps {
   cy: number;
   innerR: number;
   outerR: number;
+  /** Ring thickness — needed by the corner-radius cap rule. */
+  ringWidth: number;
   cornerRadius: number;
   activeIndex: number | null;
   hoverIndex: number | null;
@@ -514,6 +690,7 @@ function RoundedDonutPath({
   cy,
   innerR,
   outerR,
+  ringWidth,
   cornerRadius,
   activeIndex,
   hoverIndex,
@@ -521,17 +698,27 @@ function RoundedDonutPath({
   setHoverState,
   setActiveIndex,
 }: RoundedDonutPathProps) {
+  // Centerline radius for the slice-arc-length cap rule.
+  const centerlineR = (innerR + outerR) / 2;
   return (
     <g transform={`translate(${cx} ${cy})`} data-testid="donut-rounded-path">
       {segments.map((seg, i) => {
         const bound = sectorBounds[i];
         if (!bound) return null;
+        // Cap the corner radius per anatomy ADR §«Slice geometry» —
+        // prevents «pinching» on thin slices below ~8% sweep.
+        const sliceArcLengthAtCenterline = Math.abs(bound.sweep) * centerlineR;
+        const effectiveR = capCornerRadius(
+          cornerRadius,
+          ringWidth,
+          sliceArcLengthAtCenterline,
+        );
         const d = arcPath({
           innerRadius: innerR,
           outerRadius: outerR,
           startAngle: bound.start,
           endAngle: bound.end,
-          cornerRadius,
+          cornerRadius: effectiveR,
         });
         const isActive = activeIndex === i || hoverIndex === i;
         return (
@@ -539,8 +726,14 @@ function RoundedDonutPath({
             key={seg.key}
             d={d}
             fill={seg.color}
+            fillOpacity={seg.fillOpacity}
+            // 1px hairline outline — `--card` cream paper, NOT pure white
+            // (anatomy ADR §«Slice borders»). `non-scaling-stroke` keeps
+            // the hairline crisp on retina + during hover scale transforms.
+            // MANDATORY — WCAG mitigation for stone↔ochre tritanopia ΔL=0.
             stroke="var(--card, #FFFFFF)"
-            strokeWidth={2}
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
             data-testid="donut-sector"
             data-segment-key={seg.key}
             data-segment-index={i}
