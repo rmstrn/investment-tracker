@@ -64,7 +64,7 @@ for (const theme of ['light', 'dark'] as const) {
   for (const kind of CHART_KINDS) {
     test(`chart-${kind} (${theme}) visual baseline`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
-      await page.goto('/design#charts', { waitUntil: 'networkidle' });
+      await page.goto('/design-system#charts', { waitUntil: 'networkidle' });
       await setTheme(page, theme);
 
       const locator = page.locator(`[data-testid="chart-${kind}"]`).first();

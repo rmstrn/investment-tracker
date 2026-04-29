@@ -27,6 +27,20 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    return [
+      // Preserve the legacy `/design-system.html` URL that PO has shared
+      // during design rounds. Real route lives at `/design-system`.
+      { source: '/design-system.html', destination: '/design-system' },
+    ];
+  },
+  async redirects() {
+    return [
+      // Old Next.js showcase route → consolidated `/design-system`.
+      { source: '/design', destination: '/design-system', permanent: true },
+      { source: '/design/:path*', destination: '/design-system/:path*', permanent: true },
+    ];
+  },
 };
 
 export default nextConfig;

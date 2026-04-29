@@ -1,0 +1,196 @@
+/*
+ * Showcase-only styles. Scoped via the .showcase root class on the page so
+ * that no token rule leaks outside `/design-system`. These are NOT design
+ * tokens — they exist only to demo motion + interactive states inside the
+ * showcase. Phase β/γ promotes any reusable bit into `packages/ui`.
+ */
+
+.showcase {
+  /* Reduced-motion: when the in-page toggle sets data-reduced-motion on
+     <html>, suppress all .showcase-motion-* transitions / animations.
+     System-level prefers-reduced-motion is also honored. */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .showcase .showcase-motion-demo,
+  .showcase .showcase-motion-demo * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+html[data-reduced-motion="true"] .showcase .showcase-motion-demo,
+html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* Token chip — color swatch with metadata under it. */
+.showcase-token-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: var(--card, var(--color-background-elevated));
+  border-radius: 12px;
+  box-shadow: var(--shadow-soft, var(--shadow-sm));
+  transition: box-shadow 200ms ease-out, transform 150ms ease-out;
+  cursor: pointer;
+  border: 1px solid transparent;
+  text-align: left;
+  font-family: inherit;
+}
+
+.showcase-token-chip:hover {
+  box-shadow: var(--shadow-card, var(--shadow-md));
+  transform: translateY(-1px);
+}
+
+.showcase-token-chip:focus-visible {
+  outline: none;
+  border-color: var(--accent, #2d5f4e);
+  box-shadow: 0 0 0 3px rgba(45, 95, 78, 0.18);
+}
+
+.showcase-token-chip__sample {
+  width: 100%;
+  height: 36px;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--border-subtle, rgba(0, 0, 0, 0.08));
+}
+
+.showcase-token-chip__name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink, var(--color-text-primary));
+}
+
+.showcase-token-chip__meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--text-3, var(--color-text-tertiary));
+}
+
+/* Stage — paired light/dark palette comparison frame. */
+.showcase-stage {
+  border-radius: 18px;
+  padding: 28px 28px 32px;
+  font-feature-settings: "tnum" 1;
+}
+
+.showcase-stage--light {
+  background: #f4f1ea;
+  color: #1a1a1a;
+}
+
+.showcase-stage--dark {
+  background: #0f0f11;
+  color: #f4f1ea;
+}
+
+/* Demo grid — uniform card shells inside sections. */
+.showcase-demo-card {
+  background: var(--card, var(--color-background-elevated));
+  border-radius: 14px;
+  padding: 18px 20px;
+  box-shadow: var(--shadow-soft, var(--shadow-sm));
+}
+
+/* Motion — duration/easing demo dot. */
+.showcase-motion-track {
+  position: relative;
+  height: 32px;
+  background: var(--inset, var(--color-background-secondary));
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.showcase-motion-dot {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent, #2d5f4e);
+  transform: translate(0, -50%);
+  transition-property: transform;
+  transition-timing-function: var(--ease, cubic-bezier(0.16, 1, 0.3, 1));
+  transition-duration: var(--demo-duration, 350ms);
+}
+
+.showcase-motion-trigger:hover .showcase-motion-dot {
+  transform: translate(calc(100% * 8), -50%);
+}
+
+/* Lucide icon tile (hover-grow + clipboard). */
+.showcase-icon-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 8px;
+  border-radius: 12px;
+  background: var(--inset, var(--color-background-secondary));
+  box-shadow: var(--shadow-inset-light, none);
+  cursor: pointer;
+  transition: background-color 200ms ease-out, transform 150ms ease-out, box-shadow 200ms ease-out;
+  border: 1px solid transparent;
+  font-family: inherit;
+}
+
+.showcase-icon-tile:hover {
+  background: var(--card, var(--color-background-elevated));
+  box-shadow: var(--shadow-card, var(--shadow-md));
+  transform: translateY(-1px);
+}
+
+.showcase-icon-tile:hover svg {
+  color: var(--ink, var(--color-text-primary));
+}
+
+.showcase-icon-tile:focus-visible {
+  outline: none;
+  border-color: var(--accent, #2d5f4e);
+}
+
+.showcase-icon-tile svg {
+  color: var(--text-3, var(--color-text-tertiary));
+  transition: color 200ms ease-out;
+}
+
+.showcase-icon-tile__label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-3, var(--color-text-tertiary));
+  letter-spacing: 0.04em;
+}
+
+/* State row — default / hover / focus / disabled labels under demo. */
+.showcase-state-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 14px;
+}
+
+.showcase-state-row__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.showcase-state-row__label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3, var(--color-text-tertiary));
+}
+
+/* Force a focus-ring for documentation purposes (data-force-focus="true"). */
+[data-force-focus="true"] {
+  outline: 2px solid var(--accent, #2d5f4e);
+  outline-offset: 2px;
+}
