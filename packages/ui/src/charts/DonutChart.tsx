@@ -12,7 +12,7 @@
 import type { DonutChartPayload } from '@investment-tracker/shared-types/charts';
 import { useCallback, useId, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Sector, Tooltip } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Sector, Tooltip } from 'recharts';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
@@ -120,9 +120,37 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
   // absolutely-positioned div with its own SVG; cheap and theme-flippable.
   const innerHoleId = `donut-inner-hole-${dataTableId.replace(/[^a-z0-9]/gi, '')}`;
 
+  /**
+   * Donut palette refresh (PO feedback 2026-04-29) — the prior `DONUT_ORDER`
+   * (which equals `SERIES_VARS` in source order) put two adjacent forest-jade
+   * derivatives next to each other for sector allocation, which made the
+   * outline-vs-fill distinction read as muddy. We pick a perceptually-distinct
+   * subset for sector-allocation context: deep-jade · ink · ochre/cobalt-ink
+   * (series-9/10) · soft bronze · graphite. Mix is intentionally cool-warm-
+   * neutral interleaved so adjacent slices never share a hue family.
+   *
+   * Falls back to per-segment `s.color` when the agent supplies one (allows
+   * AI-generated payloads to override). Mod-12 wraps to the full extended
+   * palette for >5-segment cases.
+   */
+  const ALLOCATION_PALETTE = [
+    'var(--chart-series-1)', // forest-jade
+    'var(--chart-series-3)', // ink (high contrast anchor)
+    'var(--chart-series-9)', // ochre (editorial extension)
+    'var(--chart-series-6)', // soft bronze
+    'var(--chart-series-10)', // aubergine / cobalt-ink
+    'var(--chart-series-5)', // graphite
+    'var(--chart-series-11)', // dusty mauve
+    'var(--chart-series-4)', // mid-jade
+    'var(--chart-series-2)', // bronze
+    'var(--chart-series-12)', // clay tan
+    'var(--chart-series-7)', // deep-jade
+    'var(--chart-series-8)', // 8th editorial extension
+  ];
+
   const segments = payload.segments.map((s, i) => ({
     ...s,
-    color: s.color ?? DONUT_ORDER[i % DONUT_ORDER.length],
+    color: s.color ?? ALLOCATION_PALETTE[i % ALLOCATION_PALETTE.length],
   }));
 
   const center =
@@ -148,12 +176,32 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
         className="relative inline-flex items-center justify-center"
         style={{ width: size, height: size }}
       >
+        {/*
+         * PO feedback (2026-04-29) — donut layout «поехал полностью» fix.
+         *
+         * Root cause: the prior renderer placed the Recharts `<Legend>` inside
+         * the same ResponsiveContainer. Recharts allocates legend real-estate
+         * by squeezing the Pie's plot area, which shifted the donut center
+         * away from the SVG's geometric centre. Our overlay SVG (outer +
+         * inner ring) assumed the donut sat at `(size/2, size/2)` — when it
+         * shifted left/up the rings drifted off the actual coloured slices.
+         *
+         * Fix: render the Pie alone in its own square ResponsiveContainer;
+         * legend and centre-label live as siblings outside the chart's
+         * coordinate space. This guarantees the Pie stays geometrically
+         * centred on `(size/2, size/2)` so the overlay rings hit the right
+         * radii. The chart-level legend below is also styled with fewer
+         * Recharts internals — wrapped in a flex-column to match the right-
+         * rail editorial layout we want anyway.
+         */}
         <ResponsiveContainer width={size} height={size}>
-          <PieChart>
+          <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
             <Pie
               data={segments}
               dataKey="value"
               nameKey="label"
+              cx="50%"
+              cy="50%"
               innerRadius={innerR}
               outerRadius={outerR}
               stroke="var(--card)"
@@ -176,21 +224,16 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               separator={tooltip.separator}
               formatter={(v) => fmtValue(Number(v))}
             />
-            <Legend
-              wrapperStyle={{ fontSize: 11, color: 'var(--color-text-secondary)' }}
-              align="right"
-              verticalAlign="middle"
-              layout="vertical"
-            />
           </PieChart>
         </ResponsiveContainer>
         {/*
-         * Neumorphism overlay (v1.2): a subtle 1px ring on the OUTER edge of
-         * the donut for visual definition, plus an inner-hole inset-shadow
-         * effect rendered via a layered SVG `<filter>` + `<circle>` — the
-         * inner circle paints a faint ring with a dark drop-shadow toward
-         * the center to read as «depressed paper». Pointer-events disabled
-         * so it never interferes with hover / tooltip.
+         * Outline-vs-fill alignment (PO feedback): the overlay rings are now
+         * drawn at the EXACT Pie radii. Pie has `stroke=var(--card) width=2`
+         * which paints inset+outset of the radius, so the visible coloured
+         * edge sits at `outerR ± 1` and `innerR ± 1`. We therefore draw the
+         * outline rim at `outerR + 1` (the cream stroke's outer edge) and
+         * the inner-hole shadow at `innerR - 1`. Pointer-events disabled so
+         * overlay never interferes with hover / tooltip.
          */}
         <svg
           aria-hidden="true"
@@ -212,20 +255,20 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               </feMerge>
             </filter>
           </defs>
-          {/* Outer ring — defines the donut's outer paper edge. */}
+          {/* Outer ring — sits exactly at the Pie's cream-stroke outer edge. */}
           <circle
             cx={size / 2}
             cy={size / 2}
-            r={outerR + 0.5}
+            r={outerR + 1}
             fill="none"
             stroke="var(--border-subtle, rgba(20, 20, 20, 0.06))"
             strokeWidth={1}
           />
-          {/* Inner-hole inset shadow — donut feels «cut out of paper». */}
+          {/* Inner-hole inset shadow — sits exactly at Pie's inner cream-stroke edge. */}
           <circle
             cx={size / 2}
             cy={size / 2}
-            r={innerR - 0.5}
+            r={innerR - 1}
             fill="none"
             stroke="var(--chart-grid-strong, rgba(20, 20, 20, 0.10))"
             strokeWidth={1}
@@ -238,6 +281,27 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
           </div>
         ) : null}
       </div>
+      {/* Legend — rendered as a sibling so it does NOT push the donut off-centre. */}
+      <ul
+        className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5"
+        style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}
+      >
+        {segments.map((s) => (
+          <li key={s.key} className="flex items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              style={{
+                display: 'inline-block',
+                width: 9,
+                height: 9,
+                borderRadius: 999,
+                background: s.color,
+              }}
+            />
+            <span className="font-medium">{s.label}</span>
+          </li>
+        ))}
+      </ul>
       <ChartDataTable payload={payload} id={dataTableId} />
     </div>
   );
