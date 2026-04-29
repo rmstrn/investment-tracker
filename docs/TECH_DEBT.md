@@ -14,6 +14,38 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-110 — LLM observability (Langfuse or analog) for AI service
+
+**Added:** 2026-04-29 (PO directive).
+**Priority:** P2 — pre-prod-AI-launch.
+**Source:** AI service (`apps/ai/`, FastAPI + Pydantic v2) currently has no LLM observability layer. No prompt/completion tracking, no token-cost tracking, no latency telemetry, no model-version drift detection, no per-conversation tracing across the ChartEnvelope emission path. As AI traffic grows pre-launch and especially post-launch, debugging prompt regressions / runaway costs / Lane-A vocabulary drift becomes blind without instrumentation.
+**Recommendation:** evaluate and adopt one of:
+- **Langfuse** (OSS self-host, free; or hosted ~$29/mo small tier) — primary candidate. Native Anthropic SDK + LangChain integrations; trace tree per request; cost per model + per session; prompt version A/B; eval framework.
+- **Helicone** (proxy-style, OSS or hosted) — simpler integration via base URL swap; less granular per-step tracing.
+- **Arize Phoenix** (OSS) — strong on eval + bias detection; less production-monitoring focused.
+- **LangSmith** (hosted only, paid after free tier) — tight LangChain ecosystem fit; vendor lock concern.
+
+Per R1 (no spend without PO approval), default = **Langfuse self-host on Fly.io alongside `apps/ai`** (Postgres + Redis container, ~$0-5/mo on Hobby plan). Hosted tier requires per-transaction PO approval.
+
+**Scope when triggered:**
+- Add Langfuse SDK dep to `apps/ai/pyproject.toml`
+- Wrap LLM calls with Langfuse traces (decorator-based — minimal code intrusion)
+- Capture: prompt template, model, input tokens, output tokens, cost, latency, ChartEnvelope payload size, parser-rejection reason if any
+- TD-099 vocabulary-gate failures land as Langfuse trace tags (advisory-tone leakage signal)
+- Right-Hand + PO get weekly cost summary
+- Document data-residency + GDPR considerations (Langfuse self-host keeps user prompts in-region)
+
+**Owner:** backend-engineer (AI service integration) + devops-engineer (Fly deploy if self-host) + legal-advisor (GDPR review pre-launch).
+
+**Trigger to revisit:**
+- Before AI service production deploy (`apps/ai` prod app — currently staging-only per `RUNBOOK_ai_flip.md`)
+- OR when prompt-tuning becomes a routine activity (≥3 prompt revisions/week)
+- OR when monthly LLM cost exceeds $50 (visibility threshold)
+
+**Links:** `apps/ai/` (current AI service); `RUNBOOK_ai_flip.md` (prod flip pending); TD-099 (vocab gate, traces would land here); langfuse.com docs.
+
+---
+
 ### TD-109 — Windows `.next/trace` lock collision on parallel dev servers
 
 **Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
