@@ -38,24 +38,33 @@ export const ACTIVE_CHART_BACKEND = PROVEDO_CHART_BACKEND as 'recharts' | 'primi
 
 const usePrimitives = ACTIVE_CHART_BACKEND === 'primitives';
 
+import { DonutChart as DonutChartV1 } from './DonutChart';
+import { DonutChartV2 } from './DonutChartV2';
 import { Sparkline as SparklineV1 } from './Sparkline';
 import { SparklineV2 } from './SparklineV2';
 
 /**
- * `Sparkline` resolves at module-eval time per the flag. β.1.2 is the first
- * per-kind branch wired through `usePrimitives`. Both V1 + V2 share the
- * `SparklineProps` type contract (V2 is API-compatible by design).
+ * Per-kind feature-flag branches. Both V1 + V2 share the `*Props` type
+ * contract — V2 is API-compatible by design (DonutChartV2 adds optional
+ * extension props that V1 ignores when the flag is `recharts`).
  */
 export const Sparkline = usePrimitives ? SparklineV2 : SparklineV1;
-export type { SparklineProps } from './Sparkline';
+export const DonutChart = usePrimitives ? DonutChartV2 : DonutChartV1;
 
-/** V2 named export — for consumers that want the primitives variant unconditionally. */
+export type { SparklineProps } from './Sparkline';
+export type { DonutChartProps } from './DonutChart';
+
+/** V2 named exports — consumers that want the primitives variant unconditionally. */
 export { SparklineV2, type SparklineV2Props } from './SparklineV2';
+export {
+  DonutChartV2,
+  type DonutChartV2Props,
+  type DonutLabelPosition,
+} from './DonutChartV2';
 
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
 export { BarChart, type BarChartProps } from './BarChart';
-export { DonutChart, type DonutChartProps } from './DonutChart';
 export { Calendar, type CalendarProps } from './Calendar';
 export { Treemap, type TreemapProps } from './Treemap';
 
