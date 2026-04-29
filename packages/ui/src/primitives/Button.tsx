@@ -6,13 +6,19 @@ type Size = 'sm' | 'md' | 'lg';
 
 const base =
   'inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap ' +
-  'rounded-md transition-colors duration-fast ease-out ' +
+  'rounded-md transition-[transform,box-shadow,background-color] duration-fast ease-out ' +
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary ' +
   'disabled:pointer-events-none disabled:opacity-50';
 
 const variants: Record<Variant, string> = {
   primary:
-    'bg-interactive-primary text-text-onBrand hover:bg-interactive-primaryHover active:bg-interactive-primaryActive',
+    // v1.1 ink-CTA: 14px corner-radius + extruded shadow + press-down transform.
+    // Override base rounded-md via direct class; shadow uses --shadow-primary-extrude
+    // which carries the multi-axis cream-tint in light + restrained no-glow in dark.
+    'bg-interactive-primary text-text-onBrand hover:bg-interactive-primaryHover active:bg-interactive-primaryActive ' +
+    '!rounded-[14px] shadow-[var(--shadow-primary-extrude)] ' +
+    'hover:-translate-y-px hover:shadow-[var(--shadow-lift)] ' +
+    'active:translate-y-0 active:shadow-[var(--shadow-soft)]',
   secondary:
     'bg-interactive-secondary text-text-primary hover:bg-interactive-secondaryHover active:bg-interactive-secondaryActive',
   ghost:

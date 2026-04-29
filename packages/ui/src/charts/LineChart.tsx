@@ -107,6 +107,15 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
 
   const yDomain = payload.yAxis.domain;
 
+  // Color-blind safety: when 2+ series, vary stroke-dasharray per series so
+  // colour is never the only signal. Solo series stays solid (no need).
+  // Series 0 = solid; series N>=1 cycles a 7-pattern ladder.
+  const DASH_LADDER = ['4 4', '8 4 2 4', '2 2', '6 6', '4 4 1 4', '8 2 2 2'];
+  const getDash = (index: number): string | undefined =>
+    payload.series.length > 1 && index > 0
+      ? DASH_LADDER[(index - 1) % DASH_LADDER.length]
+      : undefined;
+
   return (
     <div
       ref={containerRef}
@@ -162,23 +171,27 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
               }}
             />
           ) : null}
-          {series.map((s) => (
-            <Line
-              key={s.key}
-              dataKey={s.key}
-              name={s.label}
-              type={payload.interpolation}
-              stroke={s.color}
-              strokeWidth={theme.line.strokeWidth}
-              strokeLinecap={theme.line.strokeLinecap}
-              strokeLinejoin={theme.line.strokeLinejoin}
-              dot={false}
-              activeDot={{ r: 5, fill: s.color, stroke: 'var(--card)', strokeWidth: 2 }}
-              isAnimationActive={!prefersReducedMotion}
-              animationDuration={CHART_ANIMATION_MS}
-              animationEasing="ease-out"
-            />
-          ))}
+          {series.map((s, i) => {
+            const dash = getDash(i);
+            return (
+              <Line
+                key={s.key}
+                dataKey={s.key}
+                name={s.label}
+                type={payload.interpolation}
+                stroke={s.color}
+                strokeWidth={theme.line.strokeWidth}
+                strokeLinecap={theme.line.strokeLinecap}
+                strokeLinejoin={theme.line.strokeLinejoin}
+                strokeDasharray={dash}
+                dot={false}
+                activeDot={{ r: 5, fill: s.color, stroke: 'var(--card)', strokeWidth: 2 }}
+                isAnimationActive={!prefersReducedMotion}
+                animationDuration={CHART_ANIMATION_MS}
+                animationEasing="ease-out"
+              />
+            );
+          })}
           {(payload.overlay ?? []).map((marker, i) => (
             <ReferenceDot
               // biome-ignore lint/suspicious/noArrayIndexKey: positional overlay identity.
