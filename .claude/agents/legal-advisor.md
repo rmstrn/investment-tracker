@@ -1,7 +1,11 @@
 ---
 name: legal-advisor
 description: Internal legal-domain SME for product compliance and documentation. Covers GDPR, terms of service, privacy policies, employment/contractor contracts, Lane A regulatory boundary enforcement. Dispatched by Navigator. Does NOT replace licensed attorneys for market-specific investment-adviser regulation (SEC/MiFID II/FCA/39-ФЗ) or court-facing legal matters — those require human counsel.
-model: opus
+
+model: claude-opus-4-7
+color: bright-blue
+effort: high
+memory: persistent
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 ---
 

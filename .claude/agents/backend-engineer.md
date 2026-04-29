@@ -1,7 +1,11 @@
 ---
 name: backend-engineer
 description: Implements backend features. Use for Go handlers in apps/api (Fiber v3) or Python AI service in apps/ai (FastAPI + Pydantic v2). Handles new endpoints, service layer, DB queries, server-side tests, bug fixes. Strict spec-first against OpenAPI. Do NOT use for OpenAPI spec changes without explicit kickoff approval.
-model: opus
+
+model: claude-opus-4-7[1m]
+color: green
+effort: medium
+memory: persistent
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 

@@ -1,7 +1,11 @@
 ---
 name: frontend-engineer
 description: Implements Next.js 15 frontend in apps/web. Use for new pages, client components, TanStack Query hooks, Vitest smoke tests, design-system consumer integration. Strict spec-first against generated @investment-tracker/api-client. Do NOT use for design-system primitive changes (that's Product Designer scope) or backend fixes.
-model: opus
+
+model: claude-opus-4-7[1m]
+color: magenta
+effort: medium
+memory: persistent
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
