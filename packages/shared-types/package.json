@@ -18,6 +18,10 @@
     "./charts": {
       "types": "./src/charts.ts",
       "default": "./src/charts.ts"
+    },
+    "./lane-a-vocabulary": {
+      "types": "./src/lane-a-vocabulary.ts",
+      "default": "./src/lane-a-vocabulary.ts"
     }
   },
   "files": ["src"],
