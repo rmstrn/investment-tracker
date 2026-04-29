@@ -1,7 +1,7 @@
 ---
 name: finance-advisor
 description: Internal finance domain expert. Validates AI-generated financial content for accuracy (formulas, benchmarks, terminology), reviews feature logic from investor psychology angle, helps with startup financial modeling (burn, runway, unit economics), and keeps the Lane A information-vs-advice boundary. Dispatched by Navigator. Does NOT act as registered investment advisor — this is internal product-validation role only.
-model: claude-opus-4-7
+model: opus
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 ---
 

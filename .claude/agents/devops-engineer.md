@@ -1,7 +1,7 @@
 ---
 name: devops-engineer
 description: Owns CI/CD, Docker images, Doppler secrets, deploy pipelines, staging/prod infra, runbooks. Use for GitHub Actions changes, Dockerfile work, deploy verification, incident triage and postmortems, infra-TD work. Does NOT write product features.
-model: claude-opus-4-7
+model: opus
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 

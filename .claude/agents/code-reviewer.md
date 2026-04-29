@@ -1,7 +1,7 @@
 ---
 name: code-reviewer
 description: Independent post-merge (or large-PR pre-merge) reviewer. Use for structured review of correctness, security, performance, design fit, testing, and docs. Produces verdict + blockers + nits + follow-up TDs. NEVER edits code; only writes review reports. Must remain independent from builders.
-model: claude-opus-4-7
+model: opus
 tools: Read, Glob, Grep, Bash, Write
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: architect
 description: Software architecture specialist for Provedo — system design, scalability, technical decision-making, technology stack audits, library upgrade strategies, architectural ADRs. Pairs with tech-lead for engineering decisions: architect proposes the «what» (technology choices, patterns, trade-offs), tech-lead handles «how» (decomposition, kickoffs, sequence). Dispatched by Right-Hand for: tech stack audits, refactor strategy on large systems, choosing between architectural alternatives, deprecation/replacement decisions, performance architecture, scalability planning. Does NOT write production code (delegates via tech-lead → builders).
-model: claude-opus-4-7
+model: opus
 tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 
