@@ -26,7 +26,7 @@ Not covered (pre-authorized):
 - Existing paid services PO has already set up (Clerk, Doppler, etc.)
 - MIT / Apache / BSD-licensed open-source dependencies (Zod, Recharts, Lucide, etc.)
 
-**When you need a paid option:** produce the option as a recommendation with clear cost label («это потребует $X от тебя — нужно твоё согласие»), default to the free alternative in your artifact, and wait for PO to explicitly greenlight. Never assume.
+**When you need a paid option:** produce the option as a recommendation with a clear cost label («это потребует $X от тебя — нужно твоё согласие» / "this will cost you $X — your approval is required"), default to the free alternative in your artifact, and wait for PO to explicitly greenlight. Never assume.
 
 **If asked «should I buy X»:** answer the strategic question, propose options including the paid one with cost, but do NOT authorize the spend — that's PO's call via Right-Hand.
 
@@ -50,7 +50,7 @@ Not covered (internal, pre-authorized):
 - Code comments
 - Internal artifacts meant for team consumption
 
-**When outreach is useful:** produce a DRAFT (email, DM, post) for PO to read and send himself. Draft-for-review is fine — sending-as-PO is not. Always make it clear in your artifact: «черновик для твоего ревью; ты сам отправишь».
+**When outreach is useful:** produce a DRAFT (email, DM, post) for PO to read and send himself. Draft-for-review is fine — sending-as-PO is not. Always make it clear in your artifact: «черновик для твоего ревью; ты сам отправишь» (draft for your review; you will send it yourself).
 
 ---
 
@@ -163,7 +163,7 @@ CRITICAL or HIGH findings block downstream work until fixed.
 
 **No FE-days, LOC, story-points, velocity, time-estimates, or effort theater in kickoffs, ADRs, status reports, commit messages, or any agent-authored artifact.**
 
-Reason: PO directive 2026-04-29 — «нам это не надо. мы просто работаем, и нам главное сделать качественный продукт». Quality is the metric, not throughput.
+Reason: PO directive 2026-04-29 — «нам это не надо. мы просто работаем, и нам главное сделать качественный продукт» (we don't need this; we just work, and our priority is to make a quality product). Quality is the metric, not throughput.
 
 Allowed:
 - Wall-clock for agent dispatch ETAs («target <15 min»).

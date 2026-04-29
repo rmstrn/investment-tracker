@@ -12,7 +12,7 @@ Read `CONSTRAINTS.md` first — it carries the hard team-wide rules every agent 
 
 | Agent | Role | Status | Model |
 |---|---|---|---|
-| `right-hand.md` | PO's Russian-speaking strategic co-pilot — единый вход PO | **canonical** | opus |
+| `right-hand.md` | PO's Russian-speaking strategic co-pilot — single point of contact for PO | **canonical** | opus |
 | `navigator.md` | Legacy PO interface | deprecated (kept for legacy session resume) | opus |
 
 ### Engineering
