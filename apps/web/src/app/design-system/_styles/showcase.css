@@ -11,18 +11,56 @@
      System-level prefers-reduced-motion is also honored. */
 }
 
+/* Skip-link anchor — wrapper div carrying #foundation / #primitives / #charts
+   inside the LIGHT StageFrame so header nav resolves. scroll-margin-top
+   accounts for the sticky header (~64px). Round-2 a11y F-2 fix. */
+.showcase-anchor {
+  scroll-margin-top: 80px;
+}
+
+/* Stage-headline + outer h1 anchor offsets too. */
+.showcase-stage-v2 {
+  scroll-margin-top: 80px;
+}
+
+/* Round-2 a11y F-1: full-scope reduced-motion. When PMR=true on <html>,
+   ALL transitions / animations inside .showcase mute — not just the explicit
+   .showcase-motion-demo sentinel. SC 2.3.3 (Animation from Interactions). */
 @media (prefers-reduced-motion: reduce) {
-  .showcase .showcase-motion-demo,
-  .showcase .showcase-motion-demo * {
-    transition: none !important;
-    animation: none !important;
+  .showcase *,
+  .showcase *::before,
+  .showcase *::after {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
   }
 }
 
-html[data-reduced-motion="true"] .showcase .showcase-motion-demo,
-html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
-  transition: none !important;
-  animation: none !important;
+html[data-reduced-motion="true"] .showcase *,
+html[data-reduced-motion="true"] .showcase *::before,
+html[data-reduced-motion="true"] .showcase *::after {
+  transition-duration: 0ms !important;
+  animation-duration: 0ms !important;
+}
+
+/* Designed focus ring — single idiom across the showcase. Halo gap = 2px of
+   the surface bg, ring = 2px of accent. WCAG 2.4.7 + 2.4.11 AAA-grade
+   visibility + 3:1 contrast against adjacent. transition: none keeps the
+   ring instant (no fade-in). Round-2 a11y Section 5 promotion. */
+.showcase :where(a, button, [role="switch"], [role="checkbox"], [role="radio"], [tabindex]):focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 4px var(--accent);
+  border-color: var(--accent);
+  transition: none;
+}
+
+.showcase input:focus-visible,
+.showcase select:focus-visible,
+.showcase textarea:focus-visible {
+  outline: none;
+  /* Inputs keep the inset glow because the depressed surface needs the
+     ring to read on the inset itself, not float over it. */
 }
 
 /* Token chip — color swatch with metadata under it. */
@@ -238,19 +276,19 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
 
 .showcase-stage-v2__eyebrow {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 0.22em;
+  font-size: var(--showcase-eyebrow-size);
+  letter-spacing: var(--showcase-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--accent);
   margin: 0 0 12px;
-  font-weight: 500;
+  font-weight: var(--showcase-eyebrow-weight);
 }
 
 .showcase-stage-v2__headline {
   font-family: var(--font-sans);
-  font-size: 48px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
+  font-size: var(--showcase-stage-headline-size);
+  font-weight: var(--showcase-stage-headline-weight);
+  letter-spacing: var(--showcase-stage-headline-tracking);
   line-height: 1;
   color: var(--ink);
   margin: 0;
@@ -264,7 +302,7 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
 
 /* Bold-weight only on accent word — no color shift (Patagonia / Stripe Press canon). */
 .showcase-stage-v2__headline-accent {
-  font-weight: 700;
+  font-weight: var(--showcase-accent-word-weight);
   color: var(--accent);
 }
 
@@ -438,7 +476,7 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
 }
 
 .showcase-signature__headline-accent {
-  font-weight: 700;
+  font-weight: var(--showcase-accent-word-weight);
   color: var(--ink);
 }
 
@@ -565,12 +603,19 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
   }
 }
 
-/* Portfolio card (stage-context). */
+/* Portfolio card (stage-context). 3-tier elevation: sub-cards sit at
+   --shadow-soft so the SignatureHero's --shadow-lift dominates as the
+   anchor. --shadow-card is reserved for hover-state lift. Round-2 a11y F-3. */
 .showcase-pf-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 18px 22px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 200ms ease-out, transform 150ms ease-out;
+}
+
+.showcase-pf-card:hover {
   box-shadow: var(--shadow-card);
 }
 
@@ -622,12 +667,17 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
   box-shadow: 0 0 0 3px rgba(155, 92, 62, 0.18);
 }
 
-/* Insight card. */
+/* Insight card. 3-tier discipline: sub-cards = --shadow-soft. */
 .showcase-insight-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 20px 22px;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow 200ms ease-out;
+}
+
+.showcase-insight-card:hover {
   box-shadow: var(--shadow-card);
 }
 
@@ -662,13 +712,13 @@ html[data-reduced-motion="true"] .showcase .showcase-motion-demo * {
   margin: 0;
 }
 
-/* Empty card. */
+/* Empty card. 3-tier discipline: sub-cards = --shadow-soft. */
 .showcase-empty-card {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 32px 24px;
-  box-shadow: var(--shadow-card);
+  box-shadow: var(--shadow-soft);
   text-align: center;
 }
 

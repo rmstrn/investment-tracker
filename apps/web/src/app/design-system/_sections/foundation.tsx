@@ -28,7 +28,7 @@ const COLOR_ROWS: readonly ColorRow[] = [
     label: 'Surfaces',
     tokens: [
       { name: 'BG', light: '#E8E0D0', dark: '#0E0E12' },
-      { name: 'Card', light: '#FFFFFF', dark: '#26262E' },
+      { name: 'Card', light: '#FAF7F0', dark: '#26262E' },
       { name: 'Inset', light: '#D6CCB8', dark: '#070709' },
     ],
   },
@@ -37,13 +37,13 @@ const COLOR_ROWS: readonly ColorRow[] = [
     tokens: [
       { name: 'Ink (CTA)', light: '#1A1A1A', dark: '#F4F1EA' },
       { name: 'Text 2', light: '#4D4D4D', dark: '#B5B5B5' },
-      { name: 'Text 3', light: '#7A7A7A', dark: '#9A9A9A' },
+      { name: 'Text 3', light: '#5A5A5A', dark: '#9A9A9A' },
     ],
   },
   {
     label: 'Small accents · только для статусов / цитат / успеха',
     tokens: [
-      { name: 'Forest-jade', light: '#2D5F4E', dark: '#4A8775' },
+      { name: 'Forest-jade', light: '#2D5F4E', dark: '#5C9A85' },
       { name: 'Bronze', light: '#A04A3D', dark: '#BD6A55' },
     ],
   },

@@ -41,23 +41,28 @@ export default function DesignSystemPage() {
           <p
             className="font-mono uppercase"
             style={{
-              fontSize: '10px',
-              letterSpacing: '0.22em',
+              fontSize: 'var(--showcase-eyebrow-size)',
+              letterSpacing: 'var(--showcase-eyebrow-tracking)',
               color: 'var(--accent, var(--color-accent-default))',
-              fontWeight: 500,
+              fontWeight: 'var(--showcase-eyebrow-weight)' as unknown as number,
             }}
           >
             {brand.productName} · Design System v2 · Showcase
           </p>
           <h1
-            className="font-semibold tracking-tight text-text-primary"
-            style={{ fontSize: '28px', letterSpacing: '-0.025em', lineHeight: 1.15 }}
+            className="font-semibold text-text-primary"
+            style={{
+              fontSize: 'var(--showcase-page-title-size)',
+              letterSpacing: 'var(--showcase-page-title-tracking)',
+              fontWeight: 'var(--showcase-page-title-weight)' as unknown as number,
+              lineHeight: 1.05,
+            }}
           >
             Provedo Design System v2 — refined
           </h1>
           <p
             className="max-w-3xl text-text-secondary"
-            style={{ fontSize: '13px', lineHeight: 1.55 }}
+            style={{ fontSize: '14px', lineHeight: 1.55 }}
           >
             Real React mounts of every Provedo surface, both themes side-by-side. Every interactive
             element responds to hover / focus / press without remount. The two stages below
@@ -66,6 +71,9 @@ export default function DesignSystemPage() {
           </p>
         </section>
 
+        {/* Skip-link anchors — Foundation / Primitives / Charts live INSIDE the
+            light StageFrame; we attach the ids on wrapper divs so the header
+            nav skip-links resolve. Round-2 a11y F-2 fix (SC 2.4.1 Bypass Blocks). */}
         <StageFrame
           id="light-v2"
           variant="light"
@@ -82,11 +90,17 @@ export default function DesignSystemPage() {
             </>
           }
         >
-          <FoundationSection variant="light" />
-          <PrimitivesSection variant="light" />
+          <div id="foundation" className="showcase-anchor">
+            <FoundationSection variant="light" />
+          </div>
+          <div id="primitives" className="showcase-anchor">
+            <PrimitivesSection variant="light" />
+          </div>
           <FormsSection variant="light" />
           <CardsSection variant="light" />
-          <ChartsSection variant="light" />
+          <div id="charts" className="showcase-anchor">
+            <ChartsSection variant="light" />
+          </div>
         </StageFrame>
 
         <StageFrame
