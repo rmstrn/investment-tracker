@@ -59,6 +59,9 @@ export {
 /* ─── Floating overlays ──────────────────────────────────────────────── */
 export { Tooltip, type TooltipProps } from './Tooltip';
 
+/* ─── Brand glyph (re-export from icons package) ─────────────────────── */
+export { CitationGlyph, ProvedoMark, type CitationGlyphProps } from '../../../icons/CitationGlyph';
+
 /* ─── Re-export the existing visually-hidden transcript ──────────────── */
 export { ChartDataTable } from '../../_shared/ChartDataTable';
 
