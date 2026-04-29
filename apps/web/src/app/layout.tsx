@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
+import { ThemeScript } from '../components/theme/ThemeScript';
 import { clerkAppearance } from '../lib/clerk-appearance';
 import { Providers } from './providers';
 import './globals.css';
@@ -28,8 +29,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <html
         lang="en"
         className={`${GeistSans.variable} ${GeistMono.variable}`}
+        // `data-theme` is overridden synchronously by ThemeScript before
+        // hydration; this server-rendered default prevents a flash if the
+        // script is somehow blocked (CSP, JS disabled).
+        data-theme="light"
         suppressHydrationWarning
       >
+        <head>
+          <ThemeScript />
+        </head>
         <body className="min-h-screen antialiased">
           <Providers>{children}</Providers>
         </body>

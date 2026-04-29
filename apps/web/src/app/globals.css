@@ -39,6 +39,24 @@ body {
 }
 
 /*
+ * Showcase shorthand aliases — Provedo design-system v1.1 (DSM-V1 α).
+ *
+ * The static showcase at /design-system.html uses short-form CSS variables
+ * (`--border`, `--border-default`) that don't map 1:1 to our Style-Dictionary
+ * generated names. These aliases bridge the showcase → production gap so
+ * Phase-β primitives can consume either form.
+ *
+ * The build emits `--border-subtle`/`--border-default`/`--border-strong`/
+ * `--border-divider`/`--border-focus` from semantic.border.{...}; the alias
+ * `--border` (showcase) resolves to `--border-subtle` (canonical card edge).
+ */
+:root,
+.dark,
+[data-theme="dark"] {
+  --border: var(--border-subtle);
+}
+
+/*
  * Chart palette (CHARTS_SPEC §2.5). 7-hue series + cross-cutting tokens.
  * Light values on `:root`; dark overrides emit on both `.dark` and
  * `[data-theme="dark"]` so charts switch palettes via CSS without remount.

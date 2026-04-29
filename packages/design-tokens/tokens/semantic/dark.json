@@ -1,94 +1,201 @@
 {
   "semantic": {
+    "bg": {
+      "$value": "{color.cocoa.bg}",
+      "$type": "color",
+      "$description": "App page background — neutral cool dark. Showcase --bg."
+    },
+    "card": {
+      "$value": "{color.cocoa.card}",
+      "$type": "color",
+      "$description": "Card / elevated surface — luma-bumped for clear lift over bg. Showcase --card."
+    },
+    "inset": {
+      "$value": "{color.cocoa.inset}",
+      "$type": "color",
+      "$description": "Depressed surface — darker than card, reads as recessed. Showcase --inset."
+    },
+    "ink": {
+      "$value": "{color.parchment}",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on dark — cream-on-dark flip. Showcase --ink."
+    },
+    "text-2": {
+      "$value": "{color.neutral.text-secondary-dark}",
+      "$type": "color",
+      "$description": "Secondary text — dark theme. Showcase --text-2."
+    },
+    "text-3": {
+      "$value": "{color.neutral.text-tertiary-dark}",
+      "$type": "color",
+      "$description": "Tertiary text — dark theme. Showcase --text-3."
+    },
+    "accent": {
+      "$value": "{color.jade.bright}",
+      "$type": "color",
+      "$description": "Forest-jade lighter — dark theme status accent. Showcase --accent."
+    },
+    "accent-shadow": {
+      "$value": "rgba(74, 135, 117, 0.30)",
+      "$type": "color",
+      "$description": "Drop-shadow tint for filled-accent — dark theme. Showcase --accent-shadow."
+    },
+    "accent-glow": {
+      "$value": "rgba(74, 135, 117, 0.20)",
+      "$type": "color",
+      "$description": "Pulse halo + focus glow — dark theme. Showcase --accent-glow."
+    },
+    "terra": {
+      "$value": "{color.terra.bright}",
+      "$type": "color",
+      "$description": "Bronze red-shifted — drift / danger. Dark theme. Showcase --terra."
+    },
+    "terra-shadow": {
+      "$value": "rgba(189, 106, 85, 0.30)",
+      "$type": "color"
+    },
+    "modal-overlay": {
+      "$value": "rgba(0, 0, 0, 0.65)",
+      "$type": "color",
+      "$description": "Modal backdrop — dark theme."
+    },
+
     "background": {
-      "primary": { "$value": "{color.neutral.950}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.900}", "$type": "color" },
-      "tertiary": { "$value": "{color.neutral.800}", "$type": "color" },
-      "elevated": {
-        "$value": "{color.neutral.900}",
-        "$type": "color",
-        "$description": "Elevated in dark uses border rather than shadow"
-      },
-      "inverse": { "$value": "{color.neutral.50}", "$type": "color" },
-      "overlay": { "$value": "rgba(0, 0, 0, 0.7)", "$type": "color" }
+      "primary": { "$value": "{color.cocoa.bg}", "$type": "color" },
+      "secondary": { "$value": "{color.cocoa.inset}", "$type": "color" },
+      "tertiary": { "$value": "{color.cocoa.inset}", "$type": "color" },
+      "elevated": { "$value": "{color.cocoa.card}", "$type": "color" },
+      "inverse": { "$value": "{color.parchment}", "$type": "color" },
+      "overlay": { "$value": "rgba(0, 0, 0, 0.65)", "$type": "color" }
     },
 
     "text": {
-      "primary": { "$value": "{color.neutral.50}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.300}", "$type": "color" },
-      "tertiary": { "$value": "{color.neutral.400}", "$type": "color" },
-      "muted": {
-        "$value": "{color.neutral.400}",
-        "$type": "color",
-        "$description": "#94A3B8 — WCAG AA on dark bg; raised from neutral-500 (borderline 4.1:1)"
-      },
+      "primary": { "$value": "{color.parchment}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.text-secondary-dark}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
+      "muted": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
       "brand": {
-        "$value": "{color.brand.400}",
+        "$value": "{color.parchment}",
         "$type": "color",
-        "$description": "Lift brand toward 400 for dark — preserves readability"
+        "$description": "Brand-text = parchment in dark — primary signal is cream-CTA."
       },
-      "inverse": { "$value": "{color.neutral.900}", "$type": "color" },
-      "onBrand": { "$value": "{color.static.white}", "$type": "color" }
+      "inverse": { "$value": "{color.cocoa.bg}", "$type": "color" },
+      "onBrand": {
+        "$value": "{color.cocoa.bg}",
+        "$type": "color",
+        "$description": "Text on cream-CTA flips to dark bg."
+      },
+      "onAccent": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Text on jade — cream for AAA pair."
+      }
     },
 
     "border": {
       "subtle": {
-        "$value": "{color.neutral.700}",
+        "$value": "rgba(255, 255, 255, 0.18)",
         "$type": "color",
-        "$description": "#334155 — raised from neutral-800 (1.4:1 vs bg-primary, nearly invisible)"
+        "$description": "Card edges, input borders. Showcase --border (dark)."
       },
-      "default": { "$value": "{color.neutral.700}", "$type": "color" },
-      "strong": { "$value": "{color.neutral.600}", "$type": "color" },
-      "focus": { "$value": "{color.brand.400}", "$type": "color" }
+      "default": { "$value": "rgba(255, 255, 255, 0.18)", "$type": "color" },
+      "strong": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
+      "divider": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
+      "focus": { "$value": "{color.jade.bright}", "$type": "color" }
     },
 
     "state": {
       "positive": {
-        "default": { "$value": "{color.green.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(16, 185, 129, 0.15)", "$type": "color" }
+        "default": { "$value": "{color.jade.bright}", "$type": "color" },
+        "subtle": { "$value": "rgba(74, 135, 117, 0.15)", "$type": "color" }
       },
       "negative": {
-        "default": { "$value": "{color.red.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(239, 68, 68, 0.15)", "$type": "color" }
+        "default": { "$value": "{color.terra.bright}", "$type": "color" },
+        "subtle": { "$value": "rgba(189, 106, 85, 0.15)", "$type": "color" }
       },
       "warning": {
-        "default": { "$value": "{color.amber.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(245, 158, 11, 0.15)", "$type": "color" }
+        "default": { "$value": "{color.terra.bright}", "$type": "color" },
+        "subtle": { "$value": "rgba(189, 106, 85, 0.15)", "$type": "color" }
       },
       "info": {
-        "default": { "$value": "{color.cyan.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(6, 182, 212, 0.15)", "$type": "color" }
+        "default": { "$value": "{color.neutral.text-secondary-dark}", "$type": "color" },
+        "subtle": { "$value": "rgba(255, 255, 255, 0.06)", "$type": "color" }
       }
     },
 
     "portfolio": {
       "gain": {
-        "default": {
-          "$value": "{color.green.400}",
-          "$type": "color",
-          "$description": "Muted emerald for dark — readable, not neon"
-        },
-        "subtle": { "$value": "rgba(16, 185, 129, 0.12)", "$type": "color" }
+        "default": { "$value": "{color.jade.bright}", "$type": "color" },
+        "subtle": { "$value": "rgba(74, 135, 117, 0.12)", "$type": "color" }
       },
       "loss": {
-        "default": { "$value": "{color.red.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(239, 68, 68, 0.12)", "$type": "color" }
+        "default": { "$value": "{color.terra.bright}", "$type": "color" },
+        "subtle": { "$value": "rgba(189, 106, 85, 0.12)", "$type": "color" }
       },
       "neutral": {
-        "default": { "$value": "{color.neutral.400}", "$type": "color" },
-        "subtle": { "$value": "{color.neutral.800}", "$type": "color" }
+        "default": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
+        "subtle": { "$value": "{color.cocoa.inset}", "$type": "color" }
       }
     },
 
     "interactive": {
-      "primary": { "$value": "{color.brand.500}", "$type": "color" },
-      "primaryHover": { "$value": "{color.brand.400}", "$type": "color" },
-      "primaryActive": { "$value": "{color.brand.300}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.800}", "$type": "color" },
-      "secondaryHover": { "$value": "{color.neutral.700}", "$type": "color" },
-      "secondaryActive": { "$value": "{color.neutral.600}", "$type": "color" },
-      "ghostHover": { "$value": "{color.neutral.800}", "$type": "color" },
-      "ghostActive": { "$value": "{color.neutral.700}", "$type": "color" }
+      "primary": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Primary CTA fill on dark — cream extruded."
+      },
+      "primaryHover": { "$value": "{color.parchment}", "$type": "color" },
+      "primaryActive": { "$value": "{color.parchment}", "$type": "color" },
+      "secondary": { "$value": "{color.cocoa.card}", "$type": "color" },
+      "secondaryHover": { "$value": "rgba(255, 255, 255, 0.04)", "$type": "color" },
+      "secondaryActive": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" },
+      "ghostHover": { "$value": "rgba(255, 255, 255, 0.05)", "$type": "color" },
+      "ghostActive": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" }
+    },
+
+    "shadow": {
+      "soft": {
+        "$value": "0 1px 3px rgba(0, 0, 0, 0.45)",
+        "$type": "shadow",
+        "$description": "Dark-theme soft lift — clean depth, no glow."
+      },
+      "card": {
+        "$value": "0 4px 16px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07)",
+        "$type": "shadow",
+        "$description": "Dark-theme card lift — top-edge highlight bumped to 0.07 for visible rim."
+      },
+      "lift": {
+        "$value": "0 12px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.09)",
+        "$type": "shadow",
+        "$description": "Dark-theme stronger lift — signature / topbar."
+      },
+      "toast": {
+        "$value": "0 10px 28px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      },
+      "modal": {
+        "$value": "0 14px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      },
+      "input-inset": {
+        "$value": "inset 0 2px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.3)",
+        "$type": "shadow",
+        "$description": "Dark-theme input depressed — deeper top-edge alpha for OLED black."
+      },
+      "inset-light": {
+        "$value": "inset 0 1px 0 rgba(0, 0, 0, 0.3)",
+        "$type": "shadow",
+        "$description": "Dark-theme light inset for chips, tabs-track, etc."
+      },
+      "primary-extrude": {
+        "$value": "0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow",
+        "$description": "Dark-theme primary CTA — restrained, no glow."
+      },
+      "terra-extrude": {
+        "$value": "0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      }
     }
   }
 }

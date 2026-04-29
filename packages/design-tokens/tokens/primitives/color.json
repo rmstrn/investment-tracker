@@ -1,115 +1,183 @@
 {
   "color": {
-    "brand": {
-      "50": {
-        "$value": "#f5f3ff",
+    "ink": {
+      "$value": "#1A1A1A",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on light theme. The ink-CTA semantic of v1.1."
+    },
+    "parchment": {
+      "$value": "#F4F1EA",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on dark theme. Cream that reads as text on cocoa."
+    },
+
+    "cream": {
+      "bg": {
+        "$value": "#E8E0D0",
         "$type": "color",
-        "$description": "Lightest tint — backgrounds, hover surfaces on light mode"
+        "$description": "Light theme app background. Round-6 deepened from #F1EDE3 for visible card lift."
       },
-      "100": { "$value": "#ece9fe", "$type": "color" },
-      "200": { "$value": "#dcd5fd", "$type": "color" },
-      "300": { "$value": "#c3b4fb", "$type": "color" },
-      "400": { "$value": "#a78bfa", "$type": "color" },
-      "500": {
-        "$value": "#8b5cf6",
+      "card": {
+        "$value": "#FFFFFF",
         "$type": "color",
-        "$description": "Primary brand violet — accent, focus rings"
+        "$description": "Light theme card surface. Pure white on deepened cream ≈ 3:1 luma delta."
       },
-      "600": {
-        "$value": "#7c3aed",
+      "inset": {
+        "$value": "#D6CCB8",
         "$type": "color",
-        "$description": "Default interactive (buttons, links) on light mode"
+        "$description": "Light theme depressed surface (text inputs, search wells, chips, citations, tabs-track)."
+      }
+    },
+
+    "cocoa": {
+      "bg": {
+        "$value": "#0E0E12",
+        "$type": "color",
+        "$description": "Dark theme app background. Neutral cool dark, NOT warm cocoa (v1.1 pivot)."
       },
-      "700": {
-        "$value": "#6d28d9",
+      "card": {
+        "$value": "#26262E",
         "$type": "color",
-        "$description": "Pressed / active state on light mode"
+        "$description": "Dark theme card surface. Round-6 luma bump from #1D1D22 for clearer card lift."
       },
-      "800": { "$value": "#5b21b6", "$type": "color" },
-      "900": { "$value": "#4c1d95", "$type": "color" },
-      "950": {
-        "$value": "#2e1065",
+      "inset": {
+        "$value": "#070709",
         "$type": "color",
-        "$description": "Deepest — rarely used except for heavy contrast on tints"
+        "$description": "Dark theme depressed surface — darker than card so depressed reads as recessed."
+      },
+      "user-bubble": {
+        "$value": "#1A2520",
+        "$type": "color",
+        "$description": "Dark theme user chat bubble — subtle teal-tinted dark, distinct from inset."
+      }
+    },
+
+    "jade": {
+      "deep": {
+        "$value": "#2D5F4E",
+        "$type": "color",
+        "$description": "Forest-jade for light theme — status / citation / verified accent. NOT teal, NOT money-green."
+      },
+      "bright": {
+        "$value": "#4A8775",
+        "$type": "color",
+        "$description": "Forest-jade for dark theme — status accent that survives OLED without glow-creep."
+      }
+    },
+
+    "terra": {
+      "deep": {
+        "$value": "#A04A3D",
+        "$type": "color",
+        "$description": "Bronze for light theme — drift / negative delta / danger / warning. Old leather, NOT orange."
+      },
+      "bright": {
+        "$value": "#BD6A55",
+        "$type": "color",
+        "$description": "Bronze for dark theme — drift / danger. Red-shifted bronze, NOT alarm-red."
       }
     },
 
     "neutral": {
-      "50": { "$value": "#f8fafc", "$type": "color", "$description": "slate-50 — app bg (light)" },
-      "100": {
-        "$value": "#f1f5f9",
+      "text-secondary-light": {
+        "$value": "#4D4D4D",
         "$type": "color",
-        "$description": "slate-100 — card bg (light)"
+        "$description": "Secondary text — light theme. 7.91:1 on bg (AAA)."
       },
-      "200": {
-        "$value": "#e2e8f0",
+      "text-tertiary-light": {
+        "$value": "#6E6E6E",
         "$type": "color",
-        "$description": "slate-200 — borders (light)"
+        "$description": "Tertiary text — light theme. Lifted from #7A7A7A so body AA pair holds 4.84:1."
       },
-      "300": { "$value": "#cbd5e1", "$type": "color" },
-      "400": { "$value": "#94a3b8", "$type": "color", "$description": "slate-400 — muted text" },
-      "500": { "$value": "#64748b", "$type": "color" },
-      "600": {
-        "$value": "#475569",
+      "text-secondary-dark": {
+        "$value": "#B5B5B5",
         "$type": "color",
-        "$description": "slate-600 — secondary text"
+        "$description": "Secondary text — dark theme. 9.49:1 on bg (AAA)."
       },
-      "700": { "$value": "#334155", "$type": "color" },
-      "800": {
-        "$value": "#1e293b",
+      "text-tertiary-dark": {
+        "$value": "#9A9A9A",
         "$type": "color",
-        "$description": "slate-800 — elevated bg (dark modals) / dark borders"
-      },
-      "900": {
-        "$value": "#0f172a",
-        "$type": "color",
-        "$description": "slate-900 — primary text (light) / card bg (dark)"
-      },
-      "950": {
-        "$value": "#020617",
-        "$type": "color",
-        "$description": "slate-950 — app bg (dark deepest)"
+        "$description": "Tertiary text — dark theme. 5.20:1 on bg (AAA body)."
       }
-    },
-
-    "green": {
-      "50": { "$value": "#ecfdf5", "$type": "color" },
-      "100": { "$value": "#d1fae5", "$type": "color" },
-      "400": { "$value": "#34d399", "$type": "color" },
-      "500": { "$value": "#10b981", "$type": "color" },
-      "600": { "$value": "#059669", "$type": "color" },
-      "700": { "$value": "#047857", "$type": "color" }
-    },
-
-    "red": {
-      "50": { "$value": "#fef2f2", "$type": "color" },
-      "100": { "$value": "#fee2e2", "$type": "color" },
-      "400": { "$value": "#f87171", "$type": "color" },
-      "500": { "$value": "#ef4444", "$type": "color" },
-      "600": { "$value": "#dc2626", "$type": "color" },
-      "700": { "$value": "#b91c1c", "$type": "color" }
-    },
-
-    "amber": {
-      "50": { "$value": "#fffbeb", "$type": "color" },
-      "100": { "$value": "#fef3c7", "$type": "color" },
-      "400": { "$value": "#fbbf24", "$type": "color" },
-      "500": { "$value": "#f59e0b", "$type": "color" },
-      "600": { "$value": "#d97706", "$type": "color" }
-    },
-
-    "cyan": {
-      "50": { "$value": "#ecfeff", "$type": "color" },
-      "100": { "$value": "#cffafe", "$type": "color" },
-      "400": { "$value": "#22d3ee", "$type": "color" },
-      "500": { "$value": "#06b6d4", "$type": "color" },
-      "600": { "$value": "#0891b2", "$type": "color" }
     },
 
     "static": {
       "white": { "$value": "#ffffff", "$type": "color" },
       "black": { "$value": "#000000", "$type": "color" },
       "transparent": { "$value": "transparent", "$type": "color" }
+    },
+
+    "chart": {
+      "light-1": {
+        "$value": "#2D5F4E",
+        "$type": "color",
+        "$description": "Chart series 1 (jade) — light theme."
+      },
+      "light-2": {
+        "$value": "#A04A3D",
+        "$type": "color",
+        "$description": "Chart series 2 (bronze) — light theme."
+      },
+      "light-3": {
+        "$value": "#1A1A1A",
+        "$type": "color",
+        "$description": "Chart series 3 (ink) — light theme."
+      },
+      "light-4": {
+        "$value": "#5C8A77",
+        "$type": "color",
+        "$description": "Chart series 4 (jade lifted) — light theme."
+      },
+      "light-5": {
+        "$value": "#7A7A7A",
+        "$type": "color",
+        "$description": "Chart series 5 (graphite) — light theme."
+      },
+      "light-6": {
+        "$value": "#C77A6A",
+        "$type": "color",
+        "$description": "Chart series 6 (bronze lifted) — light theme."
+      },
+      "light-7": {
+        "$value": "#1F4135",
+        "$type": "color",
+        "$description": "Chart series 7 (jade deepest) — light theme."
+      },
+      "dark-1": {
+        "$value": "#4A8775",
+        "$type": "color",
+        "$description": "Chart series 1 (jade bright) — dark theme."
+      },
+      "dark-2": {
+        "$value": "#BD6A55",
+        "$type": "color",
+        "$description": "Chart series 2 (bronze bright) — dark theme."
+      },
+      "dark-3": {
+        "$value": "#F4F1EA",
+        "$type": "color",
+        "$description": "Chart series 3 (parchment) — dark theme."
+      },
+      "dark-4": {
+        "$value": "#7DAA9A",
+        "$type": "color",
+        "$description": "Chart series 4 (jade lifted) — dark theme."
+      },
+      "dark-5": {
+        "$value": "#B5B5B5",
+        "$type": "color",
+        "$description": "Chart series 5 (graphite) — dark theme."
+      },
+      "dark-6": {
+        "$value": "#D89C8C",
+        "$type": "color",
+        "$description": "Chart series 6 (bronze lifted) — dark theme."
+      },
+      "dark-7": {
+        "$value": "#2E5B4D",
+        "$type": "color",
+        "$description": "Chart series 7 (jade deep) — dark theme."
+      }
     }
   }
 }

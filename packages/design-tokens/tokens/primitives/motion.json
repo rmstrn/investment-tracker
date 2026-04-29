@@ -1,51 +1,72 @@
 {
   "motion": {
     "duration": {
+      "instant": {
+        "$value": "80ms",
+        "$type": "duration",
+        "$description": "Press settle on buttons (translateY 1px). Tightest tap feedback."
+      },
       "fast": {
         "$value": "100ms",
         "$type": "duration",
-        "$description": "Hover states, taps"
+        "$description": "Focus-ring outline-offset transition. Hover micro-states."
       },
       "base": {
+        "$value": "150ms",
+        "$type": "duration",
+        "$description": "Button release-bounce, modal exit, dropdown enter, toast exit."
+      },
+      "moderate": {
         "$value": "200ms",
         "$type": "duration",
-        "$description": "Most transitions, button press"
+        "$description": "Default transition — button hover lift, switch toggle, tab indicator slide, modal enter, toast enter."
       },
       "slow": {
         "$value": "300ms",
         "$type": "duration",
-        "$description": "Page transitions, panel slides"
-      },
-      "slower": {
-        "$value": "500ms",
-        "$type": "duration",
-        "$description": "Large reveals, modal enter"
+        "$description": "Larger reveals, panel slides, page transitions."
       },
       "count-up": {
         "$value": "800ms",
         "$type": "duration",
-        "$description": "Number count-up on load"
+        "$description": "Number count-up on dashboard load."
       },
       "shimmer": {
         "$value": "1500ms",
         "$type": "duration",
-        "$description": "Loading shimmer sweep loop"
+        "$description": "Loading shimmer sweep loop."
+      },
+      "pulse": {
+        "$value": "1800ms",
+        "$type": "duration",
+        "$description": "StatusDot pulse-ring continuous loop."
       }
     },
     "easing": {
-      "default": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" },
-      "in": { "$value": "cubic-bezier(0.4, 0, 1, 1)", "$type": "cubicBezier" },
-      "out": { "$value": "cubic-bezier(0, 0, 0.2, 1)", "$type": "cubicBezier" },
-      "inOut": { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "$type": "cubicBezier" },
-      "spring": {
-        "$value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+      "default": {
+        "$value": "cubic-bezier(0.16, 1, 0.3, 1)",
         "$type": "cubicBezier",
-        "$description": "Playful confirmations — use sparingly (CTAs, liked, saved)"
+        "$description": "ease-out-expo — Mercury-Stripe register. Default for hover lift, switch, tab indicator, modal enter."
+      },
+      "in": {
+        "$value": "cubic-bezier(0.4, 0, 1, 1)",
+        "$type": "cubicBezier",
+        "$description": "Press settle, modal/toast exit."
+      },
+      "out": {
+        "$value": "cubic-bezier(0, 0, 0.2, 1)",
+        "$type": "cubicBezier",
+        "$description": "Release bounce, dropdown enter, modal enter (alt to exp-out)."
+      },
+      "inOut": {
+        "$value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "$type": "cubicBezier",
+        "$description": "StatusDot pulse continuous loop."
       },
       "exp-out": {
         "$value": "cubic-bezier(0.16, 1, 0.3, 1)",
         "$type": "cubicBezier",
-        "$description": "Exponential-out — number count-up, hero reveal"
+        "$description": "Alias for default — exponential-out reads as Mercury cadence."
       }
     }
   }
