@@ -4,10 +4,16 @@ import { cn } from '../lib/cn';
 type Variant = 'primary' | 'secondary' | 'ghost' | 'outline' | 'destructive';
 type Size = 'sm' | 'md' | 'lg';
 
+// Focus ring: designed «halo-gap» pattern — 2px gap of bg + 4px accent ring.
+// WCAG 2.4.7 + 2.4.11 AAA-grade visibility, 3:1 against adjacent. Matches
+// the showcase :focus-visible idiom so Button focus reads consistently
+// inside `/design-system` and outside it. Phase β.1 will expand this to
+// other variants; Round-2 a11y Section 5 promotion (Apr 2026).
 const base =
   'inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap ' +
   'rounded-md transition-[transform,box-shadow,background-color] duration-fast ease-out ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary ' +
+  'focus-visible:outline-none ' +
+  'focus-visible:[box-shadow:0_0_0_2px_var(--bg),0_0_0_4px_var(--accent)] ' +
   'disabled:pointer-events-none disabled:opacity-50';
 
 const variants: Record<Variant, string> = {

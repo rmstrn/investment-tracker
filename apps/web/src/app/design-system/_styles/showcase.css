@@ -18,6 +18,25 @@
   scroll-margin-top: 80px;
 }
 
+/* Theme-aware ShowcaseHeader hover states. Header lives outside both stages
+   so it follows <html> [data-theme]; --inset / --ink / --text-2 all flip
+   via tokens.css. */
+.showcase-header__link:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+}
+
+.showcase-header__btn:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+}
+
+.showcase-header__btn[data-state="on"] {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
 /* Stage-headline + outer h1 anchor offsets too. */
 .showcase-stage-v2 {
   scroll-margin-top: 80px;
@@ -46,11 +65,10 @@ html[data-reduced-motion="true"] .showcase *::after {
    the surface bg, ring = 2px of accent. WCAG 2.4.7 + 2.4.11 AAA-grade
    visibility + 3:1 contrast against adjacent. transition: none keeps the
    ring instant (no fade-in). Round-2 a11y Section 5 promotion. */
-.showcase :where(a, button, [role="switch"], [role="checkbox"], [role="radio"], [tabindex]):focus-visible {
+.showcase
+  :where(a, button, [role="switch"], [role="checkbox"], [role="radio"], [tabindex]):focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px var(--bg),
-    0 0 0 4px var(--accent);
+  box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
   border-color: var(--accent);
   transition: none;
 }

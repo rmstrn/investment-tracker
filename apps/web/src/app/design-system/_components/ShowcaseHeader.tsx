@@ -61,8 +61,16 @@ export function ShowcaseHeader() {
 
   return (
     <header
-      className="sticky top-0 z-30 border-b border-border-subtle backdrop-blur"
-      style={{ background: 'rgba(var(--bg-rgb, 244 241 234) / 0.86)' }}
+      className="showcase-header sticky top-0 z-30 backdrop-blur"
+      style={{
+        // Theme-aware: --bg flips via [data-theme="dark"] on <html>.
+        // color-mix gives us 86% opacity over the bg without needing
+        // a separate --bg-rgb token. Falls back to plain --bg if
+        // color-mix unsupported (Safari < 16.2 — graceful).
+        background: 'color-mix(in srgb, var(--bg) 86%, transparent)',
+        borderBottom: '1px solid var(--border-divider, var(--border))',
+        color: 'var(--ink)',
+      }}
     >
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3">
         <div className="flex items-center gap-3">
@@ -70,9 +78,10 @@ export function ShowcaseHeader() {
           <span
             className="font-mono uppercase"
             style={{
-              fontSize: '10px',
-              letterSpacing: '0.22em',
-              color: 'var(--text-3, var(--color-text-tertiary))',
+              fontSize: 'var(--showcase-eyebrow-size)',
+              letterSpacing: 'var(--showcase-eyebrow-tracking)',
+              color: 'var(--text-3)',
+              fontWeight: 'var(--showcase-eyebrow-weight)' as unknown as number,
             }}
           >
             Design System v1.1 · Locked
@@ -83,13 +92,17 @@ export function ShowcaseHeader() {
             <a
               key={n.id}
               href={`#${n.id}`}
-              className="rounded-md px-2.5 py-1.5 text-text-secondary transition-colors duration-fast hover:bg-background-secondary hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-              style={{ fontSize: '13px' }}
+              className="showcase-header__link rounded-md px-2.5 py-1.5 transition-colors duration-fast"
+              style={{ fontSize: '13px', color: 'var(--text-2)' }}
             >
               {n.label}
             </a>
           ))}
-          <span className="mx-2 h-5 w-px bg-border-subtle" aria-hidden />
+          <span
+            className="mx-2 h-5 w-px"
+            aria-hidden
+            style={{ background: 'var(--border-divider, var(--border))' }}
+          />
           <button
             type="button"
             onClick={toggleReduced}
@@ -98,9 +111,14 @@ export function ShowcaseHeader() {
               reduced ? 'Disable reduced-motion override' : 'Enable reduced-motion override'
             }
             title={reduced ? 'Reduced motion ON' : 'Reduced motion OFF'}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-transparent px-2.5 py-1.5 text-text-secondary transition-colors duration-fast hover:bg-background-secondary hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
+            className="showcase-header__btn inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-fast"
             data-state={reduced ? 'on' : 'off'}
-            style={{ fontSize: '12px' }}
+            style={{
+              fontSize: '12px',
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-2)',
+            }}
           >
             <ZapOff size={14} aria-hidden />
             <span>{reduced ? 'Motion off' : 'Motion on'}</span>
@@ -110,8 +128,13 @@ export function ShowcaseHeader() {
             onClick={toggleDark}
             aria-pressed={dark}
             aria-label={dark ? 'Switch to light theme' : 'Switch to dark theme'}
-            className="inline-flex items-center gap-1.5 rounded-md border border-border-subtle bg-transparent px-2.5 py-1.5 text-text-secondary transition-colors duration-fast hover:bg-background-secondary hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
-            style={{ fontSize: '12px' }}
+            className="showcase-header__btn inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-fast"
+            style={{
+              fontSize: '12px',
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-2)',
+            }}
           >
             {dark ? <Sun size={14} aria-hidden /> : <Moon size={14} aria-hidden />}
             <span>{dark ? 'Light' : 'Dark'}</span>
