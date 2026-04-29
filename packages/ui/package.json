@@ -14,6 +14,10 @@
     "./charts": {
       "types": "./src/charts/index.ts",
       "default": "./src/charts/index.ts"
+    },
+    "./charts/lazy": {
+      "types": "./src/charts/lazy.ts",
+      "default": "./src/charts/lazy.ts"
     }
   },
   "files": ["src"],
@@ -22,7 +26,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
-    "test": "echo 'no tests yet' && exit 0",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "clean": "rm -rf .turbo node_modules"
   },
   "peerDependencies": {
@@ -31,16 +36,23 @@
   },
   "dependencies": {
     "@investment-tracker/design-tokens": "workspace:*",
+    "@investment-tracker/shared-types": "workspace:*",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
     "recharts": "^3.8.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
+    "@vitejs/plugin-react": "4.3.4",
+    "happy-dom": "^15.11.7",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vite": "5.4.21",
+    "vitest": "^2.1.8"
   }
 }

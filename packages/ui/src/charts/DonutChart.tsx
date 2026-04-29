@@ -1,87 +1,106 @@
 'use client';
 
-import type { ReactNode } from 'react';
-import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
-import { CHART_ANIMATION_MS, CHART_COLORS, SERIES_PALETTE } from './tokens';
+/**
+ * DonutChart (rewrite) — typed payload renderer.
+ *
+ * Reads `DonutChartPayload` from `@investment-tracker/shared-types/charts`.
+ * Δ1 sum-to-total invariant lives at the envelope level (Zod), so the
+ * renderer just renders. 60% inner radius per CHARTS_SPEC §4.4; legend
+ * placement varies by viewport.
+ */
 
-export interface DonutSlice {
-  key: string;
-  label: string;
-  value: number;
-  color?: string;
-}
+import type { DonutChartPayload } from '@investment-tracker/shared-types/charts';
+import { useId } from 'react';
+import type { ReactNode } from 'react';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { ChartDataTable } from './_shared/ChartDataTable';
+import { buildTooltipProps } from './_shared/buildTooltipProps';
+import { formatValue } from './_shared/formatters';
+import { useReducedMotion } from './_shared/useReducedMotion';
+import { CHART_ANIMATION_MS, DONUT_ORDER } from './tokens';
 
 export interface DonutChartProps {
-  data: ReadonlyArray<DonutSlice>;
+  payload: DonutChartPayload;
   size?: number;
-  /** Inner radius ratio of outer. Brief §6.5: 60%. */
-  innerRatio?: number;
+  /** Custom center label override; falls back to `payload.centerLabel` or sum. */
   centerLabel?: ReactNode;
-  formatValue?: (n: number) => string;
-  animate?: boolean;
-  'aria-label'?: string;
+  className?: string;
 }
 
-/**
- * DonutChart — allocation donut. Brief §6.5. 2° padding, 60% inner radius.
- */
-export function DonutChart({
-  data,
-  size = 200,
-  innerRatio = 0.6,
-  centerLabel,
-  formatValue,
-  animate = true,
-  'aria-label': ariaLabel,
-}: DonutChartProps) {
+export function DonutChart({ payload, size = 220, centerLabel, className }: DonutChartProps) {
+  const dataTableId = useId();
+  const tooltip = buildTooltipProps();
+  const prefersReducedMotion = useReducedMotion();
+
   const outerR = size / 2 - 4;
-  const innerR = outerR * innerRatio;
-  const fmt = formatValue ?? ((n) => n.toLocaleString());
+  const innerR = outerR * 0.6;
+  const fmtValue = (n: number) => formatValue(n, payload.format, payload.currency);
+
+  const segments = payload.segments.map((s, i) => ({
+    ...s,
+    color: s.color ?? DONUT_ORDER[i % DONUT_ORDER.length],
+  }));
+
+  const center =
+    centerLabel ??
+    (payload.centerLabel ? (
+      <div className="font-mono text-sm font-semibold tabular-nums">{payload.centerLabel}</div>
+    ) : null);
 
   return (
     <div
       role="img"
-      aria-label={ariaLabel ?? 'Allocation donut'}
-      className="relative inline-flex items-center justify-center"
-      style={{ width: size, height: size }}
+      aria-label={payload.meta.alt ?? payload.meta.title}
+      aria-describedby={dataTableId}
+      // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
+      tabIndex={0}
+      data-testid="chart-donut"
+      className={className}
+      style={{ width: '100%', outline: 'none' }}
     >
-      <ResponsiveContainer width={size} height={size}>
-        <PieChart>
-          <Pie
-            data={[...data]}
-            dataKey="value"
-            nameKey="label"
-            innerRadius={innerR}
-            outerRadius={outerR}
-            paddingAngle={2}
-            strokeWidth={0}
-            isAnimationActive={animate}
-            animationDuration={CHART_ANIMATION_MS}
-          >
-            {data.map((d, i) => (
-              <Cell key={d.key} fill={d.color ?? SERIES_PALETTE[i % SERIES_PALETTE.length]} />
-            ))}
-          </Pie>
-          <Tooltip
-            contentStyle={{
-              background: CHART_COLORS.tooltipBg,
-              border: `1px solid ${CHART_COLORS.tooltipBorder}`,
-              borderRadius: 12,
-              fontSize: 12,
-              boxShadow: 'var(--shadow-md)',
-              padding: '8px 12px',
-            }}
-            labelStyle={{ color: CHART_COLORS.axisLabel, fontSize: 11 }}
-            itemStyle={{ color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}
-            formatter={(v) => fmt(Number(v))}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-      {centerLabel ? (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-          {centerLabel}
-        </div>
-      ) : null}
+      <div
+        className="relative inline-flex items-center justify-center"
+        style={{ width: size, height: size }}
+      >
+        <ResponsiveContainer width={size} height={size}>
+          <PieChart>
+            <Pie
+              data={segments}
+              dataKey="value"
+              nameKey="label"
+              innerRadius={innerR}
+              outerRadius={outerR}
+              paddingAngle={2}
+              strokeWidth={0}
+              isAnimationActive={!prefersReducedMotion}
+              animationDuration={CHART_ANIMATION_MS}
+            >
+              {segments.map((s) => (
+                <Cell key={s.key} fill={s.color} />
+              ))}
+            </Pie>
+            <Tooltip
+              contentStyle={tooltip.contentStyle}
+              labelStyle={tooltip.labelStyle}
+              itemStyle={tooltip.itemStyle}
+              separator={tooltip.separator}
+              formatter={(v) => fmtValue(Number(v))}
+            />
+            <Legend
+              wrapperStyle={{ fontSize: 11, color: 'var(--color-text-secondary)' }}
+              align="right"
+              verticalAlign="middle"
+              layout="vertical"
+            />
+          </PieChart>
+        </ResponsiveContainer>
+        {center ? (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
+            {center}
+          </div>
+        ) : null}
+      </div>
+      <ChartDataTable payload={payload} id={dataTableId} />
     </div>
   );
 }

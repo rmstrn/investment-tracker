@@ -1,23 +1,22 @@
 'use client';
 
 /**
- * AreaChart (rewrite) — typed payload renderer.
+ * StackedBar — typed payload renderer (T2 lazy).
  *
- * Reads `AreaChartPayload` from `@investment-tracker/shared-types/charts`.
- * Stacked variant via `payload.stacked`; multi-series fills use the
- * `--chart-series-N` CSS-var palette so theme switches without remount.
- *
- * Lane-A: schema-side. The renderer is data-driven — no overlays exist on
- * the AreaChart payload, so there is nothing to police here.
+ * Reads `StackedBarChartPayload` from `@investment-tracker/shared-types/charts`.
+ * Same Risk Flag 2 schema constraints as Bar (zero-only reference line, no
+ * targetWeight). Δ1 per-row sum-to-total invariant lives at the envelope
+ * level; renderer just renders.
  */
 
-import type { AreaChartPayload } from '@investment-tracker/shared-types/charts';
+import type { StackedBarChartPayload } from '@investment-tracker/shared-types/charts';
 import { useId } from 'react';
 import {
-  Area,
+  Bar,
   CartesianGrid,
   Legend,
-  AreaChart as ReAreaChart,
+  BarChart as ReBarChart,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -29,15 +28,13 @@ import { formatValue, formatXAxis } from './_shared/formatters';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, CHART_TOKENS, SERIES_VARS } from './tokens';
 
-export interface AreaChartProps {
-  payload: AreaChartPayload;
+export interface StackedBarProps {
+  payload: StackedBarChartPayload;
   height?: number;
   className?: string;
 }
 
-const GRADIENT_PREFIX = 'area-fill';
-
-export function AreaChart({ payload, height = 220, className }: AreaChartProps) {
+export function StackedBar({ payload, height = 220, className }: StackedBarProps) {
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
   const prefersReducedMotion = useReducedMotion();
@@ -53,30 +50,12 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
       aria-describedby={dataTableId}
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
-      data-testid="chart-area"
+      data-testid="chart-stacked-bar"
       className={className}
       style={{ width: '100%', outline: 'none' }}
     >
       <ResponsiveContainer width="100%" height={height}>
-        <ReAreaChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <defs>
-            {payload.series.map((s, i) => {
-              const stroke = s.color ?? SERIES_VARS[i % SERIES_VARS.length];
-              return (
-                <linearGradient
-                  key={s.key}
-                  id={`${GRADIENT_PREFIX}-${dataTableId}-${i}`}
-                  x1="0"
-                  y1="0"
-                  x2="0"
-                  y2="1"
-                >
-                  <stop offset="0%" stopColor={stroke} stopOpacity={0.3} />
-                  <stop offset="100%" stopColor={stroke} stopOpacity={0} />
-                </linearGradient>
-              );
-            })}
-          </defs>
+        <ReBarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
           <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="2 4" />
           <XAxis
             dataKey="x"
@@ -99,38 +78,34 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
             contentStyle={tooltip.contentStyle}
             labelStyle={tooltip.labelStyle}
             itemStyle={tooltip.itemStyle}
-            cursor={tooltip.cursor}
+            cursor={{ fill: 'var(--chart-grid)' }}
             separator={tooltip.separator}
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
           />
-          {payload.series.length > 1 ? (
-            <Legend
-              wrapperStyle={{
-                paddingTop: 12,
-                fontSize: 11,
-                color: 'var(--color-text-secondary)',
-              }}
-            />
+          <Legend
+            wrapperStyle={{
+              paddingTop: 12,
+              fontSize: 11,
+              color: 'var(--color-text-secondary)',
+            }}
+          />
+          {payload.referenceLine ? (
+            <ReferenceLine y={0} stroke={CHART_TOKENS.gridLineStrong} strokeDasharray="2 4" />
           ) : null}
-          {payload.series.map((s, i) => {
-            const stroke = s.color ?? SERIES_VARS[i % SERIES_VARS.length];
-            return (
-              <Area
-                key={s.key}
-                dataKey={s.key}
-                name={s.label}
-                type={payload.interpolation}
-                stroke={stroke}
-                strokeWidth={2}
-                fill={`url(#${GRADIENT_PREFIX}-${dataTableId}-${i})`}
-                stackId={payload.stacked ? 'stack' : undefined}
-                isAnimationActive={!prefersReducedMotion}
-                animationDuration={CHART_ANIMATION_MS}
-              />
-            );
-          })}
-        </ReAreaChart>
+          {payload.series.map((s, i) => (
+            <Bar
+              key={s.key}
+              dataKey={s.key}
+              name={s.label}
+              stackId="a"
+              fill={s.color ?? SERIES_VARS[i % SERIES_VARS.length]}
+              isAnimationActive={!prefersReducedMotion}
+              animationDuration={CHART_ANIMATION_MS}
+              radius={i === payload.series.length - 1 ? [4, 4, 0, 0] : 0}
+            />
+          ))}
+        </ReBarChart>
       </ResponsiveContainer>
       <ChartDataTable payload={payload} id={dataTableId} />
     </div>

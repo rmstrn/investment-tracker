@@ -37,3 +37,41 @@ body {
   --font-mono: var(--font-geist-mono, "Geist Mono"), ui-monospace, "SF Mono", "JetBrains Mono",
     Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
+
+/*
+ * Chart palette (CHARTS_SPEC §2.5). 7-hue series + cross-cutting tokens.
+ * Light values on `:root`; dark overrides emit on both `.dark` and
+ * `[data-theme="dark"]` so charts switch palettes via CSS without remount.
+ */
+:root {
+  --chart-series-1: #2d5f4e;
+  --chart-series-2: #a04a3d;
+  --chart-series-3: #1a1a1a;
+  --chart-series-4: #5c8a77;
+  --chart-series-5: #7a7a7a;
+  --chart-series-6: #c77a6a;
+  --chart-series-7: #1f4135;
+
+  --chart-grid: rgba(20, 20, 20, 0.1);
+  --chart-grid-strong: rgba(20, 20, 20, 0.16);
+  --chart-axis-label: var(--color-text-tertiary);
+  --chart-tooltip-bg: var(--color-background-elevated);
+  --chart-tooltip-border: var(--color-border-subtle);
+  --chart-tooltip-shadow: var(--shadow-md);
+  --chart-cursor: rgba(20, 20, 20, 0.2);
+}
+
+.dark,
+[data-theme="dark"] {
+  --chart-series-1: #4a8775;
+  --chart-series-2: #bd6a55;
+  --chart-series-3: #f4f1ea;
+  --chart-series-4: #7daa9a;
+  --chart-series-5: #b5b5b5;
+  --chart-series-6: #d89c8c;
+  --chart-series-7: #2e5b4d;
+
+  --chart-grid: rgba(255, 255, 255, 0.1);
+  --chart-grid-strong: rgba(255, 255, 255, 0.18);
+  --chart-cursor: rgba(255, 255, 255, 0.24);
+}
