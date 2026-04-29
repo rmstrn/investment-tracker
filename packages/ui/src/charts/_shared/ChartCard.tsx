@@ -56,8 +56,9 @@ export function ChartCard({
               className="font-mono uppercase"
               style={{
                 fontSize: '10px',
-                letterSpacing: '0.18em',
+                letterSpacing: '0.22em',
                 color: 'var(--text-3, var(--color-text-tertiary))',
+                fontWeight: 500,
               }}
             >
               {eyebrow}
@@ -66,7 +67,11 @@ export function ChartCard({
           {title ? (
             <h3
               className="font-semibold tracking-tight"
-              style={{ fontSize: '15px', color: 'var(--ink, var(--color-text-primary))' }}
+              style={{
+                fontSize: '18px',
+                lineHeight: 1.25,
+                color: 'var(--ink, var(--color-text-primary))',
+              }}
             >
               {title}
             </h3>

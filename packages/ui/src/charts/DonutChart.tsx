@@ -148,7 +148,6 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               nameKey="label"
               innerRadius={innerR}
               outerRadius={outerR}
-              paddingAngle={2}
               stroke="var(--card)"
               strokeWidth={2}
               isAnimationActive={!prefersReducedMotion}

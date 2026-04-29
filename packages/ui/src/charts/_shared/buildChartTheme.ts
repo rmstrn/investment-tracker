@@ -77,7 +77,7 @@ export interface LineSeriesVisuals {
 
 export function buildLineSeriesProps(): LineSeriesVisuals {
   return {
-    strokeWidth: 1.75,
+    strokeWidth: 2,
     strokeLinecap: 'round',
     strokeLinejoin: 'round',
   };

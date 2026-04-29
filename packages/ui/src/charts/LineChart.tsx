@@ -148,7 +148,7 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
           />
-          {payload.series.length > 1 ? <Legend wrapperStyle={theme.legendStyle} /> : null}
+          <Legend wrapperStyle={theme.legendStyle} />
           {payload.benchmark ? (
             <ReferenceLine
               y={payload.benchmark.y}

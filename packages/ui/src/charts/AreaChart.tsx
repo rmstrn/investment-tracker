@@ -112,7 +112,7 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
           />
-          {payload.series.length > 1 ? <Legend wrapperStyle={theme.legendStyle} /> : null}
+          <Legend wrapperStyle={theme.legendStyle} />
           {payload.series.map((s, i) => {
             const stroke = s.color ?? SERIES_VARS[i % SERIES_VARS.length];
             return (

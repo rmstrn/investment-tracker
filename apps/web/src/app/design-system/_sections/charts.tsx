@@ -95,7 +95,35 @@ export function ChartsSection({ variant }: ChartsSectionProps) {
             <BarChart payload={BAR_FIXTURE} height={200} />
           </ChartCard>
           <ChartCard eyebrow="DONUT · TIER 1" title="Allocation by sector" subtitle="5 sectors">
-            <DonutChart payload={DONUT_FIXTURE} size={240} />
+            <DonutChart
+              payload={DONUT_FIXTURE}
+              size={240}
+              centerLabel={
+                <div className="flex flex-col items-center gap-1">
+                  <span
+                    className="font-semibold tabular-nums tracking-tight"
+                    style={{
+                      fontSize: '24px',
+                      lineHeight: 1,
+                      color: 'var(--ink, var(--color-text-primary))',
+                    }}
+                  >
+                    $226K
+                  </span>
+                  <span
+                    className="font-mono uppercase"
+                    style={{
+                      fontSize: '11px',
+                      letterSpacing: '0.22em',
+                      color: 'var(--text-3, var(--color-text-tertiary))',
+                      fontWeight: 500,
+                    }}
+                  >
+                    Portfolio
+                  </span>
+                </div>
+              }
+            />
           </ChartCard>
           <ChartCard
             eyebrow="SPARKLINE · TIER 1"
