@@ -611,6 +611,35 @@ describe('Δ1 — sum-to-total mixin', () => {
   });
 });
 
+/* ─── 6b. TS H-1 — meta strict-mode regression ────────────────────── */
+
+/**
+ * Zod's `.merge()` returns a fresh `ZodObject` in `strip` unknown-key
+ * mode regardless of the source schemas' settings. Without an explicit
+ * `.strict()` re-assertion on the merged result, extra keys on
+ * `meta` would silently parse — weakening the Lane-A enforcement
+ * boundary. Append-`.strict()` fix is verified here.
+ */
+describe('TS H-1 — meta extra-key rejection on .merge()-derived schemas', () => {
+  it('Donut: extra `meta.bogus` field fails parse', () => {
+    const broken = {
+      ...donutPayload,
+      meta: { ...donutPayload.meta, bogus: 'x' },
+    };
+    const result = ChartEnvelope.safeParse(envelope(broken));
+    expect(result.success).toBe(false);
+  });
+
+  it('Treemap: extra `meta.bogus` field fails parse', () => {
+    const broken = {
+      ...treemapPayload,
+      meta: { ...treemapPayload.meta, bogus: 'x' },
+    };
+    const result = ChartEnvelope.safeParse(envelope(broken));
+    expect(result.success).toBe(false);
+  });
+});
+
 /* ─── 7. Δ2 — waterfall conservation ──────────────────────────────── */
 
 describe('Δ2 — waterfall conservation invariant', () => {

@@ -382,8 +382,12 @@ export const DonutChartPayload = z
      * Refinement runs at the `ChartEnvelope` level (see
      * `validateCrossFieldInvariants`) so this stays a plain `ZodObject`
      * and remains a valid `discriminatedUnion` member.
+     *
+     * `.strict()` re-asserts unknown-key rejection: Zod's `.merge()`
+     * resets the resulting object to `strip` mode regardless of the
+     * source schemas' settings (TS H-1).
      */
-    meta: ChartMeta.merge(MetaFinancialAggregate),
+    meta: ChartMeta.merge(MetaFinancialAggregate).strict(),
     format: ValueFormat,
     currency: Currency.optional(),
     segments: z
@@ -579,7 +583,12 @@ export type TreemapTile = z.infer<typeof TreemapTile>;
 export const TreemapPayload = z
   .object({
     kind: z.literal('treemap'),
-    meta: ChartMeta.merge(MetaFinancialAggregate),
+    /**
+     * `.strict()` re-asserts unknown-key rejection: Zod's `.merge()`
+     * resets the resulting object to `strip` mode regardless of the
+     * source schemas' settings (TS H-1).
+     */
+    meta: ChartMeta.merge(MetaFinancialAggregate).strict(),
     asOf: z.string().datetime(),
     baseCurrency: Currency.default('USD'),
     /**
