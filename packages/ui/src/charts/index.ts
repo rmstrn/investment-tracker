@@ -11,6 +11,31 @@
  * not need a second package dependency.
  */
 
+/**
+ * Phase β.1 feature-flag switch — `NEXT_PUBLIC_PROVEDO_CHART_BACKEND`.
+ *
+ * Default `'recharts'` (zero downstream impact). Set to `'primitives'` to
+ * route migrated chart kinds to the custom SVG primitives layer
+ * (`packages/ui/src/charts/primitives/{math,svg}/`).
+ *
+ * Phase β.1.1 (this commit) adds the flag scaffold + `ACTIVE_CHART_BACKEND`
+ * export — no chart kinds re-route yet. Phase β.1.2 (Sparkline) and β.1.3
+ * (Donut) add the per-kind branches.
+ *
+ * Read at module evaluation time (not inside a component) so the choice
+ * propagates as a static export. Per Next.js 15 + Turbopack inlining,
+ * `process.env.NEXT_PUBLIC_*` resolves at build time on the client and at
+ * eval time on the server, both of which match consumer expectations.
+ */
+const PROVEDO_CHART_BACKEND =
+  (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PROVEDO_CHART_BACKEND) || 'recharts';
+
+/**
+ * Active backend, exposed for tests + dev tooling. Per-kind switches (added
+ * in β.1.2+) read from this constant.
+ */
+export const ACTIVE_CHART_BACKEND = PROVEDO_CHART_BACKEND as 'recharts' | 'primitives';
+
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
 export { BarChart, type BarChartProps } from './BarChart';

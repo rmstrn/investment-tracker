@@ -108,6 +108,19 @@ export interface ArcPathOptions {
   /** Angles in radians, 0 at 12 o'clock, clockwise positive (d3 convention). */
   readonly startAngle: number;
   readonly endAngle: number;
+  /**
+   * Corner radius in user units — d3-shape rounds inner + outer corners.
+   * Default 0. Per chart-visual-references.md (amCharts semi-circle
+   * inspiration): `<DonutChartV2 cornerRadius={N}>` activates the rounded
+   * `<path>` path; the fast `<circle stroke-dasharray>` ring path applies
+   * only when `cornerRadius === 0`.
+   */
+  readonly cornerRadius?: number;
+  /**
+   * Pad angle in radians between adjacent sectors. Default 0. Useful when a
+   * donut wants visible gaps without relying solely on stroke separation.
+   */
+  readonly padAngle?: number;
 }
 
 /**
@@ -116,11 +129,16 @@ export interface ArcPathOptions {
  * Note per aggregate Pattern §2: the canonical donut in the static reference
  * is a 5×`<circle stroke-dasharray>` ring rather than 5 SVG arcs. `arcPath`
  * is provided for charts that genuinely need wedge geometry (gauges,
- * radial bar, half-arc KPIs) — Layer 3 `<DonutChart>` uses the dasharray
- * trick.
+ * radial bar, half-arc KPIs, rounded-corner donuts).
+ *
+ * Layer 3 `<DonutChartV2>` (Phase β.1) selects between the two paths:
+ *   - `cornerRadius === 0` → 5×`<circle stroke-dasharray>` fast path
+ *   - `cornerRadius > 0`   → `<path>` via this generator (rounded corners)
  */
 export function arcPath(options: ArcPathOptions): string {
-  const generator = d3Arc();
+  const generator = d3Arc()
+    .cornerRadius(options.cornerRadius ?? 0)
+    .padAngle(options.padAngle ?? 0);
   const result = generator({
     innerRadius: options.innerRadius,
     outerRadius: options.outerRadius,
