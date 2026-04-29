@@ -14,6 +14,35 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-093 — pin AI-agent SSE chart-emission streaming protocol
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P2.
+**Source:** Code-architect blueprint open-question 1 («does AI agent SSE stream emit `ChartEnvelope` as a single JSON atom after its tool-call completes, or stream JSON incrementally?»). Backend chart slice deferred this; current `parseChartEnvelope` assumes a complete payload at the trust boundary, so single-atom emission is implicitly required. Once `apps/ai/` starts emitting charts on the SSE bridge, the FE renderer (and `parseChartEnvelope`) needs a confirmed contract — partial payloads would force either re-validation per chunk (breaks the single-parser invariant) or buffering until `done` (fine but undocumented).
+**Recommendation:** single-atom after tool-call completes (matches blueprint AI-agent integration boundary §). Document in `tools/openapi/openapi.yaml` SSE event schema and in the AI service `stream_chat` handler.
+**Owner:** Backend (Python AI) + Tech-lead.
+**Trigger to revisit:** start of `SLICE-AI-CHARTS-V1` — the slice that wires the AI service to emit `ChartEnvelope` over SSE.
+**Links:** `docs/reviews/2026-04-27-chart-implementation-blueprint.md` §AI-agent integration; `apps/ai/src/ai/api/chat.py`.
+
+### TD-092 — re-activate scatter `referenceLines.label` vocabulary regex on V2 re-introduction
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P3.
+**Source:** Finance audit §2.9 finding S-2 (HIGH → V2-deferred-gate per audit §9 Δa). Scatter is excluded from the MVP `ChartPayload` discriminated union per architect Δ3, so any scatter payload fails parse before the `referenceLines.label` content is inspected. When V2 re-introduces scatter (PO greenlight + legal-advisor sign-off), the schema must add a `.refine()` rejecting prescriptive vocabulary in `referenceLines.label` per `AI_CONTENT_VALIDATION_TEMPLATES.md` §3 verb blacklist (e.g. «aggressive», «conservative», «efficient», «optimal», «target», «aspirational»).
+**Owner:** Backend (Zod schemas) + finance-advisor (vocabulary list owner).
+**Trigger to revisit:** V2 PO greenlight to re-add scatter to the union (schema bump ≥1.1) AND legal-advisor sign-off.
+**Links:** `docs/reviews/2026-04-29-finance-charts-lane-a-audit.md` §2.9 + §9 Δa; `packages/shared-types/src/charts.ts` `ScatterChartPayload` (defined but not unioned).
+
+### TD-091 — Pydantic mirror generation for `apps/ai/` chart payload validation
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P3.
+**Source:** Architect ADR §«Δ4 dual-side validation». Canonical chart-payload schemas live in `packages/shared-types/src/charts.ts` (Zod). For dual-side defense-in-depth, `apps/ai/` must mirror the structural exclusions (Risk Flags 1/2/3) in Pydantic v2 so the AI agent fails fast on malformed emissions BEFORE the network roundtrip to FE. Cross-field math invariants (waterfall conservation Δ2, sum-to-total Δ1) live ONLY in Zod and are NOT duplicated in Pydantic per Δ4. The Pydantic models must be GENERATED from the OpenAPI schema (which is itself derived from Zod via `zod-to-openapi`), not hand-authored.
+**Recommendation:** dispatch as `SLICE-AI-CHARTS-V1`. Add `zod-to-openapi` to the `packages/shared-types` build pipeline; emit `tools/openapi/charts.openapi.yaml` (or extend the main spec); regenerate Pydantic models in `apps/ai/src/ai/schemas/charts.py` via `datamodel-code-generator` or equivalent. Mirror structural exclusion tests in `apps/ai/tests/test_charts_schema.py` (identical fixtures, two language runtimes).
+**Owner:** Backend (Python AI).
+**Trigger to revisit:** start of `SLICE-AI-CHARTS-V1` — the slice that wires the AI service to emit `ChartEnvelope` payloads.
+**Links:** `docs/reviews/2026-04-29-architect-chart-data-shape-adr.md` §«Brainstorm-pass addendum / Δ4»; `packages/shared-types/src/charts.ts`.
+
 ### TD-090 — typed action_url for insights (oneOf discriminated union)
 
 **Added:** 2026-04-22 (Slice 6a post-merge, PR #64).

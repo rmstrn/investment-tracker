@@ -15,6 +15,18 @@ Newest entries at the top.
 
 ---
 
+## SLICE-CHARTS-BACKEND-V1 — Zod chart payload schemas + Lane-A structural guardrails
+
+**Branch:** `chore/plugin-architecture-2026-04-29` (consolidated PR pending — backend lands first inside the chore branch; FE + QA follow).
+**Implementation SHA:** `820ea86` (chore branch local; not yet on `main`).
+**Date:** 2026-04-29
+**Scope.** Materialised the chart-payload contract from `docs/design/CHARTS_SPEC.md` v1.1 §5.2 into runnable Zod code in `packages/shared-types/src/charts.ts`. 11 payload schemas (10 in MVP `ChartPayload` discriminated union; `ScatterChartPayload` defined-but-not-unioned per architect Δ3 for V2 readiness), `MetaFinancialAggregate` mixin (Δ1) reused on Donut / Treemap / StackedBar sum-to-total invariants, waterfall conservation invariant (Δ2) with explicit `WATERFALL_CONSERVATION_VIOLATION` error code at $1.00 absolute tolerance, T-8 cross-currency `dailyChangeBasis` discriminator on Treemap (MVP-included). 3 Lane-A Risk Flags baked structurally: forbidden Line/Candlestick TA overlays (23-token denylist + structural exclusion), Bar/StackedBar zero-only reference + targetWeight rejection, Calendar V2 event-type gate (`'earnings'` / `'news'` rejected). Single chart-envelope parsing entry point (`parseChartEnvelope`) added to `packages/api-client/src/index.ts`; production grep confirms exactly one match in `packages/api-client/src/index.ts`. 57 Vitest tests (positive parses + Risk-Flag rejections + Δ1 sum-to-total + Δ2 conservation incl. tolerance boundary at ±$1.00 + Δ3 union exclusion + T-8 discriminator validation + envelope edge cases).
+**Verification.** `pnpm --filter @investment-tracker/shared-types typecheck` green. `pnpm --filter @investment-tracker/api-client typecheck` green. `pnpm --filter @investment-tracker/shared-types build` green. `pnpm --filter @investment-tracker/api-client build` green. `pnpm --filter @investment-tracker/web typecheck` green. `pnpm --filter @investment-tracker/web build` green. `pnpm --filter @investment-tracker/shared-types test` 57/57 green. Single-parser invariant grep (production code, excluding `*.test.ts`) returns exactly 1 match in `packages/api-client/src/index.ts`.
+**TDs opened:** TD-091 (P3, trigger: post-merge SLICE-AI-CHARTS-V1 — `zod-to-openapi` codegen + Pydantic mirror per architect Δ4); TD-092 (P3, trigger: V2 scatter re-introduction — re-activate finance audit S-2 reference-line vocabulary regex precondition); TD-093 (P2, trigger: AI agent SSE chart emission — pin streaming protocol single-atom vs incremental per blueprint open-question 1).
+**Migrations:** none. No OpenAPI surface changes (chart payloads ride on existing endpoints; `contract-k6-spec-sync` CI job unaffected).
+
+---
+
 ## PR #64 — TASK_07 Slice 6a: Insights Feed UI (read-only + local dismiss)
 
 **PR:** https://github.com/rmstrn/investment-tracker/pull/64
