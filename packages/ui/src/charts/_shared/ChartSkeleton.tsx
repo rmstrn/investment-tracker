@@ -53,8 +53,7 @@ const DEFAULT_HEIGHT: Record<ChartKind, number> = {
 const SHIMMER_CLASSES = 'text-background-tertiary motion-safe:animate-pulse';
 
 const PAPER_INSET_STYLE: CSSProperties = {
-  background:
-    'linear-gradient(180deg, var(--inset, rgba(20, 20, 20, 0.04)) 0%, transparent 100%)',
+  background: 'linear-gradient(180deg, var(--inset, rgba(20, 20, 20, 0.04)) 0%, transparent 100%)',
   borderRadius: 8,
 };
 
@@ -94,7 +93,16 @@ function LineSkeleton() {
       <title>Line chart loading</title>
       {/* Y-axis tick stand-ins (left rail) — foreshadows the 68px gutter. */}
       {[6, 14, 22, 30].map((y) => (
-        <rect key={`ytick-${y}`} x={1} y={y - 1.5} width={6} height={3} rx={0.5} fill="currentColor" opacity={0.35} />
+        <rect
+          key={`ytick-${y}`}
+          x={1}
+          y={y - 1.5}
+          width={6}
+          height={3}
+          rx={0.5}
+          fill="currentColor"
+          opacity={0.35}
+        />
       ))}
       {/* 4 dashed gridlines at the same rhythm as the real chart. */}
       {[8, 16, 24, 32].map((y) => (
@@ -110,7 +118,15 @@ function LineSkeleton() {
           opacity={0.45}
         />
       ))}
-      <path d={WAVE_PATH} fill="none" stroke="currentColor" strokeWidth={1.75} opacity={0.85} strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={WAVE_PATH}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        opacity={0.85}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
       {/* Active-dot at the rightmost point — hints the data-driven endpoint. */}
       <circle cx={100} cy={8} r={1.5} fill="currentColor" opacity={0.85} />
     </svg>
@@ -132,7 +148,16 @@ function AreaSkeleton() {
       <GradientDefs id={gradId} />
       {/* Y-axis tick stand-ins. */}
       {[6, 14, 22, 30].map((y) => (
-        <rect key={`ytick-${y}`} x={1} y={y - 1.5} width={6} height={3} rx={0.5} fill="currentColor" opacity={0.35} />
+        <rect
+          key={`ytick-${y}`}
+          x={1}
+          y={y - 1.5}
+          width={6}
+          height={3}
+          rx={0.5}
+          fill="currentColor"
+          opacity={0.35}
+        />
       ))}
       {[8, 16, 24, 32].map((y) => (
         <line
@@ -149,7 +174,15 @@ function AreaSkeleton() {
       ))}
       {/* Filled area uses gradient fade — reads as a real area chart shape. */}
       <path d={`${WAVE_PATH} L100 40 L0 40 Z`} fill={`url(#${gradId})`} stroke="none" />
-      <path d={WAVE_PATH} fill="none" stroke="currentColor" strokeWidth={1.75} opacity={0.85} strokeLinecap="round" strokeLinejoin="round" />
+      <path
+        d={WAVE_PATH}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.75}
+        opacity={0.85}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -178,14 +211,41 @@ function BarSkeleton() {
       <GradientDefs id={gradId} />
       {/* Left-rail y-axis tick stand-ins. */}
       {[6, 14, 22, 30].map((y) => (
-        <rect key={`ytick-${y}`} x={1} y={y - 1.5} width={6} height={3} rx={0.5} fill="currentColor" opacity={0.35} />
+        <rect
+          key={`ytick-${y}`}
+          x={1}
+          y={y - 1.5}
+          width={6}
+          height={3}
+          rx={0.5}
+          fill="currentColor"
+          opacity={0.35}
+        />
       ))}
       {/* 3 dashed gridlines at chart rhythm. */}
       {[10, 20, 30].map((y) => (
-        <line key={y} x1={9} x2={100} y1={y} y2={y} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 5" opacity={0.4} />
+        <line
+          key={y}
+          x1={9}
+          x2={100}
+          y1={y}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth={0.5}
+          strokeDasharray="3 5"
+          opacity={0.4}
+        />
       ))}
       {/* Baseline (axis substitute). */}
-      <line x1={9} x2={100} y1={38} y2={38} stroke="currentColor" strokeWidth={0.7} opacity={0.55} />
+      <line
+        x1={9}
+        x2={100}
+        y1={38}
+        y2={38}
+        stroke="currentColor"
+        strokeWidth={0.7}
+        opacity={0.55}
+      />
       {bars.map((b) => (
         <rect
           key={b.x}
@@ -200,7 +260,16 @@ function BarSkeleton() {
       ))}
       {/* X-axis tick stand-ins (one per bar). */}
       {bars.map((b) => (
-        <rect key={`xtick-${b.x}`} x={b.x + 2} y={39} width={7} height={1.2} rx={0.5} fill="currentColor" opacity={0.4} />
+        <rect
+          key={`xtick-${b.x}`}
+          x={b.x + 2}
+          y={39}
+          width={7}
+          height={1.2}
+          rx={0.5}
+          fill="currentColor"
+          opacity={0.4}
+        />
       ))}
     </svg>
   );
@@ -227,12 +296,39 @@ function StackedBarSkeleton() {
     >
       <title>Stacked bar chart loading</title>
       {[6, 14, 22, 30].map((y) => (
-        <rect key={`ytick-${y}`} x={1} y={y - 1.5} width={6} height={3} rx={0.5} fill="currentColor" opacity={0.35} />
+        <rect
+          key={`ytick-${y}`}
+          x={1}
+          y={y - 1.5}
+          width={6}
+          height={3}
+          rx={0.5}
+          fill="currentColor"
+          opacity={0.35}
+        />
       ))}
       {[10, 20, 30].map((y) => (
-        <line key={y} x1={9} x2={100} y1={y} y2={y} stroke="currentColor" strokeWidth={0.5} strokeDasharray="3 5" opacity={0.4} />
+        <line
+          key={y}
+          x1={9}
+          x2={100}
+          y1={y}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth={0.5}
+          strokeDasharray="3 5"
+          opacity={0.4}
+        />
       ))}
-      <line x1={9} x2={100} y1={38} y2={38} stroke="currentColor" strokeWidth={0.7} opacity={0.55} />
+      <line
+        x1={9}
+        x2={100}
+        y1={38}
+        y2={38}
+        stroke="currentColor"
+        strokeWidth={0.7}
+        opacity={0.55}
+      />
       {bars.map((b) => {
         let yCursor = 38;
         return b.segs.map((segH, i) => {
@@ -291,6 +387,7 @@ function DonutSkeleton() {
           offset += segLen;
           return (
             <circle
+              // biome-ignore lint/suspicious/noArrayIndexKey: positional skeleton arc — index IS the segment identity.
               key={i}
               cx={20}
               cy={20}
@@ -307,7 +404,15 @@ function DonutSkeleton() {
       </g>
       {/* Inner-hole inset suggestion — a faint ring at the inner edge for the
           paper-cut feel. */}
-      <circle cx={20} cy={20} r={11} fill="none" stroke="currentColor" strokeWidth={0.3} opacity={0.35} />
+      <circle
+        cx={20}
+        cy={20}
+        r={11}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={0.3}
+        opacity={0.35}
+      />
     </svg>
   );
 }
@@ -345,8 +450,7 @@ function CalendarSkeleton() {
   const cellW = 100 / cols;
   const cellH = gridH / rows;
   // Out-of-month cells (first row first 2 + last row last 3) — fainter.
-  const isOut = (r: number, c: number) =>
-    (r === 0 && c < 2) || (r === rows - 1 && c >= cols - 3);
+  const isOut = (r: number, c: number) => (r === 0 && c < 2) || (r === rows - 1 && c >= cols - 3);
   // A handful of cells get an «event pill» ghost — fixed positions so the
   // skeleton hints at the dividend-pill layout without random churn.
   const eventCells = new Set(['1-3', '1-5', '2-2', '3-4', '3-6']);
@@ -369,6 +473,7 @@ function CalendarSkeleton() {
       {/* Weekday header strip — 7 small mono-text stand-ins. */}
       {Array.from({ length: cols }).map((_, c) => (
         <rect
+          // biome-ignore lint/suspicious/noArrayIndexKey: positional weekday-header stand-in — index IS the column identity.
           key={`hdr-${c}`}
           x={c * cellW + cellW * 0.25}
           y={1}
@@ -447,6 +552,7 @@ function TreemapSkeleton() {
     >
       <title>Treemap loading</title>
       {tiles.map((t, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: positional skeleton tile — index IS the tile identity.
         <g key={i}>
           <rect
             x={t.x}
@@ -472,11 +578,27 @@ function TreemapSkeleton() {
           ) : null}
           {/* Ticker stand-in (top-left). */}
           {t.w >= 14 && t.h >= 7 ? (
-            <rect x={t.x + 1.2} y={t.y + 1.4} width={6} height={1.4} rx={0.3} fill="currentColor" opacity={0.85} />
+            <rect
+              x={t.x + 1.2}
+              y={t.y + 1.4}
+              width={6}
+              height={1.4}
+              rx={0.3}
+              fill="currentColor"
+              opacity={0.85}
+            />
           ) : null}
           {/* Pct stand-in. */}
           {t.w >= 14 && t.h >= 11 ? (
-            <rect x={t.x + 1.2} y={t.y + 4} width={9} height={1} rx={0.3} fill="currentColor" opacity={0.55} />
+            <rect
+              x={t.x + 1.2}
+              y={t.y + 4}
+              width={9}
+              height={1}
+              rx={0.3}
+              fill="currentColor"
+              opacity={0.55}
+            />
           ) : null}
         </g>
       ))}
@@ -516,16 +638,52 @@ function WaterfallSkeleton() {
     >
       <title>Waterfall loading</title>
       {[10, 20, 30].map((y) => (
-        <line key={y} x1={0} x2={100} y1={y} y2={y} stroke="currentColor" strokeWidth={0.4} strokeDasharray="3 5" opacity={0.35} />
+        <line
+          key={y}
+          x1={0}
+          x2={100}
+          y1={y}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth={0.4}
+          strokeDasharray="3 5"
+          opacity={0.35}
+        />
       ))}
-      <line x1={0} x2={100} y1={38} y2={38} stroke="currentColor" strokeWidth={0.5} opacity={0.45} />
+      <line
+        x1={0}
+        x2={100}
+        y1={38}
+        y2={38}
+        stroke="currentColor"
+        strokeWidth={0.5}
+        opacity={0.45}
+      />
       {/* Anchor pillars (slim ink columns). */}
       {anchors.map((a) => (
-        <rect key={`a-${a.x}`} x={a.x} y={a.y} width={6} height={a.h} rx={1} fill="currentColor" opacity={0.78} />
+        <rect
+          key={`a-${a.x}`}
+          x={a.x}
+          y={a.y}
+          width={6}
+          height={a.h}
+          rx={1}
+          fill="currentColor"
+          opacity={0.78}
+        />
       ))}
       {/* Flow bars (wider, lighter). */}
       {flows.map((f) => (
-        <rect key={`f-${f.x}`} x={f.x} y={f.y} width={12} height={f.h} rx={1.2} fill="currentColor" opacity={0.55} />
+        <rect
+          key={`f-${f.x}`}
+          x={f.x}
+          y={f.y}
+          width={12}
+          height={f.h}
+          rx={1.2}
+          fill="currentColor"
+          opacity={0.55}
+        />
       ))}
       {/* Step-after connector dashes between top edges. */}
       {connectorPoints.map((c, i) => (
