@@ -128,6 +128,17 @@ export {
   type TransactionKind,
 } from './domain/TransactionRow';
 
+// Components — page-level surfaces
+export {
+  COMPACT_COPY as REGULATORY_DISCLAIMER_COMPACT_COPY,
+  FULL_DISCLAIMER_PATH as REGULATORY_DISCLAIMER_FULL_PATH,
+  RegulatoryDisclaimer,
+  type RegulatoryDisclaimerLang,
+  type RegulatoryDisclaimerProps,
+  type RegulatoryDisclaimerVariant,
+  VERBOSE_COPY as REGULATORY_DISCLAIMER_VERBOSE_COPY,
+} from './components/regulatory-disclaimer';
+
 // Utilities
 export { cn } from './lib/cn';
 export { useReducedMotion } from './lib/useReducedMotion';

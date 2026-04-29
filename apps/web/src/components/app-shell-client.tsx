@@ -1,7 +1,14 @@
 'use client';
 
 import { UserButton } from '@clerk/nextjs';
-import { AppShell, Logo, type NavItem, Sidebar, TopBar } from '@investment-tracker/ui';
+import {
+  AppShell,
+  Logo,
+  type NavItem,
+  RegulatoryDisclaimer,
+  Sidebar,
+  TopBar,
+} from '@investment-tracker/ui';
 import {
   Briefcase,
   Cog,
@@ -84,6 +91,7 @@ export function AppShellClient({ children }: { children: ReactNode }) {
           }
         />
       }
+      footer={<RegulatoryDisclaimer variant="compact" lang="en" />}
     >
       {children}
     </AppShell>
