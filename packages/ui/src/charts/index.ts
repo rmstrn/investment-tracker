@@ -30,6 +30,7 @@ export {
   labelOnTile,
 } from './tokens';
 
+export { ChartCard, type ChartCardProps } from './_shared/ChartCard';
 export { ChartEmpty } from './_shared/ChartEmpty';
 export { ChartError } from './_shared/ChartError';
 export { ChartSkeleton } from './_shared/ChartSkeleton';
