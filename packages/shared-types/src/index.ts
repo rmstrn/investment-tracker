@@ -20,3 +20,7 @@ export type ErrorEnvelope = components['schemas']['ErrorEnvelope'];
 export type PaginationMeta = components['schemas']['PaginationMeta'];
 export type User = components['schemas']['User'];
 export type Subscription = components['schemas']['Subscription'];
+
+// Chart payload schemas (Zod source-of-truth for AI-emitted charts).
+// See `./charts` subpath export for the canonical import path.
+export * from './charts.js';

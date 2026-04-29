@@ -1,5 +1,10 @@
 import type { paths } from '@investment-tracker/shared-types';
+import {
+  ChartEnvelope,
+  type ChartEnvelope as ChartEnvelopeType,
+} from '@investment-tracker/shared-types/charts';
 import createClient, { type Client, type ClientOptions, type Middleware } from 'openapi-fetch';
+import type { ZodError } from 'zod';
 
 export type InvestmentTrackerClient = Client<paths>;
 
@@ -91,6 +96,44 @@ export function parseRateLimitHeaders(headers: Headers): RateLimitSnapshot | und
     return undefined;
   }
   return { limit, remaining, resetAt };
+}
+
+/**
+ * Discriminated result of `parseChartEnvelope`. On success, `data` carries
+ * the parsed envelope (with defaults applied — e.g. `schemaVersion: '1.0'`).
+ * On failure, `error` is the raw `ZodError` and `raw` is the original input
+ * for debugging / logging.
+ */
+export type ParseChartResult =
+  | { ok: true; data: ChartEnvelopeType }
+  | { ok: false; error: ZodError; raw: unknown };
+
+/**
+ * Parse a chart envelope payload from an unknown source (typically an AI
+ * agent response field).
+ *
+ * **This is the SOLE chart-envelope parsing entry point in the entire
+ * codebase.** Renderer components consume the parsed payload and MUST NOT
+ * re-validate. The single-parser invariant is enforced by a CI grep that
+ * looks for direct schema-level safeParse / parse calls in production
+ * code (excluding test files and this comment).
+ *
+ * Lane-A structural guardrails (forbidden TA overlays, target-weight, V2
+ * event types) and cross-field math invariants (waterfall conservation,
+ * sum-to-total) all live in the Zod schema; this function is the trust
+ * boundary at the api-client layer per architect ADR §«Δ4 dual-side
+ * validation» (Pydantic structural pre-emit on `apps/ai/`, Zod canonical
+ * structural + math at this boundary).
+ *
+ * Failures do NOT throw — they return `{ ok: false, error, raw }` so
+ * callers can render the §3.11 chart error state and log to monitoring.
+ */
+export function parseChartEnvelope(raw: unknown): ParseChartResult {
+  const result = ChartEnvelope.safeParse(raw);
+  if (result.success) {
+    return { ok: true, data: result.data };
+  }
+  return { ok: false, error: result.error, raw };
 }
 
 export type {
