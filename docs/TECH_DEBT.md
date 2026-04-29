@@ -14,6 +14,26 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-095 — lift chart-series CSS vars from globals.css into design-tokens DTCG
+
+**Added:** 2026-04-29 (SLICE-CHARTS-FE-V1).
+**Priority:** P3.
+**Source:** Per architect ADR §«Theme + locale + units», charts consume colors strictly via `var(--chart-series-N)` strings — theme-agnostic, no JS-resolved hex. CHARTS_SPEC §2.5 declares the 7-hue palette to land in `packages/design-tokens/tokens/semantic/{light,dark}.json`. SLICE-CHARTS-FE-V1 declared the vars inline in `apps/web/src/app/globals.css` (`:root` light defaults + `.dark, [data-theme="dark"]` overrides) so charts could ship without blocking on the design-tokens migration. Charts will pick up the DTCG-emitted vars unchanged once SLICE-DSM-V1 (parent migration) lands; this debt removes the duplication.
+**Recommendation:** add `chart.series.{1..7}` + `chart.{grid,grid-strong,axis-label,tooltip-bg,tooltip-border,tooltip-shadow,cursor}` tokens to the DTCG light/dark JSONs; rerun `packages/design-tokens` build; delete the inline declarations from `apps/web/src/app/globals.css`. Chart code needs no changes — `var(--chart-series-N)` references stay identical.
+**Owner:** Design-tokens (Style Dictionary build) + FE.
+**Trigger to revisit:** SLICE-DSM-V1 (parent design-system migration) palette pass — already in flight per `docs/engineering/kickoffs/2026-04-27-design-system-migration.md`.
+**Links:** `apps/web/src/app/globals.css` (current declarations); `docs/design/CHARTS_SPEC.md` §2.5; `packages/design-tokens/tokens/semantic/`.
+
+### TD-094 — `MultiSeriesPoint` literal-typed cast escape hatch in chart consumers
+
+**Added:** 2026-04-29 (SLICE-CHARTS-FE-V1).
+**Priority:** P3.
+**Source:** `MultiSeriesPoint` schema uses `.catchall(z.number())` to permit dynamic series keys (`{ x: 'Apr', ibkr: 1200, binance: 800 }`). `z.infer` widens this to `{ x: string|number; [k: string]: number }` which TypeScript treats as incompatible with literal-typed object shapes that mix string `x` with number-typed series — the index signature rejects `x: string`. Consequence: every consumer authoring fixtures or transforms has to cast through `unknown as MultiSeriesPoint[]`. SLICE-CHARTS-FE-V1 introduced one such helper (`asMultiSeries` in `packages/ui/src/charts/_shared/fixtures.ts`) and one inline cast (`apps/web/src/components/positions/position-price-chart.tsx`) for the migrated `AreaChart` consumer.
+**Recommendation:** export `asMultiSeries<T>` (or a `MultiSeriesRow` template type) from `@investment-tracker/shared-types/charts` so consumers don't reinvent the cast. Alternative: revisit Zod schema shape to use a typed `series` map rather than `.catchall`.
+**Owner:** Backend (shared-types) + FE.
+**Trigger to revisit:** next chart consumer migration outside the showcase / position-price-chart pair (e.g. dashboard chart wiring or chat surface integration in SLICE-CHAT-CHARTS-V1).
+**Links:** `packages/shared-types/src/charts.ts:90-95` (`MultiSeriesPoint`); `packages/ui/src/charts/_shared/fixtures.ts` (`asMultiSeries` helper); `apps/web/src/components/positions/position-price-chart.tsx`.
+
 ### TD-093 — pin AI-agent SSE chart-emission streaming protocol
 
 **Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
