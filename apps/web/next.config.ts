@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   productionBrowserSourceMaps: true,
   typedRoutes: true,
+  // Allow tests to use an isolated build output directory so a Playwright
+  // dev server (port 3100) doesn't collide with the developer's `pnpm dev`
+  // on port 3000 over a shared `.next/` cache (Windows file locks on
+  // `.next/trace`). Default unchanged in normal `pnpm dev` / `pnpm build`.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   env: {
     APP_URL: process.env.APP_URL ?? 'http://localhost:3000',
     API_URL: process.env.API_URL ?? 'http://localhost:8080',

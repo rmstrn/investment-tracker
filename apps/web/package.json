@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots",
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
@@ -28,6 +30,7 @@
   },
   "devDependencies": {
     "@investment-tracker/config": "workspace:*",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.0.0-beta.8",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
@@ -35,6 +38,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "@vitejs/plugin-react": "^4.3.4",
+    "axe-core": "^4.11.3",
     "happy-dom": "^15.11.7",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.0.0-beta.8",
