@@ -1,7 +1,7 @@
 ---
 name: content-lead
 description: Owns landing copy, email sequences, microcopy, paywall copy, in-product strings. Dispatched by Navigator to write/revise any product-facing text. Produces artifacts for Navigator, never talks to PO directly. Does NOT own brand voice guidelines (that is brand-strategist — content-lead CONSUMES those guidelines). Does NOT write code or visual design.
-model: opus
+model: claude-opus-4-7
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: qa-engineer
 description: Owns test strategy across Go + Python + Vitest + k6. Use for coverage analysis, flaky-test root-cause, contract-test gaps (OpenAPI ↔ k6), staging smoke verification, regression suite curation. Writes test code; does NOT write production features.
-model: sonnet
+model: claude-opus-4-7
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 

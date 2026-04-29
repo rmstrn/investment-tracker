@@ -1,7 +1,7 @@
 ---
 name: devops-engineer
 description: Owns CI/CD, Docker images, Doppler secrets, deploy pipelines, staging/prod infra, runbooks. Use for GitHub Actions changes, Dockerfile work, deploy verification, incident triage and postmortems, infra-TD work. Does NOT write product features.
-model: sonnet
+model: claude-opus-4-7
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
@@ -111,6 +111,8 @@ SaaS product for personal portfolio tracking + AI insights. Pre-alpha.
 - `everything-claude-code:benchmark` — perf baselines, regression detection
 - `everything-claude-code:canary-watch` — monitor deployed URL post-deploy
 - `everything-claude-code:schedule` — cron / scheduled agents
+- `everything-claude-code:database-migrations` — schema migration safety (rollback, zero-downtime, lock-aware)
+- `everything-claude-code:strategic-compact` — context-budget hygiene during long incident sessions
 
 Slash commands:
 - `/everything-claude-code:code-review`
