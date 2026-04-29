@@ -1,0 +1,28 @@
+/**
+ * Barrel export for `primitives/svg/*`.
+ *
+ * Public API surface for Layer 2 (React SVG primitives) of the custom chart
+ * primitives layer. Per aggregate decision #2 («Hybrid declarative + imperative
+ * escape hatch»), these primitives accept data + scaled coordinates and render
+ * SVG fragments. No state machines. No chart-kind logic. Composable.
+ *
+ * Layer 3 (chart-kind wrappers — LineChart, AreaChart, etc.) lives one
+ * directory up and consumes from here. Math utilities live in `../math/`.
+ */
+
+/* ─── A11y baseline ──────────────────────────────────────────────────── */
+export {
+  ChartFrame,
+  type ChartFrameProps,
+  type KeyboardNav,
+  type LiveRegionMode,
+  type SeriesEncoding,
+} from './ChartFrame';
+
+/* ─── Re-export the existing visually-hidden transcript ──────────────── */
+export { ChartDataTable } from '../../_shared/ChartDataTable';
+
+/* ─── Re-export shared a11y / motion hooks ───────────────────────────── */
+export { useChartKeyboardNav } from '../../_shared/useChartKeyboardNav';
+export { useReducedMotion } from '../../_shared/useReducedMotion';
+export { CHART_FOCUS_RING_CLASS } from '../../_shared/a11y';
