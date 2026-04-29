@@ -19,7 +19,7 @@ import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
-import { CHART_ANIMATION_MS, DONUT_ORDER } from './tokens';
+import { CHART_ANIMATION_MS } from './tokens';
 
 /**
  * Active-slice renderer (CHARTS_SPEC §3.7).
