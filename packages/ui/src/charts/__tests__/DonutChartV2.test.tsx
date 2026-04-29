@@ -1,9 +1,11 @@
 /**
- * Vitest tests for `<DonutChartV2>` — primitives-backed donut (β.1.3).
+ * Vitest tests for `<DonutChartV2>` — primitives-backed donut (β.1.4 / D5).
  *
  * Coverage:
- *   - Default render path uses the fast circle-stroke ring (5×<circle>).
- *   - cornerRadius > 0 switches to the rounded <path> path.
+ *   - **Default render path uses the rounded <path> branch** (D2 changed
+ *     `cornerRadius` default from 0 → 3 — anatomy ADR §«Slice geometry»).
+ *   - **`cornerRadius={0}` opt-in** switches to the fast circle-stroke ring
+ *     (5×<circle>). Fast path is now opt-in, not default.
  *   - Semi-circle range (startAngleRadians: 0, endAngleRadians: π) renders
  *     all sectors and exposes data-half-circle attribute.
  *   - Sector count matches payload.segments.length.
@@ -15,6 +17,11 @@
  *     class — the manual a11y baseline (V2 doesn't wrap in ChartFrame to
  *     preserve the V1 API but mirrors all required attributes).
  *   - ChartDataTable transcript present with .sr-only.
+ *
+ * D5 scope note: comprehensive coverage of D2/D3/D4 props (`palette`,
+ * `arcMode`, gradient `<defs>` presence, hover bisector, entrance stagger
+ * order) is intentionally OUT of scope here — those tests will land with the
+ * Phase 2 review fan-out. D5 only refreshes the 1 broken default-path test.
  */
 
 import { DONUT_FIXTURE } from '../_shared/fixtures';
@@ -28,13 +35,27 @@ function buildDonutPayload(overrides: Partial<DonutChartPayload> = {}): DonutCha
 }
 
 describe('<DonutChartV2>', () => {
-  it('default render uses the fast circle-stroke ring path', () => {
+  it('default render uses the rounded <path> branch (D2 default cornerRadius=3)', () => {
+    // D2 anatomy ADR — default cornerRadius flipped from 0 → 3, so the
+    // rounded path is now the default render branch. Fast path is opt-in
+    // via explicit `cornerRadius={0}` (next test).
     const { getByTestId, queryByTestId } = render(<DonutChartV2 payload={DONUT_FIXTURE} />);
+    expect(getByTestId('donut-rounded-path')).not.toBeNull();
+    expect(queryByTestId('donut-fast-ring')).toBeNull();
+  });
+
+  it('cornerRadius={0} opts back into the fast circle-stroke ring path', () => {
+    // Fast path is still selectable for callers that want it (e.g.
+    // micro-fixture rendering, sparkline-style donut variants). Verifies the
+    // fast-ring branch is reachable when explicitly opted into.
+    const { getByTestId, queryByTestId } = render(
+      <DonutChartV2 payload={DONUT_FIXTURE} cornerRadius={0} />,
+    );
     expect(getByTestId('donut-fast-ring')).not.toBeNull();
     expect(queryByTestId('donut-rounded-path')).toBeNull();
   });
 
-  it('cornerRadius > 0 switches to the rounded <path> path', () => {
+  it('cornerRadius > 0 (explicit) renders the rounded <path> branch', () => {
     const { getByTestId, queryByTestId } = render(
       <DonutChartV2 payload={DONUT_FIXTURE} cornerRadius={6} />,
     );

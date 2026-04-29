@@ -68,6 +68,18 @@ When this spec and the design system v1.1 disagree, the design system wins. When
 
 ## 2. Multi-series palette
 
+> **β.1.4 / D5 update (2026-04-29) — museum-vitrine extension live.** §§ 2.1–2.5 below describe the original v1.1 7-hue forest-jade-anchored series palette as backwards-compatible context. The DonutChart V2 (`DonutChartV2.tsx`) now resolves slice fills through the **museum-vitrine taxonomy** seeded in D1: 5 categorical hues (slate · ochre · fog-blue · plum · stone) + a 7-step ink ramp for ordinal-by-magnitude payloads. Per-chart-kind mapping below; full hex tables in `docs/design/CHART_PALETTE_v2_draft.md` §4.
+>
+> | Chart kind | Mode | Token stream | Order |
+> |---|---|---|---|
+> | DonutChart V2 (categorical default) | `palette="categorical"` | `--chart-categorical-1..5` | slate → ochre → fog-blue → plum → stone (max hue separation for 2-/3-series cases per `CHART_PALETTE_v2_draft.md` §4 «Order rationale») |
+> | DonutChart V2 (sequential / ordinal) | `palette="sequential"` | `--chart-sequential-1..7` | desc-by-value (largest = darkest in light theme; brightest in dark) |
+> | DonutChart V2 (monochromatic) | `palette="monochromatic"` | `--chart-categorical-1` + per-slice `fillOpacity` 1.0 → 0.4 | input order |
+> | DonutChart V1 (Recharts bridge) | implicit | `--chart-series-1..5` (re-pointed in D1 to museum-categorical hues) | input order — **automatic palette swap, no V1 code change** |
+> | LineChart / AreaChart / BarChart / Sparkline / etc. (V1, all other kinds) | implicit | `--chart-series-1..7` (forest-jade extended palette) | unchanged — Phase 2 chart V2 redesigns will adopt museum taxonomy explicitly |
+>
+> §§ 2.1–2.5 stay authoritative for: (a) every Phase 1 chart kind that hasn't migrated to V2 yet; (b) the underlying contrast / OKLCH-L / color-blind verification methodology that the museum extension reuses.
+
 ### 2.1 Design constraints
 
 The locked v1.1 palette gives us four meaningful hues:
@@ -412,6 +424,43 @@ Because `@investment-tracker/ui` is a workspace package, Next.js / Turbopack do 
 
 **Render-path discipline:** `getActiveBackend()` is for tests, dev tooling, the barrel re-export, and the dispatcher's post-mount swap. Render paths must NOT call it directly — they go through `makeBackendDispatch(V1, V2, name)`, which renders V1 on the SSR + first-client-paint baseline, then upgrades to V2 inside `useEffect` if the resolver returns `'primitives'`. This guarantees hydration parity even when Layer 1 (consumer-side env echo) misfires.
 
+#### 3.13.1 Backend swap — V1↔V2 visual delta + two-frame flicker (β.1.4 / D5)
+
+**Closes TD-118 partially** (full closure when sunset gate fires per TD-115).
+
+When `NEXT_PUBLIC_PROVEDO_CHART_BACKEND='primitives'`, the dispatcher renders V1 on SSR + first paint, then swaps to V2 inside `useEffect`. This produces a brief two-frame flicker per chart instance. The flicker is acceptable for the migration window; the sunset gate retires the dispatcher (and V1) once ≥3 V2 charts ship in production with 2 weeks of zero hydration regressions (TD-115).
+
+**DonutChart V1↔V2 deliberate visual deltas — DO NOT close as bugs:**
+
+| Property | V1 (Recharts bridge) | V2 (primitives) | Reason |
+|---|---|---|---|
+| Slice fill | Flat CSS var (`--chart-series-1..5` re-pointed to museum hues in D1) | Per-slice radial gradient «свет изнутри» (dark center → bright rim) | V2 anatomy ADR (`DONUT_GRADIENT_v2_draft.md`); gradient muddies V1's Recharts internals |
+| `cornerRadius` | `0` (mitered) | `3` default with cap rule | Visual signal that the new backend is active; both are deliberate (ADR design call 5) |
+| Hairline outline | 1px (D5 trim aligned with V2) | 1px mandatory (`vector-effect="non-scaling-stroke"`) | V1 alignment closes the «V1 looks broken next to V2» risk |
+| Entrance animation | Recharts default sweep | By-magnitude descending stagger (600/180/105 ms; n=5) | V2 motion vocabulary; V1 doesn't get back-port (TD-118 / ADR design call 5) |
+| Hover treatment | 1.02× scale via Recharts `activeShape` + glow rim | 2px bisector translation + 1.02× scale + `--shadow-chart-slice-hover` token | V2 anatomy ADR §«Hover» |
+| Sister-slice opacity on hover | unchanged | unchanged (Provedo register — ADR §«Hover» rule 3) | aligned across V1 + V2 |
+
+**Higher-level escape hatch:** consumers in `apps/web` source (where `NEXT_PUBLIC_*` is statically inlined at build) can import `DonutChartV2` directly to bypass the dispatcher entirely — pre-empts the two-frame flicker on routes where V2 is a hard requirement. Workspace-package consumers stay on the dispatcher until the sunset gate fires.
+
+#### 3.13.2 DonutChart V2 prop API (β.1.4)
+
+Authoritative reference for D2/D3/D4 prop additions; full spec lives in §4.4 below.
+
+| Prop | Type | Default | Behaviour |
+|---|---|---|---|
+| `palette` | `'categorical' \| 'sequential' \| 'monochromatic'` | `'categorical'` | Drives slice-fill token stream — see §2 mapping table. `'sequential'` sorts segments desc-by-value before assigning ramp tokens (caller's `originalIndex` preserved for legend / data table / keyboard nav). |
+| `arcMode` | `'full' \| '270'` | `'full'` | Sugar layer over `startAngleRadians` / `endAngleRadians`. `'270'` → bottom-opening 270° wedge (start `−3π/4`, end `+3π/4`). Sugar resolves only when both raw-angle props are unset (raw values always win). |
+| `cornerRadius` | `number` | `3` | D2 default flipped from 0 → 3. Cap rule (`min(specifiedR, ringWidth/2, sliceArcLengthAtCenterline/4)`) applied per-slice in the rounded-path branch — prevents «pinching» on <8% slices. Pass `0` to opt back into the fast circle-stroke ring path. |
+| `startAngleRadians` / `endAngleRadians` | `number` | `0` / `2π` | Raw radians; SVG-native convention (0 = top, clockwise+). When both unset, `arcMode` decides. |
+| `labelPosition` | `'center' \| 'outside' \| 'leader-line'` | `'center'` | β.1 ships `'center'` only; `'outside'` and `'leader-line'` stub to legend-below for forward-compat caller emission. |
+
+**JSDoc invariants** (caller responsibility — enforced inline in `DonutChartV2.tsx`):
+
+- `'sequential'` mode reorders slice render index — caller pre-sort is honoured for `'categorical'` and `'monochromatic'` only. If editorial ordering is critical, use `'categorical'` and explicitly ordered hex `s.color` per segment.
+- Sister-slice opacity does NOT dim on hover — Provedo register («calm-analytical caretaker», not «trader analysis tool»).
+- Reduced-motion (`prefers-reduced-motion: reduce`): instant render — no entrance fade, no stagger, no hover translate, no scale. Hover shadow + outline ring remain (focus parity).
+
 ---
 
 ## 4. Per-chart spec
@@ -599,6 +648,56 @@ This is enforced at the JSON contract level — see `LineChartPayload.overlay` s
 ### 4.4 Donut chart
 
 **Use:** allocation breakdown — by position, sector, broker, asset class. Always with center label showing total.
+
+#### 4.4.0 V2 anatomy (β.1.4 / D5 — primitives backend) — AUTHORITATIVE for new work
+
+**File:** `packages/ui/src/charts/DonutChartV2.tsx`. Active when `NEXT_PUBLIC_PROVEDO_CHART_BACKEND='primitives'`. Source decisions: `DECISIONS.md` «2026-04-29 — Charts palette: museum-vitrine extension + ink tonal default» + «2026-04-29 — DonutChart anatomy + interaction: 5 PO-delegated design calls». Source drafts: `docs/design/CHART_PALETTE_v2_draft.md`, `DONUT_GRADIENT_v2_draft.md`, `DONUT_ANATOMY_v2_draft.md`.
+
+**Palette modes:** see §3.13.2 table + §2 mapping table.
+- `categorical` (default) → museum-vitrine 5-hue cycle (`--chart-categorical-1..5`); slate → ochre → fog-blue → plum → stone.
+- `sequential` → 7-step ink ramp (`--chart-sequential-1..7`), desc-by-value sort.
+- `monochromatic` → single hue + per-slice opacity 1.0 → 0.4.
+
+**Slice fill — per-slice radial gradient «свет изнутри» (categorical mode only):**
+- 5 `<radialGradient>` elements injected into `<defs>` at SVG root, one per museum hue, theme-specific (light + dark hex sets toggled via `useThemeMode` reading `<html data-theme>`).
+- `gradientUnits="userSpaceOnUse"`, `cx={cx} cy={cy} r={outerR} fx={cx} fy={cy}`.
+- Two stops: `offset="0%"` = museum-base L−0.10 (darker, inner-ring); `offset="100%"` = museum-base (rim).
+- **INVERTED direction** vs typical depth gradient (dark center → bright rim). Verbatim PO directive 2026-04-29 — DO NOT FLIP. See `DONUT_GRADIENT_v2_draft.md` §«Known design tension».
+- `sequential` and `monochromatic` modes keep flat fills (gradient direction would muddy magnitude read in sequential; monochromatic uses opacity for differentiation).
+
+**Slice geometry (anatomy ADR §«Slice geometry»):**
+- Outer radius `size/2 - 4`. Inner radius `outer * 0.6` (60% — donut, not pie).
+- `cornerRadius` default `3` with cap rule `effectiveR = min(specifiedR, ringWidth/2, sliceArcLengthAtCenterline/4)` to prevent «pinching» on <8% slices.
+- `arcMode='full'` (default) → 360° anchored at 12 o'clock; `arcMode='270'` → bottom-opening 270° wedge (legend sits in the missing 90° wedge).
+
+**Hairline outline (WCAG mandate, NOT optional):**
+- 1px `var(--card)` cream stroke + `vector-effect="non-scaling-stroke"` on every slice.
+- MANDATORY mitigation for stone↔ochre tritanopia ΔL=0 collision (`CHART_PALETTE_v2_draft.md` §3 + `DONUT_GRADIENT_v2_draft.md` §«Adjacent slice ΔL»).
+- If outline is ever conditionally disabled, the WCAG case fails. Test enforces presence (D2 baseline).
+
+**Hover (anatomy ADR §«Hover»):**
+- Active slice: 1.02× scale + 2px bisector translation along the slice's angular bisector — `(2*cos(bisector), 2*sin(bisector))`.
+- Hover shadow: `var(--shadow-chart-slice-hover)` token = layered `drop-shadow(0 1.5px 2px ink) drop-shadow(0 0 4px var(--accent-glow))`.
+- **Sister slices stay opaque** — NO dim, NO shift on hover (Provedo register; «calm-analytical caretaker», not «trader analysis tool»).
+
+**Entrance animation (anatomy ADR §«Entrance animation»):**
+- By-magnitude descending order: largest slice animates first regardless of caller order or palette mode.
+- Total envelope `var(--motion-duration-donut-sweep)` = 600ms. Per-slice fade `var(--motion-duration-donut-slice-fade)` = 180ms. Stagger 105ms (= (600 − 180) / 4 for n=5).
+- Reduced motion → instant render: no fade, no stagger, no hover translate, no scale. Outline + focus ring preserved.
+
+**Legend:** rendered as a sibling below the chart (NOT inside the SVG coordinate space — V1 «layout поехал» fix carries over to V2). Legend chip = 9×9 round swatch + label; active slice's chip gets a 1.5px `var(--accent)` outline at offset 2px.
+
+**A11y:** `role="img"` + `aria-label` (= `payload.meta.alt ?? payload.meta.title`) + `aria-describedby` → `<ChartDataTable>` transcript with `.sr-only`. Keyboard nav cycles slices via arrow keys (`useChartKeyboardNav`). Focus-visible ring on container per `CHART_FOCUS_RING_CLASS`.
+
+**Cross-refs:**
+- §3.13.2 (V2 prop API table)
+- TD-118 (V1↔V2 backend-swap visual delta)
+- TD-115 (dispatcher sunset gate — V1 retires when ≥3 V2 charts production-stable)
+- TD-119 (legend click-to-filter deferred — dashboard-layer composition, not chart-primitive concern)
+- TD-120 (AI prompt palette taxonomy — when AI agent starts emitting `ChartEnvelope`)
+- TD-112 (visual regression baseline gap — V2 gradient + hover + entrance can regress silently without snapshot tests)
+
+#### 4.4.1 V1 anatomy (Recharts bridge — sunsetting per TD-115)
 
 **Anatomy:**
 - Outer radius `size/2 - 4`. Inner radius `outer * 0.62` (slightly thicker ring than current 0.6 — feels more substantial).

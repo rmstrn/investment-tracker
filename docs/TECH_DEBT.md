@@ -14,6 +14,23 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-120 — AI prompt chart-emission palette taxonomy update
+
+**Added:** 2026-04-29 (DONUT-V2 kickoff §«Risks/open items» #6 + D5 acceptance closeout).
+**Priority:** P3 — feature gating, not blocker. Triggers when AI service starts emitting `ChartEnvelope` payloads (today the AI agent does not — `donut` is referenced only inside `allocation_drift` insight prose in `apps/ai/src/ai_service/llm/prompts.py`).
+**Source:** DONUT-V2 D1 introduced museum-vitrine palette taxonomy (`--chart-categorical-1..5` + `--chart-sequential-1..7`) + new V2 prop semantics (`palette: 'categorical' | 'sequential' | 'monochromatic'`, `arcMode: 'full' | '270'`, default `cornerRadius: 3`). The AI agent's prompt template (`apps/ai/src/ai_service/llm/prompts.py`) needs to be updated to emit these props correctly when ChartEnvelope emission is wired up — including the «top-4 + Other» grouping rule for >5 categorical slices (per `CHART_PALETTE_v2_draft.md` §5.3) and desc-by-value sort for `'sequential'` payloads.
+**Recommendation:** when AI ChartEnvelope emission lands, add a prompt section that documents:
+  - Palette mode selection rule (categorical for unordered allocation, sequential for ordinal-by-magnitude — e.g. asset weight, broker contribution; monochromatic for single-dimension emphasis).
+  - The 5-slice cap rule for categorical (group rest into «Other» using `--chart-series-5` neutral grey or new museum «stone» depending on context).
+  - `arcMode='270'` use case: whenever a strong center label competes for visual weight (e.g. portfolio total) — leaves 90° at bottom for legend.
+  - Default `cornerRadius=3` is the V2 anatomy norm; emit `0` only for explicit «micro-fixture» / inline contexts.
+  - Companion update: `apps/ai/` Pydantic ChartEnvelope mirror (TD-091) when activated.
+**Scope:** ≤ 2 hours prompt edit + Pydantic mirror + Vitest fixtures verifying payload shape.
+**Owner:** ai-engineer + product-designer review.
+**Trigger:** first AI chat answer that needs to emit a `ChartEnvelope` payload (i.e., AI starts producing structured charts vs prose-only insights).
+
+---
+
 ### TD-119 — Legend click-to-filter (DonutChart + dashboard interactivity)
 
 **Added:** 2026-04-29 (DonutChart anatomy ADR — design call #3 deferred).
@@ -26,15 +43,16 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ---
 
-### TD-118 — Document V1→V2 chart-backend two-frame flicker in CHARTS_SPEC §3
+### TD-118 — Document V1→V2 chart-backend two-frame flicker + visual delta in CHARTS_SPEC §3
 
 **Added:** 2026-04-29 (review-aggregate `2026-04-29-design-system-fixes-aggregate.md` M13).
+**Updated:** 2026-04-29 (DONUT-V2 D5) — backend-swap subsection partially landed in CHARTS_SPEC §3.13.1 + V1↔V2 visual-delta table. V1 `cornerRadius=0` is also explicitly documented as a deliberate delta (NOT regression) — both V1 (mitered, Recharts default) and V2 (`cornerRadius=3` with cap rule) are intentional; V1's flat geometry signals «bridge backend active» until TD-115 sunset gate fires.
 **Priority:** P3 — documentation, not behaviour.
 **Source:** `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` renders V1 on SSR + first paint, then `useEffect` swaps to V2 if env flag is `'primitives'`. Visible flicker on every chart instance — minor for DonutChart (different arc generators), more pronounced for Phase 2 LineChart/AreaChart with gradient fills.
-**Recommendation:** add a «backend swap» subsection to `docs/design/CHARTS_SPEC.md` §3 that explains the trade-off + suggests a higher-level wrapper in `apps/web` that imports V2 directly when env is statically known at build (Next.js inlines `NEXT_PUBLIC_*` for `apps/web` source) — bypasses the dispatcher. Workspace-package consumers stay on dispatcher.
-**Scope:** doc edit, ≤ 1 hour.
+**Recommendation:** ✓ DONE in D5 — `CHARTS_SPEC.md` §3.13.1 documents the trade-off, the V1↔V2 visual-delta table (cornerRadius / fill / entrance / hover), and the higher-level escape hatch (consumers in `apps/web` source can import `DonutChartV2` directly to bypass the dispatcher because Next.js inlines `NEXT_PUBLIC_*` at build there). Full closure of this TD when TD-115 sunset gate fires + V1 + dispatcher are removed.
+**Scope:** ✓ doc edit complete; full close-out happens when TD-115 sunset fires (≤ 30 min final cleanup).
 **Owner:** doc-updater + frontend-engineer review.
-**Trigger:** before Phase 2 LineChart/AreaChart V2 dispatch lands.
+**Trigger:** before Phase 2 LineChart/AreaChart V2 dispatch lands ✓; final close = TD-115 sunset gate.
 
 ---
 
@@ -89,12 +107,17 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 ### TD-112 — Visual regression test for `/design-system` (light + dark)
 
 **Added:** 2026-04-29 (review-aggregate M16).
-**Priority:** P2 — tracking the actual cause of the «light island on dark page» bug that shipped silently 2026-04-29.
-**Source:** `/design-system` showcase has no Playwright snapshot or visual regression coverage. The recent dark-stage removal + theme-aware fix was caught in code review only because right-hand explicitly inspected — no automated gate would have flagged the «light island» issue.
-**Recommendation:** add Playwright visual regression test gating the showcase route in both themes. Test: navigate, snapshot light, click theme toggle, snapshot dark. Compare against baseline. Phase 2 also benefits.
-**Scope:** ~80 LOC + baseline snapshots in `apps/web/e2e/visual/`. ≤ 4 hours.
+**Updated:** 2026-04-29 (DONUT-V2 D5) — scope tightened: V2 DonutChart now ships with per-slice radial gradient «свет изнутри» + 1px hairline outline + 2px bisector hover translation + by-magnitude descending entrance stagger. None of these are covered by Vitest unit tests (jsdom doesn't render SVG gradients meaningfully) — they CAN regress silently. Visual regression baseline at `/design-system#charts` (donut card) is now needed before Phase 2 builder dispatch begins, so the museum-vitrine palette + gradient direction can be locked in pixels.
+**Priority:** P2 — tracking the actual cause of the «light island on dark page» bug that shipped silently 2026-04-29 + the silent-regression risk on V2 visuals.
+**Source:** `/design-system` showcase has no Playwright snapshot or visual regression coverage. The recent dark-stage removal + theme-aware fix was caught in code review only because right-hand explicitly inspected — no automated gate would have flagged the «light island» issue. With β.1.4 / D5 the surface area has expanded — DonutChart V2 visual quality (gradient direction, slice cornerRadius, hairline outline, hover bisector, entrance stagger order) all live behind pixels-only assertions.
+**Recommendation:** add Playwright visual regression test gating the showcase route in both themes. Test plan:
+  - Navigate `/design-system#charts`, snapshot light → click theme toggle → snapshot dark.
+  - Hover-state snapshots: hover the largest donut slice, snapshot light + dark (verifies bisector translation + shadow token + sister-slice no-dim).
+  - Reduced-motion snapshot: emulate `prefers-reduced-motion: reduce`, snapshot — verifies instant render path.
+  - Compare against baseline in `apps/web/playwright-tests/charts/charts.visual.spec.ts` (existing harness — extend, don't duplicate).
+**Scope:** ~120 LOC + baseline snapshots. ≤ 5 hours (extended from initial 80 / 4h to cover hover + reduced-motion variants).
 **Owner:** qa-engineer.
-**Trigger:** before Phase 2 builder dispatch (so each new chart kind lands with a baseline).
+**Trigger:** before Phase 2 builder dispatch (so each new chart kind lands with a baseline) ✓ ALSO needed before V1 retires per TD-115, to lock V2-only baselines.
 
 ---
 

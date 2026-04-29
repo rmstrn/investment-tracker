@@ -1,12 +1,26 @@
 'use client';
 
 /**
- * DonutChart (rewrite) — typed payload renderer.
+ * DonutChart (V1 — Recharts bridge backend) — typed payload renderer.
  *
  * Reads `DonutChartPayload` from `@investment-tracker/shared-types/charts`.
  * Δ1 sum-to-total invariant lives at the envelope level (Zod), so the
  * renderer just renders. 60% inner radius per CHARTS_SPEC §4.4; legend
  * placement varies by viewport.
+ *
+ * V1↔V2 visual delta — DELIBERATE (DONUT-V2 kickoff D5 + ADR design call 5).
+ * V1 (this file) = Recharts bridge backend that stays alive until TD-115
+ * dispatcher-sunset gate fires (≥3 V2 charts in production + 2 weeks of zero
+ * hydration regressions). The following V2 features are NOT back-ported here:
+ *   • Per-slice radial gradient «свет изнутри» (V1 keeps flat fill).
+ *   • `cornerRadius` (V1 stays at `0` — the rounded corner is a V2-only
+ *     cue that the new backend is active. Both visuals are valid; this is
+ *     a deliberate signal, not a regression).
+ *   • By-magnitude descending entrance stagger (V1 keeps Recharts default).
+ *   • Bisector hover translation (V1 keeps the 1.02× scale via `activeShape`).
+ * D5 trim: hairline outline reduced from 2px → 1px + `vectorEffect="non-scaling-stroke"`
+ * to match V2 anatomy (so V1 renders next to V2 don't read as broken). Cross-ref
+ * TD-118 (V1↔V2 stagger + cornerRadius delta documented), TD-115 (sunset gate).
  */
 
 import type { DonutChartPayload } from '@investment-tracker/shared-types/charts';
@@ -206,7 +220,10 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               innerRadius={innerR}
               outerRadius={outerR}
               stroke="var(--card)"
-              strokeWidth={2}
+              // D5 trim: hairline 2px → 1px to match V2 anatomy. V1 keeps
+              // `cornerRadius` at 0 (deliberate V1↔V2 delta — see file header
+              // + TD-118).
+              strokeWidth={1}
               isAnimationActive={!prefersReducedMotion}
               animationDuration={CHART_ANIMATION_MS}
               animationEasing="ease-out"
@@ -215,7 +232,17 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               onMouseLeave={() => setHoverIndex(null)}
             >
               {segments.map((s) => (
-                <Cell key={s.key} fill={s.color} stroke="var(--card)" strokeWidth={2} />
+                // D5 trim: 1px hairline to match V2 anatomy. Recharts `<Cell>`
+                // strokeWidth wins over the parent `<Pie>` stroke prop.
+                // `vectorEffect="non-scaling-stroke"` keeps the hairline crisp
+                // on retina + during Recharts' internal scale transforms.
+                <Cell
+                  key={s.key}
+                  fill={s.color}
+                  stroke="var(--card)"
+                  strokeWidth={1}
+                  vectorEffect="non-scaling-stroke"
+                />
               ))}
             </Pie>
             <Tooltip
