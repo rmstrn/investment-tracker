@@ -158,6 +158,53 @@ const INNER_RADIUS_RATIO = 0.6;
 /** D2 default `cornerRadius` (anatomy ADR §«Slice geometry»). */
 const DEFAULT_CORNER_RADIUS = 3;
 
+/* ────────────────────────────────────────────────────────────────────── */
+/* D4 — hover + entrance constants                                         */
+/* ────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Bisector translation magnitude on hover/focus — anatomy ADR §«Hover» rule
+ * 2. Cap is 2px; non-negotiable. Sister slices stay still (no dim, no
+ * shift — Provedo register, ADR §«Hover» rule 3).
+ */
+const HOVER_BISECTOR_TRANSLATE_PX = 2;
+
+/**
+ * Per-slice fade-in duration. D1 emits `--motion-duration-donut-slice-fade`
+ * (180ms); we reference the token with the literal as fallback to keep
+ * Vitest jsdom (no design-tokens CSS import) green.
+ */
+const SLICE_FADE_DURATION = 'var(--motion-duration-donut-slice-fade, 180ms)';
+
+/**
+ * Stagger between slices (entrance animation). 105ms = (600 − 180) / (5 − 1)
+ * for n=5 — anatomy ADR §«Entrance animation». For n>5 the per-slice budget
+ * compresses naturally because the whole envelope is `(n−1)*105 + 180`. The
+ * 5-slice cap of categorical mode keeps the practical budget at ~600ms.
+ */
+const SLICE_STAGGER_MS = 105;
+
+/**
+ * Hover transition duration on transform/filter. Kept short (160ms) for
+ * snappy ink-CTA feel; matches existing scale transition prior to D4.
+ */
+const HOVER_TRANSITION_MS = 160;
+
+/**
+ * Hover shadow token — D1 semantic alias `--shadow-chart-slice-hover`. The
+ * token emits a 2-layer `drop-shadow(...) drop-shadow(...)` stack (paper-press
+ * + accent rim glow). Inline fallback preserves a sensible default if the
+ * design-tokens CSS hasn't loaded (e.g. Vitest jsdom).
+ */
+const HOVER_SHADOW =
+  'var(--shadow-chart-slice-hover, drop-shadow(0 1.5px 2px rgba(20, 20, 20, 0.12)) drop-shadow(0 0 4px var(--accent-glow, rgba(190, 150, 90, 0.55))))';
+
+/**
+ * Entrance easing — `cubic-bezier(0.16, 1, 0.3, 1)` per anatomy ADR
+ * §«Entrance animation» (matches existing primitives layer).
+ */
+const ENTRANCE_EASING = 'cubic-bezier(0.16, 1, 0.3, 1)';
+
 /**
  * Bottom-opening 270° arc — start `−3π/4` (≈225° / lower-left), end
  * `+3π/4` (≈135° / lower-right), sweeping clockwise across the top, with a
@@ -186,6 +233,13 @@ interface ResolvedSegment {
   readonly fillOpacity?: number;
   /** Original payload index — preserves caller order even when sorted. */
   readonly originalIndex: number;
+  /**
+   * Entrance rank — 0 = largest magnitude, n-1 = smallest. Drives the
+   * by-magnitude-descending stagger animation (D4 — anatomy ADR §«Entrance
+   * animation»). Independent of caller-order render index so the largest
+   * slice always animates first regardless of input ordering or palette mode.
+   */
+  readonly entranceRank: number;
 }
 
 /**
@@ -440,6 +494,19 @@ export function DonutChartV2({
     return `url(#donut-grad-${hue}-${gradientIdScope})`;
   };
 
+  // ─── Entrance rank (D4) ──────────────────────────────────────────────
+  // Sort the original payload indices by value desc → assign rank 0..n-1.
+  // The largest slice always animates first regardless of caller order or
+  // palette mode (categorical/sequential/monochromatic). This map is keyed
+  // by the original payload index for direct lookup during segment build.
+  const entranceRankByOriginalIndex = new Map<number, number>();
+  payload.segments
+    .map((s, i) => ({ value: s.value, originalIndex: i }))
+    .sort((a, b) => b.value - a.value)
+    .forEach((entry, rank) => {
+      entranceRankByOriginalIndex.set(entry.originalIndex, rank);
+    });
+
   const segments: ResolvedSegment[] = sortedSegments.map(({ s, i }, renderIdx) => {
     const fallback = resolvePaletteColor(palette, renderIdx, segmentCount);
     const flatColor = s.color ?? fallback;
@@ -460,6 +527,7 @@ export function DonutChartV2({
           ? resolveMonochromaticOpacity(renderIdx, segmentCount)
           : undefined,
       originalIndex: i,
+      entranceRank: entranceRankByOriginalIndex.get(i) ?? renderIdx,
     };
   });
 
@@ -488,6 +556,20 @@ export function DonutChartV2({
     }
     // Trigger transition after first paint.
     const id = requestAnimationFrame(() => setSweepReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [prefersReducedMotion]);
+
+  // ─── D4 — entrance fade gate (per-slice opacity, by-magnitude desc) ──
+  // `entranceReady` flips on first paint, triggering each slice's `opacity 0
+  // → 1` transition with a per-slice delay = `entranceRank * 105ms`. Reduced
+  // motion → instant render (state initialises true, no rAF, no transition).
+  const [entranceReady, setEntranceReady] = useState(prefersReducedMotion);
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setEntranceReady(true);
+      return;
+    }
+    const id = requestAnimationFrame(() => setEntranceReady(true));
     return () => cancelAnimationFrame(id);
   }, [prefersReducedMotion]);
 
@@ -588,6 +670,7 @@ export function DonutChartV2({
               cornerRadius={cornerRadius}
               activeIndex={activeIndex}
               hoverIndex={hoverState?.index ?? null}
+              entranceReady={entranceReady}
               prefersReducedMotion={prefersReducedMotion}
               setHoverState={setHoverState}
               setActiveIndex={setActiveIndex}
@@ -605,6 +688,7 @@ export function DonutChartV2({
               activeIndex={activeIndex}
               hoverIndex={hoverState?.index ?? null}
               sweepReady={sweepReady}
+              entranceReady={entranceReady}
               prefersReducedMotion={prefersReducedMotion}
               setHoverState={setHoverState}
               setActiveIndex={setActiveIndex}
@@ -680,6 +764,7 @@ interface FastDonutRingProps {
   activeIndex: number | null;
   hoverIndex: number | null;
   sweepReady: boolean;
+  entranceReady: boolean;
   prefersReducedMotion: boolean;
   setHoverState: (s: { index: number; clientX: number; clientY: number } | null) => void;
   setActiveIndex: (n: number) => void;
@@ -697,6 +782,7 @@ function FastDonutRing({
   activeIndex,
   hoverIndex,
   sweepReady,
+  entranceReady,
   prefersReducedMotion,
   setHoverState,
   setActiveIndex,
@@ -722,6 +808,38 @@ function FastDonutRing({
         const isActive = activeIndex === i || hoverIndex === i;
         const targetDashoffset = sweepReady ? -offsetLen : -offsetLen + arcLen;
 
+        // Bisector translation (D4 — anatomy ADR §«Hover» rule 2). Even
+        // though the parent <g> rotates -90deg, applying
+        // `translate(2*cos(bisector_pre), 2*sin(bisector_pre))` in the
+        // rotated local frame resolves to world translation along the
+        // visual bisector — see math derivation in the D4 kickoff.
+        const bisector = (bound.start + bound.end) / 2;
+        const translateX = HOVER_BISECTOR_TRANSLATE_PX * Math.cos(bisector);
+        const translateY = HOVER_BISECTOR_TRANSLATE_PX * Math.sin(bisector);
+        const hoverTransform =
+          isActive && !prefersReducedMotion
+            ? `translate(${translateX}px, ${translateY}px) scale(1.02)`
+            : undefined;
+
+        // Entrance fade — sister slices stay opaque (no dim on hover, ADR
+        // §«Hover» rule 3). Reduced motion → instant render (entranceReady
+        // initialises true; opacity stays 1).
+        const sliceOpacity = entranceReady ? 1 : 0;
+        const entranceDelayMs = seg.entranceRank * SLICE_STAGGER_MS;
+
+        // Compose transitions: stroke-dashoffset (sweep-in) + transform
+        // (hover translate + scale) + filter (hover shadow) + opacity
+        // (entrance fade with per-slice delay). Skipped entirely under
+        // reduced motion.
+        const transition = prefersReducedMotion
+          ? undefined
+          : [
+              `stroke-dashoffset ${CHART_ANIMATION_MS}ms ease-out`,
+              `transform ${HOVER_TRANSITION_MS}ms ease-out`,
+              `filter ${HOVER_TRANSITION_MS}ms ease-out`,
+              `opacity ${SLICE_FADE_DURATION} ${ENTRANCE_EASING} ${entranceDelayMs}ms`,
+            ].join(', ');
+
         return (
           <circle
             key={seg.key}
@@ -743,15 +861,13 @@ function FastDonutRing({
             data-segment-key={seg.key}
             data-segment-index={i}
             data-active={isActive || undefined}
+            data-entrance-rank={seg.entranceRank}
             style={{
-              transition: prefersReducedMotion
-                ? undefined
-                : `stroke-dashoffset ${CHART_ANIMATION_MS}ms ease-out, transform 160ms ease-out, filter 160ms ease-out`,
+              transition,
               transformOrigin: `${cx}px ${cy}px`,
-              transform: isActive && !prefersReducedMotion ? 'scale(1.02)' : undefined,
-              filter: isActive
-                ? 'drop-shadow(0 0 4px var(--accent-glow, rgba(190, 150, 90, 0.55)))'
-                : undefined,
+              transform: hoverTransform,
+              filter: isActive ? HOVER_SHADOW : undefined,
+              opacity: sliceOpacity,
               cursor: 'pointer',
             }}
             onMouseEnter={(e) =>
@@ -822,6 +938,7 @@ interface RoundedDonutPathProps {
   cornerRadius: number;
   activeIndex: number | null;
   hoverIndex: number | null;
+  entranceReady: boolean;
   prefersReducedMotion: boolean;
   setHoverState: (s: { index: number; clientX: number; clientY: number } | null) => void;
   setActiveIndex: (n: number) => void;
@@ -838,6 +955,7 @@ function RoundedDonutPath({
   cornerRadius,
   activeIndex,
   hoverIndex,
+  entranceReady,
   prefersReducedMotion,
   setHoverState,
   setActiveIndex,
@@ -865,6 +983,32 @@ function RoundedDonutPath({
           cornerRadius: effectiveR,
         });
         const isActive = activeIndex === i || hoverIndex === i;
+
+        // Bisector translation (D4 — anatomy ADR §«Hover» rule 2). d3-shape
+        // arc convention: angle 0 = 12 o'clock, clockwise+ → world unit
+        // vector at bisector θ is `(sin θ, -cos θ)`. The parent <g> has
+        // `translate(cx, cy)` only (no rotation), so local = world coords.
+        const bisector = (bound.start + bound.end) / 2;
+        const translateX = HOVER_BISECTOR_TRANSLATE_PX * Math.sin(bisector);
+        const translateY = -HOVER_BISECTOR_TRANSLATE_PX * Math.cos(bisector);
+        const hoverTransform =
+          isActive && !prefersReducedMotion
+            ? `translate(${translateX}px, ${translateY}px) scale(1.02)`
+            : undefined;
+
+        // Entrance fade — sister slices stay opaque on hover (ADR §«Hover»
+        // rule 3, no-dim rule). Reduced motion → instant render.
+        const sliceOpacity = entranceReady ? 1 : 0;
+        const entranceDelayMs = seg.entranceRank * SLICE_STAGGER_MS;
+
+        const transition = prefersReducedMotion
+          ? undefined
+          : [
+              `transform ${HOVER_TRANSITION_MS}ms ease-out`,
+              `filter ${HOVER_TRANSITION_MS}ms ease-out`,
+              `opacity ${SLICE_FADE_DURATION} ${ENTRANCE_EASING} ${entranceDelayMs}ms`,
+            ].join(', ');
+
         return (
           <path
             key={seg.key}
@@ -884,16 +1028,14 @@ function RoundedDonutPath({
             data-segment-key={seg.key}
             data-segment-index={i}
             data-active={isActive || undefined}
+            data-entrance-rank={seg.entranceRank}
             style={{
-              transition: prefersReducedMotion
-                ? undefined
-                : 'transform 160ms ease-out, filter 160ms ease-out',
+              transition,
               transformBox: 'fill-box',
               transformOrigin: 'center',
-              transform: isActive && !prefersReducedMotion ? 'scale(1.02)' : undefined,
-              filter: isActive
-                ? 'drop-shadow(0 0 4px var(--accent-glow, rgba(190, 150, 90, 0.55)))'
-                : undefined,
+              transform: hoverTransform,
+              filter: isActive ? HOVER_SHADOW : undefined,
+              opacity: sliceOpacity,
               cursor: 'pointer',
             }}
             onMouseEnter={(e) =>
