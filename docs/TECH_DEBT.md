@@ -14,6 +14,35 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-106 — Disclaimer copy needs licensed attorney sign-off pre-alpha
+
+**Added:** 2026-04-29 (TD-100 implementation closure).
+**Priority:** P1 — pre-alpha launch blocker.
+**Source:** `docs/reviews/2026-04-29-td100-disclaimer-legal.md` caveat — internal product-validation, NOT a substitute for licensed counsel review. The compact + verbose disclaimer text shipped via TD-100 is internally synthesised across legal-advisor + content-lead + finance-advisor. Before any user-facing route exposes chart content to real users, the copy must be reviewed by licensed counsel in PO's chosen jurisdiction(s).
+**Recommendation:** route current `packages/ui/src/components/regulatory-disclaimer/copy.ts` strings (compact EN + RU + verbose EN + RU) through licensed counsel. PO's call on which firm. Capture redlines in the TD before re-deploying. Mark with `[ATTORNEY REVIEW]` placeholder in commit until cleared.
+**Owner:** PO (firm selection) → legal-advisor (handoff package) → content-lead (apply redlines).
+**Trigger to revisit:** alpha launch scheduling.
+**Links:** `packages/ui/src/components/regulatory-disclaimer/copy.ts`; `docs/reviews/2026-04-29-td100-disclaimer-{legal,copy,placement,synthesis}.md`.
+
+---
+
+### TD-105 — Scoped phrase-whitelist for AI agent quoting disclaimer text
+
+**Added:** 2026-04-29 (TD-100 cross-cut with TD-099).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-td100-disclaimer-copy.md` content-lead concern + `docs/reviews/2026-04-29-td100-disclaimer-synthesis.md` §«Out-of-scope». Russian regulatory term-of-art «инвестиционные рекомендации» contains forbidden TD-099 stem `рекоменд-`; «инвестиционные советы» (the disclaimer chose this form) avoids the stem but still contains TD-099-blocked tokens (`совет-` family). Static UI copy in `RegulatoryDisclaimer` component is fine (does NOT route through `parseChartEnvelope`). Concern arises only if the AI agent quotes or paraphrases the disclaimer in `meta.title` / `meta.subtitle` / `meta.alt` — currently TD-099 vocabulary gate would reject those AI-emitted strings.
+**Recommendation:** add scoped phrase-whitelist in `packages/shared-types/src/lane-a-vocabulary.ts` (analogous to `BRAND_NAME_WHITELIST` precedent) for the regulatory term-of-art phrases:
+- «инвестиционные рекомендации» (and case forms: рекомендаций / рекомендациям)
+- «инвестиционные советы» (and case forms)
+- «инвестиционный советник» (legal RU translation of «investment adviser»)
+- English equivalents if AI agent emits English disclaimer-quotes: «investment advice», «investment adviser», «personalized recommendation»
+Whitelist matches BEFORE blocklist scan. Add tests confirming AI-emitted disclaimer-quote strings parse cleanly in both languages.
+**Owner:** backend-engineer.
+**Trigger to revisit:** SLICE-AI-CHARTS-V1 OR first observed AI-emitted string referencing disclaimer wording (whichever comes first).
+**Links:** `packages/shared-types/src/lane-a-vocabulary.ts` (current whitelist precedent: `BRAND_NAME_WHITELIST`); TD-099 specialist files; TD-100 synthesis.
+
+---
+
 ### TD-104 — Embed `## Default skill stack` section in remaining agent .md files
 
 **Added:** 2026-04-29 (chore(agents) consolidation).
