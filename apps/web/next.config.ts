@@ -27,13 +27,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  async rewrites() {
-    return [
-      // Preserve the legacy `/design-system.html` URL that PO has shared
-      // during design rounds. Real route lives at `/design-system`.
-      { source: '/design-system.html', destination: '/design-system' },
-    ];
-  },
+  // Note: `/design-system.html` rewrite removed 2026-04-29 — static file at
+  // `apps/web/public/design-system.html` (the polished v2 reference, 2156 lines)
+  // is restored as the canonical visual target. React route at `/design-system`
+  // is parallel surface (interactive playground). Two surfaces, distinct roles —
+  // static = visual canon, React = interactive demo. Re-consolidation pending
+  // after React showcase reaches static visual fidelity.
   async redirects() {
     return [
       // Old Next.js showcase route → consolidated `/design-system`.
