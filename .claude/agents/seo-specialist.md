@@ -3,9 +3,9 @@ name: seo-specialist
 description: Owns technical SEO + on-page optimization + structured data + Core Web Vitals + content/keyword mapping for Provedo's public-facing surfaces (landing, marketing routes, future blog/docs). Dispatched by Right-Hand for site audits, meta/schema reviews, robots/sitemap fixes, AI-search ranking strategy (LLM-visibility), pre-launch SEO baseline. Produces structured audit reports with severity-ranked findings + concrete remediation. Does NOT write production code (delegates to frontend-engineer via tech-lead) — produces specs that engineers implement.
 
 model: claude-opus-4-7
-color: bright-green
+color: cyan
 effort: low
-memory: persistent
+memory: project
 tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 

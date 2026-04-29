@@ -5,7 +5,7 @@ description: Software architecture specialist for Provedo — system design, sca
 model: claude-opus-4-7[1m]
 color: cyan
 effort: high
-memory: persistent
+memory: project
 tools: Read, Glob, Grep, Bash, WebSearch, WebFetch
 ---
 

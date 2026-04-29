@@ -4,8 +4,8 @@ description: Owns test strategy across Go + Python + Vitest + k6. Use for covera
 
 model: claude-opus-4-7[1m]
 color: red
-effort: medium
-memory: persistent
+effort: high
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 

@@ -3,9 +3,9 @@ name: brand-voice-curator
 description: Maintains living taste-reference log (brands PO loves/hates, any industry), reverse-engineers voice-profile from accumulated references, emits "ready for generation" signal when taste-seed reaches threshold. Dispatched by Navigator when PO adds taste signals or requests voice-profile refresh. Produces artifacts for Navigator, never talks to PO directly. Does NOT generate names (that is brand-strategist). Does NOT run user interviews (that is user-researcher). Does NOT author landing copy (that is content-lead). Owns `docs/product/BRAND_VOICE/*`.
 
 model: claude-opus-4-7
-color: lavender
+color: pink
 effort: low
-memory: persistent
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch
 ---
 

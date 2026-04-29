@@ -5,7 +5,7 @@ description: PO's right-hand — primary single-point-of-contact for product/pos
 model: claude-opus-4-7[1m]
 color: yellow
 effort: high
-memory: persistent
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch, Agent
 ---
 

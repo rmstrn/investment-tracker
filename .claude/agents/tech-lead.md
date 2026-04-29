@@ -5,7 +5,7 @@ description: Strategic co-pilot for the PO. Routes work, decomposes features int
 model: claude-opus-4-7[1m]
 color: blue
 effort: high
-memory: persistent
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write, WebFetch, WebSearch
 ---
 

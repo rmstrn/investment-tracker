@@ -4,8 +4,8 @@ description: Implements backend features. Use for Go handlers in apps/api (Fiber
 
 model: claude-opus-4-7[1m]
 color: green
-effort: medium
-memory: persistent
+effort: high
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 

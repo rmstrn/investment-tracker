@@ -4,8 +4,8 @@ description: Independent post-merge (or large-PR pre-merge) reviewer. Use for st
 
 model: claude-opus-4-7[1m]
 color: pink
-effort: low
-memory: persistent
+effort: high
+memory: project
 tools: Read, Glob, Grep, Bash, Write
 ---
 

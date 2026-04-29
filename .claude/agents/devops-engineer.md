@@ -4,8 +4,8 @@ description: Owns CI/CD, Docker images, Doppler secrets, deploy pipelines, stagi
 
 model: claude-opus-4-7[1m]
 color: orange
-effort: low
-memory: persistent
+effort: high
+memory: project
 tools: Read, Glob, Grep, Bash, Edit, Write
 ---
 
