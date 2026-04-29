@@ -21,7 +21,7 @@
     "clean": "rimraf dist .turbo"
   },
   "dependencies": {
-    "openapi-fetch": "^0.13.4"
+    "openapi-fetch": "^0.17.0"
   },
   "devDependencies": {
     "@investment-tracker/shared-types": "workspace:*",
