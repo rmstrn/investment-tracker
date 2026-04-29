@@ -16,6 +16,7 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.17.2",
     "@clerk/nextjs": "^6.16.0",
     "@investment-tracker/api-client": "workspace:*",
     "@investment-tracker/design-tokens": "workspace:*",
