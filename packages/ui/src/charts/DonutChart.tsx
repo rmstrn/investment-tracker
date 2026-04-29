@@ -168,6 +168,7 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
       // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per CHARTS_SPEC §7.4 a11y baseline.
       tabIndex={0}
       data-testid="chart-donut"
+      data-chart-backend="recharts"
       data-active-index={activeIndex ?? undefined}
       className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
       style={{ width: '100%' }}

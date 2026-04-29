@@ -91,6 +91,7 @@ export function Sparkline({
       // biome-ignore lint/a11y/noNoninteractiveTabindex: standalone sparkline opts into keyboard focus per CHARTS_SPEC §4.5 exception.
       {...hostA11yProps}
       data-testid="chart-sparkline"
+      data-chart-backend="recharts"
       data-trend={trend}
       data-active-index={activeIndex ?? undefined}
       className={

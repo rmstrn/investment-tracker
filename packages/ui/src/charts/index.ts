@@ -23,9 +23,24 @@
  * (Donut) add the per-kind branches.
  *
  * Read at module evaluation time (not inside a component) so the choice
- * propagates as a static export. Per Next.js 15 + Turbopack inlining,
- * `process.env.NEXT_PUBLIC_*` resolves at build time on the client and at
- * eval time on the server, both of which match consumer expectations.
+ * propagates as a static export.
+ *
+ * IMPORTANT — hydration safety. Because this read sits in a workspace
+ * package (`@investment-tracker/ui`), Next.js 15 + Turbopack do NOT
+ * inline `NEXT_PUBLIC_*` symmetrically across the server / client
+ * bundle boundary the way they do for `apps/web` source. Server reads
+ * `apps/web/.env.local` and resolves `'primitives'`; the workspace
+ * package's client bundle falls back to `'recharts'`. This produces a
+ * React hydration mismatch on `<DonutChart>` / `<Sparkline>`.
+ *
+ * Mitigation = TWO LAYERS:
+ *   1. `apps/web/next.config.ts` echoes the var into its `env:` block —
+ *      pins the value for the apps/web bundle.
+ *   2. Below: dispatch happens on the *server-side baseline* (`'recharts'`)
+ *      for the FIRST paint and is upgraded to `'primitives'` only after
+ *      mount via `useChartBackend()`. SSR === client-first-render === V1;
+ *      V2 swaps in after `useEffect` fires. Hydration is now safe even if
+ *      Layer 1 misfires (e.g. consumer app forgets to echo the env block).
  */
 const PROVEDO_CHART_BACKEND =
   (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_PROVEDO_CHART_BACKEND) || 'recharts';
@@ -33,23 +48,41 @@ const PROVEDO_CHART_BACKEND =
 /**
  * Active backend, exposed for tests + dev tooling. Per-kind switches (added
  * in β.1.2+) read from this constant.
+ *
+ * NOTE: this resolves at module-eval time on whichever side reads it (server
+ * sees `.env.local`, client sees the `next.config.ts`-pinned value). It is
+ * NOT used directly in render paths — those go through the SSR-safe
+ * `chart-backend-dispatch` helpers below.
  */
 export const ACTIVE_CHART_BACKEND = PROVEDO_CHART_BACKEND as 'recharts' | 'primitives';
 
-const usePrimitives = ACTIVE_CHART_BACKEND === 'primitives';
-
-import { DonutChart as DonutChartV1 } from './DonutChart';
-import { DonutChartV2 } from './DonutChartV2';
-import { Sparkline as SparklineV1 } from './Sparkline';
-import { SparklineV2 } from './SparklineV2';
+import { DonutChart as DonutChartV1, type DonutChartProps } from './DonutChart';
+import { DonutChartV2, type DonutChartV2Props } from './DonutChartV2';
+import { Sparkline as SparklineV1, type SparklineProps } from './Sparkline';
+import { SparklineV2, type SparklineV2Props } from './SparklineV2';
+import { makeBackendDispatch } from './_shared/chart-backend-dispatch';
 
 /**
- * Per-kind feature-flag branches. Both V1 + V2 share the `*Props` type
- * contract — V2 is API-compatible by design (DonutChartV2 adds optional
- * extension props that V1 ignores when the flag is `recharts`).
+ * Per-kind SSR-safe dispatchers. The dispatcher generic `<P1, P2 extends P1>`
+ * keeps the public surface typed as the V2 prop shape (the superset), so
+ * V2-only optional props (`cornerRadius`, `startAngleRadians`, etc.) are
+ * reachable through the unified export. V1 silently drops extras at runtime
+ * via destructure — Liskov-safe by construction.
+ *
+ * The dispatcher always renders V1 on the server + first client paint
+ * (matching SSR), then upgrades to V2 inside `useEffect` if the flag
+ * resolves to `'primitives'`. Hydration mismatch eliminated.
  */
-export const Sparkline = usePrimitives ? SparklineV2 : SparklineV1;
-export const DonutChart = usePrimitives ? DonutChartV2 : DonutChartV1;
+export const Sparkline = makeBackendDispatch<SparklineProps, SparklineV2Props>(
+  SparklineV1,
+  SparklineV2,
+  'Sparkline',
+);
+export const DonutChart = makeBackendDispatch<DonutChartProps, DonutChartV2Props>(
+  DonutChartV1,
+  DonutChartV2,
+  'DonutChart',
+);
 
 export type { SparklineProps } from './Sparkline';
 export type { DonutChartProps } from './DonutChart';
