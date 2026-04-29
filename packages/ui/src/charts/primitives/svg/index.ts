@@ -41,6 +41,21 @@ export {
   type AreaGradientHandle,
 } from './AreaGradientDef';
 
+/* ─── Path primitives ────────────────────────────────────────────────── */
+export { LinePath, type LinePathProps } from './LinePath';
+export { AreaPath, type AreaPathProps } from './AreaPath';
+
+/* ─── Animation hooks ────────────────────────────────────────────────── */
+export {
+  useStrokeDashoffset,
+  type UseStrokeDashoffsetOptions,
+  type StrokeDashoffsetState,
+} from './useStrokeDashoffset';
+export {
+  useAnimatedNumber,
+  type UseAnimatedNumberOptions,
+} from './useAnimatedNumber';
+
 /* ─── Re-export the existing visually-hidden transcript ──────────────── */
 export { ChartDataTable } from '../../_shared/ChartDataTable';
 
