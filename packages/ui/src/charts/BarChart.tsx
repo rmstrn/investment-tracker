@@ -126,13 +126,22 @@ export function BarChart({ payload, height = 180, className }: BarChartProps) {
             tickLine={theme.axis.tickLine}
             axisLine={theme.axis.axisLine}
             tickFormatter={horizontal ? undefined : (v) => fmtValue(Number(v))}
-            width={horizontal ? 80 : 52}
+            // Match line / area / stacked: 68px gutter for currency labels;
+            // horizontal layout keeps 80 for category labels (ticker symbols).
+            width={horizontal ? 80 : 68}
+            tickMargin={4}
           />
           <Tooltip
             contentStyle={tooltip.contentStyle}
             labelStyle={tooltip.labelStyle}
             itemStyle={tooltip.itemStyle}
-            cursor={{ fill: 'var(--chart-grid)' }}
+            // PO feedback (2026-04-29): default Recharts bar cursor renders a
+            // full column-height shadow that reads as «paint flooding the chart».
+            // Disabled cursor entirely; per-bar hover feedback comes from the
+            // bar's own `activeBar` prop below (brightness lift, not column
+            // wash). Matches the Provedo paper-feel — bars themselves react
+            // to hover, the chart canvas stays clean.
+            cursor={false}
             separator={tooltip.separator}
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
@@ -141,7 +150,7 @@ export function BarChart({ payload, height = 180, className }: BarChartProps) {
             <ReferenceLine
               {...(horizontal ? { x: 0 } : { y: 0 })}
               stroke={CHART_TOKENS.gridLineStrong}
-              strokeDasharray="2 4"
+              strokeDasharray="3 5"
               label={buildBarReferenceLineLabel(payload.referenceLine)}
             />
           ) : null}
@@ -151,6 +160,16 @@ export function BarChart({ payload, height = 180, className }: BarChartProps) {
             isAnimationActive={!prefersReducedMotion}
             animationDuration={CHART_ANIMATION_MS}
             fill={SERIES_VARS[0]}
+            // Per-bar hover lift (replacement for the old column cursor).
+            // Recharts paints `activeBar` over the hovered bar; the SVG-filter
+            // `brightness(1.10)` lifts the fill ~10% without mutating colour
+            // (preserves sign-coloured bars). `drop-shadow` adds a subtle
+            // tactile lift that matches the paper-feel of the rest of the DS.
+            // Reduced-motion: filter is static (no transition), so it's safe
+            // to keep without prefers-reduced-motion gating.
+            activeBar={{
+              style: { filter: 'brightness(1.10) drop-shadow(0 1.5px 2px rgba(20, 20, 20, 0.18))' },
+            }}
           >
             {payload.colorBySign
               ? data.map((d, i) => (

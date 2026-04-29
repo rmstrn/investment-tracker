@@ -36,7 +36,13 @@ export function buildAxisProps(): AxisTickProps {
   return {
     tick: {
       fontFamily: 'var(--font-mono)',
-      fontSize: 10,
+      // PO feedback (2026-04-29): x-axis labels on bar charts read as faint /
+      // anaemic. Bumped 10 → 11 (still editorial, still mono) and the fill
+      // resolves to `--chart-axis-label` → `--text-3` (#7A7A7A light /
+      // #9A9A9A dark) which gives ≥4.5:1 on both card surfaces; combined
+      // with the size bump categorical labels («NVDA», «MSFT») now read
+      // clearly without dominating the chart.
+      fontSize: 11,
       fill: 'var(--chart-axis-label)',
       letterSpacing: '0.08em',
     },
@@ -59,8 +65,15 @@ export interface GridProps {
 export function buildGridProps(): GridProps {
   return {
     stroke: 'var(--chart-grid)',
-    strokeDasharray: '2 4',
-    strokeOpacity: 0.85,
+    // PO feedback (2026-04-29): «пунктир пожирнее» — the prior 2 4 dotted
+    // pattern read as too sparse against the cream-paper card. Switched to
+    // 3 5 — slightly longer dashes with longer gaps — so the gridline
+    // rhythm has visible cadence without overpowering the data layer.
+    // The `--chart-grid` token resolves to rgba(20,20,20,0.10) light /
+    // rgba(255,255,255,0.10) dark; opacity stays at 1 (the alpha lives in
+    // the token) so the dash pattern reads at the intended density.
+    strokeDasharray: '3 5',
+    strokeOpacity: 1,
     vertical: false,
   };
 }

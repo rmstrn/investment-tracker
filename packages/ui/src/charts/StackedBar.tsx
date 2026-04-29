@@ -65,10 +65,15 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
     >
       <ResponsiveContainer width="100%" height={height}>
         <ReBarChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="2 4" />
+          <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="3 5" />
           <XAxis
             dataKey="x"
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
+            tick={{
+              fill: CHART_TOKENS.axisLabel,
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.08em',
+            }}
             stroke={CHART_TOKENS.gridLine}
             tickLine={false}
             axisLine={false}
@@ -76,18 +81,29 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
             minTickGap={24}
           />
           <YAxis
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
+            tick={{
+              fill: CHART_TOKENS.axisLabel,
+              fontSize: 11,
+              fontFamily: 'var(--font-mono)',
+              letterSpacing: '0.08em',
+            }}
             stroke={CHART_TOKENS.gridLine}
             tickLine={false}
             axisLine={false}
             tickFormatter={(v) => fmtValue(Number(v))}
-            width={52}
+            // Match the line / area / bar family — currency-compact labels
+            // need ≥68px to render «$120K» without clipping.
+            width={68}
+            tickMargin={4}
           />
           <Tooltip
             contentStyle={tooltip.contentStyle}
             labelStyle={tooltip.labelStyle}
             itemStyle={tooltip.itemStyle}
-            cursor={{ fill: 'var(--chart-grid)' }}
+            // PO feedback (2026-04-29): full column-height cursor shadow
+            // looked like «paint flooding the chart». Disabled — per-bar
+            // brightness lift below replaces it.
+            cursor={false}
             separator={tooltip.separator}
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
@@ -112,6 +128,12 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
               isAnimationActive={!prefersReducedMotion}
               animationDuration={CHART_ANIMATION_MS}
               radius={i === payload.series.length - 1 ? [...BAR_RADIUS_STACK_TOP] : 0}
+              // Per-segment hover lift to replace the old column cursor.
+              activeBar={{
+                style: {
+                  filter: 'brightness(1.10) drop-shadow(0 1.5px 2px rgba(20, 20, 20, 0.18))',
+                },
+              }}
             />
           ))}
         </ReBarChart>
