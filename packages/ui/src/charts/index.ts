@@ -36,11 +36,26 @@ const PROVEDO_CHART_BACKEND =
  */
 export const ACTIVE_CHART_BACKEND = PROVEDO_CHART_BACKEND as 'recharts' | 'primitives';
 
+const usePrimitives = ACTIVE_CHART_BACKEND === 'primitives';
+
+import { Sparkline as SparklineV1 } from './Sparkline';
+import { SparklineV2 } from './SparklineV2';
+
+/**
+ * `Sparkline` resolves at module-eval time per the flag. β.1.2 is the first
+ * per-kind branch wired through `usePrimitives`. Both V1 + V2 share the
+ * `SparklineProps` type contract (V2 is API-compatible by design).
+ */
+export const Sparkline = usePrimitives ? SparklineV2 : SparklineV1;
+export type { SparklineProps } from './Sparkline';
+
+/** V2 named export — for consumers that want the primitives variant unconditionally. */
+export { SparklineV2, type SparklineV2Props } from './SparklineV2';
+
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
 export { BarChart, type BarChartProps } from './BarChart';
 export { DonutChart, type DonutChartProps } from './DonutChart';
-export { Sparkline, type SparklineProps } from './Sparkline';
 export { Calendar, type CalendarProps } from './Calendar';
 export { Treemap, type TreemapProps } from './Treemap';
 
