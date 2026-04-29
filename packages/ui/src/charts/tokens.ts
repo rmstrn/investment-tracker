@@ -113,6 +113,31 @@ export function colorForTreemapChange(changePct: number | undefined): string {
 }
 
 /**
+ * Treemap fill-opacity by change magnitude.
+ *
+ * PO feedback (2026-04-29): «цвет не меняется в зависимости от объёма» —
+ * the prior renderer used a 3-bin colour split (positive / negative /
+ * neutral) which made every up-tile look identical. We now modulate the
+ * fill-opacity by absolute change magnitude so a +3.2% tile reads visibly
+ * stronger than a +0.6% tile, mirroring the static design-system.html
+ * reference (opacity steps 0.30 → 0.55 → 0.85 across magnitude bands).
+ *
+ * Bins (matching static ref):
+ *   - |Δ| ≥ 2.0%: 0.85 (saturated)
+ *   - |Δ| ≥ 1.0%: 0.65
+ *   - |Δ| ≥ 0.5%: 0.50
+ *   - neutral band (< 0.5%): 0.32 (washed)
+ */
+export function fillOpacityForTreemapChange(changePct: number | undefined): number {
+  if (typeof changePct !== 'number' || Number.isNaN(changePct)) return 0.32;
+  const mag = Math.abs(changePct);
+  if (mag >= 2.0) return 0.85;
+  if (mag >= 1.0) return 0.65;
+  if (mag >= 0.5) return 0.5;
+  return 0.32;
+}
+
+/**
  * Treemap label ink picker — guarantees WCAG 1.4.3 AA contrast (≥4.5:1) for
  * 10-11px tile labels in both light and dark themes.
  *

@@ -27,6 +27,7 @@ export {
   SERIES_PALETTE,
   SERIES_VARS,
   colorForTreemapChange,
+  fillOpacityForTreemapChange,
   labelOnTile,
 } from './tokens';
 

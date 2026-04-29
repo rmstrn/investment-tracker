@@ -17,7 +17,13 @@ import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
-import { CHART_TOKENS, colorForTreemapChange, inkForTreemapChange, labelOnTile } from './tokens';
+import {
+  CHART_TOKENS,
+  colorForTreemapChange,
+  fillOpacityForTreemapChange,
+  inkForTreemapChange,
+  labelOnTile,
+} from './tokens';
 
 export interface TreemapProps {
   payload: TreemapPayload;
@@ -47,7 +53,11 @@ interface TileContentProps {
   onTileLeave?: () => void;
 }
 
-function TileContent(props: TileContentProps) {
+interface TileContentExtraProps extends TileContentProps {
+  weightPct?: number;
+}
+
+function TileContent(props: TileContentExtraProps) {
   const {
     x = 0,
     y = 0,
@@ -57,6 +67,7 @@ function TileContent(props: TileContentProps) {
     isOther,
     ticker,
     itemCount,
+    weightPct,
     index,
     activeIndex,
     reducedMotion,
@@ -64,10 +75,16 @@ function TileContent(props: TileContentProps) {
     onTileLeave,
   } = props;
   const fill = colorForTreemapChange(dailyChangePct);
+  // PO feedback (2026-04-29): «цвет не меняется в зависимости от объёма» —
+  // modulate fill-opacity by |Δ| so a +3.2% tile reads visibly stronger
+  // than a +0.6% tile (mirrors static reference's 0.30→0.85 band).
+  const fillOpacity = fillOpacityForTreemapChange(dailyChangePct);
   // Conditional ink — WCAG 1.4.3 AA fix for tile labels at 10-11px.
-  // Positive tiles (deep green) pair with white; negative + neutral tiles
-  // (mid-luminance) pair with near-black to clear ≥4.5:1 in both themes.
-  const ink = inkForTreemapChange(dailyChangePct);
+  // The fill-opacity modulation can wash positive tiles enough that white
+  // ink loses contrast — for low-magnitude positive tiles we fall back to
+  // near-black ink. Threshold matches the «saturated» band in the helper.
+  const isLowMag = typeof dailyChangePct !== 'number' || Math.abs(dailyChangePct) < 1.0;
+  const ink = isLowMag ? '#0a0a0a' : inkForTreemapChange(dailyChangePct);
   const label = isOther ? `OTHER · ${itemCount ?? 0} items` : (ticker ?? '');
   const showLabel = labelOnTile({ width, height });
   const isActive = typeof index === 'number' && index === activeIndex;
@@ -93,32 +110,52 @@ function TileContent(props: TileContentProps) {
         width={width}
         height={height}
         fill={fill}
-        stroke={isActive ? 'var(--ink)' : 'var(--bg, #fff)'}
-        strokeWidth={isActive ? 2 : 1}
+        fillOpacity={fillOpacity}
+        stroke={isActive ? 'var(--ink)' : 'var(--card, #fff)'}
+        strokeWidth={isActive ? 2 : 1.5}
       />
+      {/* Neumorphic inner highlight — 1px cream-paper rim along top edge.
+          Reads as «raised tile», pairs with the card's outer shadow. Skipped
+          on tiles too small to fit it cleanly (<32px on either axis). */}
+      {width >= 32 && height >= 32 ? (
+        <rect
+          x={x + 0.5}
+          y={y + 0.5}
+          width={Math.max(0, width - 1)}
+          height={Math.max(0, height - 1)}
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.18)"
+          strokeWidth={1}
+          pointerEvents="none"
+        />
+      ) : null}
       {showLabel ? (
         <text
-          x={x + 8}
-          y={y + 18}
+          x={x + 10}
+          y={y + 20}
           fill={ink}
-          fontSize={11}
-          fontFamily="var(--font-mono)"
-          style={{ textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}
+          fontSize={12}
+          fontFamily="var(--font-sans)"
+          style={{ fontWeight: 600, letterSpacing: '-0.01em' }}
         >
           {label}
         </text>
       ) : null}
-      {showLabel && typeof dailyChangePct === 'number' ? (
+      {showLabel && typeof weightPct === 'number' ? (
         <text
-          x={x + 8}
-          y={y + 34}
+          x={x + 10}
+          y={y + 36}
           fill={ink}
           fontSize={10}
           fontFamily="var(--font-mono)"
-          style={{ opacity: 0.85 }}
+          style={{ opacity: 0.85, fontFeatureSettings: '"tnum" 1' }}
         >
-          {dailyChangePct >= 0 ? '+' : ''}
-          {dailyChangePct.toFixed(2)}%
+          {(() => {
+            const w = `${weightPct.toFixed(1)}%`;
+            if (typeof dailyChangePct !== 'number') return w;
+            const sign = dailyChangePct >= 0 ? '+' : '';
+            return `${w} · ${sign}${dailyChangePct.toFixed(2)}%`;
+          })()}
         </text>
       ) : null}
     </g>
