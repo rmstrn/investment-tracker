@@ -20,8 +20,8 @@ import type {
   DividendEvent,
 } from '@investment-tracker/shared-types/charts';
 import { useCallback, useId, useMemo, useRef, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { formatValue } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { CHART_TOKENS } from './tokens';

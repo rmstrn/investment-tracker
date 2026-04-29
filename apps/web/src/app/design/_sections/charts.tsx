@@ -222,9 +222,24 @@ function Sub({
   );
 }
 
+/**
+ * Chart card shell — DSM-V1 paper-feel surface (audit §1.1).
+ *
+ * 18px radius, asymmetric padding (22 / 24 / 20), `--card` background,
+ * `--shadow-card` multi-axis warm shadow + cream-edge highlight (the inset
+ * highlight is baked into the shadow token itself for both themes). Matches
+ * `.chart-card` in the static `/design-system.html` reference.
+ */
 function Card({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-border-subtle bg-background-elevated p-5">
+    <div
+      className="rounded-[18px]"
+      style={{
+        background: 'var(--card)',
+        boxShadow: 'var(--shadow-card)',
+        padding: '22px 24px 20px',
+      }}
+    >
       {children}
     </div>
   );

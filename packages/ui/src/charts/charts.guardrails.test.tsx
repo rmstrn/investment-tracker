@@ -28,11 +28,12 @@
  * fidelity (Layer B Playwright captures real-browser visual contrast).
  */
 
-import axe, { type AxeResults, type Result } from 'axe-core';
 import { fireEvent, render } from '@testing-library/react';
+import axe, { type AxeResults, type Result } from 'axe-core';
 import { Suspense } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BarChart } from './BarChart';
 import {
   BAR_DRIFT_FIXTURE,
   BAR_FIXTURE,
@@ -46,7 +47,6 @@ import {
   Treemap,
   WATERFALL_FIXTURE,
 } from './index';
-import { BarChart } from './BarChart';
 import { LazyWaterfall } from './lazy';
 
 type SeriousResult = Pick<Result, 'id' | 'impact' | 'description'>;

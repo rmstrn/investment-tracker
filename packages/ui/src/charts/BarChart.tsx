@@ -25,8 +25,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';

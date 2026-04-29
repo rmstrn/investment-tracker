@@ -25,8 +25,8 @@ import {
   LineChart as ReLineChart,
   ResponsiveContainer,
 } from 'recharts';
-import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
 import { CHART_ANIMATION_MS, SERIES_VARS } from './tokens';

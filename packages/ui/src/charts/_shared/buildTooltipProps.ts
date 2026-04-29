@@ -22,7 +22,10 @@ export function buildTooltipProps(): TooltipPropsBundle {
       background: 'var(--chart-tooltip-bg)',
       border: '1px solid var(--chart-tooltip-border)',
       borderRadius: 14,
-      boxShadow: 'var(--chart-tooltip-shadow, var(--shadow-md))',
+      // Fallback hardening per audit §1.3 — if `--chart-tooltip-shadow` is
+      // unset (route-level embed, future test harness), fall through to the
+      // v1.1 paper-feel `--shadow-lift` rather than the legacy `--shadow-md`.
+      boxShadow: 'var(--chart-tooltip-shadow, var(--shadow-lift))',
       padding: '10px 14px',
       fontFamily: 'var(--font-sans)',
       fontSize: 12,

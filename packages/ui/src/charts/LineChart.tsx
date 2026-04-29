@@ -31,8 +31,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
@@ -179,8 +179,10 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
               stroke={s.color}
               strokeWidth={2}
               dot={false}
+              activeDot={{ r: 5, fill: s.color, stroke: 'var(--card)', strokeWidth: 2 }}
               isAnimationActive={!prefersReducedMotion}
               animationDuration={CHART_ANIMATION_MS}
+              animationEasing="ease-out"
             />
           ))}
           {(payload.overlay ?? []).map((marker, i) => (
