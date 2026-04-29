@@ -18,9 +18,9 @@
         "$description": "Light theme app background. Round-6 deepened from #F1EDE3 for visible card lift."
       },
       "card": {
-        "$value": "#FFFFFF",
+        "$value": "#FAF7F0",
         "$type": "color",
-        "$description": "Light theme card surface. Pure white on deepened cream ≈ 3:1 luma delta."
+        "$description": "Light theme card surface. Warm off-white (was #FFFFFF) — pure white was «бьёт по глазам» on cream bg #E8E0D0. New value preserves visible luma delta without optical glare. PO directive 2026-04-29."
       },
       "inset": {
         "$value": "#D6CCB8",

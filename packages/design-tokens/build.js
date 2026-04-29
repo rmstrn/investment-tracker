@@ -134,7 +134,7 @@ function camel(parts, numericPrefix = '') {
 // Outputs
 // ----------------------------------------------------------
 
-function buildCss(primitives, light, dark) {
+function buildCss(primitives, light, dark, components = []) {
   const lines = [];
   lines.push('/**');
   lines.push(' * Design tokens for Portfolio');
@@ -157,6 +157,17 @@ function buildCss(primitives, light, dark) {
   for (const t of light) {
     lines.push(`  ${cssVarName(t.path)}: ${t.resolved};`);
   }
+
+  // Tier 3 component tokens — emit as --<group>-<sub>-<prop>.
+  // Path shape: ['showcase', 'eyebrow', 'tracking'] → --showcase-eyebrow-tracking.
+  if (components.length > 0) {
+    lines.push('');
+    lines.push('  /* Tier 3 — component tokens (showcase emphasis, etc) */');
+    for (const t of components) {
+      lines.push(`  --${t.path.join('-')}: ${t.resolved};`);
+    }
+  }
+
   lines.push('}');
   lines.push('');
   lines.push('.dark, [data-theme="dark"] {');
@@ -679,22 +690,35 @@ function main() {
     .filter((f) => f.endsWith('.json'))
     .map((f) => `tokens/primitives/${f}`);
 
+  // Tier 3 component tokens — surface-specific emphasis (showcase, etc).
+  const componentDir = path.join(ROOT, 'tokens/components');
+  const componentFiles = fs.existsSync(componentDir)
+    ? fs
+        .readdirSync(componentDir)
+        .filter((f) => f.endsWith('.json'))
+        .map((f) => `tokens/components/${f}`)
+    : [];
+
   const primitiveTree = loadTree(primitiveFiles);
   const lightTree = loadTree([...primitiveFiles, 'tokens/semantic/light.json']);
   const darkTree = loadTree([...primitiveFiles, 'tokens/semantic/dark.json']);
+  const componentTree = componentFiles.length ? loadTree(componentFiles) : {};
 
   const primitives = resolveRefs(flatten(primitiveTree));
   const lightAll = resolveRefs(flatten(lightTree));
   const darkAll = resolveRefs(flatten(darkTree));
+  const components = componentFiles.length ? resolveRefs(flatten(componentTree)) : [];
 
   const light = lightAll.filter((t) => t.path[0] === 'semantic');
   const dark = darkAll.filter((t) => t.path[0] === 'semantic');
 
-  console.log(`  Loaded ${primitives.length} primitives, ${light.length} light semantic, ${dark.length} dark semantic`);
+  console.log(
+    `  Loaded ${primitives.length} primitives, ${light.length} light semantic, ${dark.length} dark semantic, ${components.length} component tokens`,
+  );
   console.log('');
 
   console.log('CSS:');
-  buildCss(primitives, light, dark);
+  buildCss(primitives, light, dark, components);
   console.log('');
 
   console.log('Tailwind (JS object):');
