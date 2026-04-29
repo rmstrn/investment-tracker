@@ -56,6 +56,9 @@ export {
   type UseAnimatedNumberOptions,
 } from './useAnimatedNumber';
 
+/* ─── Floating overlays ──────────────────────────────────────────────── */
+export { Tooltip, type TooltipProps } from './Tooltip';
+
 /* ─── Re-export the existing visually-hidden transcript ──────────────── */
 export { ChartDataTable } from '../../_shared/ChartDataTable';
 

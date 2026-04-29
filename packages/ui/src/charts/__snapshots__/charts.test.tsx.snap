@@ -6,10 +6,10 @@ exports[`chart smoke instantiation > renders AreaChart without throwing 1`] = `
   data-testid="chart-data-table-area"
   id="_r_1_"
 >
-  <p>
-    Cumulative P&L — Year to date · all brokers
-  </p>
   <table>
+    <caption>
+      Cumulative P&L — Year to date · all brokers
+    </caption>
     <thead>
       <tr>
         <th
@@ -126,10 +126,10 @@ exports[`chart smoke instantiation > renders BarChart without throwing 1`] = `
   data-testid="chart-data-table-bar"
   id="_r_2_"
 >
-  <p>
-    Monthly P&L — Last 6 months
-  </p>
   <table>
+    <caption>
+      Monthly P&L — Last 6 months
+    </caption>
     <thead>
       <tr>
         <th
@@ -216,10 +216,10 @@ exports[`chart smoke instantiation > renders Calendar without throwing 1`] = `
   data-testid="chart-data-table-calendar"
   id="_r_6_"
 >
-  <p>
-    Dividend calendar — April 2026 — 3 received · 2 scheduled · all brokers
-  </p>
   <table>
+    <caption>
+      Dividend calendar — April 2026 — 3 received · 2 scheduled · all brokers
+    </caption>
     <thead>
       <tr>
         <th
@@ -314,10 +314,10 @@ exports[`chart smoke instantiation > renders DonutChart without throwing 1`] = `
   data-testid="chart-data-table-donut"
   id="_r_3_"
 >
-  <p>
-    Allocation by sector — 5 sectors · $226,390 total
-  </p>
   <table>
+    <caption>
+      Allocation by sector — 5 sectors · $226,390 total
+    </caption>
     <thead>
       <tr>
         <th
@@ -394,10 +394,10 @@ exports[`chart smoke instantiation > renders LazyCandlestick inside Suspense wit
   data-testid="chart-data-table-candlestick"
   id="_r_a_"
 >
-  <p>
-    AAPL · last 14 sessions
-  </p>
   <table>
+    <caption>
+      AAPL · last 14 sessions
+    </caption>
     <thead>
       <tr>
         <th
@@ -705,10 +705,10 @@ exports[`chart smoke instantiation > renders LazyStackedBar inside Suspense with
   data-testid="chart-data-table-stacked-bar"
   id="_r_8_"
 >
-  <p>
-    Broker contribution — Asset class breakdown by broker
-  </p>
   <table>
+    <caption>
+      Broker contribution — Asset class breakdown by broker
+    </caption>
     <thead>
       <tr>
         <th
@@ -793,10 +793,10 @@ exports[`chart smoke instantiation > renders LazyWaterfall inside Suspense witho
   data-testid="chart-data-table-waterfall"
   id="_r_9_"
 >
-  <p>
-    Where your value came from — YTD · 2026-01-01 to 2026-04-26
-  </p>
   <table>
+    <caption>
+      Where your value came from — YTD · 2026-01-01 to 2026-04-26
+    </caption>
     <thead>
       <tr>
         <th
@@ -958,10 +958,10 @@ exports[`chart smoke instantiation > renders LineChart without throwing 1`] = `
   data-testid="chart-data-table-line"
   id="_r_0_"
 >
-  <p>
-    Portfolio value — Last 30 days · all brokers
-  </p>
   <table>
+    <caption>
+      Portfolio value — Last 30 days · all brokers
+    </caption>
     <thead>
       <tr>
         <th
@@ -1316,10 +1316,10 @@ exports[`chart smoke instantiation > renders Treemap without throwing 1`] = `
   data-testid="chart-data-table-treemap"
   id="_r_7_"
 >
-  <p>
-    Concentration — Tile size = weight; color = today’s change
-  </p>
   <table>
+    <caption>
+      Concentration — Tile size = weight; color = today’s change
+    </caption>
     <thead>
       <tr>
         <th

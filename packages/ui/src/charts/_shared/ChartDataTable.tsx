@@ -9,6 +9,11 @@
  * Per architect ADR §«Component composition strategy», this is one of two
  * cross-kind primitives owned by `_shared/`. It branches on `payload.kind`
  * so each shape gets a sensible row/column projection.
+ *
+ * Captions live inside the `<table>` as native `<caption>` (per a11y Pattern
+ * 2 — LOW-1 closure, was previously a sibling `<p>` per pre-QA finding). For
+ * non-tabular projections (sparkline summary), the caption is rendered above
+ * the prose summary as a paragraph since there's no table to host it.
  */
 
 import type {
@@ -35,8 +40,7 @@ interface ChartDataTableProps {
 export function ChartDataTable({ payload, id }: ChartDataTableProps) {
   return (
     <div id={id} className="sr-only" data-testid={`chart-data-table-${payload.kind}`}>
-      <p>{tableCaption(payload)}</p>
-      {renderTable(payload)}
+      {renderTable(payload, tableCaption(payload))}
     </div>
   );
 }
@@ -45,26 +49,26 @@ function tableCaption(p: ChartPayload): string {
   return `${p.meta.title}${p.meta.subtitle ? ` — ${p.meta.subtitle}` : ''}`;
 }
 
-function renderTable(p: ChartPayload): React.ReactElement {
+function renderTable(p: ChartPayload, caption: string): React.ReactElement {
   switch (p.kind) {
     case 'line':
     case 'area':
     case 'stacked-bar':
-      return renderMultiSeriesTable(p);
+      return renderMultiSeriesTable(p, caption);
     case 'bar':
-      return renderBarTable(p);
+      return renderBarTable(p, caption);
     case 'donut':
-      return renderDonutTable(p);
+      return renderDonutTable(p, caption);
     case 'sparkline':
-      return renderSparklineTable(p);
+      return renderSparklineTable(p, caption);
     case 'calendar':
-      return renderCalendarTable(p);
+      return renderCalendarTable(p, caption);
     case 'treemap':
-      return renderTreemapTable(p);
+      return renderTreemapTable(p, caption);
     case 'waterfall':
-      return renderWaterfallTable(p);
+      return renderWaterfallTable(p, caption);
     case 'candlestick':
-      return renderCandlestickTable(p);
+      return renderCandlestickTable(p, caption);
     default: {
       const exhaustive: never = p;
       return <span>{String(exhaustive)}</span>;
@@ -74,9 +78,11 @@ function renderTable(p: ChartPayload): React.ReactElement {
 
 function renderMultiSeriesTable(
   p: LineChartPayload | AreaChartPayload | StackedBarChartPayload,
+  caption: string,
 ): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">{p.xAxis.label ?? 'X'}</th>
@@ -103,9 +109,10 @@ function renderMultiSeriesTable(
   );
 }
 
-function renderBarTable(p: BarChartPayload): React.ReactElement {
+function renderBarTable(p: BarChartPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">{p.xAxis.label ?? 'Category'}</th>
@@ -124,9 +131,10 @@ function renderBarTable(p: BarChartPayload): React.ReactElement {
   );
 }
 
-function renderDonutTable(p: DonutChartPayload): React.ReactElement {
+function renderDonutTable(p: DonutChartPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">Segment</th>
@@ -145,20 +153,26 @@ function renderDonutTable(p: DonutChartPayload): React.ReactElement {
   );
 }
 
-function renderSparklineTable(p: SparklinePayload): React.ReactElement {
+function renderSparklineTable(p: SparklinePayload, caption: string): React.ReactElement {
   const first = p.data[0];
   const last = p.data[p.data.length - 1];
+  // Sparkline summary is prose, not tabular — caption is rendered as a
+  // paragraph above the prose summary so the SR still gets context.
   return (
-    <p>
-      Sparkline trend{p.trend ? ` (${p.trend})` : ''}: {p.data.length} points; first{' '}
-      {String(first?.x ?? '')}={first?.y ?? ''}; last {String(last?.x ?? '')}={last?.y ?? ''}.
-    </p>
+    <>
+      <p>{caption}</p>
+      <p>
+        Sparkline trend{p.trend ? ` (${p.trend})` : ''}: {p.data.length} points; first{' '}
+        {String(first?.x ?? '')}={first?.y ?? ''}; last {String(last?.x ?? '')}={last?.y ?? ''}.
+      </p>
+    </>
   );
 }
 
-function renderCalendarTable(p: CalendarPayload): React.ReactElement {
+function renderCalendarTable(p: CalendarPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">Type</th>
@@ -195,9 +209,10 @@ function renderCalendarTable(p: CalendarPayload): React.ReactElement {
   );
 }
 
-function renderTreemapTable(p: TreemapPayload): React.ReactElement {
+function renderTreemapTable(p: TreemapPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">Ticker</th>
@@ -220,9 +235,10 @@ function renderTreemapTable(p: TreemapPayload): React.ReactElement {
   );
 }
 
-function renderWaterfallTable(p: WaterfallPayload): React.ReactElement {
+function renderWaterfallTable(p: WaterfallPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">Step</th>
@@ -243,9 +259,10 @@ function renderWaterfallTable(p: WaterfallPayload): React.ReactElement {
   );
 }
 
-function renderCandlestickTable(p: CandlestickChartPayload): React.ReactElement {
+function renderCandlestickTable(p: CandlestickChartPayload, caption: string): React.ReactElement {
   return (
     <table>
+      <caption>{caption}</caption>
       <thead>
         <tr>
           <th scope="col">Date</th>
