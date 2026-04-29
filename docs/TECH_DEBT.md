@@ -14,6 +14,18 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-119 — Legend click-to-filter (DonutChart + dashboard interactivity)
+
+**Added:** 2026-04-29 (DonutChart anatomy ADR — design call #3 deferred).
+**Priority:** P3 — feature, not bug. YAGNI pre-alpha; opens once dashboard surface needs interactive filtering.
+**Source:** PD-2 anatomy draft surfaced legend click-to-filter as a feature option on the chart-component layer. Right-Hand deferred (design call 3): Lane A discipline — interactive filtering drifts the chart toward «trader analysis tool» semantics, away from Provedo's «information / education» register at the chart-primitive layer. The legitimate use case (dashboard-level filtering) belongs at a higher composition tier, not inside the chart component.
+**Recommendation:** when a dashboard surface needs filtering by allocation slice / sector / asset class, design the interactivity at the **dashboard composition layer** — host the filter state outside the chart, pass `selectedKeys: string[]` as a prop, and have the chart visualise the selection (e.g. fade non-selected slices to 0.3 opacity) but NOT own the click handling. This keeps the chart component a presentation primitive, dashboard owns the trader-analysis semantics.
+**Scope:** when triggered — ~1 day combined (chart prop API + dashboard host + visual fade + tests).
+**Owner:** product-designer (interaction spec) + frontend-engineer (impl) + user-researcher (validate the dashboard need before scoping).
+**Trigger:** first dashboard slice that legitimately needs allocation-by-slice filtering as a user task. NOT before — pre-alpha YAGNI.
+
+---
+
 ### TD-118 — Document V1→V2 chart-backend two-frame flicker in CHARTS_SPEC §3
 
 **Added:** 2026-04-29 (review-aggregate `2026-04-29-design-system-fixes-aggregate.md` M13).

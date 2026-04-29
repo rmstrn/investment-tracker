@@ -888,3 +888,31 @@ That's a 3-PR sequence, not a 2-PR split. Building it correctly is a multi-hour 
 **Revisit.** Trigger = PO opens PR and asks for split, OR Phase 2 builder dispatch needs Slice C alone landed and Slice C is blocked behind unrelated review traffic.
 
 **Cross-references.** `docs/reviews/2026-04-29-design-system-fixes-aggregate.md` H6 (the original split recommendation); CONSTRAINTS.md Rule 8.3 (Windows dispatch hygiene); branch `chore/plugin-architecture-2026-04-29` git log for the historical depth.
+
+## 2026-04-29 — DonutChart anatomy + interaction: 5 PO-delegated design calls
+
+**Decision.** Five design calls flagged as open in `docs/design/DONUT_ANATOMY_v2_draft.md` resolved by Right-Hand under PO directive «по дизайну подумай сам плз, я не знаю как лучше»:
+
+1. **Default arcMode = `'full'` (360°).** 270° is an opt-in variant for editorial / hero use cases where the missing 90° wedge hosts a callout text or KPI value. Dashboard tile DonutChart instances default to 360° because the primary read is «portfolio allocation» and a missing wedge is decoratively expensive there.
+
+2. **Entrance sequence = by-magnitude descending.** Largest slice animates in first, smallest last. Matches the cognitive query in finance data viz («what's the biggest position?»). Trade-off accepted: clockwise would have been simpler to implement but is data-agnostic; magnitude-ordered animation is data-aware and aligns animation flow with attention flow. Reduced-motion fallback per the existing `<html data-reduced-motion>` plumbing — instant render, no stagger.
+
+3. **Legend click-to-filter — out of scope** for the DonutChart V2 slice. Reasons: (a) YAGNI at pre-alpha — the dashboard surface that would benefit from this is not yet shipped; (b) Lane A discipline — interactive filtering trends toward «trader analysis tool» semantics, drifting from Provedo's «information / education» register. If a future dashboard slice needs it, open a follow-on TD scoped specifically to the dashboard-level interactivity, not as a chart-component primitive.
+
+4. **Hover-shadow token = NEW `--shadow-chart-slice-hover`** added to `packages/design-tokens/tokens/`. Two reasons: (a) hover treatment will re-use across other chart kinds in CHARTS_SPEC §1 (BarChart hover lift, treemap tile hover, scatter point hover, etc.) — a named token earns its weight at the design-system level; (b) explicit > inline for design-system hygiene. The token references a layered shadow stack (paper-press neumorphism + slight accent rim glow) consistent with Provedo's tactile-depth language.
+
+5. **V1 Recharts stagger animation — NOT implemented; accept V1↔V2 visual delta.** V1 (Recharts) renders all slices instantly; V2 (primitives) renders with the 600 ms / 180 ms / 105 ms stagger from the anatomy draft. Reasons: (a) V1 is the bridge backend; sunset criterion in TD-115 already commits to its removal once Phase 2 stabilises; (b) `makeBackendDispatch` pattern explicitly contracts that V1/V2 may differ visually — that is the dispatcher's design intent, not a bug; (c) workaround via multiple `<Pie>` mounts in Recharts is invasive and would create test-time flakiness; (d) the visual delta only matters during the dispatcher window (`NEXT_PUBLIC_PROVEDO_CHART_BACKEND=primitives`) — once V2 is the only path, the delta disappears. Document the delta in CHARTS_SPEC §3 «backend swap» subsection (TD-118) as deliberate, not a regression.
+
+**Why Right-Hand resolved these alone.** PO directive 2026-04-29 «по дизайну подумай сам плз, я не знаю как лучше» — explicit delegation of these tactical design calls. Per CONSTRAINTS Rule 3, these are NOT strategic decisions (no positioning / pricing / regulatory implication; no naming or brand-archetype shift); they sit at the design-system implementation layer where right-hand has standing authority to lock when PO requests delegation.
+
+**Implications for downstream work.**
+
+- **Frontend-engineer slice (Task #13):** receives a coherent brief combining (a) museum-palette token application, (b) gradient direction per `DONUT_GRADIENT_v2_draft.md`, (c) anatomy + interaction per `DONUT_ANATOMY_v2_draft.md`, (d) the 5 design calls above as binding inputs. Single slice, single PR.
+- **Tech-lead kickoff (preferred):** before the FE dispatch, tech-lead writes a kickoff doc consolidating the three drafts + the 5 design calls + acceptance criteria. Avoids FE re-discovering the partition. ~30 min wall-clock.
+- **TD entries:** open a TD for legend click-to-filter (deferred per call 3) — to capture the deferral so it doesn't get lost, even though we won't act on it now.
+- **Showcase regression:** `/design-system#charts` DonutChart visible diff lands as part of the same FE slice. Snapshot baselines for chart-tests checkpoint β.1.4 (commit 109e4de) need refresh.
+
+**Owner.** Right-Hand (this ADR) + tech-lead (kickoff) + frontend-engineer (implementation slice) + qa-engineer (β.1.4 snapshot refresh).
+**Revisit.** After 2 weeks of V2 in production OR after first user research session that surfaces a clarity issue with any of the 5 calls. Otherwise locked.
+
+**Cross-references.** `docs/design/DONUT_ANATOMY_v2_draft.md` (the source of the 5 questions); `docs/design/DONUT_GRADIENT_v2_draft.md` (sibling spec); `docs/design/CHART_PALETTE_v2_draft.md` (museum-palette base); CONSTRAINTS.md Rule 3 (delegation rationale).
