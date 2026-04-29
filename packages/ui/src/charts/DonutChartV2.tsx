@@ -155,8 +155,13 @@ export interface DonutChartV2Props {
 const TWO_PI = Math.PI * 2;
 const INNER_RADIUS_RATIO = 0.6;
 
-/** D2 default `cornerRadius` (anatomy ADR §«Slice geometry»). */
-const DEFAULT_CORNER_RADIUS = 3;
+/**
+ * D2 default `cornerRadius` (anatomy ADR §«Slice geometry»). Bumped 3→6 from
+ * PO live-feedback polish #2 (2026-04-29) for a more pronounced rounding read.
+ * Cap rule `min(specifiedR, ringWidth/2, sliceArcLengthAtCenterline/4)` still
+ * protects thin slices from pinching downstream.
+ */
+const DEFAULT_CORNER_RADIUS = 6;
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* D4 — hover + entrance constants                                         */
@@ -682,15 +687,11 @@ export function DonutChartV2({
             </defs>
           ) : null}
 
-          {/* Subtle backplate ring for paper-edge feel. */}
-          <circle
-            cx={cx}
-            cy={cy}
-            r={outerR + 1}
-            fill="none"
-            stroke="var(--border-subtle, rgba(20, 20, 20, 0.06))"
-            strokeWidth={1}
-          />
+          {/* Backplate ring removed (PO polish #2 — 2026-04-29). It was
+              reading as a visible gray halo around the donut perimeter. The
+              per-slice cream `--card` 1px hairline already supplies paper-edge
+              separation between sectors; an outer rim ring on top of that
+              double-counted and produced the unwanted halo. */}
 
           {useRoundedPath ? (
             <RoundedDonutPath
@@ -828,12 +829,26 @@ function FastDonutRing({
   //   stroke-dashoffset = -(start-arc-length) → shifts the dash to the
   //     correct angular start
   //   transform = rotate(-90deg around cx,cy) — moves angle 0 to 12 o'clock
+  // PO polish #2 — 2026-04-29: paint the hovered slice LAST so it visually
+  // overlaps neighbours at the boundary (SVG has no z-index, so paint order
+  // = DOM order). We build a (segment, i) tuple list, then stable-sort to
+  // push the hovered tuple to the end. Each tuple keeps its original data
+  // index `i` for handlers, dataset attrs, sectorBounds lookup, etc. The
+  // React `key` prop uses `seg.key` (stable identifier) so the reorder does
+  // not unmount/remount and entrance animation does not re-trigger.
+  const renderOrder = segments
+    .map((seg, i) => ({ seg, i }))
+    .sort((a, b) => {
+      if (a.i === hoverIndex) return 1;
+      if (b.i === hoverIndex) return -1;
+      return 0;
+    });
   return (
     <g
       transform={`rotate(-90 ${cx} ${cy})`}
       data-testid="donut-fast-ring"
     >
-      {segments.map((seg, i) => {
+      {renderOrder.map(({ seg, i }) => {
         const bound = sectorBounds[i];
         if (!bound) return null;
         const arcLen = (bound.sweep / (Math.PI * 2)) * circumference;
@@ -996,9 +1011,18 @@ function RoundedDonutPath({
 }: RoundedDonutPathProps) {
   // Centerline radius for the slice-arc-length cap rule.
   const centerlineR = (innerR + outerR) / 2;
+  // PO polish #2 — 2026-04-29: paint hovered slice last (DOM-reorder; SVG
+  // has no z-index). See FastDonutRing for the rationale + key strategy.
+  const renderOrder = segments
+    .map((seg, i) => ({ seg, i }))
+    .sort((a, b) => {
+      if (a.i === hoverIndex) return 1;
+      if (b.i === hoverIndex) return -1;
+      return 0;
+    });
   return (
     <g transform={`translate(${cx} ${cy})`} data-testid="donut-rounded-path">
-      {segments.map((seg, i) => {
+      {renderOrder.map(({ seg, i }) => {
         const bound = sectorBounds[i];
         if (!bound) return null;
         // Cap the corner radius per anatomy ADR §«Slice geometry» —
