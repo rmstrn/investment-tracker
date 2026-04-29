@@ -19,6 +19,28 @@ export {
   type SeriesEncoding,
 } from './ChartFrame';
 
+/* ─── Axes + grid ────────────────────────────────────────────────────── */
+export {
+  GridLines,
+  type GridLinesProps,
+  type GridLinesOrientation,
+} from './GridLines';
+export {
+  AxisTicksHTML,
+  type AxisTicksHTMLProps,
+  type AxisTick,
+  type AxisOrientation,
+} from './AxisTicksHTML';
+
+/* ─── Gradient definitions ───────────────────────────────────────────── */
+export {
+  AreaGradientDef,
+  type AreaGradientDefProps,
+  useAreaGradient,
+  type AreaGradientDefOptions,
+  type AreaGradientHandle,
+} from './AreaGradientDef';
+
 /* ─── Re-export the existing visually-hidden transcript ──────────────── */
 export { ChartDataTable } from '../../_shared/ChartDataTable';
 
