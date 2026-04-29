@@ -270,34 +270,39 @@
         "$value": "drop-shadow(0 1px 1px rgba(20, 20, 20, 0.10))",
         "$type": "shadow",
         "$description": "SVG drop-shadow filter for chart line strokes — subtle ink-on-paper feel."
+      },
+      "chart-slice-hover": {
+        "$value": "drop-shadow(0 1.5px 2px rgba(20, 20, 20, 0.12)) drop-shadow(0 0 4px rgba(45, 95, 78, 0.22))",
+        "$type": "shadow",
+        "$description": "DonutChart V2 hover slice shadow — paper-press neumorphism (layer 1) + accent glow (layer 2 = --accent-glow). Source: DECISIONS.md «DonutChart anatomy + interaction» call 4. Reused across BarChart hover, treemap tile hover, scatter point hover."
       }
     },
 
     "chart-series": {
       "1": {
-        "$value": "{color.chart.light-1}",
+        "$value": "{color.museum.slate.light}",
         "$type": "color",
-        "$description": "Chart series 1 — primary. Equal to --accent (forest-jade)."
+        "$description": "Chart series 1 — museum-slate. Re-pointed 2026-04-29 from forest-jade to museum-categorical for V1 palette swap. Source: DECISIONS.md «Charts palette: museum-vitrine extension»."
       },
       "2": {
-        "$value": "{color.chart.light-2}",
+        "$value": "{color.museum.ochre.light}",
         "$type": "color",
-        "$description": "Chart series 2 — contrast. Equal to --terra (bronze)."
+        "$description": "Chart series 2 — museum-ochre. Re-pointed 2026-04-29 (was bronze). Maximum hue separation from slate (Δ=185°)."
       },
       "3": {
-        "$value": "{color.chart.light-3}",
+        "$value": "{color.museum.fog-blue.light}",
         "$type": "color",
-        "$description": "Chart series 3 — ink. Equal to --ink."
+        "$description": "Chart series 3 — museum-fog-blue. Re-pointed 2026-04-29 (was ink). Sole blue-direction; honours no-blue rule via 0.04 chroma cap."
       },
       "4": {
-        "$value": "{color.chart.light-4}",
+        "$value": "{color.museum.plum.light}",
         "$type": "color",
-        "$description": "Chart series 4 — mid-jade lifted."
+        "$description": "Chart series 4 — museum-plum. Re-pointed 2026-04-29 (was jade-lifted). Magenta quadrant filler."
       },
       "5": {
-        "$value": "{color.chart.light-5}",
+        "$value": "{color.museum.stone.light}",
         "$type": "color",
-        "$description": "Chart series 5 — neutral graphite."
+        "$description": "Chart series 5 — museum-stone. Re-pointed 2026-04-29 (was graphite). Neutral fallback; lowest chroma in family."
       },
       "6": {
         "$value": "{color.chart.light-6}",
@@ -333,6 +338,72 @@
         "$value": "{color.chart.light-12}",
         "$type": "color",
         "$description": "Chart series 12 — clay tan. CHART-ONLY editorial extension."
+      }
+    },
+
+    "chart-categorical": {
+      "1": {
+        "$value": "{color.museum.slate.light}",
+        "$type": "color",
+        "$description": "Categorical series 1 — museum-slate (cool anchor). Order rationale: slate→ochre maximises hue Δ=185° for 2-series intent."
+      },
+      "2": {
+        "$value": "{color.museum.ochre.light}",
+        "$type": "color",
+        "$description": "Categorical series 2 — museum-ochre (warm anchor; max hue separation from slate)."
+      },
+      "3": {
+        "$value": "{color.museum.fog-blue.light}",
+        "$type": "color",
+        "$description": "Categorical series 3 — museum-fog-blue (secondary cool)."
+      },
+      "4": {
+        "$value": "{color.museum.plum.light}",
+        "$type": "color",
+        "$description": "Categorical series 4 — museum-plum (magenta quadrant)."
+      },
+      "5": {
+        "$value": "{color.museum.stone.light}",
+        "$type": "color",
+        "$description": "Categorical series 5 — museum-stone (neutral fallback). Tritanopia note: collapses with ochre at L≈0.52; V2 mandates 1px hairline outline."
+      }
+    },
+
+    "chart-sequential": {
+      "1": {
+        "$value": "{color.ink-ramp.light.1}",
+        "$type": "color",
+        "$description": "Sequential ramp 1/7 — top magnitude (light)."
+      },
+      "2": {
+        "$value": "{color.ink-ramp.light.2}",
+        "$type": "color",
+        "$description": "Sequential ramp 2/7 (light)."
+      },
+      "3": {
+        "$value": "{color.ink-ramp.light.3}",
+        "$type": "color",
+        "$description": "Sequential ramp 3/7 (light)."
+      },
+      "4": {
+        "$value": "{color.ink-ramp.light.4}",
+        "$type": "color",
+        "$description": "Sequential ramp 4/7 — median (light)."
+      },
+      "5": {
+        "$value": "{color.ink-ramp.light.5}",
+        "$type": "color",
+        "$description": "Sequential ramp 5/7 (light)."
+      },
+      "6": {
+        "$value": "{color.ink-ramp.light.6}",
+        "$type": "color",
+        "$description": "Sequential ramp 6/7 (light)."
+      },
+      "7": {
+        "$value": "{color.ink-ramp.light.7}",
+        "$type": "color",
+        "$description": "Sequential ramp 7/7 — bottom magnitude (light); near visibility floor — pair with hairline outline."
       }
     },
 

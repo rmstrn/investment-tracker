@@ -230,6 +230,146 @@
         "$type": "color",
         "$description": "Chart series 12 (clay tan / honey) — dark theme."
       }
+    },
+
+    "museum": {
+      "slate": {
+        "light": {
+          "$value": "#6B7280",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — cool anchor (light theme). oklch(0.45 0.025 250). ≥40% chroma reduction vs tableau saturated reference. Source: CHART_PALETTE_v2_draft.md §1."
+        },
+        "dark": {
+          "$value": "#A8AFBC",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — cool anchor (dark theme). oklch(0.72 0.028 250)."
+        }
+      },
+      "stone": {
+        "light": {
+          "$value": "#867A66",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — warm neutral mineral (light). oklch(0.52 0.020 60). Lowest chroma in family — anchors the palette."
+        },
+        "dark": {
+          "$value": "#C5BBA8",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — warm neutral mineral (dark). oklch(0.78 0.022 60)."
+        }
+      },
+      "fog-blue": {
+        "light": {
+          "$value": "#5F8794",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — dusty teal-blue (light). oklch(0.50 0.040 215). Sole blue-direction pick; chroma kept at 0.04 to honour calm-analytical register."
+        },
+        "dark": {
+          "$value": "#A8C6D0",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — dusty teal-blue (dark). oklch(0.78 0.045 215)."
+        }
+      },
+      "plum": {
+        "light": {
+          "$value": "#7E5C6E",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — aubergine plum (light). oklch(0.48 0.045 340). Fills magenta quadrant; 308° from bronze."
+        },
+        "dark": {
+          "$value": "#B79CA8",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — aubergine plum (dark). oklch(0.72 0.048 340)."
+        }
+      },
+      "ochre": {
+        "light": {
+          "$value": "#8C7448",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — muted gold (light). oklch(0.52 0.060 75). Highest chroma of the 5 — still 40%+ below tableau-yellow. Tritanopia note: collapses with stone (L=0.52); 1px hairline outline mandatory in V2 charts."
+        },
+        "dark": {
+          "$value": "#CAB07E",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — muted gold (dark). oklch(0.78 0.060 75)."
+        }
+      }
+    },
+
+    "ink-ramp": {
+      "light": {
+        "1": {
+          "$value": "#1A1A1A",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 1 (light) — top magnitude. oklch(0.18 0 0). Equals --ink."
+        },
+        "2": {
+          "$value": "#404040",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 2 (light). oklch(0.30 0 0)."
+        },
+        "3": {
+          "$value": "#5E5E5E",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 3 (light). oklch(0.42 0 0). Coincides with --text-3 register."
+        },
+        "4": {
+          "$value": "#828282",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 4 (light) — median anchor. oklch(0.55 0 0)."
+        },
+        "5": {
+          "$value": "#A8A8A8",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 5 (light). oklch(0.68 0 0)."
+        },
+        "6": {
+          "$value": "#C3C3C3",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 6 (light). oklch(0.78 0 0)."
+        },
+        "7": {
+          "$value": "#D6D6D6",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 7 (light) — bottom magnitude. oklch(0.85 0 0). Visibility floor on cream bg — hairline outline recommended."
+        }
+      },
+      "dark": {
+        "1": {
+          "$value": "#F1F1F1",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 1 (dark) — top magnitude. oklch(0.95 0 0). Near-parchment."
+        },
+        "2": {
+          "$value": "#D6D6D6",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 2 (dark). oklch(0.85 0 0)."
+        },
+        "3": {
+          "$value": "#BDBDBD",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 3 (dark). oklch(0.75 0 0)."
+        },
+        "4": {
+          "$value": "#969696",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 4 (dark) — median anchor. oklch(0.62 0 0)."
+        },
+        "5": {
+          "$value": "#737373",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 5 (dark). oklch(0.50 0 0)."
+        },
+        "6": {
+          "$value": "#525252",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 6 (dark). oklch(0.38 0 0)."
+        },
+        "7": {
+          "$value": "#404040",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 7 (dark) — bottom magnitude. oklch(0.30 0 0). Visibility floor on cocoa bg — hairline outline recommended."
+        }
+      }
     }
   }
 }

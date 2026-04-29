@@ -40,6 +40,16 @@
         "$value": "1800ms",
         "$type": "duration",
         "$description": "StatusDot pulse-ring continuous loop."
+      },
+      "donut-sweep": {
+        "$value": "600ms",
+        "$type": "duration",
+        "$description": "DonutChart V2 entrance — total envelope for the by-magnitude descending stagger sequence. Source: DECISIONS.md «DonutChart anatomy + interaction» call 2."
+      },
+      "donut-slice-fade": {
+        "$value": "180ms",
+        "$type": "duration",
+        "$description": "DonutChart V2 entrance — per-slice fade-in duration. Combined with donut-sweep (600ms) and n=5 yields a 105 ms stagger."
       }
     },
     "easing": {

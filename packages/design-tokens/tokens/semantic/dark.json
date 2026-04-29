@@ -210,15 +210,40 @@
         "$value": "drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4))",
         "$type": "shadow",
         "$description": "Dark-theme SVG drop-shadow filter for chart line strokes."
+      },
+      "chart-slice-hover": {
+        "$value": "drop-shadow(0 1.5px 2px rgba(241, 241, 241, 0.10)) drop-shadow(0 0 4px rgba(92, 154, 133, 0.22))",
+        "$type": "shadow",
+        "$description": "DonutChart V2 hover slice shadow — paper-press neumorphism (layer 1, lightened for cocoa bg) + accent glow (layer 2 = --accent-glow). Source: DECISIONS.md «DonutChart anatomy + interaction» call 4."
       }
     },
 
     "chart-series": {
-      "1": { "$value": "{color.chart.dark-1}", "$type": "color" },
-      "2": { "$value": "{color.chart.dark-2}", "$type": "color" },
-      "3": { "$value": "{color.chart.dark-3}", "$type": "color" },
-      "4": { "$value": "{color.chart.dark-4}", "$type": "color" },
-      "5": { "$value": "{color.chart.dark-5}", "$type": "color" },
+      "1": {
+        "$value": "{color.museum.slate.dark}",
+        "$type": "color",
+        "$description": "Chart series 1 — museum-slate (dark). Re-pointed 2026-04-29 for V1 palette swap."
+      },
+      "2": {
+        "$value": "{color.museum.ochre.dark}",
+        "$type": "color",
+        "$description": "Chart series 2 — museum-ochre (dark)."
+      },
+      "3": {
+        "$value": "{color.museum.fog-blue.dark}",
+        "$type": "color",
+        "$description": "Chart series 3 — museum-fog-blue (dark)."
+      },
+      "4": {
+        "$value": "{color.museum.plum.dark}",
+        "$type": "color",
+        "$description": "Chart series 4 — museum-plum (dark)."
+      },
+      "5": {
+        "$value": "{color.museum.stone.dark}",
+        "$type": "color",
+        "$description": "Chart series 5 — museum-stone (dark)."
+      },
       "6": { "$value": "{color.chart.dark-6}", "$type": "color" },
       "7": { "$value": "{color.chart.dark-7}", "$type": "color" },
       "8": { "$value": "{color.chart.dark-8}", "$type": "color" },
@@ -226,6 +251,72 @@
       "10": { "$value": "{color.chart.dark-10}", "$type": "color" },
       "11": { "$value": "{color.chart.dark-11}", "$type": "color" },
       "12": { "$value": "{color.chart.dark-12}", "$type": "color" }
+    },
+
+    "chart-categorical": {
+      "1": {
+        "$value": "{color.museum.slate.dark}",
+        "$type": "color",
+        "$description": "Categorical series 1 — museum-slate (dark)."
+      },
+      "2": {
+        "$value": "{color.museum.ochre.dark}",
+        "$type": "color",
+        "$description": "Categorical series 2 — museum-ochre (dark)."
+      },
+      "3": {
+        "$value": "{color.museum.fog-blue.dark}",
+        "$type": "color",
+        "$description": "Categorical series 3 — museum-fog-blue (dark)."
+      },
+      "4": {
+        "$value": "{color.museum.plum.dark}",
+        "$type": "color",
+        "$description": "Categorical series 4 — museum-plum (dark)."
+      },
+      "5": {
+        "$value": "{color.museum.stone.dark}",
+        "$type": "color",
+        "$description": "Categorical series 5 — museum-stone (dark)."
+      }
+    },
+
+    "chart-sequential": {
+      "1": {
+        "$value": "{color.ink-ramp.dark.1}",
+        "$type": "color",
+        "$description": "Sequential ramp 1/7 — top magnitude (dark)."
+      },
+      "2": {
+        "$value": "{color.ink-ramp.dark.2}",
+        "$type": "color",
+        "$description": "Sequential ramp 2/7 (dark)."
+      },
+      "3": {
+        "$value": "{color.ink-ramp.dark.3}",
+        "$type": "color",
+        "$description": "Sequential ramp 3/7 (dark)."
+      },
+      "4": {
+        "$value": "{color.ink-ramp.dark.4}",
+        "$type": "color",
+        "$description": "Sequential ramp 4/7 — median (dark)."
+      },
+      "5": {
+        "$value": "{color.ink-ramp.dark.5}",
+        "$type": "color",
+        "$description": "Sequential ramp 5/7 (dark)."
+      },
+      "6": {
+        "$value": "{color.ink-ramp.dark.6}",
+        "$type": "color",
+        "$description": "Sequential ramp 6/7 (dark)."
+      },
+      "7": {
+        "$value": "{color.ink-ramp.dark.7}",
+        "$type": "color",
+        "$description": "Sequential ramp 7/7 — bottom magnitude (dark)."
+      }
     },
 
     "chart-grid": {
