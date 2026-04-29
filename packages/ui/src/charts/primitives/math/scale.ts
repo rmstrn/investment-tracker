@@ -70,9 +70,7 @@ export interface LinearScaleOptions {
 
 export function linearScale(options: LinearScaleOptions): Scale<number> {
   const { domain, range, nice = false } = options;
-  const scale = scaleLinear()
-    .domain([domain[0], domain[1]])
-    .range([range[0], range[1]]);
+  const scale = scaleLinear().domain([domain[0], domain[1]]).range([range[0], range[1]]);
   if (nice) {
     scale.nice();
   }
@@ -96,9 +94,7 @@ export interface TimeScaleOptions {
 
 export function timeScale(options: TimeScaleOptions): Scale<Date> {
   const { domain, range, nice = false } = options;
-  const scale = scaleTime()
-    .domain([domain[0], domain[1]])
-    .range([range[0], range[1]]);
+  const scale = scaleTime().domain([domain[0], domain[1]]).range([range[0], range[1]]);
   if (nice) {
     scale.nice();
   }

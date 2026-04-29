@@ -12,7 +12,13 @@
  * NO React in this file. Pure functions only.
  */
 
-import { arc as d3Arc, area as d3Area, curveLinear, curveMonotoneX, line as d3Line } from 'd3-shape';
+import {
+  curveLinear,
+  curveMonotoneX,
+  arc as d3Arc,
+  area as d3Area,
+  line as d3Line,
+} from 'd3-shape';
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* Curve enum — exposed to consumers as string literals (no d3 leak).      */

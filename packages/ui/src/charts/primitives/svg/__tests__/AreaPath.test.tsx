@@ -13,7 +13,12 @@ import { describe, expect, it } from 'vitest';
 import { AreaPath } from '../AreaPath';
 
 function renderInSvg(node: React.ReactElement) {
-  return render(<svg width={400} height={200}>{node}</svg>);
+  return render(
+    <svg width={400} height={200} role="img" aria-label="Test SVG canvas">
+      <title>Test SVG canvas</title>
+      {node}
+    </svg>,
+  );
 }
 
 describe('<AreaPath>', () => {
@@ -48,7 +53,10 @@ describe('<AreaPath>', () => {
   it('stroke="none" when no strokeColorVar passed', () => {
     const { container } = renderInSvg(
       <AreaPath
-        points={[{ x: 0, y0: 100, y1: 60 }, { x: 50, y0: 100, y1: 40 }]}
+        points={[
+          { x: 0, y0: 100, y1: 60 },
+          { x: 50, y0: 100, y1: 40 },
+        ]}
         gradientId="g"
       />,
     );
@@ -58,7 +66,10 @@ describe('<AreaPath>', () => {
   it('threads strokeColorVar when provided', () => {
     const { container } = renderInSvg(
       <AreaPath
-        points={[{ x: 0, y0: 100, y1: 60 }, { x: 50, y0: 100, y1: 40 }]}
+        points={[
+          { x: 0, y0: 100, y1: 60 },
+          { x: 50, y0: 100, y1: 40 },
+        ]}
         gradientId="g"
         strokeColorVar="var(--chart-series-2)"
       />,
@@ -69,9 +80,7 @@ describe('<AreaPath>', () => {
   });
 
   it('renders empty path for empty points without throwing', () => {
-    const { container } = renderInSvg(
-      <AreaPath points={[]} gradientId="g" />,
-    );
+    const { container } = renderInSvg(<AreaPath points={[]} gradientId="g" />);
     expect(container.querySelector('path')?.getAttribute('d')).toBe('');
   });
 });

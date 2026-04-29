@@ -31,9 +31,7 @@ describe('<CitationGlyph>', () => {
   });
 
   it('flips to role=img + aria-label when ariaLabel passed', () => {
-    const { container } = render(
-      <CitationGlyph ariaLabel="Provedo insight marker" />,
-    );
+    const { container } = render(<CitationGlyph ariaLabel="Provedo insight marker" />);
     const svg = container.querySelector('svg');
     expect(svg?.getAttribute('role')).toBe('img');
     expect(svg?.getAttribute('aria-label')).toBe('Provedo insight marker');

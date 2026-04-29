@@ -15,7 +15,12 @@ import { describe, expect, it } from 'vitest';
 import { LinePath } from '../LinePath';
 
 function renderInSvg(node: React.ReactElement) {
-  return render(<svg width={400} height={200}>{node}</svg>);
+  return render(
+    <svg width={400} height={200} role="img" aria-label="Test SVG canvas">
+      <title>Test SVG canvas</title>
+      {node}
+    </svg>,
+  );
 }
 
 describe('<LinePath>', () => {
@@ -50,7 +55,13 @@ describe('<LinePath>', () => {
 
   it('applies default strokeWidth = 2', () => {
     const { container } = renderInSvg(
-      <LinePath points={[{ x: 0, y: 0 }, { x: 10, y: 10 }]} colorVar="red" />,
+      <LinePath
+        points={[
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ]}
+        colorVar="red"
+      />,
     );
     expect(container.querySelector('path')?.getAttribute('stroke-width')).toBe('2');
   });
@@ -58,7 +69,10 @@ describe('<LinePath>', () => {
   it('respects custom strokeWidth', () => {
     const { container } = renderInSvg(
       <LinePath
-        points={[{ x: 0, y: 0 }, { x: 10, y: 10 }]}
+        points={[
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ]}
         colorVar="red"
         strokeWidth={3}
       />,
@@ -69,7 +83,10 @@ describe('<LinePath>', () => {
   it('applies dashPattern via inline style stroke-dasharray', () => {
     const { container } = renderInSvg(
       <LinePath
-        points={[{ x: 0, y: 0 }, { x: 10, y: 10 }]}
+        points={[
+          { x: 0, y: 0 },
+          { x: 10, y: 10 },
+        ]}
         colorVar="red"
         dashPattern="4 2"
       />,
@@ -79,9 +96,7 @@ describe('<LinePath>', () => {
   });
 
   it('renders empty path d for empty points without throwing', () => {
-    const { container } = renderInSvg(
-      <LinePath points={[]} colorVar="var(--chart-series-1)" />,
-    );
+    const { container } = renderInSvg(<LinePath points={[]} colorVar="var(--chart-series-1)" />);
     const d = container.querySelector('path')?.getAttribute('d');
     expect(d).toBe('');
   });
@@ -89,7 +104,10 @@ describe('<LinePath>', () => {
   it('reducedMotion + animateOnMount renders without animation lock', () => {
     const { container } = renderInSvg(
       <LinePath
-        points={[{ x: 0, y: 0 }, { x: 100, y: 50 }]}
+        points={[
+          { x: 0, y: 0 },
+          { x: 100, y: 50 },
+        ]}
         colorVar="var(--chart-series-1)"
         animateOnMount
         reducedMotion

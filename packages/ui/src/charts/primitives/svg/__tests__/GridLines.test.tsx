@@ -13,7 +13,12 @@ import { describe, expect, it } from 'vitest';
 import { GridLines } from '../GridLines';
 
 function renderInSvg(node: React.ReactElement) {
-  return render(<svg width={400} height={200}>{node}</svg>);
+  return render(
+    <svg width={400} height={200} role="img" aria-label="Test SVG canvas">
+      <title>Test SVG canvas</title>
+      {node}
+    </svg>,
+  );
 }
 
 describe('<GridLines>', () => {
@@ -76,11 +81,11 @@ describe('<GridLines>', () => {
     expect(lines[2]?.getAttribute('stroke-dasharray')).toBe('2 4');
   });
 
-  it('marks <g> wrapper aria-hidden', () => {
+  it('exposes data-grid-orientation on the wrapping <g> for QA', () => {
     const { container } = renderInSvg(
       <GridLines orientation="horizontal" positions={[10]} length={400} />,
     );
-    const g = container.querySelector('g[aria-hidden="true"]');
+    const g = container.querySelector('g[data-grid-orientation="horizontal"]');
     expect(g).not.toBeNull();
   });
 });

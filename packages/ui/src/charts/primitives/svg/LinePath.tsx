@@ -68,7 +68,11 @@ export function LinePath({
 
   // Measure total path length once on mount (and on `points` change). Required
   // for stroke-dashoffset animation; set to 0 when animation is disabled so
-  // the path renders normally with no dash interference.
+  // the path renders normally with no dash interference. `points` is in the
+  // dep list intentionally — when the array identity changes, the rendered
+  // path geometry has changed, so we must re-measure even though the closure
+  // body reads only `ref.current`.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: points triggers re-measure of the rendered path geometry.
   useEffect(() => {
     if (!animateOnMount || !ref.current) {
       setPathLength(0);

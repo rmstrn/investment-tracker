@@ -12,10 +12,7 @@
  *   - empty meta.title + missing meta.alt falls through to synthetic kind label
  */
 
-import type {
-  LineChartPayload,
-  MultiSeriesPoint,
-} from '@investment-tracker/shared-types/charts';
+import type { LineChartPayload, MultiSeriesPoint } from '@investment-tracker/shared-types/charts';
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ChartFrame } from '../ChartFrame';

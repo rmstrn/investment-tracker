@@ -91,7 +91,7 @@ export function GridLines({
   };
 
   return (
-    <g aria-hidden="true" className={className} data-grid-orientation={orientation}>
+    <g className={className} data-grid-orientation={orientation}>
       {positions.map((position) => {
         const isZeroAxis = zeroAxisAt !== undefined && Math.abs(position - zeroAxisAt) < 0.5;
         const coords = lineCoords(orientation, position, length);
@@ -105,7 +105,9 @@ export function GridLines({
             strokeDasharray={isZeroAxis ? undefined : dash}
             stroke={isZeroAxis ? 'var(--text-2)' : colorVar}
             strokeWidth={isZeroAxis ? 1 : 1}
-            style={isZeroAxis ? { ...baseStyle, stroke: 'var(--text-2)', strokeOpacity: 1 } : baseStyle}
+            style={
+              isZeroAxis ? { ...baseStyle, stroke: 'var(--text-2)', strokeOpacity: 1 } : baseStyle
+            }
           />
         );
       })}

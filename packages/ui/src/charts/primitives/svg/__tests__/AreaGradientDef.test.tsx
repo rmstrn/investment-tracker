@@ -16,7 +16,8 @@ import { AreaGradientDef, useAreaGradient } from '../AreaGradientDef';
 describe('<AreaGradientDef>', () => {
   it('renders linearGradient with two stops', () => {
     const { container } = render(
-      <svg>
+      <svg role="img" aria-label="Test SVG canvas">
+        <title>Test SVG canvas</title>
         <AreaGradientDef id="grad-test" colorVar="var(--chart-series-1)" />
       </svg>,
     );
@@ -28,7 +29,8 @@ describe('<AreaGradientDef>', () => {
 
   it('applies default top opacity 0.30 and bottom opacity 0', () => {
     const { container } = render(
-      <svg>
+      <svg role="img" aria-label="Test SVG canvas">
+        <title>Test SVG canvas</title>
         <AreaGradientDef id="g" colorVar="var(--chart-series-1)" />
       </svg>,
     );
@@ -39,7 +41,8 @@ describe('<AreaGradientDef>', () => {
 
   it('respects custom topOpacity / bottomOpacity', () => {
     const { container } = render(
-      <svg>
+      <svg role="img" aria-label="Test SVG canvas">
+        <title>Test SVG canvas</title>
         <AreaGradientDef
           id="g2"
           colorVar="var(--chart-series-2)"
@@ -55,7 +58,8 @@ describe('<AreaGradientDef>', () => {
 
   it('threads colorVar to both stops', () => {
     const { container } = render(
-      <svg>
+      <svg role="img" aria-label="Test SVG canvas">
+        <title>Test SVG canvas</title>
         <AreaGradientDef id="g3" colorVar="var(--accent)" />
       </svg>,
     );
@@ -70,7 +74,8 @@ describe('useAreaGradient', () => {
     function Probe() {
       const { gradientId, def } = useAreaGradient({ colorVar: 'var(--accent)' });
       return (
-        <svg>
+        <svg role="img" aria-label="Test SVG canvas">
+          <title>Test SVG canvas</title>
           {def}
           <rect data-testid="probe" data-grad-id={gradientId} />
         </svg>
@@ -90,7 +95,8 @@ describe('useAreaGradient', () => {
       const a = useAreaGradient({ colorVar: 'var(--chart-series-1)' });
       const b = useAreaGradient({ colorVar: 'var(--chart-series-2)' });
       return (
-        <svg>
+        <svg role="img" aria-label="Test SVG canvas">
+          <title>Test SVG canvas</title>
           {a.def}
           {b.def}
           <rect data-testid="a" data-id={a.gradientId} />

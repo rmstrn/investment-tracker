@@ -20,9 +20,7 @@ describe('useAnimatedNumber', () => {
   });
 
   it('durationMs=0 returns target immediately', () => {
-    const { result } = renderHook(() =>
-      useAnimatedNumber({ value: 4242, durationMs: 0 }),
-    );
+    const { result } = renderHook(() => useAnimatedNumber({ value: 4242, durationMs: 0 }));
     expect(result.current).toBe(4242);
   });
 

@@ -21,17 +21,9 @@
  */
 
 import type { ChartPayload } from '@investment-tracker/shared-types/charts';
-import {
-  type ReactNode,
-  useCallback,
-  useEffect,
-  useId,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../../_shared/a11y';
+import { type ReactNode, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChartDataTable } from '../../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../../_shared/a11y';
 import { useChartKeyboardNav } from '../../_shared/useChartKeyboardNav';
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -249,7 +241,6 @@ export function ChartFrame({
         role="img"
         aria-label={ariaLabelResolved}
         aria-describedby={dataTableId}
-        // biome-ignore lint/a11y/noNoninteractiveTabindex: chart container needs keyboard focus for arrow-key navigation per a11y Pattern 3.
         tabIndex={isInteractiveNav ? 0 : -1}
         data-active-index={internalIndex ?? undefined}
         className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}

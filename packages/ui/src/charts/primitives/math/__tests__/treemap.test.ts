@@ -18,7 +18,12 @@ function area(tile: TreemapTile): number {
 }
 
 function rectsOverlap(a: TreemapTile, b: TreemapTile): boolean {
-  return !(a.x + a.width <= b.x || b.x + b.width <= a.x || a.y + a.height <= b.y || b.y + b.height <= a.y);
+  return !(
+    a.x + a.width <= b.x ||
+    b.x + b.width <= a.x ||
+    a.y + a.height <= b.y ||
+    b.y + b.height <= a.y
+  );
 }
 
 describe('squarify', () => {

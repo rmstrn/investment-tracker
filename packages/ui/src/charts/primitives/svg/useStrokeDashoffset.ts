@@ -40,9 +40,7 @@ function easeOutCubic(t: number): number {
   return 1 - (1 - t) ** 3;
 }
 
-export function useStrokeDashoffset(
-  options: UseStrokeDashoffsetOptions,
-): StrokeDashoffsetState {
+export function useStrokeDashoffset(options: UseStrokeDashoffsetOptions): StrokeDashoffsetState {
   const { pathLength, durationMs, reduced } = options;
 
   const finalState: StrokeDashoffsetState = {
@@ -59,7 +57,7 @@ export function useStrokeDashoffset(
     if (reduced || pathLength <= 0 || durationMs <= 0) {
       // Reduced motion → snap to final state. Per aggregate Pattern 6, the
       // primitive never overrides user motion preference.
-      setState(finalState);
+      setState({ strokeDasharray: pathLength, strokeDashoffset: 0 });
       return;
     }
 
@@ -81,7 +79,6 @@ export function useStrokeDashoffset(
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathLength, durationMs, reduced]);
 
   return state;
