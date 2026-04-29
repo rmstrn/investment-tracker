@@ -59,9 +59,9 @@
         "$description": "Forest-jade for light theme — status / citation / verified accent. NOT teal, NOT money-green."
       },
       "bright": {
-        "$value": "#4A8775",
+        "$value": "#5C9A85",
         "$type": "color",
-        "$description": "Forest-jade for dark theme — status accent that survives OLED without glow-creep."
+        "$description": "Forest-jade for dark theme — status accent. Lifted from #4A8775 (3.87:1 sub-AA on #26262E) to #5C9A85 (≈4.72:1 AA pass) per 2026-04-29 a11y audit. Keeps forest-jade spirit; survives OLED without glow-creep."
       }
     },
 
@@ -85,9 +85,9 @@
         "$description": "Secondary text — light theme. 7.91:1 on bg (AAA)."
       },
       "text-tertiary-light": {
-        "$value": "#6E6E6E",
+        "$value": "#5A5A5A",
         "$type": "color",
-        "$description": "Tertiary text — light theme. Lifted from #7A7A7A so body AA pair holds 4.84:1."
+        "$description": "Tertiary text — light theme. Lifted from #6E6E6E (3.82:1 sub-AA) to #5A5A5A (≈4.97:1 AA pass) per 2026-04-29 a11y audit. Drives every eyebrow / meta / mono label."
       },
       "text-secondary-dark": {
         "$value": "#B5B5B5",
@@ -144,9 +144,9 @@
         "$description": "Chart series 7 (jade deepest) — light theme."
       },
       "dark-1": {
-        "$value": "#4A8775",
+        "$value": "#5C9A85",
         "$type": "color",
-        "$description": "Chart series 1 (jade bright) — dark theme."
+        "$description": "Chart series 1 (jade bright) — dark theme. Lifted to match {color.jade.bright} (a11y bump 2026-04-29)."
       },
       "dark-2": {
         "$value": "#BD6A55",

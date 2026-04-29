@@ -36,12 +36,12 @@
       "$description": "Forest-jade lighter — dark theme status accent. Showcase --accent."
     },
     "accent-shadow": {
-      "$value": "rgba(74, 135, 117, 0.30)",
+      "$value": "rgba(92, 154, 133, 0.30)",
       "$type": "color",
       "$description": "Drop-shadow tint for filled-accent — dark theme. Showcase --accent-shadow."
     },
     "accent-glow": {
-      "$value": "rgba(74, 135, 117, 0.20)",
+      "$value": "rgba(92, 154, 133, 0.22)",
       "$type": "color",
       "$description": "Pulse halo + focus glow — dark theme. Showcase --accent-glow."
     },
@@ -107,7 +107,7 @@
     "state": {
       "positive": {
         "default": { "$value": "{color.jade.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(74, 135, 117, 0.15)", "$type": "color" }
+        "subtle": { "$value": "rgba(92, 154, 133, 0.16)", "$type": "color" }
       },
       "negative": {
         "default": { "$value": "{color.terra.bright}", "$type": "color" },
@@ -126,7 +126,7 @@
     "portfolio": {
       "gain": {
         "default": { "$value": "{color.jade.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(74, 135, 117, 0.12)", "$type": "color" }
+        "subtle": { "$value": "rgba(92, 154, 133, 0.14)", "$type": "color" }
       },
       "loss": {
         "default": { "$value": "{color.terra.bright}", "$type": "color" },
