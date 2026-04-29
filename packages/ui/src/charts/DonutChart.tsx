@@ -112,6 +112,14 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
   const innerR = outerR * 0.6;
   const fmtValue = (n: number) => formatValue(n, payload.format, payload.currency);
 
+  // Neumorphism inner-hole inset shadow id (v1.2). The inset shadow gives
+  // the donut hole the «cut out of paper» feel — paper around it is raised,
+  // hole is depressed. We render a `<circle>` masked overlay below the SVG
+  // because Recharts doesn't allow injecting `<defs>` directly under the
+  // `<Pie>` group without a custom shape prop. The overlay sits as an
+  // absolutely-positioned div with its own SVG; cheap and theme-flippable.
+  const innerHoleId = `donut-inner-hole-${dataTableId.replace(/[^a-z0-9]/gi, '')}`;
+
   const segments = payload.segments.map((s, i) => ({
     ...s,
     color: s.color ?? DONUT_ORDER[i % DONUT_ORDER.length],
@@ -176,6 +184,54 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
             />
           </PieChart>
         </ResponsiveContainer>
+        {/*
+         * Neumorphism overlay (v1.2): a subtle 1px ring on the OUTER edge of
+         * the donut for visual definition, plus an inner-hole inset-shadow
+         * effect rendered via a layered SVG `<filter>` + `<circle>` — the
+         * inner circle paints a faint ring with a dark drop-shadow toward
+         * the center to read as «depressed paper». Pointer-events disabled
+         * so it never interferes with hover / tooltip.
+         */}
+        <svg
+          aria-hidden="true"
+          width={size}
+          height={size}
+          className="pointer-events-none absolute inset-0"
+          style={{ overflow: 'visible' }}
+        >
+          <defs>
+            <filter id={innerHoleId} x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur in="SourceAlpha" stdDeviation="1.2" />
+              <feOffset dx="0" dy="0.6" result="offsetblur" />
+              <feComponentTransfer>
+                <feFuncA type="linear" slope="0.45" />
+              </feComponentTransfer>
+              <feMerge>
+                <feMergeNode />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
+          {/* Outer ring — defines the donut's outer paper edge. */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={outerR + 0.5}
+            fill="none"
+            stroke="var(--border-subtle, rgba(20, 20, 20, 0.06))"
+            strokeWidth={1}
+          />
+          {/* Inner-hole inset shadow — donut feels «cut out of paper». */}
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={innerR - 0.5}
+            fill="none"
+            stroke="var(--chart-grid-strong, rgba(20, 20, 20, 0.10))"
+            strokeWidth={1}
+            filter={`url(#${innerHoleId})`}
+          />
+        </svg>
         {center ? (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
             {center}

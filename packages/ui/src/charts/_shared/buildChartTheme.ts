@@ -112,11 +112,24 @@ export function buildAreaGradient(seriesColor: string, idHint = 'chart-area'): A
 }
 
 /* ────────────────────────────────────────────────────────────────────── */
-/* BAR — radius 6px on top corners                                        */
+/* BAR — radius 10px on top corners (v1.2 neumorphism pass)               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-/** Recharts `<Bar radius={...}>` → top-rounded ([6, 6, 0, 0]). */
-export const BAR_RADIUS: [number, number, number, number] = [6, 6, 0, 0];
+/**
+ * Recharts `<Bar radius={...}>` → top-rounded.
+ *
+ * Bumped from `[6, 6, 0, 0]` to `[10, 10, 0, 0]` per the neumorphism /
+ * round-more dispatch (2026-04-29). Top-only — bottom corners stay flat
+ * because bars rest on the x-axis.
+ */
+export const BAR_RADIUS: [number, number, number, number] = [10, 10, 0, 0];
+
+/**
+ * Stacked-bar top-segment radius. Bumped from `[4, 4, 0, 0]` to `[8, 8, 0, 0]`;
+ * kept slightly tighter than `BAR_RADIUS` because stacked tops sit on top of
+ * other segments and a deeper curve disconnects the stack visually.
+ */
+export const BAR_RADIUS_STACK_TOP: [number, number, number, number] = [8, 8, 0, 0];
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* DONUT — 2px stroke between segments using card colour                  */

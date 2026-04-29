@@ -1,12 +1,23 @@
 import type { CSSProperties, ReactNode } from 'react';
 
 /**
- * ChartCard — DSM-V1 paper-feel chart wrapper (chart-audit §1.1).
+ * ChartCard — DSM-V1.2 paper-feel chart wrapper (neumorphism pass 2026-04-29).
  *
- * Asymmetric padding (`22px 24px 20px`), 18px corner radius, semantic `--card`
- * background and `--shadow-card` multi-axis warm shadow. The cream-edge
- * highlight is baked into the `--shadow-card` token itself, so the surface
- * looks identical in light and dark themes.
+ * Asymmetric padding (`22px 24px 20px`), **22px** corner radius (was 18 —
+ * bumped on the neumorphism dispatch to make the card read as «paper sitting
+ * on the table»), semantic `--card` background, and the `--shadow-chart-card`
+ * multi-axis token. The token bakes:
+ *
+ *   - outer warm-cream shadow (light) / clean ambient drop (dark)
+ *   - top cream-rim highlight (`inset 1px 1px 0 rgba(255, 255, 255, 0.55)`)
+ *     reinforcing «light from above»
+ *   - bottom-edge inset (`inset 0 -1px 0 rgba(20, 20, 20, 0.04)` light /
+ *     `rgba(0, 0, 0, 0.35)` dark) so the card reads as a sheet of paper
+ *     resting on the surface, not floating above it
+ *
+ * The fallback chain inside the `box-shadow` value preserves the legacy
+ * `--shadow-card` token if design-tokens haven't rebuilt, so visual
+ * regression doesn't trip on out-of-sync workspaces.
  *
  * Designed to be the canonical surface for any chart-bearing card across the
  * product (showcase, dashboard, positions, insights). Refactored out of
@@ -33,9 +44,9 @@ export interface ChartCardProps {
 
 const WRAPPER_STYLE: CSSProperties = {
   background: 'var(--card)',
-  boxShadow: 'var(--shadow-card)',
+  boxShadow: 'var(--shadow-chart-card, var(--shadow-card))',
   padding: '22px 24px 20px',
-  borderRadius: '18px',
+  borderRadius: '22px',
 };
 
 export function ChartCard({
@@ -77,10 +88,7 @@ export function ChartCard({
             </h3>
           ) : null}
           {subtitle ? (
-            <p
-              className="text-text-secondary"
-              style={{ fontSize: '12px', lineHeight: 1.45 }}
-            >
+            <p className="text-text-secondary" style={{ fontSize: '12px', lineHeight: 1.45 }}>
               {subtitle}
             </p>
           ) : null}

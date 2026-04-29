@@ -24,6 +24,7 @@ import {
 } from 'recharts';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
+import { BAR_RADIUS_STACK_TOP } from './_shared/buildChartTheme';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
@@ -110,7 +111,7 @@ export function StackedBar({ payload, height = 220, className }: StackedBarProps
               fill={s.color ?? SERIES_VARS[i % SERIES_VARS.length]}
               isAnimationActive={!prefersReducedMotion}
               animationDuration={CHART_ANIMATION_MS}
-              radius={i === payload.series.length - 1 ? [4, 4, 0, 0] : 0}
+              radius={i === payload.series.length - 1 ? [...BAR_RADIUS_STACK_TOP] : 0}
             />
           ))}
         </ReBarChart>

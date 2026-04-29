@@ -196,7 +196,11 @@ export function Waterfall({ payload, height = 300, className }: WaterfallProps) 
             stackId="wf"
             isAnimationActive={!prefersReducedMotion}
             animationDuration={CHART_ANIMATION_MS}
-            radius={2}
+            // Bumped 2 → 6 per neumorphism «round more» pass. Waterfall steps
+            // are wider than typical bars and benefit from a softer corner;
+            // we don't go to 10 because anchor + delta segments stack
+            // visually and a deep curve disconnects them from the prior step.
+            radius={6}
           >
             {visual.map((s) => (
               <Cell key={s.key} fill={colorForStep(s)} />

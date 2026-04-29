@@ -7,12 +7,25 @@
  * series colors without React re-render. See architect ADR §«Theme + locale
  * + units» and CHARTS_SPEC §2.5.
  *
- * The `--chart-series-N`, `--chart-grid`, `--chart-tooltip-*`, and
- * `--chart-cursor` custom properties are declared in `apps/web/src/app/globals.css`
- * (light defaults on `:root`; dark overrides on `.dark, [data-theme="dark"]`).
+ * The `--chart-series-N` (1..12), `--chart-grid*`, `--chart-tooltip-*`,
+ * `--chart-axis-label`, and `--chart-cursor` custom properties are emitted
+ * by `@investment-tracker/design-tokens` as part of the build (see
+ * `tokens/semantic/{light,dark}.json` chart-series + chart-* + shadow.chart-*).
+ *
+ * v1.2 (2026-04-29): palette extended 7 → 12 hues via the «editorial library»
+ * extension (ochre, aubergine, cobalt-ink, dusty mauve, clay tan). All
+ * extensions are CHART-ONLY — they MUST NOT surface on UI buttons, text, or
+ * borders. The 7 → 12 expansion is documented in
+ * `docs/design/CHARTS_SPEC.md` §2.7.
  */
 
-/** Seven-hue series palette. Index by `series[i].color = SERIES_VARS[i % 7]`. */
+/**
+ * Twelve-hue series palette. Index by `series[i].color = SERIES_VARS[i % 12]`.
+ *
+ * - 1-3: anchor identity (jade · bronze · ink). Reuse system palette.
+ * - 4-7: family extensions (mid-jade, graphite, soft-bronze, deep-jade).
+ * - 8-12: editorial library — chart-only paper-warm extras.
+ */
 export const SERIES_VARS = [
   'var(--chart-series-1)',
   'var(--chart-series-2)',
@@ -21,6 +34,11 @@ export const SERIES_VARS = [
   'var(--chart-series-5)',
   'var(--chart-series-6)',
   'var(--chart-series-7)',
+  'var(--chart-series-8)',
+  'var(--chart-series-9)',
+  'var(--chart-series-10)',
+  'var(--chart-series-11)',
+  'var(--chart-series-12)',
 ] as const;
 
 /** Cross-cutting chart tokens. Token names map 1:1 to CSS custom properties. */
@@ -43,6 +61,32 @@ export const CHART_TOKENS = {
   calendarScheduled: 'var(--chart-series-4)',
   calendarAnnounced: 'var(--chart-series-7)',
   calendarCorpAction: 'var(--terra, var(--chart-series-2))',
+  /**
+   * Neumorphism shadow tokens (v1.2, 2026-04-29). Apply via inline-style or
+   * SVG `filter` attribute on chart elements. Token sources are
+   * `--shadow-chart-card`, `--shadow-chart-bar-emboss`, `--shadow-chart-line-emboss`
+   * emitted by design-tokens.
+   */
+  cardShadow:
+    'var(--shadow-chart-card, 5px 5px 14px rgba(140, 100, 55, 0.16), -3px -3px 10px rgba(255, 250, 240, 0.62), inset 1px 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(20, 20, 20, 0.04))',
+  barEmbossFilter:
+    'var(--shadow-chart-bar-emboss, drop-shadow(0 1px 1.5px rgba(20, 20, 20, 0.10)) drop-shadow(0 0.5px 0 rgba(255, 250, 240, 0.55)))',
+  lineEmbossFilter:
+    'var(--shadow-chart-line-emboss, drop-shadow(0 1px 1px rgba(20, 20, 20, 0.10)))',
+} as const;
+
+/**
+ * Chart radius tokens (v1.2 — neumorphism «round more» pass).
+ *
+ * - `chartCardRadius`: 22px ChartCard outer radius (was 18px).
+ * - `tooltipRadius`: 12px tooltip radius (was 14 — kept consistent at 12).
+ * - `BAR_RADIUS_TOP`: top-only bar radii [10, 10, 0, 0] (was [6, 6, 0, 0]).
+ * - `BAR_RADIUS_STACK_TOP`: top stacked-bar segment radii [8, 8, 0, 0]
+ *   (was [4, 4, 0, 0]).
+ */
+export const CHART_RADII = {
+  chartCardRadius: 22,
+  tooltipRadius: 12,
 } as const;
 
 /** Recharts `animationDuration` baseline; 600ms feels intentional, not loud. */
