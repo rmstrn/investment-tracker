@@ -34,6 +34,22 @@ export { ChartCard, type ChartCardProps } from './_shared/ChartCard';
 export { ChartEmpty } from './_shared/ChartEmpty';
 export { ChartError } from './_shared/ChartError';
 export { ChartSkeleton } from './_shared/ChartSkeleton';
+export {
+  BAR_RADIUS,
+  buildAreaGradient,
+  buildAxisProps,
+  buildChartTheme,
+  buildDonutSegmentProps,
+  buildGridProps,
+  buildLegendWrapperStyle,
+  buildLineSeriesProps,
+  type AreaGradientStops,
+  type AxisTickProps,
+  type ChartTheme,
+  type DonutSegmentVisuals,
+  type GridProps,
+  type LineSeriesVisuals,
+} from './_shared/buildChartTheme';
 
 // Demo / fixture payloads — re-exported for the showcase route + smoke tests.
 // Not intended for production AI agent emissions.

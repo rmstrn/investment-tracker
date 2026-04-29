@@ -25,11 +25,12 @@ import {
 } from 'recharts';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
+import { buildChartTheme } from './_shared/buildChartTheme';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
-import { CHART_ANIMATION_MS, CHART_TOKENS, SERIES_VARS } from './tokens';
+import { CHART_ANIMATION_MS, SERIES_VARS } from './tokens';
 
 export interface AreaChartProps {
   payload: AreaChartPayload;
@@ -42,6 +43,7 @@ const GRADIENT_PREFIX = 'area-fill';
 export function AreaChart({ payload, height = 220, className }: AreaChartProps) {
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
+  const theme = buildChartTheme();
   const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -85,21 +87,19 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
               );
             })}
           </defs>
-          <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="2 4" />
+          <CartesianGrid {...theme.grid} />
           <XAxis
             dataKey="x"
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={fmtX}
             minTickGap={24}
           />
           <YAxis
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={(v) => fmtValue(Number(v))}
             width={52}
           />
@@ -112,15 +112,7 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
           />
-          {payload.series.length > 1 ? (
-            <Legend
-              wrapperStyle={{
-                paddingTop: 12,
-                fontSize: 11,
-                color: 'var(--color-text-secondary)',
-              }}
-            />
-          ) : null}
+          {payload.series.length > 1 ? <Legend wrapperStyle={theme.legendStyle} /> : null}
           {payload.series.map((s, i) => {
             const stroke = s.color ?? SERIES_VARS[i % SERIES_VARS.length];
             return (
@@ -130,7 +122,9 @@ export function AreaChart({ payload, height = 220, className }: AreaChartProps) 
                 name={s.label}
                 type={payload.interpolation}
                 stroke={stroke}
-                strokeWidth={2}
+                strokeWidth={theme.line.strokeWidth}
+                strokeLinecap={theme.line.strokeLinecap}
+                strokeLinejoin={theme.line.strokeLinejoin}
                 fill={`url(#${GRADIENT_PREFIX}-${dataTableId}-${i})`}
                 stackId={payload.stacked ? 'stack' : undefined}
                 isAnimationActive={!prefersReducedMotion}

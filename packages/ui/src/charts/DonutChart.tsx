@@ -149,7 +149,8 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               innerRadius={innerR}
               outerRadius={outerR}
               paddingAngle={2}
-              strokeWidth={0}
+              stroke="var(--card)"
+              strokeWidth={2}
               isAnimationActive={!prefersReducedMotion}
               animationDuration={CHART_ANIMATION_MS}
               animationEasing="ease-out"
@@ -158,7 +159,7 @@ export function DonutChart({ payload, size = 220, centerLabel, className }: Donu
               onMouseLeave={() => setHoverIndex(null)}
             >
               {segments.map((s) => (
-                <Cell key={s.key} fill={s.color} />
+                <Cell key={s.key} fill={s.color} stroke="var(--card)" strokeWidth={2} />
               ))}
             </Pie>
             <Tooltip

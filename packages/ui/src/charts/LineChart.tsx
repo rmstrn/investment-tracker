@@ -33,11 +33,12 @@ import {
 } from 'recharts';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
+import { buildChartTheme } from './_shared/buildChartTheme';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
-import { CHART_ANIMATION_MS, CHART_TOKENS, SERIES_VARS } from './tokens';
+import { CHART_ANIMATION_MS, SERIES_VARS } from './tokens';
 
 export interface LineChartProps {
   payload: LineChartPayload;
@@ -75,6 +76,7 @@ function useDarkTheme(): boolean {
 export function LineChart({ payload, height = 220, className }: LineChartProps) {
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
+  const theme = buildChartTheme();
   const prefersReducedMotion = useReducedMotion();
   const dark = useDarkTheme();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -120,21 +122,19 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
     >
       <ResponsiveContainer width="100%" height={height}>
         <ReLineChart data={data} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
-          <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="2 4" />
+          <CartesianGrid {...theme.grid} />
           <XAxis
             dataKey="x"
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={fmtX}
             minTickGap={24}
           />
           <YAxis
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={(v) => fmtValue(Number(v))}
             domain={yDomain}
             width={52}
@@ -148,23 +148,15 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
             formatter={(v) => fmtValue(Number(v))}
             labelFormatter={(v) => fmtX(v as string | number)}
           />
-          {payload.series.length > 1 ? (
-            <Legend
-              wrapperStyle={{
-                paddingTop: 12,
-                fontSize: 11,
-                color: 'var(--color-text-secondary)',
-              }}
-            />
-          ) : null}
+          {payload.series.length > 1 ? <Legend wrapperStyle={theme.legendStyle} /> : null}
           {payload.benchmark ? (
             <ReferenceLine
               y={payload.benchmark.y}
-              stroke={CHART_TOKENS.gridLineStrong}
+              stroke="var(--chart-grid-strong)"
               strokeDasharray="2 4"
               label={{
                 value: payload.benchmark.label,
-                fill: CHART_TOKENS.axisLabel,
+                fill: 'var(--chart-axis-label)',
                 fontSize: 10,
                 position: 'right',
               }}
@@ -177,7 +169,9 @@ export function LineChart({ payload, height = 220, className }: LineChartProps) 
               name={s.label}
               type={payload.interpolation}
               stroke={s.color}
-              strokeWidth={2}
+              strokeWidth={theme.line.strokeWidth}
+              strokeLinecap={theme.line.strokeLinecap}
+              strokeLinejoin={theme.line.strokeLinejoin}
               dot={false}
               activeDot={{ r: 5, fill: s.color, stroke: 'var(--card)', strokeWidth: 2 }}
               isAnimationActive={!prefersReducedMotion}

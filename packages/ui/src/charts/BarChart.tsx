@@ -27,6 +27,7 @@ import {
 } from 'recharts';
 import { ChartDataTable } from './_shared/ChartDataTable';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
+import { BAR_RADIUS, buildChartTheme } from './_shared/buildChartTheme';
 import { buildTooltipProps } from './_shared/buildTooltipProps';
 import { formatValue, formatXAxis } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
@@ -77,6 +78,7 @@ function buildBarReferenceLineLabel(refLine: BarChartPayload['referenceLine']):
 export function BarChart({ payload, height = 180, className }: BarChartProps) {
   const dataTableId = useId();
   const tooltip = buildTooltipProps();
+  const theme = buildChartTheme();
   const prefersReducedMotion = useReducedMotion();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -107,24 +109,22 @@ export function BarChart({ payload, height = 180, className }: BarChartProps) {
           layout={horizontal ? 'vertical' : 'horizontal'}
           margin={{ top: 8, right: 8, bottom: 0, left: 0 }}
         >
-          <CartesianGrid vertical={false} stroke={CHART_TOKENS.gridLine} strokeDasharray="2 4" />
+          <CartesianGrid {...theme.grid} />
           <XAxis
             type={horizontal ? 'number' : 'category'}
             dataKey={horizontal ? undefined : 'x'}
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={horizontal ? (v) => fmtValue(Number(v)) : fmtX}
             minTickGap={24}
           />
           <YAxis
             type={horizontal ? 'category' : 'number'}
             dataKey={horizontal ? 'x' : undefined}
-            tick={{ fill: CHART_TOKENS.axisLabel, fontSize: 11 }}
-            stroke={CHART_TOKENS.gridLine}
-            tickLine={false}
-            axisLine={false}
+            tick={theme.axis.tick}
+            tickLine={theme.axis.tickLine}
+            axisLine={theme.axis.axisLine}
             tickFormatter={horizontal ? undefined : (v) => fmtValue(Number(v))}
             width={horizontal ? 80 : 52}
           />
@@ -147,7 +147,7 @@ export function BarChart({ payload, height = 180, className }: BarChartProps) {
           ) : null}
           <Bar
             dataKey="y"
-            radius={horizontal ? [0, 4, 4, 0] : [4, 4, 0, 0]}
+            radius={horizontal ? [0, BAR_RADIUS[0], BAR_RADIUS[1], 0] : [...BAR_RADIUS]}
             isAnimationActive={!prefersReducedMotion}
             animationDuration={CHART_ANIMATION_MS}
             fill={SERIES_VARS[0]}
