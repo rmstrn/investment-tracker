@@ -255,7 +255,116 @@
         "$value": "3px 3px 10px rgba(155, 92, 62, 0.28), -1px -1px 4px rgba(255, 250, 240, 0.5), inset 1px 1px 0 rgba(255, 255, 255, 0.12)",
         "$type": "shadow",
         "$description": "Danger CTA — bronze button extruded."
+      },
+      "chart-card": {
+        "$value": "5px 5px 14px rgba(140, 100, 55, 0.16), -3px -3px 10px rgba(255, 250, 240, 0.62), inset 1px 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(20, 20, 20, 0.04)",
+        "$type": "shadow",
+        "$description": "ChartCard — paper-pressed neumorphism. Outer warm cream-shadow + cream rim highlight + subtle bottom inset so the card reads as «paper sitting on the table», not floating."
+      },
+      "chart-bar-emboss": {
+        "$value": "drop-shadow(0 1px 1.5px rgba(20, 20, 20, 0.10)) drop-shadow(0 0.5px 0 rgba(255, 250, 240, 0.55))",
+        "$type": "shadow",
+        "$description": "SVG drop-shadow filter for chart bars — single-axis emboss + cream-edge highlight, applied as `filter` on the Recharts <Bar> wrapper."
+      },
+      "chart-line-emboss": {
+        "$value": "drop-shadow(0 1px 1px rgba(20, 20, 20, 0.10))",
+        "$type": "shadow",
+        "$description": "SVG drop-shadow filter for chart line strokes — subtle ink-on-paper feel."
       }
+    },
+
+    "chart-series": {
+      "1": {
+        "$value": "{color.chart.light-1}",
+        "$type": "color",
+        "$description": "Chart series 1 — primary. Equal to --accent (forest-jade)."
+      },
+      "2": {
+        "$value": "{color.chart.light-2}",
+        "$type": "color",
+        "$description": "Chart series 2 — contrast. Equal to --terra (bronze)."
+      },
+      "3": {
+        "$value": "{color.chart.light-3}",
+        "$type": "color",
+        "$description": "Chart series 3 — ink. Equal to --ink."
+      },
+      "4": {
+        "$value": "{color.chart.light-4}",
+        "$type": "color",
+        "$description": "Chart series 4 — mid-jade lifted."
+      },
+      "5": {
+        "$value": "{color.chart.light-5}",
+        "$type": "color",
+        "$description": "Chart series 5 — neutral graphite."
+      },
+      "6": {
+        "$value": "{color.chart.light-6}",
+        "$type": "color",
+        "$description": "Chart series 6 — soft bronze lifted."
+      },
+      "7": {
+        "$value": "{color.chart.light-7}",
+        "$type": "color",
+        "$description": "Chart series 7 — deepest jade."
+      },
+      "8": {
+        "$value": "{color.chart.light-8}",
+        "$type": "color",
+        "$description": "Chart series 8 — ochre. CHART-ONLY editorial extension."
+      },
+      "9": {
+        "$value": "{color.chart.light-9}",
+        "$type": "color",
+        "$description": "Chart series 9 — aubergine. CHART-ONLY editorial extension."
+      },
+      "10": {
+        "$value": "{color.chart.light-10}",
+        "$type": "color",
+        "$description": "Chart series 10 — cobalt-ink. CHART-ONLY editorial extension."
+      },
+      "11": {
+        "$value": "{color.chart.light-11}",
+        "$type": "color",
+        "$description": "Chart series 11 — dusty mauve. CHART-ONLY editorial extension."
+      },
+      "12": {
+        "$value": "{color.chart.light-12}",
+        "$type": "color",
+        "$description": "Chart series 12 — clay tan. CHART-ONLY editorial extension."
+      }
+    },
+
+    "chart-grid": {
+      "$value": "rgba(20, 20, 20, 0.10)",
+      "$type": "color",
+      "$description": "Chart gridline color — light theme."
+    },
+    "chart-grid-strong": {
+      "$value": "rgba(20, 20, 20, 0.16)",
+      "$type": "color",
+      "$description": "Chart strong gridline (reference lines, axis emphasis) — light theme."
+    },
+    "chart-axis-label": {
+      "$value": "{color.neutral.text-tertiary-light}",
+      "$type": "color",
+      "$description": "Chart axis label fill — equals text-3."
+    },
+    "chart-tooltip-bg": {
+      "$value": "{color.cream.card}",
+      "$type": "color",
+      "$description": "Chart tooltip background — light theme."
+    },
+    "chart-tooltip-border": {
+      "$value": "rgba(20, 20, 20, 0.16)",
+      "$type": "color",
+      "$description": "Chart tooltip 1px outline — light theme."
+    },
+    "chart-cursor": {
+      "$value": "rgba(20, 20, 20, 0.20)",
+      "$type": "color",
+      "$description": "Chart cursor / hover crosshair — light theme."
     }
   }
 }

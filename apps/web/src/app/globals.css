@@ -57,39 +57,51 @@ body {
 }
 
 /*
- * Chart palette (CHARTS_SPEC §2.5). 7-hue series + cross-cutting tokens.
- * Light values on `:root`; dark overrides emit on both `.dark` and
- * `[data-theme="dark"]` so charts switch palettes via CSS without remount.
+ * Chart palette tokens (`--chart-series-1..12`, `--chart-grid*`,
+ * `--chart-tooltip-*`, `--chart-cursor`, `--chart-axis-label`) are now
+ * sourced from `@investment-tracker/design-tokens` (semantic.chart-series.*
+ * + semantic.chart-* + semantic.shadow.chart-*). The hand-authored block
+ * that previously lived here closed TD-095 on 2026-04-29 (chart-palette
+ * extension dispatch). Keep this comment as a paper trail for future
+ * grep-spelunkers; do NOT re-add overrides — extend the JSON tokens.
+ *
+ * Tooltip box-shadow (`--chart-tooltip-shadow`) is the only chart custom-
+ * prop still derived in CSS — it's a SHORTHAND alias the chart components
+ * read; it falls back to `--shadow-lift` inside `buildTooltipProps` so
+ * we don't need a dedicated token for it.
  */
 :root {
-  --chart-series-1: #2d5f4e;
-  --chart-series-2: #a04a3d;
-  --chart-series-3: #1a1a1a;
-  --chart-series-4: #5c8a77;
-  --chart-series-5: #7a7a7a;
-  --chart-series-6: #c77a6a;
-  --chart-series-7: #1f4135;
-
-  --chart-grid: rgba(20, 20, 20, 0.1);
-  --chart-grid-strong: rgba(20, 20, 20, 0.16);
-  --chart-axis-label: var(--color-text-tertiary);
-  --chart-tooltip-bg: var(--color-background-elevated);
-  --chart-tooltip-border: var(--color-border-subtle);
-  --chart-tooltip-shadow: var(--shadow-md);
-  --chart-cursor: rgba(20, 20, 20, 0.2);
+  --chart-tooltip-shadow: var(--shadow-lift);
 }
 
-.dark,
-[data-theme="dark"] {
-  --chart-series-1: #4a8775;
-  --chart-series-2: #bd6a55;
-  --chart-series-3: #f4f1ea;
-  --chart-series-4: #7daa9a;
-  --chart-series-5: #b5b5b5;
-  --chart-series-6: #d89c8c;
-  --chart-series-7: #2e5b4d;
+/*
+ * Neumorphism filter pass (v1.2 — 2026-04-29).
+ *
+ * Recharts renders bars as `<rect class="recharts-rectangle">` and lines as
+ * `<path class="recharts-curve">` inside `<svg>` containers tagged with
+ * deterministic test ids on the chart wrappers. We attach SVG drop-shadow
+ * filters at the descendant-selector level so the React components don't
+ * have to thread `filter` through Recharts' internal renderer (Recharts
+ * doesn't expose a clean style-prop seam for this).
+ *
+ * Effects:
+ * - Bars (single + stacked + waterfall): a 1px-warm-shadow + 0.5px cream-
+ *   highlight drop-shadow makes each bar read as «pressed-into-paper». The
+ *   filter degrades gracefully on dark theme via the dark `--shadow-chart-bar-emboss`
+ *   override.
+ * - Line strokes: a 1px ink-on-paper drop-shadow gives the line subtle
+ *   physicality without becoming illustration-heavy.
+ *
+ * `prefers-reduced-motion` is irrelevant here (these are static filters,
+ * no motion). The filters are paint-time only.
+ */
+[data-testid="chart-bar"] .recharts-bar-rectangle,
+[data-testid="chart-stacked-bar"] .recharts-bar-rectangle,
+[data-testid="chart-waterfall"] .recharts-bar-rectangle {
+  filter: var(--shadow-chart-bar-emboss);
+}
 
-  --chart-grid: rgba(255, 255, 255, 0.1);
-  --chart-grid-strong: rgba(255, 255, 255, 0.18);
-  --chart-cursor: rgba(255, 255, 255, 0.24);
+[data-testid="chart-line"] .recharts-line-curve,
+[data-testid="chart-area"] .recharts-area-curve {
+  filter: var(--shadow-chart-line-emboss);
 }

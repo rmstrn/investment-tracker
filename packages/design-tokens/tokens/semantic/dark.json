@@ -195,7 +195,62 @@
       "terra-extrude": {
         "$value": "0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
         "$type": "shadow"
+      },
+      "chart-card": {
+        "$value": "0 6px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.35)",
+        "$type": "shadow",
+        "$description": "ChartCard — dark-theme paper-pressed neumorphism. Top-rim highlight + bottom-rim inset for tactile «sits on table» feel; no warm tint."
+      },
+      "chart-bar-emboss": {
+        "$value": "drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45))",
+        "$type": "shadow",
+        "$description": "Dark-theme SVG drop-shadow filter for chart bars."
+      },
+      "chart-line-emboss": {
+        "$value": "drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4))",
+        "$type": "shadow",
+        "$description": "Dark-theme SVG drop-shadow filter for chart line strokes."
       }
+    },
+
+    "chart-series": {
+      "1": { "$value": "{color.chart.dark-1}", "$type": "color" },
+      "2": { "$value": "{color.chart.dark-2}", "$type": "color" },
+      "3": { "$value": "{color.chart.dark-3}", "$type": "color" },
+      "4": { "$value": "{color.chart.dark-4}", "$type": "color" },
+      "5": { "$value": "{color.chart.dark-5}", "$type": "color" },
+      "6": { "$value": "{color.chart.dark-6}", "$type": "color" },
+      "7": { "$value": "{color.chart.dark-7}", "$type": "color" },
+      "8": { "$value": "{color.chart.dark-8}", "$type": "color" },
+      "9": { "$value": "{color.chart.dark-9}", "$type": "color" },
+      "10": { "$value": "{color.chart.dark-10}", "$type": "color" },
+      "11": { "$value": "{color.chart.dark-11}", "$type": "color" },
+      "12": { "$value": "{color.chart.dark-12}", "$type": "color" }
+    },
+
+    "chart-grid": {
+      "$value": "rgba(255, 255, 255, 0.10)",
+      "$type": "color"
+    },
+    "chart-grid-strong": {
+      "$value": "rgba(255, 255, 255, 0.18)",
+      "$type": "color"
+    },
+    "chart-axis-label": {
+      "$value": "{color.neutral.text-tertiary-dark}",
+      "$type": "color"
+    },
+    "chart-tooltip-bg": {
+      "$value": "{color.cocoa.card}",
+      "$type": "color"
+    },
+    "chart-tooltip-border": {
+      "$value": "rgba(255, 255, 255, 0.18)",
+      "$type": "color"
+    },
+    "chart-cursor": {
+      "$value": "rgba(255, 255, 255, 0.24)",
+      "$type": "color"
     }
   }
 }
