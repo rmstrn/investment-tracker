@@ -51,9 +51,9 @@ export default function DesignSystemPage() {
           </p>
           <h1
             className="font-semibold tracking-tight text-text-primary"
-            style={{ fontSize: '40px', letterSpacing: '-0.035em', lineHeight: 1.05 }}
+            style={{ fontSize: '28px', letterSpacing: '-0.025em', lineHeight: 1.15 }}
           >
-            Notice <span style={{ fontWeight: 700 }}>what</span> you&apos;d miss.
+            Provedo Design System v2 — refined
           </h1>
           <p
             className="max-w-3xl text-text-secondary"
@@ -93,8 +93,8 @@ export default function DesignSystemPage() {
           id="dark-v2"
           variant="dark"
           eyebrow="PROVEDO · DESIGN SYSTEM v2 · DARK"
-          headline="Notice what you'd miss."
-          accentWord="what"
+          headline="Quiet pages, sharper signals."
+          accentWord="sharper"
           meta={
             <>
               Neutral cool dark · #0E0E12

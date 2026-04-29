@@ -30,10 +30,10 @@ export function PrimitivesSection({ variant }: PrimitivesSectionProps) {
         <DsRow label="Primary CTA — ink extruded">
           <div className="showcase-flex-wrap">
             <Button variant="primary" size="sm">
-              Get early access
+              Continue
             </Button>
             <Button variant="primary" size="md">
-              Get early access
+              Get started
             </Button>
             <Button variant="primary" size="lg">
               Get early access
@@ -79,7 +79,7 @@ export function PrimitivesSection({ variant }: PrimitivesSectionProps) {
           <Badge tone="warning">Drift +3.2%</Badge>
           <Badge tone="info">Crypto</Badge>
           <Badge>7 brokers</Badge>
-          <Badge tone="negative">Lane A</Badge>
+          <Badge tone="positive">Lane A</Badge>
         </div>
       </DsSection>
 
