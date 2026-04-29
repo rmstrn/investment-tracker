@@ -51,6 +51,7 @@ import { ChartDataTable } from './_shared/ChartDataTable';
 import { formatValue } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
+import { type ThemeMode, useThemeMode } from './_shared/useThemeMode';
 import { useRef } from 'react';
 import { arcPath } from './primitives/math/path';
 import { Tooltip } from './primitives/svg/Tooltip';
@@ -170,7 +171,17 @@ interface ResolvedSegment {
   readonly key: string;
   readonly label: string;
   readonly value: number;
+  /**
+   * Flat CSS color used by legend swatches and tooltip dots. Always a real
+   * CSS color (var or hex) — never a `url(#...)` gradient ref, since CSS
+   * `background` cannot resolve SVG fragment URLs.
+   */
   readonly color: string;
+  /**
+   * SVG `fill` for the slice path/circle. May be a `url(#donut-grad-…)`
+   * gradient ref when `palette === 'categorical'`, otherwise mirrors `color`.
+   */
+  readonly fill: string;
   /** Per-slice fill opacity, used by `'monochromatic'` palette mode. */
   readonly fillOpacity?: number;
   /** Original payload index — preserves caller order even when sorted. */
@@ -205,6 +216,72 @@ const SEQUENTIAL_PALETTE = [
   'var(--chart-sequential-6)',
   'var(--chart-sequential-7)',
 ] as const;
+
+/* ────────────────────────────────────────────────────────────────────── */
+/* Gradient «свет изнутри» — D3 (DONUT_GRADIENT_v2_draft.md §«Per-slice    */
+/* gradient pairs»)                                                        */
+/* ────────────────────────────────────────────────────────────────────── */
+
+/**
+ * Provedo «свет изнутри» direction — INVERTED vs typical depth gradient.
+ * Center stop (offset 0%) is darker; rim stop (offset 100%) is brighter.
+ * Do not flip — confirmed PO directive 2026-04-29 (DONUT_GRADIENT_v2_draft.md).
+ *
+ * Implementation per Option A (`gradientUnits="userSpaceOnUse"`, centered at
+ * the donut's geometric center, `r = outerR`). Because the donut center IS
+ * the geometric center of every slice's inner-radius arc midpoint, a single
+ * radial gradient seeded at the donut center automatically produces «dark
+ * at the inner ring → bright at the outer rim» for every slice — no
+ * per-slice transform needed.
+ *
+ * `userSpaceOnUse` requires hex values (CSS vars in `stop-color` work in
+ * modern browsers but theme switching via `<html data-theme>` would require
+ * the gradient to live behind the cascade — not the case for SVG `<stop>`).
+ * We pre-render both light + dark gradient sets and pick via `useThemeMode`.
+ */
+type MuseumHueName = 'slate' | 'stone' | 'fog-blue' | 'plum' | 'ochre';
+
+interface GradientStops {
+  /** Inner-ring stop (offset 0%) — darker tonal shade, museum-base L − 0.10. */
+  readonly center: string;
+  /** Outer-rim stop (offset 100%) — museum-base. */
+  readonly rim: string;
+}
+
+/**
+ * Hue order matches `chart-categorical-1..5` semantic alias from D1
+ * (slate → ochre → fog-blue → plum → stone). Index N here aligns with
+ * `--chart-categorical-(N+1)` so palette index → gradient lookup is direct.
+ */
+const MUSEUM_HUE_ORDER: ReadonlyArray<MuseumHueName> = [
+  'slate',
+  'ochre',
+  'fog-blue',
+  'plum',
+  'stone',
+] as const;
+
+/** Light theme stops — `DONUT_GRADIENT_v2_draft.md` §«Light theme» table. */
+const GRADIENT_STOPS_LIGHT: Readonly<Record<MuseumHueName, GradientStops>> = {
+  slate: { center: '#3F454C', rim: '#6B7280' },
+  stone: { center: '#594F40', rim: '#867A66' },
+  'fog-blue': { center: '#385763', rim: '#5F8794' },
+  plum: { center: '#523644', rim: '#7E5C6E' },
+  ochre: { center: '#5D4B23', rim: '#8C7448' },
+} as const;
+
+/** Dark theme stops — `DONUT_GRADIENT_v2_draft.md` §«Dark theme» table. */
+const GRADIENT_STOPS_DARK: Readonly<Record<MuseumHueName, GradientStops>> = {
+  slate: { center: '#7B838F', rim: '#A8AFBC' },
+  stone: { center: '#928876', rim: '#C5BBA8' },
+  'fog-blue': { center: '#7892A0', rim: '#A8C6D0' },
+  plum: { center: '#896E7C', rim: '#B79CA8' },
+  ochre: { center: '#967D54', rim: '#CAB07E' },
+} as const;
+
+function getGradientStops(theme: ThemeMode, hue: MuseumHueName): GradientStops {
+  return theme === 'dark' ? GRADIENT_STOPS_DARK[hue] : GRADIENT_STOPS_LIGHT[hue];
+}
 
 /**
  * Apply the corner-radius cap rule per anatomy ADR §«Slice geometry»:
@@ -284,8 +361,14 @@ export function DonutChartV2({
   labelPosition = 'center',
 }: DonutChartV2Props) {
   const dataTableId = useId();
+  const rawGradientId = useId();
+  // `useId()` in React 18 returns ids like `:r0:` — colons are valid in SVG
+  // fragment ids per the spec but historically tripped up some parsers and
+  // `url(#...)` references. Slug it to alphanumerics for safety.
+  const gradientIdScope = rawGradientId.replace(/[^a-z0-9]/gi, '');
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const themeMode = useThemeMode();
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [hoverState, setHoverState] = useState<{
     index: number;
@@ -346,13 +429,32 @@ export function DonutChartV2({
       : payload.segments.map((s, i) => ({ s, i }));
 
   const segmentCount = sortedSegments.length;
+  // Gradient lookup — only meaningful for `'categorical'`. Each slice picks
+  // the museum hue at the same index it would have received from
+  // `--chart-categorical-{n}` (D1 alias order = slate → ochre → fog-blue →
+  // plum → stone). Returns `null` for palette modes that keep flat fills.
+  const gradientFillForSlice = (renderIdx: number): string | null => {
+    if (palette !== 'categorical') return null;
+    const hue = MUSEUM_HUE_ORDER[renderIdx % MUSEUM_HUE_ORDER.length];
+    if (!hue) return null;
+    return `url(#donut-grad-${hue}-${gradientIdScope})`;
+  };
+
   const segments: ResolvedSegment[] = sortedSegments.map(({ s, i }, renderIdx) => {
     const fallback = resolvePaletteColor(palette, renderIdx, segmentCount);
+    const flatColor = s.color ?? fallback;
+    // SVG slice fill: prefer the categorical gradient `url(#…)` over the
+    // flat var. Caller-supplied `s.color` still wins when present (override
+    // path). Sequential + monochromatic keep the flat fallback (gradient
+    // direction would muddy magnitude read in sequential — see D3 brief).
+    const gradientFill = gradientFillForSlice(renderIdx);
+    const sliceFill = s.color ?? gradientFill ?? fallback;
     return {
       key: s.key,
       label: s.label,
       value: s.value,
-      color: s.color ?? fallback,
+      color: flatColor,
+      fill: sliceFill,
       fillOpacity:
         palette === 'monochromatic'
           ? resolveMonochromaticOpacity(renderIdx, segmentCount)
@@ -408,6 +510,7 @@ export function DonutChartV2({
       data-half-circle={Math.abs(totalSweep - Math.PI) < 1e-6 || undefined}
       data-arc-mode={callerSetExplicitAngles ? 'custom' : arcMode}
       data-palette={palette}
+      data-theme-mode={themeMode}
       className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
       style={{ width: '100%' }}
       onMouseLeave={() => setHoverState(null)}
@@ -424,6 +527,45 @@ export function DonutChartV2({
           focusable="false"
           style={{ overflow: 'visible' }}
         >
+          {/* Per-slice radial gradients — D3 «свет изнутри».
+
+              INVERTED-direction warning (DONUT_GRADIENT_v2_draft.md
+              §«Known design tension»):
+                Provedo «свет изнутри» direction — INVERTED vs typical depth gradient.
+                Center stop (offset 0%) is darker; rim stop (offset 100%) is brighter.
+                Do not flip — confirmed PO directive 2026-04-29 (DONUT_GRADIENT_v2_draft.md).
+
+              Strategy: 5 `<radialGradient>` elements per render (active-
+              theme set only), centered at the donut's geometric center
+              (`cx`, `cy`, `r = outerR`). `userSpaceOnUse` requires hex
+              values; we toggle the active set via `useThemeMode`.
+
+              Only emitted when `palette === 'categorical'` — sequential +
+              monochromatic keep flat fills (gradient muddies magnitude
+              read in sequential). */}
+          {palette === 'categorical' ? (
+            <defs data-testid="donut-gradient-defs">
+              {MUSEUM_HUE_ORDER.map((hue) => {
+                const stops = getGradientStops(themeMode, hue);
+                return (
+                  <radialGradient
+                    key={hue}
+                    id={`donut-grad-${hue}-${gradientIdScope}`}
+                    gradientUnits="userSpaceOnUse"
+                    cx={cx}
+                    cy={cy}
+                    r={outerR}
+                    fx={cx}
+                    fy={cy}
+                  >
+                    <stop offset="0%" stopColor={stops.center} />
+                    <stop offset="100%" stopColor={stops.rim} />
+                  </radialGradient>
+                );
+              })}
+            </defs>
+          ) : null}
+
           {/* Subtle backplate ring for paper-edge feel. */}
           <circle
             cx={cx}
@@ -587,10 +729,12 @@ function FastDonutRing({
             cy={cy}
             r={radius}
             fill="none"
-            stroke={seg.color}
-            // FastDonutRing renders the slice as a stroked arc, so the
-            // monochromatic palette's per-slice opacity rides on the
-            // stroke channel (vs `fillOpacity` in the rounded path).
+            // FastDonutRing renders the slice as a stroked arc — the slice
+            // «fill» rides on the stroke channel here. `seg.fill` is either
+            // a categorical gradient `url(#donut-grad-…)` or a flat CSS var.
+            stroke={seg.fill}
+            // Monochromatic palette's per-slice opacity rides on the stroke
+            // channel here (vs `fillOpacity` in the rounded path).
             strokeOpacity={seg.fillOpacity}
             strokeWidth={ringWidth}
             strokeDasharray={`${arcLen} ${circumference}`}
@@ -725,7 +869,9 @@ function RoundedDonutPath({
           <path
             key={seg.key}
             d={d}
-            fill={seg.color}
+            // `seg.fill` is the categorical gradient `url(#donut-grad-…)`
+            // ref or the flat CSS var fallback (sequential / monochromatic).
+            fill={seg.fill}
             fillOpacity={seg.fillOpacity}
             // 1px hairline outline — `--card` cream paper, NOT pure white
             // (anatomy ADR §«Slice borders»). `non-scaling-stroke` keeps
