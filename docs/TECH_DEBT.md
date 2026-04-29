@@ -14,6 +14,44 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-109 — Windows `.next/trace` lock collision on parallel dev servers
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3.
+**Source:** Right-Hand was running `pnpm --filter @investment-tracker/web dev --port 3000` while QA dispatched a parallel Playwright suite that needed to spawn `next start` on the same Windows host. Two Next.js processes contend on `apps/web/.next/trace` (Windows file-lock semantics) → second process EPERMs on launch. CI Linux runners do not exhibit this (POSIX file locks differ). QA agent worked around with `NEXT_DIST_DIR` env override in `apps/web/next.config.ts` (additive, env-gated; default behaviour unchanged when env not set).
+**Recommendation:** keep the env-gated workaround. If multi-port dev becomes a routine pattern, formalise with a `pnpm dev:multi` script that sets the env automatically. Otherwise informational TD only.
+**Owner:** devops + frontend.
+**Trigger to revisit:** if a third concurrent dev process needs to run, OR if Windows tooling becomes a routine team pattern (currently single-developer host).
+**Links:** `apps/web/next.config.ts` (env-gated dist-dir override); QA dispatch return.
+
+---
+
+### TD-108 — Candlestick visual baseline gap (18/20 instead of 20)
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3 — gated.
+**Source:** QA Layer B captured 18 Playwright visual baselines (9 chart kinds × 2 themes). Original kickoff target was 20 (10 kinds × 2 themes). Gap = Candlestick × 2 themes; Candlestick is intentionally NOT demoed in showcase per FE kickoff §scope (T3 gated behind PO greenlight + legal-advisor sign-off — CHARTS_SPEC §4.8). `LazyCandlestick` smoke covered in `charts.test.tsx`. Tally guard tests assert the 9-kind set + Scatter exclusion; the missing 2 baselines are documented absences, not regressions.
+**Recommendation:** when T3 PO greenlight + legal sign-off lands, wire showcase Candlestick demo block + capture +2 baselines (light + dark) → restore 20-baseline target.
+**Owner:** PO (gate), then frontend-engineer + qa-engineer.
+**Trigger to revisit:** Candlestick T3 PO greenlight + legal-advisor sign-off.
+**Links:** FE kickoff §scope (Candlestick lazy-no-demo); QA `playwright-tests/charts/__screenshots__/` (current 18); CHARTS_SPEC §4.8.
+
+---
+
+### TD-107 — `STACKED_BAR_FIXTURE.meta.subtitle` trips TD-099 vocabulary gate
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3.
+**Source:** Test fixture `STACKED_BAR_FIXTURE.meta.subtitle = "Asset class breakdown by broker"` includes the word «breakdown», which is a TD-099 TA-tier forbidden token (advice-tone tripwire from finance angle). Showcase rendering bypasses the gate (typed payload imported directly, no `parseChartEnvelope` call). Round-trip fixture → `parseChartEnvelope` → typed `ChartEnvelope` fails because the gate rejects the descriptive «breakdown». QA worked around in contract tests by stripping `meta.subtitle` before parser invocation.
+**Recommendation:** two paths, pick one:
+1. **Edit fixture:** change `subtitle` to «Asset class composition by broker» (or similar non-TA descriptive verb). Lower-risk; preserves strict gate.
+2. **Whitelist «breakdown» as descriptive noun:** add to `lane-a-vocabulary.ts` whitelist when used in noun-phrase context («asset breakdown», «portfolio breakdown») — distinct from imperative verb («breakdown imminent»). Higher-effort regex; broader applicability.
+**Owner:** frontend-engineer (fixture edit) OR backend-engineer (whitelist refinement).
+**Trigger to revisit:** AI agent first attempts to emit a stacked-bar `ChartEnvelope` payload OR next time fixtures are edited.
+**Links:** `packages/ui/src/charts/_shared/fixtures.ts` (STACKED_BAR_FIXTURE); `packages/shared-types/src/lane-a-vocabulary.ts` (whitelist precedent: BRAND_NAME_WHITELIST); QA `parser.contract.test.ts` (workaround).
+
+---
+
 ### TD-106 — Disclaimer copy needs licensed attorney sign-off pre-alpha
 
 **Added:** 2026-04-29 (TD-100 implementation closure).
