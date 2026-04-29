@@ -22,6 +22,13 @@
  * titles and subtitles ported from the static reference.
  */
 
+// Showcase imports V2 (primitives) versions directly, bypassing the
+// `makeBackendDispatch` wrapper used by production app pages. Design review
+// must see our custom chart layer regardless of the runtime
+// NEXT_PUBLIC_PROVEDO_CHART_BACKEND flag. As new V2 chart kinds land in
+// Phase 2 (LineChart V2 / AreaChart V2 / BarChart V2 / etc.), update this
+// import block to swap from unified → V2 named export with the same alias.
+// Cross-ref: docs/DECISIONS.md «2026-04-29 — Charts palette»; CHARTS_SPEC §3.
 import {
   AREA_FIXTURE,
   AreaChart,
@@ -34,13 +41,13 @@ import {
   ChartEmpty,
   ChartSkeleton,
   DONUT_FIXTURE,
-  DonutChart,
+  DonutChartV2 as DonutChart,
   LINE_FIXTURE,
   LineChart,
   type LineChartPayload,
   SPARKLINE_FIXTURE,
   STACKED_BAR_FIXTURE,
-  Sparkline,
+  SparklineV2 as Sparkline,
   TREEMAP_FIXTURE,
   Treemap,
   WATERFALL_FIXTURE,
