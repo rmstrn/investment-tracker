@@ -71,9 +71,7 @@ describe('<DonutChartV2>', () => {
     }
   });
 
-  it.skip('does NOT render <radialGradient> for editorial-still-life form', () => {
-    // SKIP until Task 7 cleanup — radial defs are dead code after Task 5
-    // but still rendered. Re-enable after MUSEUM_HUE_ORDER block is removed.
+  it('does NOT render <radialGradient> for editorial-still-life form', () => {
     const { container } = render(<DonutChartV2 payload={buildDonutPayload()} />);
     const radialDefs = container.querySelectorAll('radialGradient');
     expect(radialDefs).toHaveLength(0);

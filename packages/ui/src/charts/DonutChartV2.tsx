@@ -52,7 +52,7 @@ import { EditorialBevelFilter } from './_shared/filters';
 import { formatValue } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
-import { type ThemeMode, useThemeMode } from './_shared/useThemeMode';
+import { useThemeMode } from './_shared/useThemeMode';
 import { useRef } from 'react';
 import { arcPath } from './primitives/math/path';
 import { Tooltip } from './primitives/svg/Tooltip';
@@ -277,89 +277,6 @@ const SEQUENTIAL_PALETTE = [
   'var(--chart-sequential-7)',
 ] as const;
 
-/* ────────────────────────────────────────────────────────────────────── */
-/* Gradient «свет изнутри» — D3 (DONUT_GRADIENT_v2_draft.md §«Per-slice    */
-/* gradient pairs»)                                                        */
-/* ────────────────────────────────────────────────────────────────────── */
-
-/**
- * Provedo «свет изнутри» direction — INVERTED vs typical depth gradient.
- * Center stop (offset 0%) is darker; rim stop (offset 100%) is brighter.
- * Do not flip — confirmed PO directive 2026-04-29 (DONUT_GRADIENT_v2_draft.md).
- *
- * Implementation per Option A (`gradientUnits="userSpaceOnUse"`, centered at
- * the donut's geometric center, `r = outerR`). Because the donut center IS
- * the geometric center of every slice's inner-radius arc midpoint, a single
- * radial gradient seeded at the donut center automatically produces «dark
- * at the inner ring → bright at the outer rim» for every slice — no
- * per-slice transform needed.
- *
- * `userSpaceOnUse` requires hex values (CSS vars in `stop-color` work in
- * modern browsers but theme switching via `<html data-theme>` would require
- * the gradient to live behind the cascade — not the case for SVG `<stop>`).
- * We pre-render both light + dark gradient sets and pick via `useThemeMode`.
- */
-type MuseumHueName = 'slate' | 'stone' | 'fog-blue' | 'plum' | 'ochre';
-
-interface GradientStops {
-  /** Inner-ring stop (offset 0%) — darker tonal shade, museum-base L − 0.10. */
-  readonly center: string;
-  /** Outer-rim stop (offset 100%) — museum-base. */
-  readonly rim: string;
-}
-
-/**
- * Hue order matches `chart-categorical-1..5` semantic alias from D1
- * (slate → ochre → fog-blue → plum → stone). Index N here aligns with
- * `--chart-categorical-(N+1)` so palette index → gradient lookup is direct.
- */
-const MUSEUM_HUE_ORDER: ReadonlyArray<MuseumHueName> = [
-  'slate',
-  'ochre',
-  'fog-blue',
-  'plum',
-  'stone',
-] as const;
-
-/**
- * Light theme stops — PO-feedback bump 2026-04-29: ΔL widened from ~0.10 to
- * ~0.20 so the «свет изнутри» direction reads clearly on live page. Original
- * draft values preserved as comments for reference.
- */
-const GRADIENT_STOPS_LIGHT: Readonly<Record<MuseumHueName, GradientStops>> = {
-  // slate: was { #3F454C, #6B7280 } — ΔL≈17%
-  slate: { center: '#262A2F', rim: '#7C8590' },
-  // stone: was { #594F40, #867A66 } — ΔL≈13%
-  stone: { center: '#3A3328', rim: '#9C8E78' },
-  // fog-blue: was { #385763, #5F8794 } — ΔL≈15%
-  'fog-blue': { center: '#1F3640', rim: '#7099A8' },
-  // plum: was { #523644, #7E5C6E } — ΔL≈14%
-  plum: { center: '#321E2A', rim: '#946F82' },
-  // ochre: was { #5D4B23, #8C7448 } — ΔL≈14%
-  ochre: { center: '#3A2E14', rim: '#A28958' },
-} as const;
-
-/**
- * Dark theme stops — PO-feedback bump 2026-04-29: ΔL widened similarly. In
- * dark theme the «center darker → rim brighter» direction still applies.
- */
-const GRADIENT_STOPS_DARK: Readonly<Record<MuseumHueName, GradientStops>> = {
-  // slate: was { #7B838F, #A8AFBC }
-  slate: { center: '#5C6470', rim: '#BFC5D0' },
-  // stone: was { #928876, #C5BBA8 }
-  stone: { center: '#6E6553', rim: '#D6CCB8' },
-  // fog-blue: was { #7892A0, #A8C6D0 }
-  'fog-blue': { center: '#536D7A', rim: '#BFD8E2' },
-  // plum: was { #896E7C, #B79CA8 }
-  plum: { center: '#674E5C', rim: '#CAB1BD' },
-  // ochre: was { #967D54, #CAB07E }
-  ochre: { center: '#6E5A38', rim: '#DCC392' },
-} as const;
-
-function getGradientStops(theme: ThemeMode, hue: MuseumHueName): GradientStops {
-  return theme === 'dark' ? GRADIENT_STOPS_DARK[hue] : GRADIENT_STOPS_LIGHT[hue];
-}
-
 /**
  * Apply the corner-radius cap rule per anatomy ADR §«Slice geometry»:
  *
@@ -506,12 +423,6 @@ export function DonutChartV2({
       : payload.segments.map((s, i) => ({ s, i }));
 
   const segmentCount = sortedSegments.length;
-  // NOTE: `gradientFillForSlice` lookup helper removed in Phase 3 Task 5
-  // (editorial-mh3 swap). Slice fills now reference NEW linear-gradient ids
-  // by `renderIdx` directly. The radial-gradient `<defs>` block below is
-  // dead code (no consumers) and will be removed in Task 7 along with
-  // GRADIENT_STOPS_LIGHT/DARK, MUSEUM_HUE_ORDER, getGradientStops, and the
-  // MuseumHueName / GradientStops types.
 
   // ─── Entrance rank (D4) ──────────────────────────────────────────────
   // Sort the original payload indices by value desc → assign rank 0..n-1.
@@ -684,90 +595,6 @@ export function DonutChartV2({
               })}
             </defs>
           ) : null}
-
-          {/* Per-slice radial gradients — D3 «свет изнутри».
-
-              INVERTED-direction warning (DONUT_GRADIENT_v2_draft.md
-              §«Known design tension»):
-                Provedo «свет изнутри» direction — INVERTED vs typical depth gradient.
-                Center stop (offset 0%) is darker; rim stop (offset 100%) is brighter.
-                Do not flip — confirmed PO directive 2026-04-29 (DONUT_GRADIENT_v2_draft.md).
-
-              Strategy: 5 `<radialGradient>` elements per render (active-
-              theme set only), centered at the donut's geometric center.
-              `userSpaceOnUse` requires hex values; we toggle the active set
-              via `useThemeMode`.
-
-              IMPORTANT — `userSpaceOnUse` coord space (PO polish #3 fix
-              2026-04-29):
-                Per SVG2 spec, `userSpaceOnUse` evaluates the gradient's
-                cx/cy/r in the user coord system in effect AT THE PLACE
-                WHERE THE GRADIENT IS REFERENCED — not where the
-                `<radialGradient>` element lives in the DOM. The slice
-                paths sit inside `<g transform="translate(cx, cy)">`
-                (RoundedDonutPath) which means the gradient's cx/cy must be
-                expressed in THAT translated frame. In the rounded-path
-                local space, the donut center is `(0, 0)`, not `(cx, cy)`.
-                The previous polish #1 used `cx={cx} cy={cy}` and pushed
-                the gradient origin to world `(2*cx, 2*cy)` — entirely off
-                the donut ring — which is why every slice rendered at the
-                rim stop's solid color (smoking-gun pixel sample 2026-04-29:
-                inner-edge / midline / outer-edge all `#bfc5d0` rim).
-
-                FastDonutRing uses `<g transform="rotate(-90 cx cy)">`,
-                a rotation pivoted at `(cx, cy)`. That keeps `(cx, cy)` as
-                the fixed point in both local and world coord spaces, so
-                its branch needs `cx={cx} cy={cy}`. Two render paths, two
-                origin conventions — encoded in `gradOriginX/Y` below.
-
-              Only emitted when `palette === 'categorical'` — sequential +
-              monochromatic keep flat fills (gradient muddies magnitude
-              read in sequential). */}
-          {palette === 'categorical'
-            ? (() => {
-                // RoundedDonutPath: parent <g translate(cx,cy)> shifts the
-                //   local origin to the donut center → gradient origin (0,0).
-                // FastDonutRing: parent <g rotate(-90, cx, cy)> leaves
-                //   (cx, cy) as the fixed point → gradient origin (cx, cy).
-                const gradOriginX = useRoundedPath ? 0 : cx;
-                const gradOriginY = useRoundedPath ? 0 : cy;
-                return (
-                  <defs data-testid="donut-gradient-defs">
-                    {MUSEUM_HUE_ORDER.map((hue) => {
-                      const stops = getGradientStops(themeMode, hue);
-                      return (
-                        <radialGradient
-                          key={hue}
-                          id={`donut-grad-${hue}-${gradientIdScope}`}
-                          gradientUnits="userSpaceOnUse"
-                          cx={gradOriginX}
-                          cy={gradOriginY}
-                          // Polish #1 floor: dark stop sits at offset
-                          // `innerR/outerR` (~60%), so the dark→bright sweep
-                          // plays across the visible ring band only.
-                          r={outerR}
-                          fx={gradOriginX}
-                          fy={gradOriginY}
-                        >
-                          {/* Dark center stop offset to where the donut's
-                              inner radius actually lives (innerR/outerR
-                              ≈ 0.6). Below that the gradient is solid dark
-                              — but with a correctly-located origin, that
-                              solid-dark zone falls inside the donut hole
-                              (invisible), and the dark→bright sweep plays
-                              out across the visible ring band. */}
-                          <stop
-                            offset={`${(innerR / outerR) * 100}%`}
-                            stopColor={stops.center}
-                          />
-                          <stop offset="100%" stopColor={stops.rim} />
-                        </radialGradient>
-                      );
-                    })}
-                  </defs>
-                );
-              })()
-            : null}
 
           {/* Backplate ring removed (PO polish #2 — 2026-04-29). It was
               reading as a visible gray halo around the donut perimeter. The
