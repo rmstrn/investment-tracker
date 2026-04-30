@@ -44,6 +44,41 @@ describe('<DonutChartV2>', () => {
     expect(queryByTestId('donut-fast-ring')).toBeNull();
   });
 
+  it('renders <EditorialBevelFilter> with stable id matched by slice container filter attr', () => {
+    const { container } = render(<DonutChartV2 payload={buildDonutPayload()} />);
+    const filter = container.querySelector('filter[id^="donut-bevel-"]');
+    expect(filter).not.toBeNull();
+    const filterId = filter!.getAttribute('id')!;
+    // <g filter="url(#donut-bevel-...)"> wraps the slice container
+    const wrappedG = container.querySelector(`g[filter="url(#${filterId})"]`);
+    expect(wrappedG).not.toBeNull();
+  });
+
+  it('renders per-slice <linearGradient> defs for categorical palette', () => {
+    const payload = buildDonutPayload();
+    const { container } = render(<DonutChartV2 payload={payload} palette="categorical" />);
+    const lgDefs = container.querySelectorAll('linearGradient[id^="donut-grad-"]');
+    expect(lgDefs).toHaveLength(payload.segments.length);
+    // Each gradient has exactly 2 stops at 0% / 100%
+    for (const lg of Array.from(lgDefs)) {
+      const stops = lg.querySelectorAll('stop');
+      expect(stops).toHaveLength(2);
+      expect(stops[0]?.getAttribute('offset')).toBe('0%');
+      expect(stops[1]?.getAttribute('offset')).toBe('100%');
+      // stop-color references CSS vars (top + bottom)
+      expect(stops[0]?.getAttribute('stop-color')).toMatch(/var\(--chart-categorical-\d-top\)/);
+      expect(stops[1]?.getAttribute('stop-color')).toMatch(/var\(--chart-categorical-\d-bottom\)/);
+    }
+  });
+
+  it.skip('does NOT render <radialGradient> for editorial-still-life form', () => {
+    // SKIP until Task 7 cleanup — radial defs are dead code after Task 5
+    // but still rendered. Re-enable after MUSEUM_HUE_ORDER block is removed.
+    const { container } = render(<DonutChartV2 payload={buildDonutPayload()} />);
+    const radialDefs = container.querySelectorAll('radialGradient');
+    expect(radialDefs).toHaveLength(0);
+  });
+
   it('cornerRadius={0} opts back into the fast circle-stroke ring path', () => {
     // Fast path is still selectable for callers that want it (e.g.
     // micro-fixture rendering, sparkline-style donut variants). Verifies the
