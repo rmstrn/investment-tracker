@@ -343,29 +343,44 @@
 
     "chart-categorical": {
       "1": {
-        "$value": "{color.museum.slate.light}",
-        "$type": "color",
-        "$description": "Categorical series 1 — museum-slate (cool anchor). Order rationale: slate→ochre maximises hue Δ=185° for 2-series intent."
+        "base": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.light.base}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa base. Replaces museum-slate."
+        },
+        "top": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.light.top}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa top stop for H3 linear-gradient."
+        },
+        "bottom": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.light.bottom}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa bottom stop for H3 linear-gradient."
+        }
       },
       "2": {
-        "$value": "{color.museum.ochre.light}",
-        "$type": "color",
-        "$description": "Categorical series 2 — museum-ochre (warm anchor; max hue separation from slate)."
+        "base": { "$value": "{color.editorial-mh3.burnished-gold.light.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.burnished-gold.light.top}", "$type": "color" },
+        "bottom": {
+          "$value": "{color.editorial-mh3.burnished-gold.light.bottom}",
+          "$type": "color"
+        }
       },
       "3": {
-        "$value": "{color.museum.fog-blue.light}",
-        "$type": "color",
-        "$description": "Categorical series 3 — museum-fog-blue (secondary cool)."
+        "base": { "$value": "{color.editorial-mh3.aubergine.light.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.aubergine.light.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.aubergine.light.bottom}", "$type": "color" }
       },
       "4": {
-        "$value": "{color.museum.plum.light}",
-        "$type": "color",
-        "$description": "Categorical series 4 — museum-plum (magenta quadrant)."
+        "base": { "$value": "{color.editorial-mh3.wine.light.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.wine.light.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.wine.light.bottom}", "$type": "color" }
       },
       "5": {
-        "$value": "{color.museum.stone.light}",
-        "$type": "color",
-        "$description": "Categorical series 5 — museum-stone (neutral fallback). Tritanopia note: collapses with ochre at L≈0.52; V2 mandates 1px hairline outline."
+        "base": { "$value": "{color.editorial-mh3.slate-blue.light.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.slate-blue.light.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.slate-blue.light.bottom}", "$type": "color" }
       }
     },
 

@@ -255,29 +255,41 @@
 
     "chart-categorical": {
       "1": {
-        "$value": "{color.museum.slate.dark}",
-        "$type": "color",
-        "$description": "Categorical series 1 — museum-slate (dark)."
+        "base": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.dark.base}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa base. Replaces museum-slate."
+        },
+        "top": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.dark.top}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa top stop for H3 linear-gradient."
+        },
+        "bottom": {
+          "$value": "{color.editorial-mh3.roasted-cocoa.dark.bottom}",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa bottom stop for H3 linear-gradient."
+        }
       },
       "2": {
-        "$value": "{color.museum.ochre.dark}",
-        "$type": "color",
-        "$description": "Categorical series 2 — museum-ochre (dark)."
+        "base": { "$value": "{color.editorial-mh3.burnished-gold.dark.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.burnished-gold.dark.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.burnished-gold.dark.bottom}", "$type": "color" }
       },
       "3": {
-        "$value": "{color.museum.fog-blue.dark}",
-        "$type": "color",
-        "$description": "Categorical series 3 — museum-fog-blue (dark)."
+        "base": { "$value": "{color.editorial-mh3.aubergine.dark.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.aubergine.dark.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.aubergine.dark.bottom}", "$type": "color" }
       },
       "4": {
-        "$value": "{color.museum.plum.dark}",
-        "$type": "color",
-        "$description": "Categorical series 4 — museum-plum (dark)."
+        "base": { "$value": "{color.editorial-mh3.wine.dark.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.wine.dark.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.wine.dark.bottom}", "$type": "color" }
       },
       "5": {
-        "$value": "{color.museum.stone.dark}",
-        "$type": "color",
-        "$description": "Categorical series 5 — museum-stone (dark)."
+        "base": { "$value": "{color.editorial-mh3.slate-blue.dark.base}", "$type": "color" },
+        "top": { "$value": "{color.editorial-mh3.slate-blue.dark.top}", "$type": "color" },
+        "bottom": { "$value": "{color.editorial-mh3.slate-blue.dark.bottom}", "$type": "color" }
       }
     },
 
