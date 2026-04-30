@@ -37,6 +37,12 @@ export {
   type AxisTickInput,
   type AxisEdgeOrientation,
 } from './Axis';
+export {
+  CartesianFrame,
+  type CartesianFrameProps,
+  type CartesianFrameDims,
+  type CartesianFrameMargin,
+} from './CartesianFrame';
 
 /* ─── Gradient definitions ───────────────────────────────────────────── */
 export {
