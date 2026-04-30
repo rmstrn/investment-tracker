@@ -31,6 +31,12 @@ export {
   type AxisTick,
   type AxisOrientation,
 } from './AxisTicksHTML';
+export {
+  Axis,
+  type AxisProps,
+  type AxisTickInput,
+  type AxisEdgeOrientation,
+} from './Axis';
 
 /* ─── Gradient definitions ───────────────────────────────────────────── */
 export {
