@@ -34,7 +34,7 @@ import {
   AreaChart,
   BAR_DRIFT_FIXTURE,
   BAR_FIXTURE,
-  BarChart,
+  BarChartV2 as BarChart,
   CALENDAR_FIXTURE,
   Calendar,
   ChartCard,
