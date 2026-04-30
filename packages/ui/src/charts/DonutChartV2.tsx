@@ -48,6 +48,7 @@ import {
 } from 'react';
 import { CHART_FOCUS_RING_CLASS } from './_shared/a11y';
 import { ChartDataTable } from './_shared/ChartDataTable';
+import { EditorialBevelFilter } from './_shared/filters';
 import { formatValue } from './_shared/formatters';
 import { useChartKeyboardNav } from './_shared/useChartKeyboardNav';
 import { useReducedMotion } from './_shared/useReducedMotion';
@@ -505,16 +506,12 @@ export function DonutChartV2({
       : payload.segments.map((s, i) => ({ s, i }));
 
   const segmentCount = sortedSegments.length;
-  // Gradient lookup — only meaningful for `'categorical'`. Each slice picks
-  // the museum hue at the same index it would have received from
-  // `--chart-categorical-{n}` (D1 alias order = slate → ochre → fog-blue →
-  // plum → stone). Returns `null` for palette modes that keep flat fills.
-  const gradientFillForSlice = (renderIdx: number): string | null => {
-    if (palette !== 'categorical') return null;
-    const hue = MUSEUM_HUE_ORDER[renderIdx % MUSEUM_HUE_ORDER.length];
-    if (!hue) return null;
-    return `url(#donut-grad-${hue}-${gradientIdScope})`;
-  };
+  // NOTE: `gradientFillForSlice` lookup helper removed in Phase 3 Task 5
+  // (editorial-mh3 swap). Slice fills now reference NEW linear-gradient ids
+  // by `renderIdx` directly. The radial-gradient `<defs>` block below is
+  // dead code (no consumers) and will be removed in Task 7 along with
+  // GRADIENT_STOPS_LIGHT/DARK, MUSEUM_HUE_ORDER, getGradientStops, and the
+  // MuseumHueName / GradientStops types.
 
   // ─── Entrance rank (D4) ──────────────────────────────────────────────
   // Sort the original payload indices by value desc → assign rank 0..n-1.
@@ -532,12 +529,22 @@ export function DonutChartV2({
   const segments: ResolvedSegment[] = sortedSegments.map(({ s, i }, renderIdx) => {
     const fallback = resolvePaletteColor(palette, renderIdx, segmentCount);
     const flatColor = s.color ?? fallback;
-    // SVG slice fill: prefer the categorical gradient `url(#…)` over the
-    // flat var. Caller-supplied `s.color` still wins when present (override
-    // path). Sequential + monochromatic keep the flat fallback (gradient
-    // direction would muddy magnitude read in sequential — see D3 brief).
-    const gradientFill = gradientFillForSlice(renderIdx);
-    const sliceFill = s.color ?? gradientFill ?? fallback;
+    // SVG slice fill (Phase 3 Task 5 — editorial-mh3 swap):
+    //   - Caller-supplied `s.color` still wins (override path preserved)
+    //   - Categorical → NEW linear-gradient ref keyed by `renderIdx`. Stops
+    //     pull from `var(--chart-categorical-N-top|bottom)` which now resolve
+    //     to the editorial-mh3 hex set (Tasks 1+2). Replaces the previous
+    //     radial «свет изнутри» direction; H3 specular-bevel filter on the
+    //     slice <g> re-lights the neutral vertical gradient.
+    //   - Sequential / monochromatic → flat CSS-var fallback (gradient
+    //     direction would muddy magnitude read in sequential — D3 brief).
+    // Categorical palette: linear-gradient ref via renderIdx. Sequential /
+    // monochromatic: flat var or fallback.
+    const linearFill =
+      palette === 'categorical'
+        ? `url(#donut-grad-${renderIdx}-${gradientIdScope})`
+        : null;
+    const sliceFill = s.color ?? linearFill ?? fallback;
     return {
       key: s.key,
       label: s.label,
@@ -631,6 +638,53 @@ export function DonutChartV2({
           focusable="false"
           style={{ overflow: 'visible' }}
         >
+          {/* H3 specular-bevel + paper-press filter (editorial still-life
+              direction, 2026-04-30). Applied palette-agnostically on the slice
+              container <g> below. Theme-aware: filter primitive constants
+              differ between light/dark; slice fills are CSS-var-driven via the
+              <html data-theme> cascade. */}
+          <EditorialBevelFilter
+            id={`donut-bevel-${gradientIdScope}`}
+            theme={themeMode}
+          />
+
+          {/* NEW (Phase 3 Task 5) per-slice linear-gradient defs — top-to-bottom
+              top→bottom stops sourced from the editorial-mh3 CSS vars
+              (`--chart-categorical-N-top` / `-bottom`). Replaces the radial
+              «свет изнутри» direction with a neutral vertical gradient that
+              the H3 specular-bevel filter then re-lights. Categorical only
+              (sequential / monochromatic keep flat fills).
+
+              The OLD radial-gradient `<defs>` block below is now dead code — no
+              consumers reference its ids after the slice-fill resolution
+              update. Will be removed in Task 7 as a clean revert point. */}
+          {palette === 'categorical' ? (
+            <defs data-testid="donut-linear-gradient-defs">
+              {segments.map((_, i) => {
+                const slot = (i % 5) + 1;
+                return (
+                  <linearGradient
+                    key={i}
+                    id={`donut-grad-${i}-${gradientIdScope}`}
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="0%"
+                      stopColor={`var(--chart-categorical-${slot}-top)`}
+                    />
+                    <stop
+                      offset="100%"
+                      stopColor={`var(--chart-categorical-${slot}-bottom)`}
+                    />
+                  </linearGradient>
+                );
+              })}
+            </defs>
+          ) : null}
+
           {/* Per-slice radial gradients — D3 «свет изнутри».
 
               INVERTED-direction warning (DONUT_GRADIENT_v2_draft.md
@@ -721,42 +775,48 @@ export function DonutChartV2({
               separation between sectors; an outer rim ring on top of that
               double-counted and produced the unwanted halo. */}
 
-          {useRoundedPath ? (
-            <RoundedDonutPath
-              segments={segments}
-              sectorBounds={sectorBounds}
-              cx={cx}
-              cy={cy}
-              innerR={innerR}
-              outerR={outerR}
-              ringWidth={ringWidth}
-              cornerRadius={cornerRadius}
-              activeIndex={activeIndex}
-              hoverIndex={hoverState?.index ?? null}
-              entranceReady={entranceReady}
-              prefersReducedMotion={prefersReducedMotion}
-              setHoverState={setHoverState}
-              setActiveIndex={setActiveIndex}
-            />
-          ) : (
-            <FastDonutRing
-              segments={segments}
-              sectorBounds={sectorBounds}
-              cx={cx}
-              cy={cy}
-              radius={radius}
-              ringWidth={ringWidth}
-              circumference={circumference}
-              startAngle={resolvedStart}
-              activeIndex={activeIndex}
-              hoverIndex={hoverState?.index ?? null}
-              sweepReady={sweepReady}
-              entranceReady={entranceReady}
-              prefersReducedMotion={prefersReducedMotion}
-              setHoverState={setHoverState}
-              setActiveIndex={setActiveIndex}
-            />
-          )}
+          {/* Slice container — single filter region per donut. Apply the
+              H3 specular-bevel + paper-press filter once on this <g> (NOT on
+              individual slice paths/circles) so the GPU evaluates one filter
+              region for the whole ring. */}
+          <g filter={`url(#donut-bevel-${gradientIdScope})`}>
+            {useRoundedPath ? (
+              <RoundedDonutPath
+                segments={segments}
+                sectorBounds={sectorBounds}
+                cx={cx}
+                cy={cy}
+                innerR={innerR}
+                outerR={outerR}
+                ringWidth={ringWidth}
+                cornerRadius={cornerRadius}
+                activeIndex={activeIndex}
+                hoverIndex={hoverState?.index ?? null}
+                entranceReady={entranceReady}
+                prefersReducedMotion={prefersReducedMotion}
+                setHoverState={setHoverState}
+                setActiveIndex={setActiveIndex}
+              />
+            ) : (
+              <FastDonutRing
+                segments={segments}
+                sectorBounds={sectorBounds}
+                cx={cx}
+                cy={cy}
+                radius={radius}
+                ringWidth={ringWidth}
+                circumference={circumference}
+                startAngle={resolvedStart}
+                activeIndex={activeIndex}
+                hoverIndex={hoverState?.index ?? null}
+                sweepReady={sweepReady}
+                entranceReady={entranceReady}
+                prefersReducedMotion={prefersReducedMotion}
+                setHoverState={setHoverState}
+                setActiveIndex={setActiveIndex}
+              />
+            )}
+          </g>
         </svg>
 
         {/* Centre label — skipped on semi-circle to avoid covering open arc. */}
