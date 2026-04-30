@@ -43,6 +43,11 @@ export {
   type CartesianFrameDims,
   type CartesianFrameMargin,
 } from './CartesianFrame';
+export {
+  ReferenceLine,
+  type ReferenceLineProps,
+  type ReferenceLineLabel,
+} from './ReferenceLine';
 
 /* ─── Gradient definitions ───────────────────────────────────────────── */
 export {
