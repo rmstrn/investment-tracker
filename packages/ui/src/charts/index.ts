@@ -46,6 +46,8 @@ import {
   makeBackendDispatch,
   type ChartBackend,
 } from './_shared/chart-backend-dispatch';
+import { BarChart as BarChartV1, type BarChartProps } from './BarChart';
+import { BarChartV2, type BarChartV2Props } from './BarChartV2';
 import { DonutChart as DonutChartV1, type DonutChartProps } from './DonutChart';
 import { DonutChartV2, type DonutChartV2Props } from './DonutChartV2';
 import { Sparkline as SparklineV1, type SparklineProps } from './Sparkline';
@@ -84,9 +86,15 @@ export const DonutChart = makeBackendDispatch<DonutChartProps, DonutChartV2Props
   DonutChartV2,
   'DonutChart',
 );
+export const BarChart = makeBackendDispatch<BarChartProps, BarChartV2Props>(
+  BarChartV1,
+  BarChartV2,
+  'BarChart',
+);
 
 export type { SparklineProps } from './Sparkline';
 export type { DonutChartProps } from './DonutChart';
+export type { BarChartProps } from './BarChart';
 
 /** V2 named exports — consumers that want the primitives variant unconditionally. */
 export { SparklineV2, type SparklineV2Props } from './SparklineV2';
@@ -95,10 +103,10 @@ export {
   type DonutChartV2Props,
   type DonutLabelPosition,
 } from './DonutChartV2';
+export { BarChartV2, type BarChartV2Props } from './BarChartV2';
 
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
-export { BarChart, type BarChartProps } from './BarChart';
 export { Calendar, type CalendarProps } from './Calendar';
 export { Treemap, type TreemapProps } from './Treemap';
 
