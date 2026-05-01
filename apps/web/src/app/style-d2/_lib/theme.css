@@ -1,0 +1,862 @@
+/*
+ * D2 — «Daylight Provedo» theme.
+ *
+ * Light-mode translation of the Pinterest reference. Same DNA as D1
+ * (pill nav, KPI cards, lime + purple, hatched bars, calendar heatmap,
+ * chat-list AI surface) — rendered on a cream paper canvas. Lime acts
+ * as a fluorescent highlighter on the one card that matters today;
+ * purple is editorial annotation ink.
+ *
+ * Spec: D2-light-variant.md (palette §3 / typography §4 / components §5).
+ *
+ * Scope: every selector lives under `[data-style="d2"]`. NO bare :root,
+ * NO bare body, NO bare element selectors. Tokens prefixed `--d2-*` so
+ * they cannot collide with D1 / R-series / other comparison routes.
+ *
+ * Wired by `./layout.tsx` via the route-local `<div data-style="d2">`.
+ */
+
+[data-style="d2"] {
+  /* ── Palette (8 roles) ─────────────────────────────────────────────── */
+  --d2-paper: #f4f1ea;             /* page bg */
+  --d2-paper-deep: #fbf9f4;        /* card bg, panel bg */
+  --d2-paper-hover: #ffffff;       /* hover (3-step value system) */
+  --d2-ink: #0e0e0c;               /* AAA 17.8:1 — money numerals */
+  --d2-ink-muted: #5a554c;         /* axis labels, metadata */
+  --d2-accent-lime: #cdf55a;       /* ink-on-lime AAA 15.2:1 */
+  --d2-accent-lime-deep: #b5e03b;  /* hover/pressed on lime */
+  --d2-accent-lime-soft: rgba(205, 245, 90, 0.18); /* heatmap mid step */
+  --d2-accent-purple: #5b3fe6;     /* avatar, tooltip fills */
+  --d2-accent-purple-deep: #3b2ba8;/* premium chip text, AI author label */
+  --d2-hairline: #e5e0d5;          /* 1px borders, dividers */
+
+  /* ── Type stack (variable → fallback chain) ────────────────────────── */
+  --d2-font-sans: var(--font-d2-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+
+  /* ── Page surface ──────────────────────────────────────────────────── */
+  background-color: var(--d2-paper);
+  color: var(--d2-ink);
+  font-family: var(--d2-font-sans);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Page shell & surface card ──────────────────────────────────────── */
+[data-style="d2"] .d2-page {
+  background: var(--d2-paper);
+  min-height: 100vh;
+  padding: 24px;
+}
+
+[data-style="d2"] .d2-shell {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+[data-style="d2"] .d2-surface {
+  background: var(--d2-paper-deep);
+  border: 1px solid var(--d2-hairline);
+  border-radius: 28px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Marketing strip (above the dashboard, ≤280px tall) ─────────────── */
+[data-style="d2"] .d2-marketing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(20px, 4vw, 56px);
+  padding: clamp(28px, 4vw, 40px) 8px clamp(8px, 2vw, 16px);
+}
+
+[data-style="d2"] .d2-eyebrow {
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d2-ink-muted);
+  margin: 0 0 12px;
+}
+
+[data-style="d2"] .d2-headline {
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 1.5rem + 3vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--d2-ink);
+  margin: 0 0 14px;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+
+[data-style="d2"] .d2-sub {
+  font-family: var(--d2-font-sans);
+  font-weight: 400;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--d2-ink-muted);
+  margin: 0;
+  max-width: 56ch;
+}
+
+[data-style="d2"] .d2-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--d2-paper);
+  background: var(--d2-ink);
+  border: 0;
+  border-radius: 22px;
+  height: 40px;
+  padding: 0 22px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d2"] .d2-cta:hover {
+  transform: translateY(-1px);
+  background: #000000;
+}
+
+[data-style="d2"] .d2-cta:focus-visible {
+  outline: 2px solid var(--d2-accent-purple);
+  outline-offset: 3px;
+}
+
+/* ── Pill nav (top of dashboard) ───────────────────────────────────── */
+[data-style="d2"] .d2-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--d2-hairline);
+}
+
+[data-style="d2"] .d2-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--d2-accent-purple);
+  color: var(--d2-paper);
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: 15px;
+  margin-right: 8px;
+}
+
+[data-style="d2"] .d2-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--d2-ink-muted);
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d2"] .d2-pill:hover {
+  background: var(--d2-paper);
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-pill:focus-visible {
+  outline: 2px solid var(--d2-accent-purple);
+  outline-offset: 2px;
+}
+
+[data-style="d2"] .d2-pill--active {
+  background: var(--d2-accent-lime);
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-pill--active:hover {
+  background: var(--d2-accent-lime-deep);
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-pill__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+/* Insights badge: 18px purple circle, white «3», 2px paper-deep ring. */
+[data-style="d2"] .d2-pill__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 9999px;
+  background: var(--d2-accent-purple);
+  color: #ffffff;
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  margin-left: 4px;
+  box-shadow: 0 0 0 2px var(--d2-paper-deep);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-style="d2"] .d2-nav__spacer {
+  flex: 1 1 auto;
+}
+
+[data-style="d2"] .d2-nav__icon-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: var(--d2-paper);
+  color: var(--d2-ink-muted);
+  border: 1px solid var(--d2-hairline);
+  cursor: pointer;
+  transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d2"] .d2-nav__icon-pill:hover {
+  color: var(--d2-ink);
+  border-color: var(--d2-ink-muted);
+}
+
+[data-style="d2"] .d2-nav__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: var(--d2-accent-purple);
+  color: #ffffff;
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+/* ── Welcome row (Inter 700 56px ink) ───────────────────────────────── */
+[data-style="d2"] .d2-welcome {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+}
+
+[data-style="d2"] .d2-welcome__lead {
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d2-ink-muted);
+  margin: 0 0 8px;
+}
+
+[data-style="d2"] .d2-welcome__name {
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 1.5rem + 3vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+  color: var(--d2-ink);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* «Premium» STAMP chip — 24px, transparent, deep-purple border + text. */
+[data-style="d2"] .d2-stamp-premium {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 9999px;
+  background: transparent;
+  border: 1.5px solid var(--d2-accent-purple-deep);
+  color: var(--d2-accent-purple-deep);
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── KPI cards row — 22px-rounded RECTANGLES (NOT pills) ────────────── */
+[data-style="d2"] .d2-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+[data-style="d2"] .d2-kpi {
+  position: relative;
+  background: var(--d2-paper-deep);
+  border: 1px solid var(--d2-hairline);
+  border-radius: 22px;
+  padding: 20px 22px;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: background 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+[data-style="d2"] .d2-kpi:hover {
+  background: var(--d2-paper-hover);
+  border-color: var(--d2-ink-muted);
+  border-width: 1px;
+}
+
+[data-style="d2"] .d2-kpi__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-style="d2"] .d2-kpi__icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--d2-paper);
+  color: var(--d2-ink);
+  border: 1px solid var(--d2-hairline);
+  flex-shrink: 0;
+}
+
+[data-style="d2"] .d2-kpi__label {
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--d2-ink-muted);
+  flex: 1;
+  margin: 0;
+  letter-spacing: 0.005em;
+}
+
+[data-style="d2"] .d2-kpi__ext {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  color: var(--d2-ink-muted);
+}
+
+/* AAA 17.8:1 — money numerals, Inter 700 tabular */
+[data-style="d2"] .d2-kpi__num {
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.025em;
+  color: var(--d2-ink);
+  margin: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+[data-style="d2"] .d2-kpi__delta {
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--d2-ink-muted);
+  margin: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ── Lime-highlighted KPI card — fill, NO border, INK numerals (15.2:1) */
+[data-style="d2"] .d2-kpi--lime {
+  background: var(--d2-accent-lime);
+  border-color: var(--d2-accent-lime);
+}
+
+[data-style="d2"] .d2-kpi--lime:hover {
+  background: var(--d2-accent-lime-deep);
+  border-color: var(--d2-accent-lime-deep);
+}
+
+[data-style="d2"] .d2-kpi--lime .d2-kpi__label,
+[data-style="d2"] .d2-kpi--lime .d2-kpi__num,
+[data-style="d2"] .d2-kpi--lime .d2-kpi__ext {
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-kpi--lime .d2-kpi__delta {
+  color: var(--d2-ink);
+  opacity: 0.72;
+}
+
+/* Icon-chip on lime card flips to paper-deep so the icon stays legible. */
+[data-style="d2"] .d2-kpi--lime .d2-kpi__icon-chip {
+  background: var(--d2-paper-deep);
+  color: var(--d2-ink);
+  border-color: rgba(14, 14, 12, 0.12);
+}
+
+/* ── Filter chip row ─────────────────────────────────────────────────── */
+[data-style="d2"] .d2-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+[data-style="d2"] .d2-chips__spacer {
+  flex: 1 1 auto;
+}
+
+[data-style="d2"] .d2-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background: var(--d2-paper-deep);
+  color: var(--d2-ink-muted);
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  border: 1px solid var(--d2-hairline);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d2"] .d2-chip:hover {
+  border-color: var(--d2-ink-muted);
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-chip--active {
+  background: var(--d2-accent-lime);
+  color: var(--d2-ink);
+  border-color: var(--d2-accent-lime);
+}
+
+[data-style="d2"] .d2-chip--active:hover {
+  background: var(--d2-accent-lime-deep);
+  border-color: var(--d2-accent-lime-deep);
+}
+
+[data-style="d2"] .d2-chip--icon {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+}
+
+/* «Download reports» inverts (ink fill, paper text) — it's an action. */
+[data-style="d2"] .d2-chip--export {
+  background: var(--d2-ink);
+  color: var(--d2-paper);
+  border-color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-chip--export:hover {
+  background: #000000;
+  border-color: #000000;
+  color: var(--d2-paper);
+}
+
+/* ── 3-col data grid (chart | heatmap | chat-list) ──────────────────── */
+[data-style="d2"] .d2-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 1100px) {
+  [data-style="d2"] .d2-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-style="d2"] .d2-kpi-row {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+}
+
+[data-style="d2"] .d2-panel {
+  background: var(--d2-paper-deep);
+  border: 1px solid var(--d2-hairline);
+  border-radius: 22px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 320px;
+  /* CSS-var override scope so the embedded BarVisx (its own
+   * candy-themed defaults) borrows D2's lime/purple/ink palette. */
+  --text-on-candy: var(--d2-ink);
+  --cta-fill: var(--d2-accent-purple);
+  --accent: var(--d2-accent-purple);
+  --accent-deep: var(--d2-accent-purple-deep);
+  --cta-shadow: var(--d2-accent-purple);
+  --card: var(--d2-paper-deep);
+  --card-highlight: var(--d2-paper);
+  --bg-cream: var(--d2-paper);
+  --ink: var(--d2-ink);
+  --color-text-secondary: var(--d2-ink-muted);
+  --font-family-display: var(--d2-font-sans);
+  --font-family-body: var(--d2-font-sans);
+  --font-family-mono: var(--d2-font-sans);
+}
+
+[data-style="d2"] .d2-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-style="d2"] .d2-panel__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--d2-ink);
+  margin: 0;
+}
+
+[data-style="d2"] .d2-panel__icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 9999px;
+  background: var(--d2-paper);
+  color: var(--d2-ink);
+  border: 1px solid var(--d2-hairline);
+  flex-shrink: 0;
+}
+
+/* Segmented toggle (1Y / 1M / 1W) */
+[data-style="d2"] .d2-segmented {
+  display: inline-flex;
+  align-items: center;
+  background: var(--d2-paper);
+  border: 1px solid var(--d2-hairline);
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+[data-style="d2"] .d2-segmented__btn {
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--d2-ink-muted);
+  background: transparent;
+  border: 0;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  letter-spacing: 0.005em;
+}
+
+[data-style="d2"] .d2-segmented__btn--active {
+  background: var(--d2-accent-lime);
+  color: var(--d2-ink);
+}
+
+[data-style="d2"] .d2-panel__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+[data-style="d2"] .d2-panel__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--d2-font-sans);
+  font-size: 11px;
+  color: var(--d2-ink-muted);
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Hatched-bar legend — inline SVG <pattern> via the .tsx HatchedSwatch. */
+[data-style="d2"] .d2-hatch-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--d2-hairline);
+}
+
+[data-style="d2"] .d2-hatch-legend__label {
+  font-family: var(--d2-font-sans);
+  font-size: 11px;
+  color: var(--d2-ink-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+[data-style="d2"] .d2-hatch-legend__value {
+  margin-left: auto;
+  font-family: var(--d2-font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--d2-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.015em;
+}
+
+/* ── Heatmap (Time visit) ───────────────────────────────────────────── */
+[data-style="d2"] .d2-heatmap {
+  display: grid;
+  grid-template-columns: auto repeat(7, 28px);
+  gap: 4px;
+  align-items: center;
+  margin: 0 auto;
+}
+
+[data-style="d2"] .d2-heatmap__rowlabel,
+[data-style="d2"] .d2-heatmap__collabel {
+  font-family: var(--d2-font-sans);
+  font-size: 10px;
+  color: var(--d2-ink-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+[data-style="d2"] .d2-heatmap__rowlabel {
+  text-align: right;
+  padding-right: 6px;
+}
+
+[data-style="d2"] .d2-heatmap__cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--d2-paper);
+  position: relative;
+  border: 1px solid var(--d2-hairline);
+}
+
+[data-style="d2"] .d2-heatmap__cell[data-level="0"] {
+  background: var(--d2-paper);
+}
+
+[data-style="d2"] .d2-heatmap__cell[data-level="1"] {
+  background: rgba(205, 245, 90, 0.22);
+  border-color: rgba(205, 245, 90, 0.4);
+}
+
+[data-style="d2"] .d2-heatmap__cell[data-level="2"] {
+  background: rgba(205, 245, 90, 0.5);
+  border-color: rgba(205, 245, 90, 0.7);
+}
+
+[data-style="d2"] .d2-heatmap__cell[data-level="3"] {
+  background: rgba(205, 245, 90, 0.78);
+  border-color: var(--d2-accent-lime);
+}
+
+[data-style="d2"] .d2-heatmap__cell[data-level="4"] {
+  background: var(--d2-accent-lime);
+  border-color: var(--d2-accent-lime-deep);
+}
+
+/* ── Chat-list panel (Messages — AI surface) ────────────────────────── */
+[data-style="d2"] .d2-chat__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background: var(--d2-paper);
+  color: var(--d2-ink-muted);
+  font-family: var(--d2-font-sans);
+  font-size: 13px;
+  border: 1px solid var(--d2-hairline);
+}
+
+[data-style="d2"] .d2-chat__search-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+[data-style="d2"] .d2-chat__search-text {
+  font-family: var(--d2-font-sans);
+  font-size: 13px;
+  color: var(--d2-ink-muted);
+}
+
+[data-style="d2"] .d2-chat__list {
+  display: flex;
+  flex-direction: column;
+}
+
+[data-style="d2"] .d2-chat__row {
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--d2-hairline);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d2"] .d2-chat__row:last-child {
+  border-bottom: 0;
+}
+
+[data-style="d2"] .d2-chat__row:hover {
+  background: var(--d2-paper);
+}
+
+[data-style="d2"] .d2-chat__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background: var(--d2-accent-purple);
+  color: #ffffff;
+  font-family: var(--d2-font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+[data-style="d2"] .d2-chat__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+/* AI author label — deep-purple uppercase 12px (NOT mid-purple). */
+[data-style="d2"] .d2-chat__byline {
+  font-family: var(--d2-font-sans);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--d2-accent-purple-deep);
+  margin: 0;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-style="d2"] .d2-chat__byline-time {
+  color: var(--d2-ink-muted);
+  font-weight: 500;
+}
+
+[data-style="d2"] .d2-chat__msg {
+  font-family: var(--d2-font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--d2-ink);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+[data-style="d2"] .d2-chat__msg .d2-num {
+  color: var(--d2-ink);
+  font-weight: 600;
+}
+
+[data-style="d2"] .d2-chat__time {
+  font-family: var(--d2-font-sans);
+  font-size: 12px;
+  color: var(--d2-ink-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  align-self: flex-start;
+  padding-top: 2px;
+  font-weight: 500;
+}
+
+/* Inline number — Inter tabular, AAA on paper-deep */
+[data-style="d2"] .d2-num {
+  font-family: var(--d2-font-sans);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--d2-ink);
+}
+
+/* ── Lane-A regulatory disclosure strip — 16px floor ────────────────── */
+[data-style="d2"] .d2-disclosure {
+  font-family: var(--d2-font-sans);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--d2-ink-muted);
+  margin: 0;
+  padding: 8px 8px 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="d2"] * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
