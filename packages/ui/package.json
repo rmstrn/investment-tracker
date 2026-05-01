@@ -14,10 +14,6 @@
     "./charts": {
       "types": "./src/charts/index.ts",
       "default": "./src/charts/index.ts"
-    },
-    "./charts/lazy": {
-      "types": "./src/charts/lazy.ts",
-      "default": "./src/charts/lazy.ts"
     }
   },
   "files": ["src"],
@@ -46,7 +42,6 @@
     "d3-shape": "^3.2.0",
     "d3-time": "^3.1.0",
     "lucide-react": "^0.468.0",
-    "recharts": "^3.8.1",
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {

@@ -23,8 +23,8 @@ export const metadata = {
  *
  * Inside the stage the full section set renders: foundation, signature hero,
  * primitives (curated permutations), forms (product-context inputs), cards
- * (portfolio · insight · empty), charts (with custom Recharts theming via
- * `buildChartTheme`).
+ * (portfolio · insight · empty), charts (visx-candy backend — see
+ * `packages/ui/src/charts/visx/*`).
  */
 export default function DesignSystemPage() {
   return (

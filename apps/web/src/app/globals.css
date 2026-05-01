@@ -75,33 +75,8 @@ body {
 }
 
 /*
- * Neumorphism filter pass (v1.2 — 2026-04-29).
- *
- * Recharts renders bars as `<rect class="recharts-rectangle">` and lines as
- * `<path class="recharts-curve">` inside `<svg>` containers tagged with
- * deterministic test ids on the chart wrappers. We attach SVG drop-shadow
- * filters at the descendant-selector level so the React components don't
- * have to thread `filter` through Recharts' internal renderer (Recharts
- * doesn't expose a clean style-prop seam for this).
- *
- * Effects:
- * - Bars (single + stacked + waterfall): a 1px-warm-shadow + 0.5px cream-
- *   highlight drop-shadow makes each bar read as «pressed-into-paper». The
- *   filter degrades gracefully on dark theme via the dark `--shadow-chart-bar-emboss`
- *   override.
- * - Line strokes: a 1px ink-on-paper drop-shadow gives the line subtle
- *   physicality without becoming illustration-heavy.
- *
- * `prefers-reduced-motion` is irrelevant here (these are static filters,
- * no motion). The filters are paint-time only.
+ * Phase E (2026-05-01) — Recharts class-selector neumorphism block was
+ * deleted alongside the V1 chart wrappers. The visx-candy chart subsystem
+ * paints its own ink-shadow drop on each chart variant directly in SVG, so
+ * no global descendant selectors are required.
  */
-[data-testid="chart-bar"] .recharts-bar-rectangle,
-[data-testid="chart-stacked-bar"] .recharts-bar-rectangle,
-[data-testid="chart-waterfall"] .recharts-bar-rectangle {
-  filter: var(--shadow-chart-bar-emboss);
-}
-
-[data-testid="chart-line"] .recharts-line-curve,
-[data-testid="chart-area"] .recharts-area-curve {
-  filter: var(--shadow-chart-line-emboss);
-}

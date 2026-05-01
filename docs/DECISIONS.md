@@ -942,3 +942,19 @@ Owner: frontend-engineer (Phase 3b).
 ## 2026-05-01 — Chart subsystem rendering shifts from V2 custom-SVG primitives to visx + candy register
 
 PO directive: charts adopt the same playful candy register as marketing surfaces. visx (Airbnb, MIT, scoped imports) replaces V2 DonutChartV2/BarChartV2 + Cartesian framework + makeBackendDispatch + Recharts V1. See `docs/design/CHARTS_VISX_CANDY_SPEC.md` for the chart-by-chart visual language. Migration is phased; final cleanup deletes V1/V2 + Recharts dep.
+
+## 2026-05-01 — V1 Recharts wrappers + Candlestick + recharts dep removed
+
+Phase E (E1 + E2 combined) of the visx-candy migration.
+- E1: V2 custom-SVG chart subsystem deleted (BarChartV2, DonutChartV2,
+  SparklineV2, EditorialBevelFilter, Cartesian primitives, useHoverScale,
+  buildChartTheme, makeBackendDispatch); d3-scale dropped.
+- E2: V1 Recharts wrappers deleted (LineChart, AreaChart, BarChart,
+  DonutChart, Sparkline, Calendar, Treemap, StackedBar, Waterfall,
+  Candlestick); LazyCandlestick removed (no production consumer);
+  recharts dep dropped; Recharts CSS selectors removed from globals.css;
+  NEXT_PUBLIC_PROVEDO_CHART_BACKEND env removed from next.config.ts.
+- Production AreaChart consumer (`position-price-chart.tsx`) ported to
+  AreaVisx.
+- Charts subsystem now exclusively visx-candy. See
+  `docs/design/CHARTS_VISX_CANDY_SPEC.md`.

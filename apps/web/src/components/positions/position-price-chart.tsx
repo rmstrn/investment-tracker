@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, SegmentedControl, Skeleton } from '@investment-tracker/ui';
-import { AreaChart, type AreaChartPayload } from '@investment-tracker/ui/charts';
+import { type AreaChartPayload, AreaVisx } from '@investment-tracker/ui/charts';
 import { useState } from 'react';
 import { useMarketHistory } from '../../hooks/useMarketHistory';
 import type { MarketHistoryResponse, Position } from '../../lib/api/positions';
@@ -118,7 +118,7 @@ export function PositionPriceChartView({
           No price data available for this range.
         </div>
       ) : (
-        <AreaChart payload={chartPayload} height={240} />
+        <AreaVisx payload={chartPayload} height={240} />
       )}
     </Card>
   );
