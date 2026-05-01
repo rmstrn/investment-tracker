@@ -1,0 +1,1157 @@
+/*
+ * D4 — «Provedo Console» theme.
+ *
+ * Linear app interior × the Pinterest reference's lime/purple. Terminal-
+ * grade information density: tighter radii (chips not pills), mono
+ * numerals everywhere via strict allow-list, `⌘K` command palette
+ * REPLACES the chat sidebar, dense holdings table directly under the
+ * KPI strip.
+ *
+ * Spec: D4-density-variant.md (palette §3 / typography §4 / components §5).
+ *
+ * Scope: every selector lives under `[data-style="d4"]`. NO bare :root,
+ * NO bare body, NO bare element selectors. Tokens prefixed `--d4-*` so
+ * they cannot collide with comparison routes.
+ *
+ * Mono ALLOW-LIST (strict — single most important discipline rule):
+ * numerals + kbd chips + tickers ONLY. Inter for ALL labels and prose.
+ * Never mono on welcome name, button labels, AI message body.
+ *
+ * Wired by `./layout.tsx` via the route-local `<div data-style="d4">`.
+ */
+
+[data-style="d4"] {
+  /* ── Palette (8 roles — cooler than D1, Linear-blue-black) ──────────── */
+  --d4-canvas: #0e0f11;
+  --d4-surface-1: #16181b;
+  --d4-surface-2: #1d2024;
+  --d4-surface-3: #25282d; /* table row hover, kbd-chip body */
+  --d4-ink: #f2f3f5; /* AAA 16.8:1 on surface-1 */
+  --d4-muted: #8b9099; /* AA-large + AAA on 16px+ body */
+  --d4-lime: #c8f141; /* slightly more saturated than D1's lime */
+  --d4-lime-soft: rgba(200, 241, 65, 0.12); /* heatmap quintile-2 */
+  --d4-ink-on-lime: #0b0d08; /* AAA 17.4:1 on lime fill */
+  --d4-purple: #9d7bff;
+  --d4-purple-soft: rgba(157, 123, 255, 0.18); /* heatmap quintile, tooltip ghost */
+  --d4-ink-on-purple: #0b0814; /* AAA 11.2:1 on purple fill */
+  --d4-negative: #ff8a6b; /* down deltas only — warm, never red-alert */
+  --d4-positive: #c8f141; /* up deltas use lime — same hue family */
+  --d4-hairline: rgba(255, 255, 255, 0.06);
+  --d4-hairline-strong: rgba(255, 255, 255, 0.1);
+
+  /* ── Type stacks (variables → fallback chain) ──────────────────────── */
+  --d4-font-sans: var(--font-d4-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --d4-font-mono: var(--font-d4-mono), ui-monospace, SFMono-Regular, "Menlo",
+    "Consolas", monospace;
+
+  /* ── Page surface ──────────────────────────────────────────────────── */
+  background-color: var(--d4-canvas);
+  color: var(--d4-ink);
+  font-family: var(--d4-font-sans);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  Mono allow-list — numerals / kbd / tickers ONLY                       */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-num,
+[data-style="d4"] .d4-kbd,
+[data-style="d4"] .d4-ticker {
+  font-family: var(--d4-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0;
+}
+
+/* ── Page shell ─────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-page {
+  background: var(--d4-canvas);
+  min-height: 100vh;
+  padding: 24px;
+  position: relative; /* anchor for the ⌘K palette overlay */
+}
+
+[data-style="d4"] .d4-shell {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+/* ── Marketing strip (above the dashboard, ≤280px tall) ─────────────── */
+[data-style="d4"] .d4-marketing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: clamp(20px, 4vw, 48px);
+  padding: clamp(20px, 3vw, 32px) 8px clamp(8px, 2vw, 16px);
+}
+
+[data-style="d4"] .d4-marketing__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+[data-style="d4"] .d4-eyebrow {
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-style="d4"] .d4-eyebrow__cursor {
+  display: inline-block;
+  width: 6px;
+  height: 12px;
+  background: var(--d4-lime);
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+[data-style="d4"] .d4-headline {
+  font-family: var(--d4-font-sans);
+  font-weight: 600;
+  font-size: clamp(1.75rem, 1.125rem + 1.5vw, 2.5rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--d4-ink);
+  margin: 0;
+  text-wrap: balance;
+  max-width: 30ch;
+}
+
+[data-style="d4"] .d4-sub {
+  font-family: var(--d4-font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--d4-muted);
+  margin: 0;
+  max-width: 56ch;
+}
+
+[data-style="d4"] .d4-cta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+[data-style="d4"] .d4-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--d4-font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="d4"] .d4-cta--primary {
+  background: var(--d4-lime);
+  color: var(--d4-ink-on-lime);
+}
+
+[data-style="d4"] .d4-cta--primary:hover {
+  transform: translateY(-1px);
+}
+
+[data-style="d4"] .d4-cta--ghost {
+  background: transparent;
+  color: var(--d4-ink);
+  border: 1px solid var(--d4-hairline-strong);
+}
+
+[data-style="d4"] .d4-cta--ghost:hover {
+  background: var(--d4-surface-2);
+}
+
+[data-style="d4"] .d4-cta:focus-visible {
+  outline: 2px solid var(--d4-lime);
+  outline-offset: 3px;
+}
+
+[data-style="d4"] .d4-cta__kbd {
+  font-family: var(--d4-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  Dashboard surface — the hero                                           */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-surface {
+  background: var(--d4-surface-1);
+  border-radius: 12px;
+  border: 1px solid var(--d4-hairline);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Top bar (48px tall, chip nav) ──────────────────────────────────── */
+[data-style="d4"] .d4-topbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 48px;
+  padding: 0 4px;
+  border-bottom: 1px solid var(--d4-hairline);
+  margin: -16px -16px 0;
+  padding: 0 16px;
+}
+
+[data-style="d4"] .d4-topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--d4-font-sans);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--d4-ink);
+  letter-spacing: -0.01em;
+  margin-right: 16px;
+}
+
+[data-style="d4"] .d4-topbar__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--d4-lime);
+  color: var(--d4-ink-on-lime);
+  font-family: var(--d4-font-sans);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+[data-style="d4"] .d4-chip-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 8px; /* CHIP, NOT PILL */
+  background: transparent;
+  color: var(--d4-muted);
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: -0.005em;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 100ms linear, color 100ms linear;
+}
+
+[data-style="d4"] .d4-chip-nav:hover {
+  background: var(--d4-surface-2);
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-chip-nav--active {
+  background: var(--d4-surface-2);
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-chip-nav__count {
+  font-family: var(--d4-font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--d4-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-style="d4"] .d4-chip-nav__dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--d4-lime);
+}
+
+[data-style="d4"] .d4-topbar__spacer {
+  flex: 1 1 auto;
+}
+
+[data-style="d4"] .d4-search-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-radius: 8px;
+  background: var(--d4-surface-2);
+  color: var(--d4-muted);
+  font-family: var(--d4-font-sans);
+  font-size: 12px;
+  border: 1px solid var(--d4-hairline);
+  cursor: pointer;
+  min-width: 220px;
+  transition: border-color 120ms linear;
+}
+
+[data-style="d4"] .d4-search-chip:hover {
+  border-color: var(--d4-hairline-strong);
+}
+
+[data-style="d4"] .d4-search-chip__label {
+  flex: 1 1 auto;
+  text-align: left;
+}
+
+[data-style="d4"] .d4-kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 20px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--d4-surface-3);
+  color: var(--d4-muted);
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid var(--d4-hairline);
+}
+
+[data-style="d4"] .d4-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--d4-muted);
+  border: 0;
+  cursor: pointer;
+  transition: background 100ms linear, color 100ms linear;
+}
+
+[data-style="d4"] .d4-icon-btn:hover {
+  background: var(--d4-surface-2);
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--d4-purple);
+  color: var(--d4-ink);
+  font-family: var(--d4-font-sans);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* ── Welcome row (28px name — NOT 56px) ─────────────────────────────── */
+[data-style="d4"] .d4-welcome {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+[data-style="d4"] .d4-welcome__lead {
+  font-family: var(--d4-font-sans);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--d4-muted);
+  margin: 0 0 2px;
+}
+
+[data-style="d4"] .d4-welcome__name {
+  font-family: var(--d4-font-sans);
+  font-weight: 600;
+  font-size: 28px; /* NOT 56px — density direction shrinks the hero */
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--d4-ink);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* The single surviving pill — `[Pro]` badge */
+[data-style="d4"] .d4-pill-pro {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: 9999px; /* the ONE pill in this route */
+  background: var(--d4-purple-soft);
+  color: var(--d4-purple);
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--d4-purple);
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  KPI strip — 5 cards in a row, ONE spacious lime                       */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-kpi-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.4fr 1fr 1fr;
+  gap: 8px;
+  align-items: stretch;
+}
+
+[data-style="d4"] .d4-kpi {
+  background: var(--d4-surface-2);
+  border-radius: 8px; /* KPI card 8px */
+  border: 1px solid var(--d4-hairline);
+  padding: 12px 14px;
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 120ms linear;
+}
+
+[data-style="d4"] .d4-kpi:hover {
+  border-color: var(--d4-hairline-strong);
+}
+
+[data-style="d4"] .d4-kpi__label {
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+[data-style="d4"] .d4-kpi__num {
+  font-family: var(--d4-font-mono);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--d4-ink);
+  margin: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: -0.01em;
+}
+
+[data-style="d4"] .d4-kpi__delta {
+  font-family: var(--d4-font-mono);
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 1;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+[data-style="d4"] .d4-kpi__delta--up {
+  color: var(--d4-positive);
+}
+
+[data-style="d4"] .d4-kpi__delta--down {
+  color: var(--d4-negative);
+}
+
+[data-style="d4"] .d4-kpi__delta--flat {
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-kpi__glyph {
+  font-family: var(--d4-font-sans);
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* Spacious lime KPI — 120px tall, 36px mono number */
+[data-style="d4"] .d4-kpi--lime {
+  background: var(--d4-lime);
+  border-color: var(--d4-lime);
+  min-height: 120px;
+  padding: 14px 18px;
+  position: relative;
+  gap: 10px;
+}
+
+[data-style="d4"] .d4-kpi--lime .d4-kpi__label,
+[data-style="d4"] .d4-kpi--lime .d4-kpi__num {
+  color: var(--d4-ink-on-lime);
+}
+
+[data-style="d4"] .d4-kpi--lime .d4-kpi__num {
+  font-size: 36px; /* spacious lime card gets 36px */
+  font-weight: 600;
+}
+
+[data-style="d4"] .d4-kpi--lime .d4-kpi__delta {
+  color: var(--d4-ink-on-lime);
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+[data-style="d4"] .d4-kpi--lime .d4-kpi__arrow {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  width: 14px;
+  height: 14px;
+  color: var(--d4-ink-on-lime);
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  Holdings table — dense, 32px rows                                     */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-table-panel {
+  background: var(--d4-surface-1);
+  border: 1px solid var(--d4-hairline);
+  border-radius: 12px; /* content card 12px */
+  display: flex;
+  flex-direction: column;
+}
+
+[data-style="d4"] .d4-table-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--d4-hairline);
+}
+
+[data-style="d4"] .d4-table-head__title {
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+  margin: 0;
+}
+
+[data-style="d4"] .d4-table-head__filters {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+[data-style="d4"] .d4-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 8px; /* CHIP, NOT PILL */
+  background: transparent;
+  color: var(--d4-muted);
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 100ms linear, color 100ms linear;
+}
+
+[data-style="d4"] .d4-filter-chip:hover {
+  background: var(--d4-surface-2);
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-filter-chip--active {
+  background: var(--d4-surface-3);
+  color: var(--d4-ink);
+  border-color: var(--d4-hairline-strong);
+}
+
+[data-style="d4"] .d4-filter-chip__dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--d4-lime);
+}
+
+/* Dense holdings table */
+[data-style="d4"] .d4-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-family: var(--d4-font-sans);
+}
+
+[data-style="d4"] .d4-table thead th {
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--d4-hairline);
+  background: transparent;
+}
+
+[data-style="d4"] .d4-table thead th.d4-table__num {
+  text-align: right;
+}
+
+[data-style="d4"] .d4-table tbody tr {
+  position: relative;
+  height: 32px;
+  transition: background 80ms linear;
+}
+
+[data-style="d4"] .d4-table tbody tr:not(.d4-table__row--more):hover td {
+  background: var(--d4-surface-2);
+}
+
+[data-style="d4"] .d4-table tbody tr:not(.d4-table__row--more):hover td:first-child {
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+[data-style="d4"] .d4-table tbody tr:not(.d4-table__row--more):hover td:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+/* Active row — 2px lime LEFT border, no fill */
+[data-style="d4"] .d4-table tbody tr.d4-table__row--active td {
+  background: var(--d4-surface-2);
+  position: relative;
+}
+
+[data-style="d4"] .d4-table tbody tr.d4-table__row--active td:first-child {
+  box-shadow: inset 2px 0 0 0 var(--d4-lime);
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+[data-style="d4"] .d4-table tbody tr.d4-table__row--active td:last-child {
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+[data-style="d4"] .d4-table tbody td {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--d4-ink);
+  border-bottom: 1px solid var(--d4-hairline);
+  vertical-align: middle;
+}
+
+[data-style="d4"] .d4-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+[data-style="d4"] .d4-ticker {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-table__name {
+  font-family: var(--d4-font-sans);
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-table__num {
+  text-align: right;
+  font-family: var(--d4-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-weight: 400;
+  font-size: 13px;
+  color: var(--d4-ink);
+}
+
+[data-style="d4"] .d4-table__num--up {
+  color: var(--d4-positive);
+}
+
+[data-style="d4"] .d4-table__num--down {
+  color: var(--d4-negative);
+}
+
+[data-style="d4"] .d4-table__alloc {
+  text-align: right;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  color: var(--d4-lime);
+  font-family: var(--d4-font-mono);
+}
+
+[data-style="d4"] .d4-table__alloc--dim {
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-table__row--more td {
+  font-family: var(--d4-font-sans);
+  font-size: 12px;
+  color: var(--d4-muted);
+  text-align: center;
+  padding: 8px 12px;
+  background: transparent;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  3-col grid below — chart | heatmap | sparkline                        */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.1fr);
+  gap: 8px;
+}
+
+@media (max-width: 1100px) {
+  [data-style="d4"] .d4-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-style="d4"] .d4-kpi-row {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+}
+
+[data-style="d4"] .d4-panel {
+  background: var(--d4-surface-1);
+  border: 1px solid var(--d4-hairline);
+  border-radius: 12px; /* content card 12px */
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 240px;
+  /* CSS-var override scope so the embedded BarVisx (its own
+   * candy-themed defaults) borrows D4's lime/purple palette and
+   * Inter+JetBrains Mono pair via local var override. */
+  --text-on-candy: var(--d4-ink);
+  --cta-fill: var(--d4-purple);
+  --accent: var(--d4-lime);
+  --accent-deep: var(--d4-lime);
+  --cta-shadow: var(--d4-purple);
+  --card: var(--d4-surface-1);
+  --card-highlight: var(--d4-surface-2);
+  --bg-cream: var(--d4-surface-2);
+  --ink: var(--d4-ink);
+  --color-text-secondary: var(--d4-muted);
+  --font-family-display: var(--d4-font-mono);
+  --font-family-body: var(--d4-font-sans);
+  --font-family-mono: var(--d4-font-mono);
+}
+
+[data-style="d4"] .d4-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+[data-style="d4"] .d4-panel__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+  margin: 0;
+}
+
+[data-style="d4"] .d4-panel__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-family: var(--d4-font-sans);
+  font-size: 11px;
+  color: var(--d4-muted);
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--d4-hairline);
+}
+
+[data-style="d4"] .d4-panel__caption .d4-num {
+  color: var(--d4-ink);
+  font-size: 12px;
+}
+
+[data-style="d4"] .d4-panel__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+/* ── Activity heatmap (calendar grid, lime saturation gradient) ─────── */
+[data-style="d4"] .d4-heatmap {
+  display: grid;
+  grid-template-columns: auto repeat(8, 22px);
+  gap: 3px;
+  align-items: center;
+  margin: 4px 0;
+}
+
+[data-style="d4"] .d4-heatmap__rowlabel,
+[data-style="d4"] .d4-heatmap__collabel {
+  font-family: var(--d4-font-mono);
+  font-size: 10px;
+  color: var(--d4-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-style="d4"] .d4-heatmap__rowlabel {
+  text-align: right;
+  padding-right: 4px;
+}
+
+[data-style="d4"] .d4-heatmap__cell {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--d4-canvas);
+  border: 1px solid var(--d4-hairline);
+}
+
+[data-style="d4"] .d4-heatmap__cell[data-level="0"] {
+  background: var(--d4-canvas);
+}
+
+[data-style="d4"] .d4-heatmap__cell[data-level="1"] {
+  background: rgba(200, 241, 65, 0.12);
+  border-color: rgba(200, 241, 65, 0.18);
+}
+
+[data-style="d4"] .d4-heatmap__cell[data-level="2"] {
+  background: rgba(200, 241, 65, 0.32);
+  border-color: rgba(200, 241, 65, 0.4);
+}
+
+[data-style="d4"] .d4-heatmap__cell[data-level="3"] {
+  background: rgba(200, 241, 65, 0.6);
+  border-color: rgba(200, 241, 65, 0.7);
+}
+
+[data-style="d4"] .d4-heatmap__cell[data-level="4"] {
+  background: var(--d4-lime);
+  border-color: var(--d4-lime);
+}
+
+/* ── Sparkline panel — NVDA 3-month ─────────────────────────────────── */
+[data-style="d4"] .d4-spark {
+  width: 100%;
+  height: 140px;
+  display: block;
+}
+
+[data-style="d4"] .d4-spark__legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--d4-font-sans);
+  font-size: 11px;
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-spark__swatch {
+  display: inline-block;
+  width: 18px;
+  height: 2px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+[data-style="d4"] .d4-spark__swatch--lime {
+  background: var(--d4-lime);
+}
+
+[data-style="d4"] .d4-spark__swatch--purple {
+  background: var(--d4-purple);
+  border-top: 1px dashed var(--d4-purple);
+  background-image: linear-gradient(
+    to right,
+    var(--d4-purple) 50%,
+    transparent 50%
+  );
+  background-size: 6px 2px;
+  background-repeat: repeat-x;
+  background-color: transparent;
+}
+
+[data-style="d4"] .d4-spark__price {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-left: auto;
+}
+
+[data-style="d4"] .d4-spark__num {
+  font-family: var(--d4-font-mono);
+  font-weight: 500;
+  font-size: 16px;
+  color: var(--d4-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+[data-style="d4"] .d4-spark__delta {
+  font-family: var(--d4-font-mono);
+  font-size: 12px;
+  color: var(--d4-positive);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ────────────────────────────────────────────────────────────────────── */
+/*  ⌘K command palette overlay — rendered OPEN in the comp                */
+/* ────────────────────────────────────────────────────────────────────── */
+[data-style="d4"] .d4-palette-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(14, 15, 17, 0.7);
+  z-index: 10;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+[data-style="d4"] .d4-palette {
+  position: absolute;
+  z-index: 11;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100% - 64px));
+  max-height: 480px;
+  background: var(--d4-surface-2);
+  border: 1px solid var(--d4-hairline-strong);
+  border-radius: 12px; /* palette overlay 12px */
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  pointer-events: none; /* static comp */
+  padding: 0; /* override <dialog> UA padding */
+  color: inherit;
+  margin: 0;
+}
+
+[data-style="d4"] .d4-palette__input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--d4-hairline);
+}
+
+[data-style="d4"] .d4-palette__caret {
+  font-family: var(--d4-font-mono);
+  color: var(--d4-lime);
+  font-size: 14px;
+  line-height: 1;
+}
+
+[data-style="d4"] .d4-palette__query {
+  font-family: var(--d4-font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--d4-ink);
+  flex: 1 1 auto;
+}
+
+[data-style="d4"] .d4-palette__cursor {
+  display: inline-block;
+  width: 8px;
+  height: 14px;
+  background: var(--d4-lime);
+  vertical-align: middle;
+  animation: d4-blink 1s steps(2, end) infinite;
+}
+
+@keyframes d4-blink {
+  to {
+    opacity: 0;
+  }
+}
+
+[data-style="d4"] .d4-palette__answer {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--d4-hairline);
+  background: var(--d4-surface-1);
+}
+
+[data-style="d4"] .d4-palette__streaming {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--d4-font-sans);
+  font-size: 11px;
+  color: var(--d4-muted);
+  margin: 0 0 8px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+[data-style="d4"] .d4-palette__streaming-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--d4-lime);
+}
+
+[data-style="d4"] .d4-palette__answer-body {
+  font-family: var(--d4-font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--d4-ink);
+  margin: 0;
+}
+
+[data-style="d4"] .d4-palette__answer-body .d4-ticker {
+  color: var(--d4-ink);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--d4-surface-3);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+[data-style="d4"] .d4-palette__answer-body .d4-num--down {
+  color: var(--d4-negative);
+  font-family: var(--d4-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+[data-style="d4"] .d4-palette__answer-body .d4-num--up {
+  color: var(--d4-positive);
+  font-family: var(--d4-font-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+[data-style="d4"] .d4-palette__section {
+  padding: 6px 14px;
+  font-family: var(--d4-font-sans);
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-palette__results {
+  list-style: none;
+  margin: 0;
+  padding: 0 6px 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+[data-style="d4"] .d4-palette__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 6px;
+}
+
+[data-style="d4"] .d4-palette__row--active {
+  background: var(--d4-surface-3);
+}
+
+[data-style="d4"] .d4-palette__row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  background: var(--d4-surface-3);
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-palette__row-label {
+  font-family: var(--d4-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--d4-ink);
+  flex: 1 1 auto;
+}
+
+[data-style="d4"] .d4-palette__row-meta {
+  font-family: var(--d4-font-sans);
+  font-size: 11px;
+  color: var(--d4-muted);
+}
+
+[data-style="d4"] .d4-palette__row-kbd {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ── Lane-A regulatory disclosure strip — 16px floor ────────────────── */
+[data-style="d4"] .d4-disclosure {
+  font-family: var(--d4-font-sans);
+  font-weight: 400;
+  font-size: 16px; /* hard floor */
+  line-height: 1.5;
+  color: var(--d4-muted);
+  margin: 0;
+  padding: 12px 4px 0;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="d4"] * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
