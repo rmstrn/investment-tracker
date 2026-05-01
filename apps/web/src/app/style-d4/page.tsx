@@ -1,4 +1,7 @@
+'use client';
+
 import { BAR_DRIFT_FIXTURE, BarVisx } from '@investment-tracker/ui/charts';
+import { useCallback, useEffect, useState } from 'react';
 
 /**
  * `/style-d4` — «Provedo Console».
@@ -282,6 +285,19 @@ function NvdaSparkline() {
 /* ────────────────────────────────────────────────────────────────────── */
 
 export default function StyleD4Page() {
+  const [paletteOpen, setPaletteOpen] = useState(true);
+  const closePalette = useCallback(() => setPaletteOpen(false), []);
+  const openPalette = useCallback(() => setPaletteOpen(true), []);
+
+  useEffect(() => {
+    if (!paletteOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setPaletteOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [paletteOpen]);
+
   return (
     <div className="d4-page">
       <div className="d4-shell">
@@ -298,10 +314,10 @@ export default function StyleD4Page() {
             <p className="d4-sub">{HERO_SUB}</p>
           </div>
           <div className="d4-cta-row">
-            <a href="#dashboard" className="d4-cta d4-cta--primary">
+            <button type="button" onClick={openPalette} className="d4-cta d4-cta--primary">
               <span className="d4-cta__kbd">⌘K</span>
               <span>open palette</span>
-            </a>
+            </button>
             <a href="#connect" className="d4-cta d4-cta--ghost">
               <span>connect a broker</span>
             </a>
@@ -336,7 +352,12 @@ export default function StyleD4Page() {
               </a>
             ))}
             <span className="d4-topbar__spacer" aria-hidden />
-            <button type="button" className="d4-search-chip" aria-label="Open command palette">
+            <button
+              type="button"
+              onClick={openPalette}
+              className="d4-search-chip"
+              aria-label="Open command palette"
+            >
               <Icon
                 d="m21 21-4.3-4.3M11 18a7 7 0 1 1 0-14 7 7 0 0 1 0 14z"
                 title="Search"
@@ -623,56 +644,73 @@ export default function StyleD4Page() {
           {/* ─── Lane-A regulatory disclosure (16px floor) ───────────── */}
           <p className="d4-disclosure">Read-only. No advice. No trading.</p>
 
-          {/* ─── ⌘K palette overlay — rendered VISIBLE in the comp ────
-           * NOT a hidden modal. Sits over the dashboard surface with
-           * a scrim so PO can see the AI mode without interaction.
+          {/* ─── ⌘K palette overlay — opens by default so PO sees the
+           * AI mode on first paint. Dismiss via Esc / scrim click /
+           * close button. Re-open via the `[ Search ⌘K ]` chip in the
+           * top bar or the `⌘K open palette` CTA in the marketing strip.
            */}
-          <div className="d4-palette-scrim" aria-hidden />
-          <dialog className="d4-palette" aria-label="Command palette" open>
-            <div className="d4-palette__input">
-              <span className="d4-palette__caret" aria-hidden>
-                {'>'}
-              </span>
-              <span className="d4-palette__query">Why is my portfolio down today?</span>
-              <span className="d4-palette__cursor" aria-hidden />
-              <span className="d4-kbd">esc</span>
-            </div>
-            {/* Streaming AI answer — Inter for prose, mono ONLY on
-             * tickers and deltas (allow-list). */}
-            <div className="d4-palette__answer">
-              <p className="d4-palette__streaming">
-                <span className="d4-palette__streaming-dot" aria-hidden />
-                Provedo · streaming
-              </p>
-              <p className="d4-palette__answer-body">
-                <span className="d4-ticker">AAPL</span>{' '}
-                <span className="d4-num--down">▼ -2.1%</span> drove $874 of the $1,202 drawdown. The{' '}
-                <span className="d4-ticker">S&amp;P 500</span> is{' '}
-                <span className="d4-num--down">▼ -0.8%</span>, so this is mostly idiosyncratic, not
-                market.
-              </p>
-            </div>
-            <p className="d4-palette__section">More actions</p>
-            <ul className="d4-palette__results">
-              {PALETTE_RESULTS.map((r) => (
-                <li
-                  key={r.label}
-                  className={
-                    r.active ? 'd4-palette__row d4-palette__row--active' : 'd4-palette__row'
-                  }
-                >
-                  <span className="d4-palette__row-icon" aria-hidden>
-                    <Icon d={r.iconPath} title={r.label} size={12} />
+          {paletteOpen ? (
+            <>
+              <button
+                type="button"
+                className="d4-palette-scrim"
+                aria-label="Close command palette"
+                onClick={closePalette}
+              />
+              <dialog className="d4-palette" aria-label="Command palette" open>
+                <div className="d4-palette__input">
+                  <span className="d4-palette__caret" aria-hidden>
+                    {'>'}
                   </span>
-                  <span className="d4-palette__row-label">{r.label}</span>
-                  <span className="d4-palette__row-meta">{r.meta}</span>
-                  <span className="d4-palette__row-kbd">
-                    <span className="d4-kbd">{r.kbd}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </dialog>
+                  <span className="d4-palette__query">Why is my portfolio down today?</span>
+                  <span className="d4-palette__cursor" aria-hidden />
+                  <button
+                    type="button"
+                    onClick={closePalette}
+                    aria-label="Close command palette"
+                    className="d4-palette__close"
+                  >
+                    <span className="d4-kbd">esc</span>
+                  </button>
+                </div>
+                {/* Streaming AI answer — Inter for prose, mono ONLY on
+                 * tickers and deltas (allow-list). */}
+                <div className="d4-palette__answer">
+                  <p className="d4-palette__streaming">
+                    <span className="d4-palette__streaming-dot" aria-hidden />
+                    Provedo · streaming
+                  </p>
+                  <p className="d4-palette__answer-body">
+                    <span className="d4-ticker">AAPL</span>{' '}
+                    <span className="d4-num--down">▼ -2.1%</span> drove $874 of the $1,202 drawdown.
+                    The <span className="d4-ticker">S&amp;P 500</span> is{' '}
+                    <span className="d4-num--down">▼ -0.8%</span>, so this is mostly idiosyncratic,
+                    not market.
+                  </p>
+                </div>
+                <p className="d4-palette__section">More actions</p>
+                <ul className="d4-palette__results">
+                  {PALETTE_RESULTS.map((r) => (
+                    <li
+                      key={r.label}
+                      className={
+                        r.active ? 'd4-palette__row d4-palette__row--active' : 'd4-palette__row'
+                      }
+                    >
+                      <span className="d4-palette__row-icon" aria-hidden>
+                        <Icon d={r.iconPath} title={r.label} size={12} />
+                      </span>
+                      <span className="d4-palette__row-label">{r.label}</span>
+                      <span className="d4-palette__row-meta">{r.meta}</span>
+                      <span className="d4-palette__row-kbd">
+                        <span className="d4-kbd">{r.kbd}</span>
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </dialog>
+            </>
+          ) : null}
         </section>
       </div>
     </div>
