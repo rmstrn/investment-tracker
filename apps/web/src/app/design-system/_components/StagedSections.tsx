@@ -3,7 +3,6 @@
 import { useShowcaseTheme } from '../_hooks/useShowcaseTheme';
 import { CardsSection } from '../_sections/cards';
 import { ChartsSection } from '../_sections/charts';
-import { ChartsVisxSection } from '../_sections/charts-visx';
 import { FormsSection } from '../_sections/forms';
 import { FoundationSection } from '../_sections/foundation';
 import { MarketingCandySection } from '../_sections/marketing-candy';
@@ -55,9 +54,6 @@ export function StagedSections() {
       </div>
       <div id="charts" className="showcase-anchor">
         <ChartsSection variant={theme} />
-      </div>
-      <div id="charts-visx" className="showcase-anchor">
-        <ChartsVisxSection />
       </div>
       <div id="marketing-candy" className="showcase-anchor">
         <MarketingCandySection />
