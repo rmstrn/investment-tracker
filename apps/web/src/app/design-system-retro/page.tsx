@@ -45,17 +45,19 @@ interface PaletteSwatch {
   readonly label: string;
 }
 
-/** RetroUI's own default theme tokens — verbatim from `app/global.css`. */
+/** Provedo palette mapped to RetroUI semantic tokens — see `_lib/theme.css`. */
 const RETROUI_PALETTE: readonly PaletteSwatch[] = [
-  { token: '--background', value: '#F5ECE7', label: 'background' },
-  { token: '--foreground', value: '#000000', label: 'foreground' },
-  { token: '--primary', value: '#ffdb33', label: 'primary' },
-  { token: '--secondary', value: '#000000', label: 'secondary' },
-  { token: '--card', value: '#ffffff', label: 'card' },
-  { token: '--accent', value: '#fae583', label: 'accent' },
-  { token: '--muted', value: '#d5d5d5', label: 'muted' },
-  { token: '--destructive', value: '#e63946', label: 'destructive' },
-  { token: '--border', value: '#000000', label: 'border' },
+  { token: '--background', value: '#F6F1E8', label: 'background · paper-cream' },
+  { token: '--foreground', value: '#1C1B26', label: 'foreground · ink-deep' },
+  { token: '--primary', value: '#F08A3C', label: 'primary · signal-orange' },
+  { token: '--primary-hover', value: '#C4622E', label: 'primary-hover · orange-deep' },
+  { token: '--secondary', value: '#1C1B26', label: 'secondary · ink-deep' },
+  { token: '--card', value: '#F4F0E4', label: 'card · cream-on-ink' },
+  { token: '--accent', value: '#F4CC4A', label: 'accent · candy-mustard' },
+  { token: '--destructive', value: '#C4622E', label: 'destructive · orange-deep' },
+  { token: '--border', value: '#1C1B26', label: 'border · ink-deep' },
+  { token: '--chart-2', value: '#F7A1C9', label: 'chart · candy-pink' },
+  { token: '--chart-4', value: '#88E26C', label: 'chart · signature-green' },
 ];
 
 const BAR_DATA = [
@@ -92,7 +94,7 @@ export default function DesignSystemRetroPage() {
         {/* ─── Library meta-strip ────────────────────────────────────── */}
         <div className="border-b-2 border-border">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
-            <span>library · Logging-Studio/RetroUI</span>
+            <span>library · Logging-Studio/RetroUI · provedo palette</span>
             <span>22 components · 4 charts · wraps recharts</span>
             <a
               href="https://github.com/Logging-Studio/RetroUI"
@@ -105,16 +107,20 @@ export default function DesignSystemRetroPage() {
           </div>
         </div>
 
-        {/* ─── 1. Hero — RetroUI default backdrop ────────────────────── */}
-        <section className="relative border-b-2 border-border bg-background">
+        {/* ─── 1. Hero — Provedo candy-pink loud surface ─────────────── */}
+        <section
+          className="relative border-b-2 border-border"
+          style={{ backgroundColor: '#F7A1C9', color: '#1C1B26' }}
+        >
           <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
             <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em]">
-              retroui · default theme — AS-IS
+              retroui · with provedo palette
             </p>
             <h1 className="font-head max-w-4xl text-7xl md:text-9xl">RetroUI.</h1>
             <p className="mt-8 max-w-2xl text-lg md:text-xl">
-              Default RetroUI theme rendered verbatim. Cream background, yellow primary, black
-              border, chunky offset shadows. No Provedo overrides applied.
+              RetroUI components painted with Provedo&apos;s palette via the library&apos;s
+              documented `:root` / `@theme inline` mechanism. Candy-pink hero, signal-orange
+              primary, paper-cream surfaces, ink-deep borders.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4">
               <Button size="lg">Default</Button>
@@ -501,10 +507,10 @@ export default function DesignSystemRetroPage() {
             </div>
           </section>
 
-          {/* ─── 7. Default palette ────────────────────────────────────── */}
+          {/* ─── 7. Provedo palette mapped onto RetroUI tokens ─────────── */}
           <section className="mb-24">
             <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
-              palette · RetroUI defaults
+              palette · provedo → retroui tokens
             </p>
             <Text as="h2" className="mb-12 text-5xl font-head">
               Palette
@@ -517,7 +523,9 @@ export default function DesignSystemRetroPage() {
                   style={{
                     backgroundColor: swatch.value,
                     color:
-                      swatch.value === '#000000' || swatch.value === '#000' ? '#ffffff' : '#000000',
+                      swatch.value === '#1C1B26' || swatch.value === '#C4622E'
+                        ? '#F4F0E4'
+                        : '#1C1B26',
                     padding: '32px 16px',
                     minHeight: '180px',
                     display: 'flex',

@@ -1,13 +1,29 @@
 /*
- * ekmas/neobrutalism-components default theme — verbatim from
- * `ekmas/neobrutalism-components/src/styling/globals.css`.
+ * ekmas/neobrutalism-components theme — overridden with Provedo palette.
  *
- * NO Provedo overrides. Values are ekmas's own out-of-the-box defaults so PO
- * sees the library AS-IS. Scoped to `[data-ds-variant="ekmas"]` to coexist
- * with the canonical Provedo theme on the rest of the app.
+ * Theming mechanism (verified verbatim from ekmas's
+ * `src/styling/globals.css` on github.com/ekmas/neobrutalism-components):
+ *   1. `:root` declares semantic tokens in OKLCH (`--main`, `--background`,
+ *      `--secondary-background`, `--border`, `--shadow`, `--chart-1..5`,
+ *      `--box-shadow-x/y`, `--reverse-box-shadow-x/y`, `--font-weight-*`).
+ *   2. `@theme inline` maps each to a Tailwind v4 utility namespace
+ *      (`--color-main: var(--main)` → `bg-main` resolves;
+ *      `--shadow-shadow: var(--shadow)` → `shadow-shadow`;
+ *      `--radius-base: var(--border-radius)` → `rounded-base`;
+ *      `--spacing-boxShadowX: var(--box-shadow-x)` → `translate-x-boxShadowX`).
+ *   3. Dark mode is a `.dark` class cascade — confirming scope-via-selector
+ *      is the documented override pattern.
+ *
+ * Our route uses `[data-ds-variant="ekmas"]` (set by layout.tsx) instead of
+ * `:root` or `.dark`, which is structurally identical to ekmas's official
+ * dark-mode cascade — i.e. NO CSS hacks, just the documented mechanism
+ * applied at a different selector type. We use hex (not OKLCH) for direct
+ * parity with the rest of the Provedo design-tokens output.
+ *
+ * The matching `@theme inline` block lives in `apps/web/src/app/globals.css`.
  *
  * Source: https://github.com/ekmas/neobrutalism-components/blob/main/src/styling/globals.css
- * Default theme commit verified 2026-05-01.
+ * Verified 2026-05-01.
  */
 
 [data-ds-variant="ekmas"] {
@@ -22,33 +38,34 @@
   --font-weight-base: 500;
   --font-weight-heading: 700;
 
-  --background: oklch(93.46% 0.0304 254.32);
-  --secondary-background: oklch(100% 0 0);
-  --foreground: oklch(0% 0 0);
-  --main-foreground: oklch(0% 0 0);
+  /* ── Provedo palette → ekmas semantic tokens ─────────────────────────── */
+  --background: #f6f1e8;            /* paper-cream — calm canvas */
+  --secondary-background: #f4f0e4;  /* cream-on-ink — lifted surface (cards) */
+  --foreground: #1c1b26;            /* ink-deep — primary text */
+  --main-foreground: #1c1b26;       /* ink on the loud --main (per DS-v3 ink-CTA) */
 
-  --main: oklch(67.47% 0.1725 259.61);
-  --border: oklch(0% 0 0);
-  --ring: oklch(0% 0 0);
-  --overlay: oklch(0% 0 0 / 0.8);
+  --main: #f08a3c;                  /* signal-orange — ekmas's brand-loud token */
+  --border: #1c1b26;                /* ink-deep — chunky brutalist border */
+  --ring: #1c1b26;
+  --overlay: rgba(28, 27, 38, 0.8); /* ink-deep at 80% — modal overlay */
 
   --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
 
-  --chart-1: oklch(67.47% 0.1726 259.49);
-  --chart-2: oklch(67.28% 0.2147 24.22);
-  --chart-3: oklch(86.03% 0.176 92.36);
-  --chart-4: oklch(79.76% 0.2044 153.08);
-  --chart-5: oklch(66.34% 0.1806 277.2);
-  --chart-active-dot: #000;
+  /* ── Chart palette — Provedo brand sequence ──────────────────────────── */
+  --chart-1: #f08a3c; /* signal-orange */
+  --chart-2: #f7a1c9; /* candy-pink */
+  --chart-3: #f4cc4a; /* candy-mustard */
+  --chart-4: #88e26c; /* signature-green */
+  --chart-5: #c4622e; /* signal-orange-deep */
+  --chart-active-dot: #1c1b26;
 
   --radius-base: var(--border-radius);
 
-  /* ekmas demo site uses "Public Sans" base + heading. Default fallback chain
-     keeps the look approximate without forcing PO to install a font package. */
-  --font-base: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+  /* Provedo typography stack — bagelFatOne for headings, Manrope for body */
+  --font-base: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     sans-serif;
-  --font-heading: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    sans-serif;
+  --font-heading: var(--font-bagel-fat-one), "Public Sans", ui-sans-serif, system-ui,
+    -apple-system, "Segoe UI", Roboto, sans-serif;
 
   background-color: var(--background);
   color: var(--foreground);

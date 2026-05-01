@@ -88,16 +88,18 @@ interface PaletteSwatch {
   readonly label: string;
 }
 
-/** ekmas's own default theme tokens — verbatim from `src/styling/globals.css`. */
+/** Provedo palette mapped to ekmas semantic tokens — see `_lib/theme.css`. */
 const EKMAS_PALETTE: readonly PaletteSwatch[] = [
-  { token: '--background', value: 'oklch(93.46% 0.0304 254.32)', label: 'background' },
-  { token: '--secondary-background', value: 'oklch(100% 0 0)', label: 'secondary-bg' },
-  { token: '--main', value: 'oklch(67.47% 0.1725 259.61)', label: 'main' },
-  { token: '--foreground', value: 'oklch(0% 0 0)', label: 'foreground' },
-  { token: '--main-foreground', value: 'oklch(0% 0 0)', label: 'main-fg' },
-  { token: '--border', value: 'oklch(0% 0 0)', label: 'border' },
-  { token: '--ring', value: 'oklch(0% 0 0)', label: 'ring' },
-  { token: '--overlay', value: 'oklch(0% 0 0 / 0.8)', label: 'overlay' },
+  { token: '--background', value: '#F6F1E8', label: 'background · paper-cream' },
+  { token: '--secondary-background', value: '#F4F0E4', label: 'secondary-bg · cream-on-ink' },
+  { token: '--main', value: '#F08A3C', label: 'main · signal-orange' },
+  { token: '--foreground', value: '#1C1B26', label: 'foreground · ink-deep' },
+  { token: '--main-foreground', value: '#1C1B26', label: 'main-fg · ink-deep' },
+  { token: '--border', value: '#1C1B26', label: 'border · ink-deep' },
+  { token: '--chart-2', value: '#F7A1C9', label: 'chart-2 · candy-pink' },
+  { token: '--chart-3', value: '#F4CC4A', label: 'chart-3 · candy-mustard' },
+  { token: '--chart-4', value: '#88E26C', label: 'chart-4 · signature-green' },
+  { token: '--chart-5', value: '#C4622E', label: 'chart-5 · orange-deep' },
 ];
 
 const CHART_DATA = [
@@ -126,7 +128,7 @@ export default function DesignSystemEkmasPage() {
       {/* ─── Library meta-strip ────────────────────────────────────── */}
       <div className="border-b-2 border-border">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
-          <span>library · ekmas/neobrutalism-components</span>
+          <span>library · ekmas/neobrutalism-components · provedo palette</span>
           <span>24 components · chart wraps recharts</span>
           <a
             href="https://github.com/ekmas/neobrutalism-components"
@@ -139,16 +141,20 @@ export default function DesignSystemEkmasPage() {
         </div>
       </div>
 
-      {/* ─── 1. Hero — ekmas default backdrop ──────────────────────── */}
-      <section className="relative border-b-2 border-border bg-background">
+      {/* ─── 1. Hero — Provedo candy-mustard loud surface ──────────── */}
+      <section
+        className="relative border-b-2 border-border"
+        style={{ backgroundColor: '#F4CC4A', color: '#1C1B26' }}
+      >
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
           <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em]">
-            neobrutalism · default theme — AS-IS
+            ekmas · with provedo palette
           </p>
           <h1 className="font-heading max-w-4xl text-7xl md:text-9xl">Neobrutalism.</h1>
           <p className="mt-8 max-w-2xl text-lg md:text-xl font-base">
-            Default ekmas theme rendered verbatim. Light blue background, blue main, white secondary
-            background, hard offset shadow with hover-translate trick. No Provedo overrides applied.
+            ekmas components painted with Provedo&apos;s palette via the library&apos;s documented
+            `:root` / `@theme inline` mechanism. Candy-mustard hero, signal-orange `--main`,
+            paper-cream surfaces, ink-deep borders.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
             <Button size="lg">Default</Button>
@@ -521,7 +527,7 @@ export default function DesignSystemEkmasPage() {
         {/* ─── 7. Default palette ────────────────────────────────────── */}
         <section className="mb-24">
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
-            palette · ekmas defaults (oklch)
+            palette · provedo → ekmas tokens
           </p>
           <h2 className="mb-12 text-5xl font-heading">Palette</h2>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
@@ -532,12 +538,9 @@ export default function DesignSystemEkmasPage() {
                 style={{
                   backgroundColor: swatch.value,
                   color:
-                    swatch.label.includes('foreground') ||
-                    swatch.label === 'border' ||
-                    swatch.label === 'ring' ||
-                    swatch.label === 'overlay'
-                      ? '#ffffff'
-                      : '#000000',
+                    swatch.value === '#1C1B26' || swatch.value === '#C4622E'
+                      ? '#F4F0E4'
+                      : '#1C1B26',
                   padding: '32px 16px',
                   minHeight: '180px',
                   display: 'flex',
