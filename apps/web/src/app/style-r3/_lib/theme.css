@@ -47,8 +47,7 @@
   /* ── Type stacks (variables → fallback chain) ──────────────────────── */
   --r3-font-sans: var(--font-r3-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Helvetica Neue", Arial, sans-serif;
-  --r3-font-mono: var(--font-r3-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas",
-    monospace;
+  --r3-font-mono: var(--font-r3-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
 
   /* ── Page surface ──────────────────────────────────────────────────── */
   background-color: var(--r3-canvas);

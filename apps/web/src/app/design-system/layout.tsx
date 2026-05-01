@@ -1,23 +1,29 @@
-import { ToastProvider } from '@investment-tracker/ui';
 import type { ReactNode } from 'react';
-import { bagelFatOne, caveat, manrope } from './_fonts';
+import { frauncesD3, interD3, jetbrainsMonoD3 } from './_fonts';
+import './_styles/dossier.css';
 
 /**
- * Layout for `/design-system` — wraps the showcase in a ToastProvider so that
- * primitive demos (Toast, copy-to-clipboard chips, etc.) can fire visible
- * notifications without depending on any other app shell.
+ * `/design-system` layout — D3 «Private Dossier» theme variant.
  *
- * v2: attaches Bagel Fat One / Manrope / Caveat CSS-var classes to a wrapping
- * `<div>`. `next/font/google` handles preloading + font-display: swap. We
- * cannot mutate `<html>` from a nested layout, so the wrapper carries the
- * `font-*-variable` class names and any descendant can read them via the
- * `--font-bagel` / `--font-manrope` / `--font-caveat` custom properties.
+ * Applies `data-theme="dossier"` to the route's outermost wrapper so the
+ * dossier CSS variables (`apps/web/src/app/design-system/_styles/dossier.css`)
+ * resolve for this subtree only. The world's `<html data-theme>` stays
+ * `light`/`dark` for every other route — no global flip.
+ *
+ * Loads three OFL variable fonts via `next/font/google`:
+ *   - Fraunces  (opsz axis) → 3-surface lock (typography specimen / KPI / H2)
+ *   - Inter                  → body, labels, chips, buttons
+ *   - JetBrains Mono         → axis ticks, KPI delta lines, hex / WCAG values
+ *
+ * The font CSS variables (`--font-d3-display` / `--font-d3-sans` /
+ * `--font-d3-mono`) flow into the dossier theme tokens via the
+ * `--d3-font-*` stacks defined in `_styles/dossier.css`.
  */
 export default function DesignSystemLayout({ children }: { children: ReactNode }) {
-  const fontVars = `${bagelFatOne.variable} ${manrope.variable} ${caveat.variable}`;
+  const fontVars = `${frauncesD3.variable} ${interD3.variable} ${jetbrainsMonoD3.variable}`;
   return (
-    <ToastProvider>
-      <div className={fontVars}>{children}</div>
-    </ToastProvider>
+    <div data-theme="dossier" className={fontVars}>
+      {children}
+    </div>
   );
 }

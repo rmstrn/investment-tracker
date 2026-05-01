@@ -1,48 +1,44 @@
-import { RegulatoryDisclaimer } from '@investment-tracker/ui';
-import { Section, SubBlock } from '../_components/Section';
+import { DsRow, SectionShell } from '../_components/SectionShell';
 
 /**
- * §Disclaimer — TD-100 RegulatoryDisclaimer compact + verbose.
+ * §Disclaimer — Lane-A regulatory disclosure pattern in D3 dialect.
  *
- * The compact variant is mounted as a sticky-footer in `(app)/layout.tsx`
- * across all 7 chart-bearing app routes — that mount is unaffected by the
- * showcase. This section displays both render variants inline so designers
- * + content reviewers can verify the legal-floor copy without leaving the
- * showcase.
+ * 16px floor (Lane-A requirement — never below 16px on regulatory copy).
+ * Surface-1 fill, hairline border, ink text. The «Regulated» chip uses
+ * the bordeaux highlight surface — this is a sanctioned use of the
+ * accent-secondary because the chip IS the highlight (one chip per
+ * disclosure, by rule).
  */
+
+const DISCLOSURE_COPY = `Provedo is a read-only portfolio aggregation surface. We do not provide
+investment advice, do not custody assets, and do not place orders. Information
+shown is reconciled from your linked broker statements; treat any figure as
+indicative until you reconcile against your broker's official statement.
+For questions about your statutory rights, consult the regulator in the
+jurisdiction where your broker is licensed.`;
+
 export function DisclaimerSection() {
   return (
-    <Section
+    <SectionShell
       id="disclaimer"
-      eyebrow="§ Disclaimer · TD-100"
-      title="Regulatory disclaimer — Lane A"
-      description="Both render variants of <RegulatoryDisclaimer>. Compact mounts in every (app) route footer; verbose mounts only on /legal/disclaimer. Copy is locked — never paraphrase inline."
+      title="Disclaimer"
+      meta="LANE A · 16PX FLOOR"
+      description="Regulatory copy lives at a 16px floor — never smaller, never lighter than ink. The 'Regulated' chip is the one place bordeaux earns its keep on a disclosure surface."
     >
-      <SubBlock title="Compact (footer mount)" meta="2-line summary">
-        <div
-          className="rounded-[14px]"
-          style={{
-            background: 'var(--card)',
-            boxShadow: 'var(--shadow-soft)',
-            padding: '14px 18px',
-          }}
-        >
-          <RegulatoryDisclaimer variant="compact" lang="en" />
-        </div>
-      </SubBlock>
+      <DsRow label="Persistent disclosure (page-foot pattern)">
+        <p className="ds-disclosure">
+          <span className="ds-disclosure__chip">Regulated</span>
+          {DISCLOSURE_COPY}
+        </p>
+      </DsRow>
 
-      <SubBlock title="Verbose (full disclaimer page)" meta="7-paragraph floor">
-        <div
-          className="rounded-[14px]"
-          style={{
-            background: 'var(--card)',
-            boxShadow: 'var(--shadow-soft)',
-            padding: '24px 28px',
-          }}
-        >
-          <RegulatoryDisclaimer variant="verbose" lang="en" />
-        </div>
-      </SubBlock>
-    </Section>
+      <DsRow label="Inline disclosure (within an AI dossier row)">
+        <p className="ds-disclosure" style={{ fontSize: 16 }}>
+          Past performance is not indicative of future results. The figures shown reflect read-only
+          broker statements as of the timestamp on this dossier row. This surface is not
+          personalised investment advice.
+        </p>
+      </DsRow>
+    </SectionShell>
   );
 }

@@ -1,20 +1,53 @@
-import { Bagel_Fat_One, Caveat, Manrope } from 'next/font/google';
+import { Bagel_Fat_One, Fraunces, Inter, JetBrains_Mono, Manrope } from 'next/font/google';
 
 /**
- * v2 Design System fonts — Latin only, OFL-licensed Google Fonts.
+ * D3 «Private Dossier» fonts for `/design-system`.
  *
- * Bagel Fat One: marketing display only (single weight 400 — the only one shipped).
- * Manrope: body + UI across both registers (variable, we use 400/500/600/700).
- * Caveat: handwritten accent for marketing micro-moments.
+ * Three OFL Google Fonts, all variable, Latin subset only (US + EU EN-only
+ * surface per `project_target_market_2026-05-01` directive). Mirrors the
+ * loading discipline at `apps/web/src/app/style-d3/_lib/fonts.ts`.
  *
- * `display: swap` → fast text render, fallback shown until font loads.
- * Latin subset only → no Cyrillic; v2 marketing register is EN-only per spec.
+ *   - Fraunces (variable, opsz axis) → display ONLY on three surfaces:
+ *     typography specimen / KPI numeral demo / drilldown H2 demo. The
+ *     3-surface lock is the single most important typography discipline
+ *     in D3. Forbidden in body / chips / buttons / nav / labels / tooltips.
+ *   - Inter (variable) → all UI body, labels, chips, buttons, AI message
+ *     body, eyebrow, sub-copy.
+ *   - JetBrains Mono (variable) → axis ticks, tooltip values, KPI delta
+ *     line, AI absolute-time bylines, hex / OKLCH / WCAG numerals.
  *
- * Exposed as CSS variables (--font-bagel / --font-manrope / --font-caveat) so
- * the design-system layout can wire them onto the body class without breaking
- * the upstream layout's GeistSans/GeistMono setup.
+ * CSS variables prefixed `--font-d3-*` so they cannot collide with the
+ * upstream layout's GeistSans/GeistMono setup or any other route's fonts.
  */
 
+export const frauncesD3 = Fraunces({
+  subsets: ['latin'],
+  axes: ['opsz'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-d3-display',
+});
+
+export const interD3 = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: true,
+  variable: '--font-d3-sans',
+});
+
+export const jetbrainsMonoD3 = JetBrains_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  preload: false,
+  variable: '--font-d3-mono',
+});
+
+/**
+ * Legacy v2 font exports — RETIRED on this route as of D3 migration
+ * (2026-05-01) but re-exported here so two comparison-only sister routes
+ * (`/design-system-ekmas`, `/design-system-retro`) continue to compile
+ * until Phase 3 cleanup deletes them. Do NOT consume from this route.
+ */
 export const bagelFatOne = Bagel_Fat_One({
   weight: '400',
   subsets: ['latin'],
@@ -27,11 +60,4 @@ export const manrope = Manrope({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-manrope',
-});
-
-export const caveat = Caveat({
-  weight: ['400', '500', '700'],
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-caveat',
 });

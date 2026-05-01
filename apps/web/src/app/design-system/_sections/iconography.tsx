@@ -1,5 +1,3 @@
-'use client';
-
 import {
   ArrowRight,
   Bell,
@@ -21,71 +19,62 @@ import {
   Wallet,
   X,
 } from 'lucide-react';
-import { Section } from '../_components/Section';
+import { DsRow, SectionShell } from '../_components/SectionShell';
 
 /**
- * §Iconography — Lucide initial 18-icon set per docs/design/ICONOGRAPHY.md.
+ * §Iconography — Lucide initial 18-icon set on D3 surfaces.
  *
- * 6×3 grid; each tile shows an icon + its lucide name in mono. Hover lifts
- * the tile and shifts the stroke from `text-3` to `ink`. Click is wired but
- * the showcase intentionally does not surface a clipboard toast yet —
- * promotes when a CopyToClipboardChip primitive lands.
+ * Per `docs/design/ICONOGRAPHY.md` — 18 lucide icons, 24×24 viewBox,
+ * 1.75 stroke, currentColor only. Tile sits on `--d3-surface-1` with
+ * elev-2; stroke is `--d3-ink-mute` at rest, swaps to `--d3-ink` on
+ * hover via the `.ds-icon-tile:hover` rule. No filter changes, no
+ * background swap — same hover discipline as everywhere else.
  */
 
 interface IconEntry {
   readonly Icon: LucideIcon;
   readonly name: string;
-  readonly use: string;
 }
 
 const ICONS: readonly IconEntry[] = [
-  { Icon: CheckCircle2, name: 'check-circle-2', use: 'Success' },
-  { Icon: TriangleAlert, name: 'triangle-alert', use: 'Warning' },
-  { Icon: Info, name: 'info', use: 'Info' },
-  { Icon: X, name: 'x', use: 'Close' },
-  { Icon: Search, name: 'search', use: 'Search' },
-  { Icon: Bell, name: 'bell', use: 'Notify' },
-  { Icon: Settings, name: 'settings', use: 'Settings' },
-  { Icon: ArrowRight, name: 'arrow-right', use: 'CTA' },
-  { Icon: ChevronRight, name: 'chevron-right', use: 'Crumb' },
-  { Icon: Plus, name: 'plus', use: 'Add' },
-  { Icon: Pencil, name: 'pencil', use: 'Edit' },
-  { Icon: Trash2, name: 'trash-2', use: 'Delete' },
-  { Icon: TrendingUp, name: 'trending-up', use: '+ Δ' },
-  { Icon: TrendingDown, name: 'trending-down', use: '− Δ' },
-  { Icon: Wallet, name: 'wallet', use: 'Accounts' },
-  { Icon: Landmark, name: 'landmark', use: 'Broker' },
-  { Icon: Sparkles, name: 'sparkles', use: 'Citation' },
-  { Icon: ShieldCheck, name: 'shield-check', use: 'Trust' },
+  { Icon: CheckCircle2, name: 'check-circle-2' },
+  { Icon: TriangleAlert, name: 'triangle-alert' },
+  { Icon: Info, name: 'info' },
+  { Icon: X, name: 'x' },
+  { Icon: Search, name: 'search' },
+  { Icon: Bell, name: 'bell' },
+  { Icon: Settings, name: 'settings' },
+  { Icon: ArrowRight, name: 'arrow-right' },
+  { Icon: ChevronRight, name: 'chevron-right' },
+  { Icon: Plus, name: 'plus' },
+  { Icon: Pencil, name: 'pencil' },
+  { Icon: Trash2, name: 'trash-2' },
+  { Icon: TrendingUp, name: 'trending-up' },
+  { Icon: TrendingDown, name: 'trending-down' },
+  { Icon: Wallet, name: 'wallet' },
+  { Icon: Landmark, name: 'landmark' },
+  { Icon: Sparkles, name: 'sparkles' },
+  { Icon: ShieldCheck, name: 'shield-check' },
 ];
 
 export function IconographySection() {
   return (
-    <Section
+    <SectionShell
       id="iconography"
-      eyebrow="§ Iconography"
-      title="Lucide — initial 18-icon set"
-      description="SVG, currentColor, 24×24 viewBox. Hover a tile to see the stroke darken from text-3 → ink. Use cases per docs/design/ICONOGRAPHY.md."
+      title="Iconography"
+      meta="LUCIDE · 18-ICON CORE · 1.75 STROKE"
+      description="Lucide is the only icon family on the dossier surface. 24×24 viewBox, 1.75 stroke, currentColor — color comes from the parent token, not the SVG. Hover swaps from ink-mute to ink; no filter, no scale."
     >
-      <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(132px, 1fr))' }}
-      >
-        {ICONS.map(({ Icon, name, use }) => (
-          <button
-            key={name}
-            type="button"
-            className="showcase-icon-tile"
-            aria-label={`${name} icon — used for ${use.toLowerCase()}`}
-          >
-            <Icon size={24} strokeWidth={1.75} aria-hidden />
-            <span className="showcase-icon-tile__label">{name}</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-2)', letterSpacing: '0.02em' }}>
-              {use}
-            </span>
-          </button>
-        ))}
-      </div>
-    </Section>
+      <DsRow label="Core 18 — hover any tile">
+        <div className="ds-icons">
+          {ICONS.map(({ Icon, name }) => (
+            <div key={name} className="ds-icon-tile" aria-label={name}>
+              <Icon size={24} strokeWidth={1.75} aria-hidden />
+              <span className="ds-icon-tile__name">{name}</span>
+            </div>
+          ))}
+        </div>
+      </DsRow>
+    </SectionShell>
   );
 }
