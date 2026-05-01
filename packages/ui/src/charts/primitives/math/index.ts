@@ -1,29 +1,11 @@
 /**
  * Barrel export for `primitives/math/*`.
  *
- * Public API surface for Layer 1 (math) of the custom SVG chart primitives
- * layer. All d3-* implementations live behind these ports — consumers MUST
- * NOT import `d3-scale` / `d3-shape` / `d3-hierarchy` directly.
+ * Phase E1 (visx-candy migration) trimmed scale.ts + path.ts; the only
+ * surviving math primitive is the `squarify` treemap layout used by tests
+ * + visx documentation references. Phase E2 may retire this folder
+ * entirely.
  */
-
-export type {
-  Scale,
-  BandScale,
-  LinearScaleOptions,
-  TimeScaleOptions,
-  BandScaleOptions,
-} from './scale';
-export { linearScale, timeScale, bandScale } from './scale';
-
-export type {
-  CurveKind,
-  LinePoint,
-  LinePathOptions,
-  AreaPoint,
-  AreaPathOptions,
-  ArcPathOptions,
-} from './path';
-export { linePath, areaPath, arcPath } from './path';
 
 export type { TreemapItem, TreemapTile, SquarifyOptions } from './treemap';
 export { squarify } from './treemap';

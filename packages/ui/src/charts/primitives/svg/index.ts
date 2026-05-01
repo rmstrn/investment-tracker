@@ -1,13 +1,11 @@
 /**
  * Barrel export for `primitives/svg/*`.
  *
- * Public API surface for Layer 2 (React SVG primitives) of the custom chart
- * primitives layer. Per aggregate decision #2 («Hybrid declarative + imperative
- * escape hatch»), these primitives accept data + scaled coordinates and render
- * SVG fragments. No state machines. No chart-kind logic. Composable.
- *
- * Layer 3 (chart-kind wrappers — LineChart, AreaChart, etc.) lives one
- * directory up and consumes from here. Math utilities live in `../math/`.
+ * Phase E1 (visx-candy migration) trimmed every V2-specific primitive
+ * (Axis, GridLines, CartesianFrame, ReferenceLine, AxisTicksHTML,
+ * LinePath, AreaPath, AreaGradientDef, Tooltip, useStrokeDashoffset,
+ * useAnimatedNumber). Only `<ChartFrame>` survives as the a11y baseline
+ * shared with the visx surface.
  */
 
 /* ─── A11y baseline ──────────────────────────────────────────────────── */
@@ -18,63 +16,6 @@ export {
   type LiveRegionMode,
   type SeriesEncoding,
 } from './ChartFrame';
-
-/* ─── Axes + grid ────────────────────────────────────────────────────── */
-export {
-  GridLines,
-  type GridLinesProps,
-  type GridLinesOrientation,
-} from './GridLines';
-export {
-  AxisTicksHTML,
-  type AxisTicksHTMLProps,
-  type AxisTick,
-  type AxisOrientation,
-} from './AxisTicksHTML';
-export {
-  Axis,
-  type AxisProps,
-  type AxisTickInput,
-  type AxisEdgeOrientation,
-} from './Axis';
-export {
-  CartesianFrame,
-  type CartesianFrameProps,
-  type CartesianFrameDims,
-  type CartesianFrameMargin,
-} from './CartesianFrame';
-export {
-  ReferenceLine,
-  type ReferenceLineProps,
-  type ReferenceLineLabel,
-} from './ReferenceLine';
-
-/* ─── Gradient definitions ───────────────────────────────────────────── */
-export {
-  AreaGradientDef,
-  type AreaGradientDefProps,
-  useAreaGradient,
-  type AreaGradientDefOptions,
-  type AreaGradientHandle,
-} from './AreaGradientDef';
-
-/* ─── Path primitives ────────────────────────────────────────────────── */
-export { LinePath, type LinePathProps } from './LinePath';
-export { AreaPath, type AreaPathProps } from './AreaPath';
-
-/* ─── Animation hooks ────────────────────────────────────────────────── */
-export {
-  useStrokeDashoffset,
-  type UseStrokeDashoffsetOptions,
-  type StrokeDashoffsetState,
-} from './useStrokeDashoffset';
-export {
-  useAnimatedNumber,
-  type UseAnimatedNumberOptions,
-} from './useAnimatedNumber';
-
-/* ─── Floating overlays ──────────────────────────────────────────────── */
-export { Tooltip, type TooltipProps } from './Tooltip';
 
 /* ─── Brand glyph (re-export from icons package) ─────────────────────── */
 export { CitationGlyph, ProvedoMark, type CitationGlyphProps } from '../../../icons/CitationGlyph';
