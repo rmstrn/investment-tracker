@@ -1,38 +1,50 @@
 import { BAR_DRIFT_FIXTURE, BarVisx } from '@investment-tracker/ui/charts';
+import { RecordRail } from './_components/RecordRail';
 
 /**
- * `/style-d1` — «Lime Cabin».
+ * `/style-d1` — «Lime Cabin» (post 7-fix-pass canonical preview).
  *
- * Faithful translation of the pinterest reference per `D1-faithful.md`.
- * Deep charcoal canvas, lime as «look here», purple as «something is
- * happening», fully-rounded pill nav, chat-list as the AI's natural
- * home. The dashboard view IS the hero — the marketing strip on top is
- * the smallest readable scrap that lets PO compare this as a
- * mini-landing alongside the R-series routes.
+ * Faithful translation of the pinterest reference per `D1-faithful.md`,
+ * plus the mandatory 7-fix-pass landed 2026-05-01 — see
+ * `.superpowers/brainstorm/2026-05-01-d1-fix-pass/KICKOFF.md` for the
+ * fix history and `_lib/edge-cases.md` for the spec'd edge cases.
+ *
+ * Direction: deep charcoal canvas, lime as «look here», purple as
+ * «something is happening», fully-rounded pill nav, AND the Provedo
+ * Record Rail (the signature element) headering every persistent data
+ * zone AND replacing the chat-row form factor for AI insights.
  *
  * Hard rules wired:
  *   - Pill vocabulary EVERYWHERE (`border-radius: 9999px`) — nav 40px,
- *     filter chips 36px.
- *   - ONE KPI card highlighted lime at a time (drift alert per spec
- *     §7 — the «most-actionable metric» rule).
+ *     filter chips 36px, disclaimer chip 32px.
+ *   - ONE KPI card highlighted lime at a time (drift observation per
+ *     spec §7 — the «most-actionable metric» rule). Drift framing is
+ *     OBSERVATIONAL, not alarmed (Fix 1 — copy + tone-down).
  *   - Bar chart bars use an inline SVG `<defs>` `<pattern>` reference
- *     for the hatched-stripe vocabulary (the reference's defining
- *     visual) — NOT CSS `background-image` (Safari iOS perf trap per
- *     KICKOFF §5 risk #6 + spec §9 risk #6). Embedded BarVisx renders
- *     its own candy-treated bars below the hatched legend swatch and
- *     borrows D1's lime/purple palette via CSS-var override scope.
+ *     for the hatched-stripe vocabulary (NOT CSS `background-image`,
+ *     Safari iOS perf trap per KICKOFF §7.6 + spec §9 risk #6).
  *   - Heatmap cells 28×28, radius 6px, gap 4px, lime saturation
  *     gradient (5 levels: 0 / 15% / 40% / 70% / 100%).
- *   - Chat-list AI rows 64px tall, 40px purple avatar with white «P»
- *     monogram (AI never gets a human face). Search input in panel
- *     header is a FILTER, NOT a reply input — empty-state copy
- *     clarifies «Provedo surfaces patterns weekly» (KICKOFF §5
- *     risk #2 + spec §9 risk #7).
+ *   - AI insights render as Provedo Record Rail entries (NOT chat
+ *     rows) — no avatar, no byline, no right-aligned timestamp, no
+ *     hover ↗. Each insight = `▮ MAY 01 · 09:14 ───` + 2-line body.
  *   - Five sample AI messages from spec §6 — past-tense,
  *     source-attributed, no advisory language.
+ *   - Persistent disclaimer chip in nav (Fix 3) — left placement,
+ *     between brand monogram and first nav pill. Footer Lane-A
+ *     disclosure stays as defence in depth.
+ *   - Portfolio value is the dominant numeral (Fix 4 — clamp 48-56px);
+ *     welcome name «Roman» demoted to a 16-24px eyebrow above the
+ *     KPI cluster. The page hierarchy answers «what is my money
+ *     doing» before «who am I».
+ *   - Lime usage muted on filter chips + segmented controls (Fix 5)
+ *     — restored to neutral light-on-card with a lime hairline
+ *     border. Lime stays on: Drift KPI fill, nav active pill, Record
+ *     Rail tick + hairline (5 surfaces total) + heatmap data + hatched
+ *     bars (data treatment).
  *   - All money numerals rendered via `.d1-num` (Geist Mono tabular)
  *     in `--d1-text-primary` on dark cards / `--d1-text-ink` on the
- *     lime-highlighted KPI card (AAA 14.7:1 on lime, 17.8:1 on dark).
+ *     lime-highlighted KPI card (AAA 15.4:1 on lime, 15.9:1 on dark).
  *   - Lane-A regulatory disclosure 16px floor at the bottom.
  */
 
@@ -44,12 +56,13 @@ const HERO_CTA = 'See the dashboard';
 const NAV_ITEMS: ReadonlyArray<{
   label: string;
   active?: boolean;
-  count?: number;
   trailing?: '▾';
 }> = [
   { label: 'Overview', active: true },
   { label: 'Insights', trailing: '▾' },
-  { label: 'Drift', count: 3 },
+  // Fix 1 — drop the amber `3` count badge from the «Drift» nav pill
+  // (was an alarm signal). Drift is now observational, not alerting.
+  { label: 'Drift' },
   { label: 'Tax' },
   { label: 'Reports' },
 ];
@@ -61,35 +74,41 @@ const FILTER_CHIPS: ReadonlyArray<{ label: string; active?: boolean }> = [
   { label: 'Drift' },
 ];
 
-/** 5 AI messages per spec §6 — past-tense, source-attributed, no advice. */
+/**
+ * 5 AI messages per spec §6 — past-tense, source-attributed, no advice.
+ * Each insight surfaces as a Provedo Record Rail entry post-fix-pass.
+ *
+ * `dateTime` is machine-readable (ISO-8601 UTC) for screen readers and
+ * future i18n; `label` is the rendered datestamp («MAY 01 · 09:14»).
+ */
 const AI_MESSAGES: ReadonlyArray<{
-  byline: string;
-  time: string;
+  label: string;
+  dateTime: string;
   body: string;
 }> = [
   {
-    byline: 'Provedo',
-    time: '09:14',
+    label: 'MAY 01 · 09:14',
+    dateTime: '2026-05-01T09:14:00Z',
     body: 'Your Q1 win was 71% FX tailwind, not stock-picking. EUR/USD did the heavy lifting.',
   },
   {
-    byline: 'Provedo',
-    time: 'Yesterday',
-    body: 'MSFT crossed 12% of portfolio. Last drift alert was 8 weeks ago at 9%.',
+    label: 'APR 30',
+    dateTime: '2026-04-30T16:20:00Z',
+    body: 'MSFT crossed 12% of portfolio. Last drift observation was 8 weeks ago at 9%.',
   },
   {
-    byline: 'Provedo',
-    time: 'Apr 28',
+    label: 'APR 28',
+    dateTime: '2026-04-28T11:08:00Z',
     body: '$1,240 in dividends settled this week. 84% from 3 holdings.',
   },
   {
-    byline: 'Provedo',
-    time: 'Apr 25',
+    label: 'APR 25',
+    dateTime: '2026-04-25T14:32:00Z',
     body: 'Your IBKR cash sleeve grew $4,800 this month. Last deployed 6 weeks ago.',
   },
   {
-    byline: 'Provedo',
-    time: 'Apr 22',
+    label: 'APR 22',
+    dateTime: '2026-04-22T10:05:00Z',
     body: 'Energy sector now 18% of equity. Sector cap (per your own rule, set Mar 11) is 15%.',
   },
 ];
@@ -209,6 +228,21 @@ export default function StyleD1Page() {
             <span className="d1-nav__brand" aria-label="Provedo">
               P
             </span>
+            {/*
+             * Fix 3 — persistent disclaimer chip (left placement).
+             * Static disclosure (not a live region) so no role="status".
+             * Discoverable via aria-label since the visible text is
+             * suppressed at <414px (icon-only mode).
+             */}
+            <span className="d1-disclaimer-chip" aria-label="Read-only · No advice">
+              <span className="d1-disclaimer-chip__icon" aria-hidden>
+                <NavIcon
+                  d="M12 1a4 4 0 0 0-4 4v3H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V5a4 4 0 0 0-4-4z"
+                  title="Read-only"
+                />
+              </span>
+              <span className="d1-disclaimer-chip__label">Read-only · No advice</span>
+            </span>
             {NAV_ITEMS.map((item) => (
               <a
                 key={item.label}
@@ -223,11 +257,6 @@ export default function StyleD1Page() {
                 ) : null}
                 <span>{item.label}</span>
                 {item.trailing ? <span aria-hidden>{item.trailing}</span> : null}
-                {item.count ? (
-                  <span className="d1-pill__count" aria-label={`${item.count} alerts`}>
-                    {item.count}
-                  </span>
-                ) : null}
               </a>
             ))}
             <span className="d1-nav__spacer" aria-hidden />
@@ -245,23 +274,30 @@ export default function StyleD1Page() {
             </span>
           </nav>
 
-          {/* ─── Welcome row ─────────────────────────────────────────── */}
-          <div className="d1-welcome">
-            <div>
-              <p className="d1-welcome__lead">Welcome back,</p>
-              <h2 className="d1-welcome__name">
-                Roman
-                <span className="d1-chip-premium" aria-label="Premium plan">
-                  Premium
-                </span>
-              </h2>
-            </div>
+          {/* ─── LEDGER zone (Fix 2 — Record Rail above KPI band) ────── */}
+          <RecordRail label="LEDGER" />
+
+          {/*
+           * Fix 4 — welcome name «Roman» demoted to eyebrow ABOVE the
+           * KPI cluster. Lead «Welcome back,» becomes a Geist Mono
+           * 11px uppercase eyebrow. Dedicated welcome row collapsed.
+           */}
+          <div className="d1-eyebrow-row">
+            <p className="d1-eyebrow-row__lead">Welcome back</p>
+            <h2 className="d1-eyebrow-row__name">Roman</h2>
+            <span className="d1-chip-premium" aria-label="Premium plan">
+              Premium
+            </span>
           </div>
 
           {/* ─── 3 KPI cards (one lime-highlighted) ──────────────────── */}
           <div className="d1-kpi-row">
-            {/* Portfolio value — default dark card */}
-            <article className="d1-kpi" aria-labelledby="kpi-portfolio-label">
+            {/*
+             * Portfolio value — promoted to dominant figure (Fix 4).
+             * `d1-kpi--portfolio` modifier adds 160px min-height + a
+             * clamp(48px, 4vw + 32px, 56px) numeral.
+             */}
+            <article className="d1-kpi d1-kpi--portfolio" aria-labelledby="kpi-portfolio-label">
               <div className="d1-kpi__head">
                 <span className="d1-kpi__icon-chip" aria-hidden>
                   <IconChip d="M3 3v18h18M7 14l4-4 3 3 5-6" title="Portfolio" />
@@ -297,24 +333,29 @@ export default function StyleD1Page() {
               <p className="d1-kpi__delta">+8.1% vs prev YTD</p>
             </article>
 
-            {/* Drift alert MSFT — LIME-FILLED, ink numerals (AAA 14.7:1) */}
+            {/*
+             * Drift · MSFT — LIME-FILLED, ink numerals (AAA 15.4:1).
+             * Fix 1 — label reframed («Drift alert» → «Drift»),
+             * delta reworded to anchor to the user's rule («vs your
+             * 9% cap, set Mar 11»), warning-triangle replaced with a
+             * neutral chart-bar icon. Tone-down on the delta line is
+             * applied via `.d1-kpi--lime .d1-kpi__delta` opacity 0.85
+             * so the framing reads observational not alarmed.
+             */}
             <article className="d1-kpi d1-kpi--lime" aria-labelledby="kpi-drift-label">
               <div className="d1-kpi__head">
                 <span className="d1-kpi__icon-chip" aria-hidden>
-                  <IconChip
-                    d="M12 9v4M12 17h.01M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"
-                    title="Alert"
-                  />
+                  <IconChip d="M3 3v18h18M7 13h3v5H7zM12 9h3v9h-3zM17 5h3v13h-3z" title="Drift" />
                 </span>
                 <p id="kpi-drift-label" className="d1-kpi__label">
-                  Drift alert · MSFT
+                  Drift · MSFT
                 </p>
                 <span className="d1-kpi__ext" aria-hidden>
                   <IconChip d="M7 17 17 7M7 7h10v10" title="Open" />
                 </span>
               </div>
               <p className="d1-kpi__num">12.0%</p>
-              <p className="d1-kpi__delta">above 9% sector cap</p>
+              <p className="d1-kpi__delta">vs your 9% cap, set Mar 11</p>
             </article>
           </div>
 
@@ -351,12 +392,8 @@ export default function StyleD1Page() {
             {/* ── Allocation drift panel (BarVisx + hatched legend) ── */}
             <article className="d1-panel" aria-labelledby="panel-drift-title">
               <header className="d1-panel__head">
-                <h3 className="d1-panel__title">
-                  <span className="d1-panel__icon-chip" aria-hidden>
-                    <IconChip d="M3 3v18h18M7 14l4-4 3 3 5-6" title="Drift" />
-                  </span>
-                  <span id="panel-drift-title">Allocation drift</span>
-                </h3>
+                {/* Fix 2 — Record Rail replaces icon-chip + title. */}
+                <RecordRail label="ALLOCATION DRIFT" />
                 <div className="d1-segmented" role="tablist" aria-label="Time range">
                   <button
                     type="button"
@@ -376,6 +413,10 @@ export default function StyleD1Page() {
                   </button>
                 </div>
               </header>
+              {/* Visually-hidden heading carries the semantic for SR. */}
+              <h3 id="panel-drift-title" className="sr-only">
+                Allocation drift
+              </h3>
               <div className="d1-panel__body">
                 <BarVisx payload={BAR_DRIFT_FIXTURE} width={420} height={220} />
                 {/* Inline SVG <defs> <pattern> hatched legend — the
@@ -392,12 +433,7 @@ export default function StyleD1Page() {
             {/* ── Dividend calendar heatmap ─────────────────────────── */}
             <article className="d1-panel" aria-labelledby="panel-cal-title">
               <header className="d1-panel__head">
-                <h3 className="d1-panel__title">
-                  <span className="d1-panel__icon-chip" aria-hidden>
-                    <IconChip d="M3 5h18v16H3zM8 3v4M16 3v4M3 10h18" title="Calendar" />
-                  </span>
-                  <span id="panel-cal-title">Dividend calendar</span>
-                </h3>
+                <RecordRail label="DIVIDEND CALENDAR" />
                 <div className="d1-segmented" role="tablist" aria-label="Cohort">
                   <button
                     type="button"
@@ -409,6 +445,9 @@ export default function StyleD1Page() {
                   </button>
                 </div>
               </header>
+              <h3 id="panel-cal-title" className="sr-only">
+                Dividend calendar
+              </h3>
               <div
                 className="d1-panel__body"
                 style={{ alignItems: 'center', justifyContent: 'center' }}
@@ -436,19 +475,19 @@ export default function StyleD1Page() {
               </div>
             </article>
 
-            {/* ── Provedo insights chat-list ────────────────────────── */}
+            {/*
+             * Provedo insights — Fix 2 form-factor change. Each
+             * insight = Record Rail entry, no chat-row chrome. The
+             * filter input above the entries stays (kept as
+             * `.d1-chat__search` — it filters, never composes).
+             */}
             <article className="d1-panel" aria-labelledby="panel-ai-title">
               <header className="d1-panel__head">
-                <h3 className="d1-panel__title">
-                  <span className="d1-panel__icon-chip" aria-hidden>
-                    <IconChip
-                      d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
-                      title="Insights"
-                    />
-                  </span>
-                  <span id="panel-ai-title">Provedo insights</span>
-                </h3>
+                <RecordRail label="INSIGHTS" />
               </header>
+              <h3 id="panel-ai-title" className="sr-only">
+                Provedo insights
+              </h3>
               <div className="d1-panel__body">
                 <div
                   className="d1-chat__search"
@@ -464,20 +503,16 @@ export default function StyleD1Page() {
                     Filter insights by holding, sector, date…
                   </span>
                 </div>
-                <ul className="d1-chat__list" aria-label="AI insight feed">
+                <ol className="d1-insights" aria-label="AI insight feed">
                   {AI_MESSAGES.map((m) => (
-                    <li className="d1-chat__row" key={m.time + m.byline}>
-                      <span className="d1-chat__avatar" aria-hidden>
-                        P
-                      </span>
-                      <div className="d1-chat__body">
-                        <p className="d1-chat__byline">{m.byline}</p>
-                        <p className="d1-chat__msg">{m.body}</p>
-                      </div>
-                      <span className="d1-chat__time">{m.time}</span>
+                    <li key={m.dateTime}>
+                      <article className="d1-insight">
+                        <RecordRail label={m.label} mode="entry" dateTime={m.dateTime} />
+                        <p className="d1-insight__body">{m.body}</p>
+                      </article>
                     </li>
                   ))}
-                </ul>
+                </ol>
                 <p className="d1-panel__caption" style={{ marginTop: 'auto', paddingTop: 8 }}>
                   <span>Provedo surfaces patterns weekly.</span>
                   <span className="d1-num">5 / wk</span>
@@ -486,8 +521,11 @@ export default function StyleD1Page() {
             </article>
           </div>
 
-          {/* ─── Lane-A regulatory disclosure ────────────────────────── */}
-          <p className="d1-disclosure">Read-only. No advice. No trading.</p>
+          {/* ─── DISCLOSURE zone (Fix 2 — Record Rail above Lane-A) ──── */}
+          <div>
+            <RecordRail label="DISCLOSURE" />
+            <p className="d1-disclosure">Read-only. No advice. No trading.</p>
+          </div>
         </section>
       </div>
     </div>

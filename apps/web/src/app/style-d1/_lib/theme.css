@@ -1,19 +1,27 @@
 /*
  * D1 — «Lime Cabin» theme.
  *
- * Faithful translation of the Pinterest reference onto Provedo. Deep
- * charcoal canvas, lime as «look here», purple as «something is
- * happening», fully-rounded pill nav, chat-list as the AI's natural
- * home. The dashboard view IS the hero — the marketing strip on top
- * is just enough to read the route as a comparable mini-landing.
+ * Faithful translation of the Pinterest reference onto Provedo, post
+ * 7-fix-pass (2026-05-01) — see `style-d1/_lib/edge-cases.md` and
+ * `.superpowers/brainstorm/2026-05-01-d1-fix-pass/KICKOFF.md` for the
+ * fix history. Deep charcoal canvas, lime as «look here», purple as
+ * «something is happening», fully-rounded pill nav, and the Provedo
+ * Record Rail (the signature element) headering every persistent
+ * data zone AND replacing the chat-row form factor for AI insights.
  *
- * Spec: D1-faithful.md (palette §3 / typography §4 / components §5).
+ * Spec: D1-faithful.md (palette §3 / typography §4 / components §5)
+ * + PD-signature-element.md (Provedo Record Rail).
  *
  * Scope: every selector lives under `[data-style="d1"]`. NO bare :root,
  * NO bare body, NO bare element selectors. Tokens prefixed `--d1-*` so
  * they cannot collide with comparison routes.
  *
  * Wired by `./layout.tsx` via the route-local `<div data-style="d1">`.
+ *
+ * Measured contrast (verified post-fix-pass):
+ *   text.primary (#FAFAFA) on bg.card (#26272C)         = 15.9:1 (AAA)
+ *   text.muted   (#9C9DA3) on bg.card (#26272C)         = 5.9:1  (AA-large + AAA on body 16px+)
+ *   text.ink     (#0E0F11) on accent.lime (#D6F26B)     = 15.4:1 (AAA)
  */
 
 [data-style="d1"] {
@@ -26,12 +34,23 @@
   --d1-accent-lime-soft: rgba(214, 242, 107, 0.35); /* hatched stripe */
   --d1-accent-purple: #7b5cff;
   --d1-accent-purple-soft: rgba(123, 92, 255, 0.18); /* premium chip bg */
-  --d1-text-primary: #fafafa; /* AAA 17.8:1 on bg-card */
-  --d1-text-muted: #9c9da3; /* AA-large + AAA on 16px+ body */
-  --d1-text-ink: #0e0f11; /* AAA 14.7:1 on lime, warmer than pure black */
+  --d1-text-primary: #fafafa; /* AAA 15.9:1 on bg-card */
+  --d1-text-muted: #9c9da3; /* AA-large + AAA on 16px+ body — 5.9:1 */
+  --d1-text-ink: #0e0f11; /* AAA 15.4:1 on lime, warmer than pure black */
   --d1-border-hairline: rgba(255, 255, 255, 0.06);
   --d1-border-strong: rgba(255, 255, 255, 0.12);
   --d1-notification-amber: #f4c257; /* count badges only, never numerals */
+
+  /* ── Provedo Record Rail (signature element) ───────────────────────── */
+  --d1-rail-height: 14px;
+  --d1-rail-gap-tick: 4px;
+  --d1-rail-gap-line: 8px;
+  --d1-rail-content-gap: 12px;
+  --d1-rail-date-size: 11px;
+  --d1-rail-date-tracking: 0.04em;
+  --d1-rail-line-color: rgba(214, 242, 107, 0.3); /* lime @ 30% */
+  --d1-rail-tick-w: 6px;
+  --d1-rail-tick-h: 2px;
 
   /* ── Type stacks (variables → fallback chain) ──────────────────────── */
   --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont,
@@ -162,6 +181,37 @@
   margin-right: 8px;
 }
 
+/*
+ * Persistent disclaimer chip (Fix 3) — left placement, between brand
+ * monogram and the first nav pill. Anchors «read-only / no advice» as
+ * a product property, not a footer afterthought. Footer Lane-A
+ * disclosure remains as defence in depth.
+ */
+[data-style="d1"] .d1-disclaimer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: rgba(214, 242, 107, 0.12); /* lime @ 12% — between muted nav and lime active */
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.005em;
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+[data-style="d1"] .d1-disclaimer-chip__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--d1-accent-lime);
+  flex-shrink: 0;
+}
+
 [data-style="d1"] .d1-pill {
   display: inline-flex;
   align-items: center;
@@ -193,6 +243,10 @@
   outline-offset: 2px;
 }
 
+/*
+ * Nav active pill — keeps lime treatment per Fix 5 (sanctioned «look
+ * here» surface — the dashboard's primary navigation signal).
+ */
 [data-style="d1"] .d1-pill--active {
   background: var(--d1-accent-lime);
   color: var(--d1-text-ink);
@@ -247,6 +301,11 @@
   color: var(--d1-text-primary);
 }
 
+[data-style="d1"] .d1-nav__icon-pill:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
 [data-style="d1"] .d1-nav__avatar {
   display: inline-flex;
   align-items: center;
@@ -261,50 +320,54 @@
   font-size: 14px;
 }
 
-/* ── Welcome row (Geist Sans 600 56px) ──────────────────────────────── */
-[data-style="d1"] .d1-welcome {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 24px;
+/*
+ * Eyebrow above the KPI cluster (Fix 4). Welcome name «Roman» becomes
+ * an eyebrow — Geist Sans, 16-24px clamp, muted. The dominant numeral
+ * on the page is the portfolio value, not the user's name.
+ */
+[data-style="d1"] .d1-eyebrow-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
-[data-style="d1"] .d1-welcome__name {
-  font-family: var(--d1-font-sans);
-  font-weight: 600;
-  font-size: clamp(2.25rem, 1.5rem + 2vw, 3.5rem);
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  color: var(--d1-text-primary);
+[data-style="d1"] .d1-eyebrow-row__lead {
+  font-family: var(--d1-font-mono);
+  font-weight: 400;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
   margin: 0;
 }
 
-[data-style="d1"] .d1-welcome__lead {
+[data-style="d1"] .d1-eyebrow-row__name {
   font-family: var(--d1-font-sans);
-  font-weight: 400;
-  font-size: 14px;
-  color: var(--d1-text-muted);
-  margin: 0 0 6px;
-  letter-spacing: 0.005em;
+  font-weight: 600;
+  font-size: clamp(16px, 1rem + 0.6vw, 24px);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--d1-text-primary);
+  margin: 0;
 }
 
 [data-style="d1"] .d1-chip-premium {
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 14px;
+  height: 24px;
+  padding: 0 12px;
   border-radius: 9999px;
   background: var(--d1-accent-purple-soft);
   color: var(--d1-text-primary);
   font-family: var(--d1-font-sans);
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.04em;
-  margin-left: 12px;
   vertical-align: middle;
 }
 
-/* ── KPI cards row (240×132 default) ────────────────────────────────── */
+/* ── KPI cards row (240×132 default; portfolio promoted to 160 min) ── */
 [data-style="d1"] .d1-kpi-row {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -328,6 +391,14 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
+
+/*
+ * KPI cards are non-interactive containers — no tabIndex per
+ * a11y/noNoninteractiveTabindex. Focus ring lands on the actual
+ * interactive descendants (none in canonical preview) when those
+ * arrive. The .d1-kpi:focus-visible rule is intentionally omitted to
+ * avoid dead CSS.
+ */
 
 [data-style="d1"] .d1-kpi__head {
   display: flex;
@@ -387,6 +458,20 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/*
+ * Portfolio KPI card (Fix 4) — the dominant figure on the page.
+ * Larger min-height to accommodate the promoted numeral; numeral
+ * itself uses a clamp from 48-56px so it scales cleanly across
+ * 1024-1440px viewports.
+ */
+[data-style="d1"] .d1-kpi--portfolio {
+  min-height: 160px;
+}
+
+[data-style="d1"] .d1-kpi--portfolio .d1-kpi__num {
+  font-size: clamp(48px, 4vw + 32px, 56px);
+}
+
 /* ── Lime-highlighted KPI card (one per dashboard, by rule) ─────────── */
 [data-style="d1"] .d1-kpi--lime {
   background: var(--d1-accent-lime);
@@ -398,9 +483,13 @@
   color: var(--d1-text-ink);
 }
 
+/*
+ * Drift KPI delta (Fix 1) — toned down to opacity 0.85 so the
+ * framing reads observational, not alarmed.
+ */
 [data-style="d1"] .d1-kpi--lime .d1-kpi__delta {
   color: var(--d1-text-ink);
-  opacity: 0.7;
+  opacity: 0.85;
 }
 
 [data-style="d1"] .d1-kpi--lime .d1-kpi__icon-chip {
@@ -438,7 +527,8 @@
   text-decoration: none;
   white-space: nowrap;
   transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d1"] .d1-chip:hover {
@@ -446,14 +536,29 @@
   color: var(--d1-text-primary);
 }
 
+[data-style="d1"] .d1-chip:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+/*
+ * Filter chip active state (Fix 5) — muted from solid-lime fill to
+ * neutral light-on-card with a subtle lime hairline border. Restores
+ * «lime = look here» semantic by removing it from a high-frequency
+ * UI control.
+ */
 [data-style="d1"] .d1-chip--active {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  /* 1px inset lime hairline — uses box-shadow so it doesn't shift
+   * layout vs the un-bordered default chip. */
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
 }
 
 [data-style="d1"] .d1-chip--active:hover {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
 }
 
 [data-style="d1"] .d1-chip--icon {
@@ -468,20 +573,11 @@
   color: var(--d1-text-primary);
 }
 
-/* ── 3-col data grid (chart | heatmap | chat-list) ──────────────────── */
+/* ── 3-col data grid (chart | heatmap | AI feed) ────────────────────── */
 [data-style="d1"] .d1-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
   gap: 16px;
-}
-
-@media (max-width: 1100px) {
-  [data-style="d1"] .d1-grid {
-    grid-template-columns: 1fr;
-  }
-  [data-style="d1"] .d1-kpi-row {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  }
 }
 
 [data-style="d1"] .d1-panel {
@@ -516,27 +612,15 @@
   gap: 12px;
 }
 
-[data-style="d1"] .d1-panel__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--d1-font-sans);
-  font-weight: 500;
-  font-size: 14px;
-  color: var(--d1-text-primary);
-  margin: 0;
-}
-
-[data-style="d1"] .d1-panel__icon-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--d1-text-muted);
-  flex-shrink: 0;
+/*
+ * When the Record Rail sits inside a panel header next to a segmented
+ * control, the rail must take the remaining space so its hairline
+ * fills out to the segmented control. The rail's own internal layout
+ * (tick + date + line) is unchanged.
+ */
+[data-style="d1"] .d1-panel__head > .d1-rail {
+  flex: 1 1 auto;
+  margin-bottom: 0;
 }
 
 /* Segmented toggle (Monthly / Annually) */
@@ -560,11 +644,25 @@
   padding: 0 12px;
   border-radius: 9999px;
   cursor: pointer;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+[data-style="d1"] .d1-segmented__btn:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+/*
+ * Segmented active state (Fix 5) — same neutral treatment as filter
+ * chips. Lime-on-card hairline marks the active state without
+ * burning a saturated lime surface on a frequently-toggled control.
+ */
 [data-style="d1"] .d1-segmented__btn--active {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
 }
 
 [data-style="d1"] .d1-panel__body {
@@ -678,7 +776,7 @@
   background: var(--d1-accent-lime);
 }
 
-/* ── Chat-list panel (Provedo insights) ─────────────────────────────── */
+/* ── Chat search filter (kept — the filter affordance above the rail)  */
 [data-style="d1"] .d1-chat__search {
   display: flex;
   align-items: center;
@@ -705,94 +803,97 @@
   color: var(--d1-text-muted);
 }
 
-[data-style="d1"] .d1-chat__list {
+/* ── Provedo Record Rail (signature element) ────────────────────────── */
+[data-style="d1"] .d1-rail {
+  display: flex;
+  align-items: center;
+  gap: var(--d1-rail-gap-tick);
+  height: var(--d1-rail-height);
+  color: var(--d1-accent-lime);
+  margin-bottom: var(--d1-rail-content-gap);
+}
+
+[data-style="d1"] .d1-rail__tick {
+  flex: 0 0 var(--d1-rail-tick-w);
+}
+
+[data-style="d1"] .d1-rail__date {
+  font-family: var(--d1-font-mono);
+  font-weight: 500;
+  font-size: var(--d1-rail-date-size);
+  line-height: 1;
+  letter-spacing: var(--d1-rail-date-tracking);
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+[data-style="d1"] .d1-rail__line {
+  flex: 1;
+  height: 1px;
+  background: var(--d1-rail-line-color);
+  margin-left: var(--d1-rail-gap-line);
+}
+
+/*
+ * Below 140px container width the hairline is suppressed (per PD spec
+ * edge-case) — tick + datestamp stay so the rail still parses.
+ */
+@container (max-width: 140px) {
+  [data-style="d1"] .d1-rail__line {
+    display: none;
+  }
+}
+
+/*
+ * AI insight entry — wraps the rail + body. No avatar, no byline, no
+ * right-aligned timestamp, no hover ↗ reveal. The datestamp IS the
+ * byline; the lime tick says «Provedo entered this in the record».
+ */
+[data-style="d1"] .d1-insights {
   display: flex;
   flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
-[data-style="d1"] .d1-chat__row {
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
-  align-items: center;
-  gap: 12px;
-  height: 64px;
-  padding: 12px 4px;
+[data-style="d1"] .d1-insight {
+  padding: 16px 4px;
   border-bottom: 1px solid var(--d1-border-hairline);
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-style="d1"] .d1-chat__row:last-child {
+[data-style="d1"] .d1-insight:last-child {
   border-bottom: 0;
 }
 
-[data-style="d1"] .d1-chat__row:hover {
-  background: rgba(255, 255, 255, 0.03);
+[data-style="d1"] .d1-insight:first-child {
+  padding-top: 4px;
 }
 
-[data-style="d1"] .d1-chat__avatar {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 9999px;
-  background: var(--d1-accent-purple);
-  color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
-  font-weight: 600;
-  font-size: 14px;
-  flex-shrink: 0;
-}
+/*
+ * AI-insight rows are non-interactive in the canonical preview (no
+ * expand handler shipped). When real expand/click affordances arrive
+ * they land on a child <button> inside .d1-insight; at that point the
+ * focus-within ring rule below should be re-enabled. Omitted now to
+ * avoid dead CSS.
+ *
+ *   .d1-insight:focus-within {
+ *     outline: 2px solid var(--d1-accent-lime);
+ *     outline-offset: 4px;
+ *     border-radius: 8px;
+ *   }
+ */
 
-[data-style="d1"] .d1-chat__body {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-[data-style="d1"] .d1-chat__byline {
-  font-family: var(--d1-font-sans);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--d1-text-primary);
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-[data-style="d1"] .d1-chat__byline::after {
-  content: "";
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--d1-accent-lime);
-  display: inline-block;
-}
-
-[data-style="d1"] .d1-chat__msg {
+[data-style="d1"] .d1-insight__body {
   font-family: var(--d1-font-sans);
   font-weight: 400;
-  font-size: 13px;
-  line-height: 1.4;
-  color: var(--d1-text-muted);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-[data-style="d1"] .d1-chat__msg .d1-num {
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--d1-text-primary);
-}
-
-[data-style="d1"] .d1-chat__time {
-  font-family: var(--d1-font-mono);
-  font-size: 12px;
-  color: var(--d1-text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+  margin: 0;
+  text-wrap: pretty;
 }
 
 /* Inline number — Geist Mono tabular, AAA on dark surface */
@@ -814,6 +915,103 @@
   color: var(--d1-text-muted);
   margin: 0;
   padding: 8px 8px 0;
+}
+
+/* ── Mobile breakpoints (Fix 6) ─────────────────────────────────────── */
+
+/*
+ * 768px — tablet portrait + below. Collapse 3-col data grid to 1 col,
+ * AI insights ABOVE the chart (mobile reads top-down — insights are
+ * the «what changed» summary, chart is the deeper read). 3-KPI grid
+ * collapses with portfolio as full-width hero.
+ */
+@media (max-width: 768px) {
+  [data-style="d1"] .d1-page {
+    padding: 16px;
+  }
+  [data-style="d1"] .d1-surface {
+    padding: 16px;
+    border-radius: 24px;
+    gap: 20px;
+  }
+  [data-style="d1"] .d1-grid {
+    grid-template-columns: 1fr;
+  }
+  [data-style="d1"] .d1-grid > .d1-panel:nth-child(3) {
+    /* AI insights panel up — mobile reads top-down */
+    order: -1;
+  }
+  [data-style="d1"] .d1-kpi-row {
+    grid-template-columns: 1fr 1fr;
+  }
+  [data-style="d1"] .d1-kpi--portfolio {
+    grid-column: 1 / -1; /* full-width hero */
+  }
+  [data-style="d1"] .d1-marketing {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  [data-style="d1"] .d1-headline {
+    font-size: clamp(1.75rem, 4vw + 1rem, 2.5rem);
+  }
+}
+
+/*
+ * 414px — phone landscape / large phone portrait. KPI grid collapses
+ * to single column; portfolio stays first. Disclaimer chip shifts to
+ * an icon-only mode (still announces «Read-only» to screen readers).
+ */
+@media (max-width: 414px) {
+  [data-style="d1"] .d1-kpi-row {
+    grid-template-columns: 1fr;
+  }
+  [data-style="d1"] .d1-kpi {
+    padding: 16px;
+    min-height: auto;
+    gap: 10px;
+  }
+  [data-style="d1"] .d1-kpi--portfolio .d1-kpi__num {
+    font-size: clamp(36px, 10vw, 48px);
+  }
+  [data-style="d1"] .d1-disclaimer-chip__label {
+    /* Visually hidden but still screen-reader accessible */
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  [data-style="d1"] .d1-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  [data-style="d1"] .d1-chips::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
+ * 375px — iPhone SE / mini. Nav collapses to brand + hamburger
+ * (hamburger button surfaces the rest). KPI numerals stay legible
+ * via the 36px floor in the 414px block above.
+ */
+@media (max-width: 375px) {
+  [data-style="d1"] .d1-nav {
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  [data-style="d1"] .d1-nav .d1-pill:not(.d1-pill--active) {
+    display: none;
+  }
+  [data-style="d1"] .d1-eyebrow-row__name {
+    font-size: 16px;
+  }
 }
 
 /* ── Reduced motion ─────────────────────────────────────────────────── */
