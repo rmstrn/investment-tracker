@@ -1435,6 +1435,132 @@
   border-color: var(--d3-ink);
 }
 
+/* ── Charts — D3 dialect overrides for visx-candy components ─────
+ *
+ * Phase 2 strategy: BarVisx (and the rest of the visx suite) reads
+ * candy-era CSS variables directly: `--text-on-candy`, `--cta-fill`,
+ * `--accent-deep`, `--cta-shadow`, `--card`, `--card-highlight`,
+ * `--bg-cream`, `--ink`, `--font-family-body`, `--font-family-mono`.
+ * Rather than rewrite the components, we re-map those candy variables
+ * inside a panel-scoped class. Same approach as
+ * `apps/web/src/app/style-d3/_lib/theme.css` lines 565-581 — proven to
+ * work without touching component code.
+ *
+ * Two panel variants because the candy-era `--cta-fill` plays two
+ * different roles depending on the fixture semantic:
+ *   - P&L bars: positive bars are the «embossed default» — surface-1.
+ *   - Drift bars: positive out-of-band bars are the «highlight» — bordeaux.
+ *
+ * Both variants share the `--ds-chart-card--bar` base so axis labels,
+ * tooltip surfaces, and font stacks resolve identically.
+ *
+ * Tooltip register: per kickoff §7.3 we keep tooltip values in JetBrains
+ * Mono — the candy template puts them in `--font-family-body` (Manrope),
+ * so we re-map body → mono inside the panel scope. Preserves the
+ * 3-surface Fraunces lock without editing BarVisx.
+ *
+ * Bar shadow drop (line 431 of BarVisx) uses `--text-on-candy`. Mapping
+ * to `--d3-ink-mute` softens the hard 5px candy drop into a warm
+ * dark-muted shadow that reads as «embossed bar», not «paper-press».
+ * The 5px offset itself (`SHADOW_OFFSET_X/Y`) is wired in TSX and
+ * remains; we only tame the colour.
+ *
+ * Legend swatch (`.ds-emboss-legend`) is a thin border-top hairline
+ * with a hatched SVG pattern — defined inside `_sections/charts.tsx`
+ * via inline `<defs><pattern>` (Safari iOS perf trap on CSS bg-image).
+ */
+[data-theme="dossier"] .ds-chart-card--bar {
+  /* Surfaces & ink */
+  --card: var(--d3-surface-2);
+  --card-highlight: var(--d3-surface-2);
+  --bg-cream: var(--d3-surface-2);
+  --ink: var(--d3-ink);
+  --text-on-candy: var(--d3-ink-mute);
+  --color-text-secondary: var(--d3-ink-mute);
+
+  /* Type stacks: route the candy «display» / «body» to mono so all
+     numerals (axis ticks, tooltip values) read as JetBrains Mono.
+     Inter remains via the surrounding ds-chart-card__title chrome. */
+  --font-family-display: var(--d3-font-mono);
+  --font-family-body: var(--d3-font-mono);
+  --font-family-mono: var(--d3-font-mono);
+}
+
+/* P&L variant — positive bars embossed surface-1, negative bars terracotta. */
+[data-theme="dossier"] .ds-chart-card--bar-pl {
+  --cta-fill: var(--d3-surface-1);
+  --accent: var(--d3-surface-1);
+  --accent-deep: var(--d3-down);
+  --cta-shadow: var(--d3-down);
+}
+
+/* Drift variant — out-of-band positive = bordeaux highlight, negative = terracotta.
+   In-band bars use `--text-on-candy` (already mapped to ink-mute) at 0.55 opacity
+   inside the BarVisx render — no extra mapping needed. The dashed band guides at
+   ±2pp inherit `--cta-fill` (bordeaux) which marks the highlight zone edge. */
+[data-theme="dossier"] .ds-chart-card--bar-drift {
+  --cta-fill: var(--d3-accent-secondary);
+  --accent: var(--d3-accent-secondary);
+  --accent-deep: var(--d3-down);
+  --cta-shadow: var(--d3-down);
+}
+
+/* Embossed legend — hatched SVG swatch + label + value, hairline-divided.
+   Mirrors the `style-d3/_lib/theme.css` `.d3-emboss-legend` row but
+   scoped to dossier so it composes with the chart-card chrome. */
+[data-theme="dossier"] .ds-emboss-legend {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--d3-hairline);
+}
+
+[data-theme="dossier"] .ds-emboss-legend__label {
+  font-family: var(--d3-font-sans);
+  font-size: 11px;
+  color: var(--d3-ink-mute);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-theme="dossier"] .ds-emboss-legend__value {
+  margin-left: auto;
+  font-family: var(--d3-font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--d3-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.005em;
+}
+
+/* Two-up split for the BarVisx demo — P&L panel + Drift panel side-by-side
+   on ≥800px, stacked below. The other seven placeholder shells live in
+   `.ds-chart-grid` underneath. */
+[data-theme="dossier"] .ds-chart-bar-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+[data-theme="dossier"] .ds-chart-card--filled {
+  /* Bar panels host real charts — slightly more breathing room and a
+     fixed minimum height so the visx mount doesn't reflow on theme load. */
+  min-height: 320px;
+}
+
+[data-theme="dossier"] .ds-chart-card__chart {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: var(--d3-surface-2);
+  border-radius: var(--d3-r-sm);
+  padding: 4px 0;
+  min-height: 0;
+}
+
 /* ── Reduced motion ──────────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   [data-theme="dossier"] *,
