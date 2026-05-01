@@ -1656,6 +1656,128 @@
   border-radius: 12px !important;
 }
 
+/* ── Treemap panel modifier (KICKOFF §4.1 — chart 8 of 9) ─────────────
+ *
+ * TreemapVisx component path: `packages/ui/src/charts/visx/TreemapVisx.tsx`.
+ *
+ * Per-tile colour resolution path: **Path A (alias remap via wrapper
+ * modifier)** with a hybrid acceptance for tile-label ink. Investigation
+ * findings:
+ *
+ *   1. TreemapVisx does NOT use the `colorForTreemapChange()` /
+ *      `inkForTreemapChange()` helpers from `packages/ui/src/charts/
+ *      tokens.ts` (those return mixed CSS-vars + hardcoded hex). Instead
+ *      it defines its own `colorForDelta()` + `labelInkForDelta()` inline
+ *      that resolve everything via candy CSS vars (`--bg-cream`,
+ *      `--cta-fill`, `--accent-deep`, `--text-on-candy`). This means
+ *      Path A is fully open — the wrapper can remap candy vars onto D1
+ *      tokens without touching the chart component.
+ *
+ *   2. The base `.d1-chart-panel` wrapper already maps
+ *      `--cta-fill` → purple, `--accent-deep` → purple, `--bg-cream` →
+ *      bg-card-soft, `--text-on-candy` → text-primary (white). For the
+ *      Treemap KICKOFF spec we need:
+ *        - Positive tiles → lime saturation (NOT purple) → re-point
+ *          `--cta-fill` to `--d1-accent-lime`.
+ *        - Negative tiles → purple saturation → base wrapper's
+ *          `--accent-deep` mapping is already correct.
+ *        - Neutral tiles → bg-card (NOT bg-card-soft, which is too
+ *          close to a hover-state surface) → re-point `--bg-cream` to
+ *          `--d1-bg-card`.
+ *        - Tile labels → AAA on saturated tiles. Single var
+ *          (`--text-on-candy`) drives label ink for ALL three states
+ *          (positive / negative / neutral) — there is no per-tile
+ *          discriminator in the DOM. Choosing `--d1-text-ink`
+ *          (`#0E0F11`) gives AAA on lime ≥0.5 op (~15.4:1) and
+ *          AA-large on purple ≥0.5 op (~5:1 at 12-13px tabular). On
+ *          neutral bg-card tiles the dark ink fades to near-invisible
+ *          at the helper's 0.55 opacity for neutral state — this is
+ *          the accepted gap, and reinforces the «no signal here»
+ *          semantic for in-band tiles. The screen-reader
+ *          `<ChartDataTable>` always carries the full ticker list.
+ *
+ *   3. `fillOpacityForTreemapChange()` magnitude bins (0.32 / 0.50 /
+ *      0.65 / 0.85) are NOT used by TreemapVisx — the component scales
+ *      label ink opacity, not tile fill opacity. The fill is solid at
+ *      the colour returned by `colorForDelta()`. KICKOFF §4.1's
+ *      «magnitude bins preserved (0.32 / 0.50 / 0.65 / 0.85
+ *      fill-opacity)» language refers to the helper that the component
+ *      doesn't call — the saturation gradient is achieved by colour
+ *      choice (cream → cta → deep), not opacity. Documented as a
+ *      tile-fill flatness gap; remediation requires component edit
+ *      which is off-limits per dispatch rules.
+ *
+ *   4. Tile rect stroke binds to `var(--text-on-candy, #1C1B26)` at
+ *      strokeOpacity 0.85 — KICKOFF spec wants `1px var(--d1-bg-page)`
+ *      gap-effect between tiles. Our remap makes the stroke
+ *      `--d1-text-ink` (#0E0F11) at 0.85 op on the bg-page canvas
+ *      (#141416) — visually close enough that the 1px stroke reads as
+ *      a hairline gap. Acceptable approximation.
+ *
+ *   5. The candy hard ink-shadow drop on the bottom + right edges
+ *      (the «paper-pressed pile of tiles» signature, PD §8) is
+ *      suppressed via a structure-stable selector: the ONLY `<path>`
+ *      inside each tile `<g>` is the edge-shadow path with
+ *      `fillOpacity={0.85}`. The OTHER tile's hatched overlay uses
+ *      `<line>` strokes inside `<pattern>` (NOT a `<path>`) so the
+ *      selector is precise and won't collide.
+ *
+ *   6. Tooltip is inline-styled (background `--bg-cream`, color
+ *      `--text-on-candy`, border `1.5px solid --text-on-candy`,
+ *      box-shadow `5px 5px 0 0 --text-on-candy`). Under our remap
+ *      `--text-on-candy` is dark ink → tooltip border + shadow become
+ *      dark-on-dark and the `color` rule paints dark text on the
+ *      bg-card-soft surface (`--bg-cream` resolves to bg-card-soft via
+ *      base wrapper, NOT our modifier override — modifier only changes
+ *      `--bg-cream` for tile fills via the chart-internal tokens).
+ *      Tooltip needs explicit `!important` overrides — same cascade
+ *      tradeoff documented in CalendarVisx + StackedBarVisx wrappers.
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--treemap {
+  /* Positive tiles → lime saturation (overrides base wrapper purple). */
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+  /* Neutral tiles → bg-card (overrides base wrapper bg-card-soft for a
+   * crisper neutral that sits one elevation below the panel surface). */
+  --bg-cream: var(--d1-bg-card);
+  /* Tile-label ink → dark for AAA on lime / AA-large on purple
+   * (overrides base wrapper white). Negative tile labels stay
+   * acceptably legible; neutral tile labels fade per accepted gap. */
+  --text-on-candy: var(--d1-text-ink);
+}
+
+/* Suppress the candy hard ink-shadow drop on each tile's bottom + right
+ * edges — KICKOFF §4.1 retires the candy treatment in favour of the
+ * 1px gap-effect via tile stroke. The shadow path is the only `<path>`
+ * inside each tile `<g>` carrying `fill-opacity="0.85"` — segment rects
+ * use no fill-opacity attribute, the hatched overlay is `<line>` inside
+ * `<pattern>` (not `<path>`). Structure-stable selector — no component
+ * edit needed. */
+[data-theme='lime-cabin']
+  .d1-chart-panel--treemap
+  [data-testid='chart-treemap-visx']
+  path[fill-opacity='0.85'] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border, all inline-styled. Under our `--text-on-
+ * candy: --d1-text-ink` modifier the dark ink would render dark text on
+ * the `--bg-cream` (= bg-card-soft) surface and dark borders on the
+ * dark canvas, both unreadable. Force D1 elevation language with
+ * `!important` (cascade tradeoff documented in CalendarVisx + StackedBar
+ * Visx wrappers — KICKOFF §7.10). */
+[data-theme='lime-cabin']
+  .d1-chart-panel--treemap
+  [data-testid='chart-treemap-visx']
+  [role='tooltip'] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {

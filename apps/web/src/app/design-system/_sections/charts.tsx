@@ -17,21 +17,23 @@ import {
   STACKED_BAR_FIXTURE,
   SparklineVisx,
   StackedBarVisx,
+  TREEMAP_FIXTURE,
+  TreemapVisx,
 } from '@investment-tracker/ui/charts';
 import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1-7 of 9: BarVisx + SparklineVisx + LineVisx
- * + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx in D1
- * «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-8 of 9: BarVisx + SparklineVisx + LineVisx
+ * + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx + TreemapVisx
+ * in D1 «Lime Cabin» dialect.
  *
  * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
  * (Lines) + DonutVisx + CalendarVisx (Heatmap) + StackedBarVisx (Bars)
- * ship here with the D1 chart-panel chrome (rail-headed, NOT title-
- * headed). The remaining 2 chart kinds stay as `ChartSkeleton`
- * placeholder shells until subsequent restyle dispatches (Treemap →
- * Waterfall).
+ * + TreemapVisx (Treemap) ship here with the D1 chart-panel chrome
+ * (rail-headed, NOT title-headed). The remaining 1 chart kind stays as
+ * a `ChartSkeleton` placeholder shell until the final restyle dispatch
+ * (Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -143,6 +145,44 @@ import { RecordRail } from '../_components/RecordRail';
  * border are softened to D1 elevation language via `!important`
  * overrides (cascade tradeoff for inline-styled DOM — KICKOFF §7.10).
  *
+ * For TreemapVisx specifically: per-tile colour resolution path —
+ * **Path A** (alias remap via wrapper modifier) with one accepted gap.
+ * Investigation finding: TreemapVisx does NOT use the
+ * `colorForTreemapChange()` / `inkForTreemapChange()` helpers from
+ * `packages/ui/src/charts/tokens.ts` (those return mixed CSS-vars +
+ * hardcoded hex which would partially close Path A). Instead it
+ * defines its own `colorForDelta()` + `labelInkForDelta()` inline that
+ * resolve everything through candy CSS vars (`--bg-cream`,
+ * `--cta-fill`, `--accent-deep`, `--text-on-candy`) — Path A is fully
+ * open for tile fills. The `.d1-chart-panel--treemap` modifier
+ * re-points `--cta-fill` onto `--d1-accent-lime` (positive tiles —
+ * overrides base wrapper's purple), keeps `--accent-deep` mapped to
+ * purple via base wrapper (negative tiles), re-points `--bg-cream`
+ * onto `--d1-bg-card` (neutral tiles — crisper against the panel
+ * surface), and re-points `--text-on-candy` onto `--d1-text-ink`
+ * (#0E0F11) for AAA on lime ≥0.5 op (~15.4:1) + AA-large on purple
+ * ≥0.5 op (~5:1 at 12-13px tabular). The single-var label-ink picker
+ * means neutral bg-card tile labels fade to near-invisible at the
+ * helper's 0.55 opacity for neutral state — accepted gap, reinforces
+ * «no signal here» semantic, full ticker list always available via the
+ * screen-reader `<ChartDataTable>`. The candy hard ink-shadow drop on
+ * each tile's bottom + right edges (the «paper-pressed pile of tiles»
+ * signature, PD §8) is suppressed via `path[fill-opacity='0.85']` — the
+ * shadow path is the ONLY `<path>` inside each tile `<g>` carrying that
+ * exact attribute (segment rects use no `fill-opacity`, the OTHER tile
+ * hatched overlay uses `<line>` inside `<pattern>` not `<path>`).
+ * Tile-fill flatness gap: `fillOpacityForTreemapChange()` is exported
+ * by `tokens.ts` but TreemapVisx doesn't call it — the spec's «magnitude
+ * bins (0.32 / 0.50 / 0.65 / 0.85)» are scaled into LABEL opacity, not
+ * TILE-FILL opacity, by the component. Saturation gradient is achieved
+ * by colour choice (cream → cta → deep) not by alpha; remediation
+ * requires component edit which is off-limits per dispatch rules. Tile
+ * stroke (`var(--text-on-candy)` strokeOpacity 0.85) becomes dark ink
+ * at 0.85 op on bg-page canvas — visually close enough to the spec's
+ * `1px var(--d1-bg-page)` gap-effect. Tooltip surface, box-shadow, and
+ * border are tamed to D1 elevation language via `!important` overrides
+ * (cascade tradeoff for inline-styled DOM — KICKOFF §7.10).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -150,23 +190,17 @@ import { RecordRail } from '../_components/RecordRail';
  */
 
 /* ────────────────────────────────────────────────────────────────────── */
-/* Placeholder catalogue — kinds 8-9 stay as ChartSkeleton shells.        */
+/* Placeholder catalogue — kind 9 (Waterfall) stays as ChartSkeleton.     */
 /* ────────────────────────────────────────────────────────────────────── */
 
 interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'treemap' | 'waterfall';
+  kind: 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'CONCENTRATION',
-    title: 'TreemapVisx',
-    subtitle: 'Tile size = weight · color = today’s change',
-    kind: 'treemap',
-  },
   {
     rail: 'WHERE VALUE CAME FROM',
     title: 'WaterfallVisx',
@@ -310,7 +344,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx ship in the D1 dialect (Phase 2 charts 1-7 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal; stacked bars resolve via candy-categorical alias remap onto the D1 series sequence with the per-stack hard ink-shadow drop suppressed by a structure-stable selector. The other 2 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx + TreemapVisx ship in the D1 dialect (Phase 2 charts 1-8 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal; stacked bars resolve via candy-categorical alias remap onto the D1 series sequence with the per-stack hard ink-shadow drop suppressed by a structure-stable selector; treemap tiles colour by today's change — lime positive, purple negative, neutral bg-card — with dark ink labels for AAA on saturated tiles and the candy «paper-pressed pile» edge-shadow suppressed for the 1px gap-effect. The remaining 1 kind stays as a placeholder shell until the final restyle dispatch."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -620,7 +654,44 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="2 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="TREEMAPVISX · CONCENTRATION (TREEMAP_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--treemap"
+          aria-labelledby="chart-treemap-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="CONCENTRATION" />
+          </header>
+          <h3 id="chart-treemap-title" className="sr-only">
+            Concentration · tile size = weight, colour = today’s change
+          </h3>
+          <div className="d1-chart-panel__body">
+            <TreemapVisx payload={TREEMAP_FIXTURE} width={520} height={300} />
+            <p className="d1-chart-panel__caption">
+              Per-tile colours land via Path A (alias remap) — TreemapVisx defines its own
+              `colorForDelta()` + `labelInkForDelta()` inline (NOT the `colorForTreemapChange` /
+              `inkForTreemapChange` helpers from `tokens.ts`, which mix CSS-vars with hardcoded
+              hex), so the candy `--cta-fill` / `--accent-deep` / `--bg-cream` / `--text-on-candy`
+              vars resolve cleanly to D1 tokens under the `.d1-chart-panel--treemap` modifier.
+              Positive tiles render `--d1-accent-lime`, negative tiles `--d1-accent-purple`, neutral
+              tiles `--d1-bg-card` for a crisp neutral against the panel surface. Tile labels render
+              dark ink (`--d1-text-ink`) — AAA on lime ≥0.5 opacity, AA-large on purple ≥0.5 opacity
+              (12-13px tabular). Neutral tile labels fade to near-invisible at the helper's 0.55
+              neutral-state opacity — accepted gap, reinforces «no signal here» semantic; the
+              screen-reader `&lt;ChartDataTable&gt;` always carries the full ticker list. The candy
+              «paper-pressed pile of tiles» hard ink-shadow drop on each tile's bottom + right edges
+              is suppressed via `path[fill-opacity='0.85']` (the shadow path is the only
+              `&lt;path&gt;` per tile carrying that exact attribute), retiring the candy treatment
+              per KICKOFF §4.1. Tile-fill flatness is an accepted gap: TreemapVisx scales label
+              opacity by magnitude, not tile-fill opacity. Tooltip surface, box-shadow, and border
+              are tamed via `!important` overrides — the cascade tradeoff for inline-styled DOM,
+              documented in lime-cabin.css.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="1 PLACEHOLDER SHELL · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div
