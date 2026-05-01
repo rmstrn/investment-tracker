@@ -5,6 +5,8 @@ import {
   BarVisx,
   ChartCard,
   ChartSkeleton,
+  LINE_FIXTURE,
+  LineVisx,
   SPARKLINE_FIXTURE,
   SparklineVisx,
 } from '@investment-tracker/ui/charts';
@@ -12,14 +14,14 @@ import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1 + 2 of 9: BarVisx + SparklineVisx in D1
- * «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1 + 2 + 3 of 9: BarVisx + SparklineVisx +
+ * LineVisx in D1 «Lime Cabin» dialect.
  *
- * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx (Lines) ship here
- * with the D1 chart-panel chrome (rail-headed, NOT title-headed). The
- * remaining 7 chart kinds stay as `ChartSkeleton` placeholder shells
- * until subsequent restyle dispatches (Line → Area → Donut → Calendar
- * → StackedBar → Treemap → Waterfall).
+ * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx (Lines)
+ * ship here with the D1 chart-panel chrome (rail-headed, NOT
+ * title-headed). The remaining 6 chart kinds stay as `ChartSkeleton`
+ * placeholder shells until subsequent restyle dispatches (Area → Donut
+ * → Calendar → StackedBar → Treemap → Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -37,6 +39,15 @@ import { RecordRail } from '../_components/RecordRail';
  * lime/purple/muted respectively, so the trend semantic survives the
  * candy → D1 token translation without editing SparklineVisx.tsx.
  *
+ * For LineVisx specifically: same wrap-and-override pattern with two
+ * dialect modifiers `.d1-chart-panel--line-{default|highlighted}` —
+ * default points the candy `--cta-fill` / `--accent` at
+ * `--d1-text-primary` (white-on-dark, the data IS the data); highlighted
+ * points them at `--d1-accent-lime` (the «look here» line, only ONE per
+ * chart per KICKOFF §4.1 lime discipline). The line stroke, focus circle
+ * on hover, and end-numeral accent dot share colour by implementation —
+ * this is the D1 simplification («the line IS the data treatment»).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -51,16 +62,10 @@ interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'line' | 'area' | 'donut' | 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
+  kind: 'area' | 'donut' | 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'PORTFOLIO VALUE',
-    title: 'LineVisx',
-    subtitle: 'Last 30 days · all brokers',
-    kind: 'line',
-  },
   { rail: 'CUMULATIVE P&L', title: 'AreaVisx', subtitle: 'Year to date', kind: 'area' },
   {
     rail: 'ALLOCATION BY SECTOR',
@@ -166,7 +171,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx ship in the D1 dialect (Phase 2 charts 1-2 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat. The other 7 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx ship in the D1 dialect (Phase 2 charts 1-3 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart. The other 6 kinds remain placeholder shells until subsequent restyle dispatches."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -282,7 +287,54 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="7 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="LINEVISX · PORTFOLIO VALUE · DEFAULT (LINE_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--line-default"
+          aria-labelledby="chart-line-default-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="PORTFOLIO VALUE" />
+          </header>
+          <h3 id="chart-line-default-title" className="sr-only">
+            Portfolio value · last 30 days · default state
+          </h3>
+          <div className="d1-chart-panel__body">
+            <LineVisx payload={LINE_FIXTURE} width={520} height={260} />
+            <p className="d1-chart-panel__caption">
+              Default lines render in `--d1-text-primary` (white) on the dark canvas — the data IS
+              the data, not a brand element. Y gridlines at 0.08 stroke-opacity, axis labels in
+              Geist Mono `--d1-text-muted`, end-numeral in Mono with `tnum + ss01`. The hover
+              guide-line (dashed) and end-point dot share the line colour.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="LINEVISX · PORTFOLIO VALUE · HIGHLIGHTED (LINE_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--line-highlighted"
+          aria-labelledby="chart-line-highlight-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="PORTFOLIO VALUE · «LOOK HERE»" />
+          </header>
+          <h3 id="chart-line-highlight-title" className="sr-only">
+            Portfolio value · last 30 days · highlighted state
+          </h3>
+          <div className="d1-chart-panel__body">
+            <LineVisx payload={LINE_FIXTURE} width={520} height={260} />
+            <p className="d1-chart-panel__caption">
+              Highlighted lines render in `--d1-accent-lime` — only ONE per chart (KICKOFF §4.1 lime
+              discipline). Same fixture as the default panel above, demonstrating the dialect
+              switch: a comparison or hero series gets lime; baseline / cohort series stay white.
+              The line, hover focus circle, and end-numeral accent dot all share the lime colour by
+              implementation — the line IS the data treatment.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="6 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div

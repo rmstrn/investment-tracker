@@ -1285,6 +1285,36 @@
   min-height: auto;
 }
 
+/* ── Line panel — default-vs-highlighted dialect states ────────────────
+ *
+ * LineVisx is authored against the candy register and points its line
+ * stroke + endpoint dot fill at `--cta-fill` (with `--accent` as the
+ * fallback). The base `.d1-chart-panel` wrapper remaps `--cta-fill` to
+ * purple, which is the right default for bar charts but wrong for line
+ * dialect semantics (KICKOFF §4.1 spec: default line = white
+ * `--d1-text-primary`, highlighted line = lime `--d1-accent-lime`,
+ * only ONE «look here» line per chart).
+ *
+ * Two narrow modifiers re-remap the candy stroke vars per state. They
+ * also drive the focus-circle on hover (same var) and the end-numeral
+ * accent dot — the line, dot, and accent share colour by implementation,
+ * which IS the D1 simplification: the line IS the data.
+ *
+ * NOTE on stroke width: LineVisx hard-codes `STROKE_WIDTH = 2.5`. The
+ * KICKOFF spec calls for 1.5px (default) / 2px (highlighted), but the
+ * component is off-limits per dispatch rules. The 2.5px reads as
+ * deliberate-emphatic on D1's dark canvas — accepted as deviation.
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--line-default {
+  --cta-fill: var(--d1-text-primary);
+  --accent: var(--d1-text-primary);
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel--line-highlighted {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {
