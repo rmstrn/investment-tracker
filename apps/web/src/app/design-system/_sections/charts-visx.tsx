@@ -3,10 +3,12 @@
 /**
  * §Charts-visx — visx-candy POC showcase (2026-05-01).
  *
- * Phase A scope (2026-05-01): Donut + Bar (polished) + Line + Area +
- * Sparkline. All five charts share the locked candy-chart language —
- * hard ink-shadow drop, hover-lift on interactive marks, Bagel chunky
- * hero numerals, Manrope mono-uppercase axis ticks.
+ * Phase A (2026-05-01): Donut + Bar + Line + Area + Sparkline.
+ * Phase B (2026-05-01): Treemap + Calendar.
+ *
+ * All seven charts share the locked candy-chart language — hard
+ * ink-shadow drop, hover-lift on interactive marks, Bagel chunky hero
+ * numerals where size permits, Manrope mono-uppercase axis ticks.
  *
  * Sits directly after the existing `<ChartsSection />` so PO can
  * scroll-compare visx-candy (this) against the V2 primitives backend
@@ -15,9 +17,9 @@
  * exports for the showcase + future migration cutover.
  *
  * Layout: 2-column responsive grid at desktop, 1-column at mobile, via
- * `repeat(auto-fit, minmax(280px, 1fr))`. Card order — Line, Area,
- * Donut, Bar, Sparkline — surfaces the new charts up top so the PO sees
- * them first when this section paints.
+ * `repeat(auto-fit, minmax(280px, 1fr))`. Treemap + Calendar live in a
+ * second wider row (`minmax(360px, 1fr)`) so each gets enough room for
+ * the 7-day weekday axis / 280px tile stack.
  */
 
 import { PaintDrip } from '@investment-tracker/ui';
@@ -26,6 +28,8 @@ import {
   AreaVisx,
   BAR_DRIFT_FIXTURE,
   BarVisx,
+  CALENDAR_FIXTURE,
+  CalendarVisx,
   ChartCard,
   DONUT_FIXTURE,
   DonutVisx,
@@ -33,6 +37,8 @@ import {
   LineVisx,
   SPARKLINE_FIXTURE,
   SparklineVisx,
+  TREEMAP_FIXTURE,
+  TreemapVisx,
 } from '@investment-tracker/ui/charts';
 import type { CSSProperties } from 'react';
 import { DsRow, DsSection } from '../_components/SectionHead';
@@ -53,10 +59,21 @@ const GRID_STYLE: CSSProperties = {
   alignItems: 'stretch',
 };
 
+const WIDE_GRID_STYLE: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+  gap: '20px',
+  alignItems: 'stretch',
+  marginTop: '20px',
+};
+
 export function ChartsVisxSection() {
   return (
-    <DsSection title="Charts — visx · candy" meta="5 CHARTS · @visx/shape · candy register">
-      <DsRow label="VISX · CANDY · LINE / AREA / DONUT / BAR / SPARKLINE">
+    <DsSection
+      title="Charts — visx · candy"
+      meta="7 CHARTS · @visx + d3-hierarchy · candy register"
+    >
+      <DsRow label="VISX · CANDY · LINE / AREA / DONUT / BAR / SPARKLINE / TREEMAP / CALENDAR">
         <div data-surface="candy" style={CANDY_FIELD_STYLE}>
           <div style={GRID_STYLE}>
             <ChartCard
@@ -101,6 +118,28 @@ export function ChartsVisxSection() {
               <SparklineVisx payload={SPARKLINE_FIXTURE} width={280} height={64} />
             </ChartCard>
           </div>
+
+          {/* Phase B — Treemap + Calendar in a wider row so each gets the
+              breathing room their PD-spec signatures require (paper-press
+              tile pile + 7×N month grid). */}
+          <div style={WIDE_GRID_STYLE}>
+            <ChartCard
+              eyebrow="VISX · CANDY · TREEMAP"
+              title="Concentration"
+              subtitle="Tile size = weight · color = today's Δ · paper-press pile"
+            >
+              <TreemapVisx payload={TREEMAP_FIXTURE} width={360} height={280} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="VISX · CANDY · CALENDAR"
+              title="Dividend calendar — April 2026"
+              subtitle="3 received · 2 scheduled · «you are here» today-ring"
+            >
+              <CalendarVisx payload={CALENDAR_FIXTURE} today={new Date('2026-04-15')} />
+            </ChartCard>
+          </div>
+
           <div style={{ marginTop: '24px' }}>
             <PaintDrip
               variant="thick"

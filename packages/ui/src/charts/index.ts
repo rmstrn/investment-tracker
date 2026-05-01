@@ -116,6 +116,8 @@ export { BarVisx, type BarVisxProps } from './visx/BarVisx';
 export { LineVisx, type LineVisxProps } from './visx/LineVisx';
 export { AreaVisx, type AreaVisxProps } from './visx/AreaVisx';
 export { SparklineVisx, type SparklineVisxProps } from './visx/SparklineVisx';
+export { TreemapVisx, type TreemapVisxProps } from './visx/TreemapVisx';
+export { CalendarVisx, type CalendarVisxProps } from './visx/CalendarVisx';
 
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
