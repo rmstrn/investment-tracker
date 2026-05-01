@@ -1,101 +1,222 @@
-import { DsRow, SectionShell } from '../_components/SectionShell';
+'use client';
 
 /**
- * §Charts — D3 chart placeholder shells (Phase 1 — Phase 2 fills these).
+ * §Charts — DSM-V2 chart subsystem showcase, visx-candy backend.
  *
- * Per KICKOFF §2.5 sequencing decision: Phase 1 ships with placeholder
- * shells matching the chart-card chrome (surface-2 + elev-2 + 1px hairline
- * + sculpted head) but with a dashed-border skeleton tile inside marked
- * «Phase 2 fills this». Phase 2 will dispatch nine sequential
- * `frontend-engineer` runs, one per chart type, in this order:
+ * Phase D consolidation (2026-05-01): this section now imports visx-candy
+ * components directly and is the SINGLE canonical chart showcase under
+ * the `#charts` anchor. The previous V1/V2 dispatcher wiring (Recharts +
+ * custom-SVG primitives via `makeBackendDispatch`) has been replaced with
+ * direct `*Visx` named exports from `@investment-tracker/ui/charts`.
  *
- *   BarVisx → SparklineVisx → LineVisx → AreaVisx → DonutVisx →
- *   CalendarVisx → StackedBarVisx → TreemapVisx → WaterfallVisx
+ * Visual contract per CHARTS_SPEC §3 (candy register):
+ *   - Hard ink-shadow drop on cards/marks (no soft glow)
+ *   - Hover-lift on interactive marks (donut arcs, bars, treemap tiles)
+ *   - Bagel Fat One chunky hero numerals where size permits (waterfall pill)
+ *   - Manrope mono-uppercase axis ticks
+ *   - Paper-press tile pile for treemap
+ *   - Embossed-groove bridges for waterfall
  *
- * The placeholder cards demonstrate the chart-card surface contract that
- * Phase 2 must respect: title (Inter 13/500) + caption (Mono 10 ink-mute)
- * + body region (surface-1 inside surface-2). Phase 2 swaps the skeleton
- * for the actual visx mount.
+ * The whole section is wrapped in `data-surface="candy"` so candy
+ * semantic vars cascade. STATES row (empty/loading) reuses
+ * `ChartEmpty` + `ChartSkeleton` in default surface for visual contrast
+ * against the candy field above.
+ *
+ * Phase E will delete `BarChart.tsx` / `LineChart.tsx` / `DonutChart.tsx`
+ * / `BarChartV2.tsx` / `DonutChartV2.tsx` / `SparklineV2.tsx` and the
+ * `makeBackendDispatch` helper. After Phase D, this file no longer
+ * imports any of those names — Phase E can delete cleanly.
  */
 
-interface ChartShell {
-  readonly id: string;
-  readonly title: string;
-  readonly note: string;
+import { PaintDrip } from '@investment-tracker/ui';
+import {
+  AREA_FIXTURE,
+  AreaVisx,
+  BAR_DRIFT_FIXTURE,
+  BAR_FIXTURE,
+  BarVisx,
+  CALENDAR_FIXTURE,
+  CalendarVisx,
+  ChartCard,
+  ChartEmpty,
+  ChartSkeleton,
+  DONUT_FIXTURE,
+  DonutVisx,
+  LINE_FIXTURE,
+  type LineChartPayload,
+  LineVisx,
+  SPARKLINE_FIXTURE,
+  STACKED_BAR_FIXTURE,
+  SparklineVisx,
+  StackedBarVisx,
+  TREEMAP_FIXTURE,
+  TreemapVisx,
+  WATERFALL_FIXTURE,
+  WaterfallVisx,
+} from '@investment-tracker/ui/charts';
+import type { CSSProperties } from 'react';
+import { DsRow, DsSection } from '../_components/SectionHead';
+
+const EMPTY_LINE: LineChartPayload = {
+  ...LINE_FIXTURE,
+  data: [],
+  meta: {
+    ...LINE_FIXTURE.meta,
+    emptyHint: 'Connect a broker to see your portfolio history.',
+  },
+};
+
+const CANDY_FIELD_STYLE: CSSProperties = {
+  background: 'var(--bg-pink, var(--color-candy-pink, #F7A1C9))',
+  color: 'var(--text-on-candy, var(--color-ink-v2-deep, #1C1B26))',
+  padding: '32px 28px 24px',
+  borderRadius: '24px',
+  position: 'relative',
+  overflow: 'hidden',
+};
+
+const GRID_STYLE: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: '20px',
+  alignItems: 'stretch',
+};
+
+const WIDE_GRID_STYLE: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+  gap: '20px',
+  alignItems: 'stretch',
+  marginTop: '20px',
+};
+
+const FULL_GRID_STYLE: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '20px',
+  alignItems: 'stretch',
+  marginTop: '20px',
+};
+
+export interface ChartsSectionProps {
+  variant: 'light' | 'dark';
 }
 
-const SHELLS: readonly ChartShell[] = [
-  {
-    id: 'bar',
-    title: 'BarVisx',
-    note: 'Drift fixture — bordeaux highlight bar, hairline grid, JetBrains Mono axis.',
-  },
-  {
-    id: 'sparkline',
-    title: 'SparklineVisx',
-    note: 'Endpoint dot in sage / terracotta — direction at the endpoint only, never as line fill.',
-  },
-  {
-    id: 'line',
-    title: 'LineVisx',
-    note: 'Default line in ink 1.5px. Highlighted series in bordeaux. Hairline reference band.',
-  },
-  {
-    id: 'area',
-    title: 'AreaVisx',
-    note: 'Linear gradient bordeaux 12% → 0% at axis. Single-series hero accent.',
-  },
-  {
-    id: 'donut',
-    title: 'DonutVisx',
-    note: '5-segment neutral palette, optional bordeaux highlight. Center label in JetBrains Mono 28px.',
-  },
-  {
-    id: 'calendar',
-    title: 'CalendarVisx',
-    note: 'Cell ramp — chartreuse-cream saturation 0/18/42/72/100 over surface-1.',
-  },
-  {
-    id: 'stacked-bar',
-    title: 'StackedBarVisx',
-    note: 'Series 1–5 from D3 chart palette. 1px canvas gap between adjacent stacks.',
-  },
-  {
-    id: 'treemap',
-    title: 'TreemapVisx',
-    note: 'Surface-1 neutral → sage / terracotta. Bordeaux NEVER on treemap (semantic clash).',
-  },
-  {
-    id: 'waterfall',
-    title: 'WaterfallVisx',
-    note: 'Sage rises, terracotta falls, ink ivory neutrals. 1px embossed line via inline SVG <defs>.',
-  },
-];
-
-export function ChartsSection() {
+export function ChartsSection({ variant }: ChartsSectionProps) {
   return (
-    <SectionShell
-      id="charts"
+    <DsSection
       title="Charts"
-      meta="9 PLACEHOLDERS · PHASE 2 FILLS"
-      description="Chart cards inherit the surface-2 + elev-2 + 1px hairline contract from KPI cards. Phase 1 ships the chrome; Phase 2 dispatches nine sequential restyles. Each chart card here pre-shapes the body region Phase 2 must respect."
+      meta={
+        variant === 'light'
+          ? '10 KINDS · @visx + d3-hierarchy · CANDY REGISTER'
+          : '10 KINDS · DARK PALETTE'
+      }
     >
-      <DsRow label="9-chart suite — D3 dialect placeholders">
-        <div className="ds-chart-grid">
-          {SHELLS.map((shell) => (
-            <article key={shell.id} className="ds-chart-card">
-              <header className="ds-chart-card__head">
-                <h3 className="ds-chart-card__title">{shell.title}</h3>
-                <span className="ds-chart-card__phase">Phase 2</span>
-              </header>
-              <div className="ds-chart-card__skeleton" aria-label="Chart placeholder">
-                Phase 2 fills this
+      <DsRow label="TIER 1 — MUST-SHIP MVP">
+        <div data-surface="candy" style={CANDY_FIELD_STYLE}>
+          <div style={GRID_STYLE}>
+            <ChartCard eyebrow="LINE" title="Portfolio value" subtitle="Last 30 days · all brokers">
+              <LineVisx payload={LINE_FIXTURE} width={360} height={200} />
+            </ChartCard>
+
+            <ChartCard eyebrow="AREA" title="Cumulative P&L" subtitle="Year to date">
+              <AreaVisx payload={AREA_FIXTURE} width={360} height={200} />
+            </ChartCard>
+
+            <ChartCard eyebrow="BAR" title="Position drift" subtitle="Top 6 vs rebalance band">
+              <BarVisx payload={BAR_DRIFT_FIXTURE} width={360} height={220} />
+            </ChartCard>
+
+            <ChartCard eyebrow="BAR · MONTHLY" title="Monthly P&L" subtitle="Sign-coloured bars">
+              <BarVisx payload={BAR_FIXTURE} width={360} height={220} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="DONUT"
+              title="Allocation by sector"
+              subtitle="5 sectors · $226K total"
+            >
+              <div className="flex justify-center">
+                <DonutVisx payload={DONUT_FIXTURE} size={240} />
               </div>
-              <p className="ds-chart-card__caption">{shell.note}</p>
-            </article>
-          ))}
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="SPARKLINE"
+              title="Inline trend"
+              subtitle="Inside cards · table cells · chat replies"
+            >
+              <div style={{ paddingTop: 8 }}>
+                <SparklineVisx payload={SPARKLINE_FIXTURE} width={280} height={64} />
+              </div>
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="CALENDAR"
+              title="Dividend calendar — April 2026"
+              subtitle="3 received · 2 scheduled · 1 corp action"
+            >
+              <CalendarVisx payload={CALENDAR_FIXTURE} today={new Date('2026-04-15')} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="TREEMAP"
+              title="Concentration"
+              subtitle="Tile size = weight; color = today's change"
+            >
+              <TreemapVisx payload={TREEMAP_FIXTURE} width={360} height={280} />
+            </ChartCard>
+          </div>
+
+          {/* Tier 2 — wider band so 3-broker stack reads well at 360px. */}
+          <div style={WIDE_GRID_STYLE}>
+            <ChartCard
+              eyebrow="STACKED BAR · TIER 2"
+              title="Broker contribution"
+              subtitle="Last 6 months · 3 brokers · whole-stack ink-shadow"
+            >
+              <StackedBarVisx payload={STACKED_BAR_FIXTURE} width={360} height={220} />
+            </ChartCard>
+          </div>
+
+          {/* Waterfall — full-width band. PD signature: ending-balance pill
+              with Bagel Fat One chunky hero numeral. */}
+          <div style={FULL_GRID_STYLE}>
+            <ChartCard
+              eyebrow="WATERFALL · TIER 2"
+              title="Where your value came from"
+              subtitle="YTD · 2026-01-01 to 2026-04-26 · embossed-groove bridges"
+            >
+              <WaterfallVisx payload={WATERFALL_FIXTURE} width={720} height={280} />
+            </ChartCard>
+          </div>
+
+          <div style={{ marginTop: '24px' }}>
+            <PaintDrip
+              variant="thick"
+              from="var(--bg-pink, #F7A1C9)"
+              to="var(--bg-mustard, var(--color-candy-mustard, #F4CC4A))"
+            />
+          </div>
         </div>
       </DsRow>
-    </SectionShell>
+
+      <DsRow label="STATES — EMPTY / LOADING">
+        <div className="showcase-charts-grid">
+          <ChartCard eyebrow="LINE · EMPTY" title="Portfolio value" subtitle="Last 30 days">
+            <ChartEmpty kind="line" hint={EMPTY_LINE.meta.emptyHint} />
+          </ChartCard>
+          <ChartCard eyebrow="DONUT · EMPTY" title="Allocation" subtitle="Across all accounts">
+            <ChartEmpty kind="donut" hint="No allocations yet — connect a broker." />
+          </ChartCard>
+          <ChartCard eyebrow="LOADING · LINE" title="Portfolio value" subtitle="…">
+            <ChartSkeleton kind="line" />
+          </ChartCard>
+          <ChartCard eyebrow="LOADING · BAR" title="Position drift" subtitle="…">
+            <ChartSkeleton kind="bar" />
+          </ChartCard>
+        </div>
+      </DsRow>
+    </DsSection>
   );
 }

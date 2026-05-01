@@ -1,95 +1,100 @@
 import { brand } from '@investment-tracker/design-tokens/brand';
-import { SideRail, type SideRailItem } from './_components/SideRail';
-import { AiDossierSection } from './_sections/ai-dossier';
-import { CardsSection } from './_sections/cards';
-import { ChartsSection } from './_sections/charts';
+import { ShowcaseHeader } from './_components/ShowcaseHeader';
+import { StagedSections } from './_components/StagedSections';
 import { DisclaimerSection } from './_sections/disclaimer';
-import { ElevationSection } from './_sections/elevation';
-import { FormsSection } from './_sections/forms';
-import { FoundationSection } from './_sections/foundation';
 import { IconographySection } from './_sections/iconography';
-import { NavSection } from './_sections/nav';
-import { PrimitivesSection } from './_sections/primitives';
 import { ThemeSection } from './_sections/theme';
-import { TypographySection } from './_sections/typography';
+import './_styles/showcase.css';
 
-/**
- * `/design-system` — Provedo Design System v4 «Private Dossier».
- *
- * Re-authored 2026-05-01 against KICKOFF.md
- * (`.superpowers/brainstorm/2026-05-01-d3-lock/KICKOFF.md`) to migrate the
- * route from the retired neumorphism direction into D3 dialect — locked
- * by PO on 2026-05-01 after a 6-specialist review.
- *
- * Theme plumbing: `data-theme="dossier"` applied at the route's
- * `layout.tsx` wrapper level. This is the third theme value alongside
- * `light`/`dark` — opt-in only. The world's `<html data-theme>` stays
- * `light`/`dark` for every other route.
- *
- * Phase 1 sections (this slice):
- *   - Foundation         · 8 role tokens with hex / role / WCAG
- *   - Theme              · 10-token reference table + theme switcher chips
- *   - Typography         · Fraunces 3-surface specimen + lock callout (SURFACE #1)
- *   - Cards              · KPI cards with hover discipline (SURFACE #2)
- *   - Elevation          · 4-tier shadow stack with recipes
- *   - Primitives         · buttons / chips with all states
- *   - Forms              · inputs / selects / checkbox / radio / sculpted toggle
- *   - Nav                · sculpted nav (NOT pill) with 1.5px chartreuse underline
- *   - Iconography        · Lucide 18-icon core on D3 surfaces
- *   - Charts             · 9 placeholder shells (Phase 2 fills)
- *   - AI Dossier         · 5 example messages, no avatars / emoji / relative time
- *   - Disclaimer         · Lane-A regulatory disclosure pattern
- *
- * Drilldown H2 (the page title) IS the third Fraunces surface — see
- * `.ds-page-title` in `_styles/dossier.css`.
- */
 export const metadata = {
-  title: `Design System v4 · ${brand.productName}`,
-  description: `Canonical internal showcase for ${brand.productName} design system v4 — D3 «Private Dossier».`,
+  title: `Design System · ${brand.productName}`,
+  description: `Single canonical interactive showcase for ${brand.productName} design system v1.1.`,
   robots: { index: false, follow: false },
 };
 
-const RAIL_ITEMS: readonly SideRailItem[] = [
-  { id: 'foundation', label: 'Foundation' },
-  { id: 'theme', label: 'Theme' },
-  { id: 'typography', label: 'Typography' },
-  { id: 'cards', label: 'Cards' },
-  { id: 'elevation', label: 'Elevation' },
-  { id: 'primitives', label: 'Primitives' },
-  { id: 'forms', label: 'Forms' },
-  { id: 'nav', label: 'Nav' },
-  { id: 'iconography', label: 'Iconography' },
-  { id: 'charts', label: 'Charts' },
-  { id: 'ai-dossier', label: 'AI Dossier' },
-  { id: 'disclaimer', label: 'Disclaimer' },
-];
-
+/**
+ * `/design-system` — single canonical interactive showcase.
+ *
+ * Re-architected 2026-04-29 to match the static visual reference at
+ * `apps/web/public/design-system.html` (Provedo Design System v2 — Showcase).
+ * A single stage renders the full primitive set; the sticky header's global
+ * theme toggle (`<html data-theme>`) flips dark mode in place — no stacked
+ * second stage needed.
+ *
+ * Inside the stage the full section set renders: foundation, signature hero,
+ * primitives (curated permutations), forms (product-context inputs), cards
+ * (portfolio · insight · empty), charts (visx-candy backend — see
+ * `packages/ui/src/charts/visx/*`).
+ */
 export default function DesignSystemPage() {
   return (
-    <div className="ds-page">
-      <SideRail items={RAIL_ITEMS} />
-      <main className="ds-main">
-        <header className="ds-page-head">
-          <p className="ds-eyebrow">{brand.productName} · Design System v4 · Private Dossier</p>
-          <h1 className="ds-page-title">A dossier laid open on a leather desk.</h1>
-          <p className="ds-page-sub">
-            The canonical D3 surface vocabulary. Tokens, type, depth, and the sculpted controls that
-            carry the dossier register. Locked 2026-05-01 after PO review.
-          </p>
-        </header>
+    <div className="showcase min-h-screen bg-background-primary text-text-primary">
+      <ShowcaseHeader />
 
-        <FoundationSection />
-        <ThemeSection />
-        <TypographySection />
-        <CardsSection />
-        <ElevationSection />
-        <PrimitivesSection />
-        <FormsSection />
-        <NavSection />
-        <IconographySection />
-        <ChartsSection />
-        <AiDossierSection />
-        <DisclaimerSection />
+      <main className="mx-auto max-w-6xl space-y-6 px-6 py-12 md:px-8">
+        <section className="space-y-3 pb-2">
+          <p
+            className="font-mono uppercase"
+            style={{
+              fontSize: 'var(--showcase-eyebrow-size)',
+              letterSpacing: 'var(--showcase-eyebrow-tracking)',
+              color: 'var(--accent, var(--color-accent-default))',
+              fontWeight: 'var(--showcase-eyebrow-weight)' as unknown as number,
+            }}
+          >
+            {brand.productName} · Design System v2 · Showcase
+          </p>
+          <h1
+            className="font-semibold text-text-primary"
+            style={{
+              fontSize: 'var(--showcase-page-title-size)',
+              letterSpacing: 'var(--showcase-page-title-tracking)',
+              fontWeight: 'var(--showcase-page-title-weight)' as unknown as number,
+              lineHeight: 1.05,
+            }}
+          >
+            {brand.productName} Design System v2 — refined
+          </h1>
+          <p
+            className="max-w-3xl text-text-secondary"
+            style={{ fontSize: '14px', lineHeight: 1.55 }}
+          >
+            Real React mounts of every Provedo surface. Every interactive element responds to hover
+            / focus / press without remount. Use the global theme toggle in the header to flip dark
+            mode in place.
+          </p>
+        </section>
+
+        {/* Skip-link anchors — Foundation / Primitives / Charts live INSIDE
+            `<StagedSections>` (a client wrapper); the wrapper subscribes to
+            the global theme written by `ShowcaseHeader` on `<html data-theme>`
+            and forwards the derived variant to every section so the page
+            stays visually coherent across theme toggles (no light-island bug).
+            Round-2 a11y F-2 anchor ids (SC 2.4.1 Bypass Blocks) live on
+            wrapper divs inside `StagedSections`. */}
+        <StagedSections />
+
+        {/* Iconography + theme/motion sections live OUTSIDE stages — they're
+            development utilities, not part of the visual canon. */}
+        <section className="space-y-12 pt-8">
+          <IconographySection />
+          <DisclaimerSection />
+          <ThemeSection />
+        </section>
+
+        <footer className="border-t border-border-subtle pt-8 pb-4">
+          <p
+            className="font-mono uppercase"
+            style={{
+              fontSize: '10px',
+              letterSpacing: '0.18em',
+              color: 'var(--text-3)',
+            }}
+          >
+            Generated from <code>@investment-tracker/design-tokens</code> ·{' '}
+            <code>brand.productName = &quot;{brand.productName}&quot;</code>
+          </p>
+        </footer>
       </main>
     </div>
   );

@@ -1,101 +1,128 @@
-import { ArrowUpRight, TrendingDown, TrendingUp, Wallet } from 'lucide-react';
-import { DsRow, SectionShell } from '../_components/SectionShell';
+'use client';
+
+import { DsRow, DsSection } from '../_components/SectionHead';
 
 /**
- * §Cards — KPI cards (SURFACE #2 of three Fraunces moments).
+ * §Cards — Design System v2 Phase 2.
  *
- * Standard card uses `--d3-surface-2` fill + `--d3-elev-2` shadow + 1px
- * hairline (the Mercury signal — every elevated surface gets BOTH).
- * Hover: translateY(-1px) + elev-2→elev-3 swap, 320ms cubic-bezier
- * (0.16, 1, 0.3, 1). NO brightness, NO scale.
+ * Per `docs/design/PROVEDO_DESIGN_SYSTEM_v2.md` §7.3 (Card — three variants).
+ * The single Card primitive of v1 splits into three explicit, route-bound
+ * surface variants:
  *
- * Accent variant: chartreuse-cream fill, canvas-ink text. AAA 12.4:1.
- * ONE accent KPI per dashboard by rule — the loudest surface stays still
- * (no shadow upgrade on hover).
+ *   1. candy-bordered — paper-card bg + 2px ink border + hard 4/4 ink shadow.
+ *      Lives on candy-pink or candy-mustard fields. Bagel display heading
+ *      inside. Marketing-only.
+ *
+ *   2. paper-inset — paper-card bg + warm-soft shadow + Manrope only. Default
+ *      app-interior surface (portfolio cards, charts, settings).
+ *
+ *   3. ink-ticker — ink-deep bg + mustard accent strip + tabular-num mono
+ *      numerals. Highest-emphasis surface inside the app: live ticker,
+ *      summary band, "watching" indicators.
+ *
+ * Each variant gets one feature card so reviewers can hover and feel the
+ * gesture. The candy-bordered card sits inside a `[data-surface="candy"]`
+ * field so it earns the candy-pink background that demonstrates how the
+ * 2px ink border keeps it legible.
  */
 
-interface KpiSeed {
-  readonly icon: typeof Wallet;
-  readonly label: string;
-  readonly value: string;
-  readonly delta: string;
-  readonly direction: 'up' | 'down' | 'flat';
-  readonly accent?: boolean;
+export interface CardsSectionProps {
+  variant: 'light' | 'dark';
 }
 
-const KPI_SEEDS: readonly KpiSeed[] = [
-  {
-    icon: Wallet,
-    label: 'Total exposure',
-    value: '$ 248,310',
-    delta: '+ 1.84 % · +$ 4,486 · 30D',
-    direction: 'up',
-  },
-  {
-    icon: TrendingUp,
-    label: 'Unrealised P&L',
-    value: '+ 18.42 %',
-    delta: '+ 3.21 % · +$ 7,920 · 30D',
-    direction: 'up',
-    accent: true,
-  },
-  {
-    icon: TrendingDown,
-    label: 'USD cash sleeve',
-    value: '8.30 %',
-    delta: '− 1.20 pp vs ceiling · 5%',
-    direction: 'down',
-  },
-];
-
-export function CardsSection() {
+export function CardsSection({ variant }: CardsSectionProps) {
   return (
-    <SectionShell
-      id="cards"
-      title="Cards"
-      meta="KPI · ELEV-2 → ELEV-3 ON HOVER"
-      description="Three-card KPI row. The accent fill carries the editorial moment — exactly one accent card per dashboard, by rule. Hover lifts standard cards 1px and swaps shadow tier; the accent card holds still (it's already loud enough)."
+    <DsSection
+      title="Card"
+      meta={
+        variant === 'light'
+          ? 'candy-bordered · paper-inset · ink-ticker'
+          : '3 variants × surface contracts'
+      }
     >
-      <DsRow label="Standard + accent KPI row (hover any card)">
-        <div className="ds-kpi-row">
-          {KPI_SEEDS.map((kpi) => {
-            const Icon = kpi.icon;
-            const className = kpi.accent ? 'ds-kpi ds-kpi--accent' : 'ds-kpi';
-            const deltaClass = kpi.accent
-              ? 'ds-kpi__delta'
-              : kpi.direction === 'up'
-                ? 'ds-kpi__delta ds-kpi__delta--up'
-                : kpi.direction === 'down'
-                  ? 'ds-kpi__delta ds-kpi__delta--down'
-                  : 'ds-kpi__delta';
-            return (
-              <article key={kpi.label} className={className}>
-                <header className="ds-kpi__head">
-                  <span className="ds-kpi__icon-chip">
-                    <Icon size={16} aria-hidden strokeWidth={1.75} />
-                  </span>
-                  <p className="ds-kpi__label">{kpi.label}</p>
-                  <ArrowUpRight size={16} aria-hidden strokeWidth={1.75} />
-                </header>
-                <p className="ds-kpi__num">{kpi.value}</p>
-                <p className={deltaClass}>{kpi.delta}</p>
-              </article>
-            );
-          })}
+      <DsRow label="candy-bordered — marketing on candy field (Bagel display + ink border)">
+        <div className="v2-candy-field" data-surface="candy">
+          <article className="v2-card v2-card--candy" aria-labelledby="ds-v2-candy-card-title">
+            <h4 id="ds-v2-candy-card-title" className="v2-card__display">
+              Notice what you&apos;d miss.
+            </h4>
+            <p className="v2-card__body">
+              Provedo surfaces patterns hidden across your brokers — concentration drift,
+              correlation creep, the position you forgot you doubled.
+            </p>
+          </article>
         </div>
       </DsRow>
 
-      <DsRow label="Card hover discipline — V2 redesign rule">
-        <p className="ds-prose">
-          Standard cards: <strong>translateY(-1px)</strong> + <strong>elev-2 → elev-3</strong>{' '}
-          shadow swap, 320ms cubic-bezier (0.16, 1, 0.3, 1). No brightness change. No scale. No
-          background shift. The motion is the Mercury press, not the candy bounce.
-        </p>
-        <p className="ds-prose">
-          Accent card: lifts the same 1px but holds elev-2 — the chartreuse fill is already the
-          loudest surface on the page; upgrading its shadow on hover would feel anxious.
-        </p>
+      <DsRow label="paper-inset — app interior default (warm-soft shadow, Manrope only)">
+        <div
+          className="v2-card-pair"
+          // Constrain so cards don't stretch to the full page width — the
+          // hover gesture reads better at card-shaped proportions.
+          style={{ maxWidth: 720 }}
+        >
+          <article className="v2-card v2-card--paper" aria-labelledby="ds-v2-paper-card-1-title">
+            <h4 id="ds-v2-paper-card-1-title" className="v2-card__heading">
+              IBKR · LYNX
+            </h4>
+            <p
+              className="v2-card__heading"
+              style={{
+                fontFamily: 'var(--font-family-mono, ui-monospace, monospace)',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: 28,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              $184,210
+            </p>
+            <p className="v2-card__body">+2.4% week · 12 positions</p>
+          </article>
+          <article className="v2-card v2-card--paper" aria-labelledby="ds-v2-paper-card-2-title">
+            <h4 id="ds-v2-paper-card-2-title" className="v2-card__heading">
+              BINANCE
+            </h4>
+            <p
+              className="v2-card__heading"
+              style={{
+                fontFamily: 'var(--font-family-mono, ui-monospace, monospace)',
+                fontVariantNumeric: 'tabular-nums',
+                fontSize: 28,
+                letterSpacing: '-0.01em',
+              }}
+            >
+              $42,180
+            </p>
+            <p
+              className="v2-card__body"
+              style={{ color: 'var(--color-signal-orange-deep, #C76A22)', fontWeight: 600 }}
+            >
+              −5.8% week · 7 positions
+            </p>
+          </article>
+        </div>
       </DsRow>
-    </SectionShell>
+
+      <DsRow label="ink-ticker — high-emphasis app strip (mustard accent, mono numerals)">
+        <article
+          className="v2-card v2-card--ink"
+          aria-labelledby="ds-v2-ink-card-title"
+          style={{ maxWidth: 480 }}
+        >
+          <p
+            id="ds-v2-ink-card-title"
+            className="v2-state-cell__label"
+            style={{ color: 'var(--color-candy-mustard, #F4CC4A)' }}
+          >
+            LIVE · NVDA
+          </p>
+          <p className="v2-card__numeral">$144.27</p>
+          <p className="v2-card__body">
+            Combined exposure across 3 of your accounts: 18% — concentrated more than it looks
+            broker-by-broker.
+          </p>
+        </article>
+      </DsRow>
+    </DsSection>
   );
 }

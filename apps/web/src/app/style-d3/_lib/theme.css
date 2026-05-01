@@ -29,31 +29,31 @@
 
 [data-style="d3"] {
   /* ── Palette (8 roles, AAA on numerals — see spec §3) ────────────── */
-  --d3-canvas: #161412; /* page bg, oak-undertone graphite */
-  --d3-surface-1: #1e1b18; /* primary card surface (+5L over canvas) */
-  --d3-surface-2: #26221e; /* KPI / chat surface (+9L over canvas) */
-  --d3-hairline: #2e2a26; /* 1px borders on every elevated surface */
-  --d3-ink: #f2eee6; /* warm ivory — AAA 13.6:1 on surface-2 */
-  --d3-ink-mute: #9a9388; /* AA 4.78:1 on canvas, ≥14px only */
-  --d3-accent-primary: #d9d17a; /* chartreuse-cream (Hermès yellow at dusk).
+  --d3-canvas: #161412;          /* page bg, oak-undertone graphite */
+  --d3-surface-1: #1e1b18;       /* primary card surface (+5L over canvas) */
+  --d3-surface-2: #26221e;       /* KPI / chat surface (+9L over canvas) */
+  --d3-hairline: #2e2a26;        /* 1px borders on every elevated surface */
+  --d3-ink: #f2eee6;             /* warm ivory — AAA 13.6:1 on surface-2 */
+  --d3-ink-mute: #9a9388;        /* AA 4.78:1 on canvas, ≥14px only */
+  --d3-accent-primary: #d9d17a;  /* chartreuse-cream (Hermès yellow at dusk).
                                     Ink-on-accent AAA 12.4:1 with `#161412`. */
-  --d3-accent-secondary: #7a4f4a; /* aged bordeaux — REPLACES ref's purple.
+  --d3-accent-secondary: #7a4f4a;/* aged bordeaux — REPLACES ref's purple.
                                     RESERVED for highlight (single bar /
                                     tooltip / premium chip). NEVER negative. */
-  --d3-up: #b8c99a; /* sage — AAA 11.2:1 on canvas */
-  --d3-down: #c9907a; /* terracotta — AAA 7.8:1 on canvas */
+  --d3-up: #b8c99a;              /* sage — AAA 11.2:1 on canvas */
+  --d3-down: #c9907a;            /* terracotta — AAA 7.8:1 on canvas */
 
   /* ── Radii ladder (NO 9999px allowed on this route) ──────────────── */
-  --d3-r-xs: 6px; /* chips, tags, delta pills, heatmap cells */
-  --d3-r-sm: 12px; /* buttons, input fields, tooltip */
-  --d3-r-md: 16px; /* KPI cards, chart panels, chat surface */
-  --d3-r-lg: 20px; /* outer content shell only */
+  --d3-r-xs: 6px;                /* chips, tags, delta pills, heatmap cells */
+  --d3-r-sm: 12px;               /* buttons, input fields, tooltip */
+  --d3-r-md: 16px;               /* KPI cards, chart panels, chat surface */
+  --d3-r-lg: 20px;               /* outer content shell only */
 
   /* ── Elevation taxonomy (spec §5) ─────────────────────────────────── */
   /* elev-0 implicit (canvas, no shadow). Every elev-2..4 surface also
    * gets a 1px hairline — that hairline is what makes Mercury read as
    * Mercury. Without it dark cards muddle into the canvas. */
-  --d3-elev-1: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --d3-elev-1: 0 1px 0 rgba(0, 0, 0, 0.30);
   --d3-elev-2: 0 1px 2px rgba(0, 0, 0, 0.35), 0 0 0 1px var(--d3-hairline);
   --d3-elev-3: 0 8px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--d3-hairline);
   --d3-elev-4: 0 16px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px var(--d3-hairline);
@@ -65,11 +65,12 @@
   --d3-ease-luxe: cubic-bezier(0.16, 1, 0.3, 1);
 
   /* ── Type stacks (variables → fallback chain) ────────────────────── */
-  --d3-font-display: var(--font-d3-display), "Iowan Old Style", "Apple Garamond", "Baskerville",
-    "Times New Roman", serif;
-  --d3-font-sans: var(--font-d3-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "Helvetica Neue", Arial, sans-serif;
-  --d3-font-mono: var(--font-d3-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
+  --d3-font-display: var(--font-d3-display), "Iowan Old Style", "Apple Garamond",
+    "Baskerville", "Times New Roman", serif;
+  --d3-font-sans: var(--font-d3-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --d3-font-mono: var(--font-d3-mono), ui-monospace, SFMono-Regular, "Menlo",
+    "Consolas", monospace;
 
   /* ── Page surface ────────────────────────────────────────────────── */
   background-color: var(--d3-canvas);
@@ -172,8 +173,9 @@
   padding: 0 20px;
   cursor: pointer;
   text-decoration: none;
-  transition: background var(--d3-dur-fast) var(--d3-ease-luxe), color var(--d3-dur-fast)
-    var(--d3-ease-luxe), border-color var(--d3-dur-fast) var(--d3-ease-luxe);
+  transition: background var(--d3-dur-fast) var(--d3-ease-luxe),
+    color var(--d3-dur-fast) var(--d3-ease-luxe),
+    border-color var(--d3-dur-fast) var(--d3-ease-luxe);
 }
 
 [data-style="d3"] .d3-cta:hover {
@@ -335,8 +337,8 @@
   gap: 14px;
   /* V2 redesign rule: no brightness change, no scale.
    * Hover = translateY(-1px) + elev-2→elev-3 shadow swap. */
-  transition: transform var(--d3-dur-base) var(--d3-ease-luxe), box-shadow var(--d3-dur-base)
-    var(--d3-ease-luxe);
+  transition: transform var(--d3-dur-base) var(--d3-ease-luxe),
+    box-shadow var(--d3-dur-base) var(--d3-ease-luxe);
 }
 
 [data-style="d3"] .d3-kpi:hover {
@@ -447,7 +449,7 @@
 }
 
 [data-style="d3"] .d3-kpi--accent .d3-kpi__icon-chip {
-  background: rgba(22, 20, 18, 0.1);
+  background: rgba(22, 20, 18, 0.10);
   color: var(--d3-canvas);
 }
 
@@ -481,8 +483,9 @@
   border: 1px solid transparent;
   text-decoration: none;
   white-space: nowrap;
-  transition: background var(--d3-dur-fast) var(--d3-ease-luxe), color var(--d3-dur-fast)
-    var(--d3-ease-luxe), border-color var(--d3-dur-fast) var(--d3-ease-luxe);
+  transition: background var(--d3-dur-fast) var(--d3-ease-luxe),
+    color var(--d3-dur-fast) var(--d3-ease-luxe),
+    border-color var(--d3-dur-fast) var(--d3-ease-luxe);
 }
 
 [data-style="d3"] .d3-chip:hover {
@@ -860,8 +863,8 @@
   text-transform: uppercase;
   text-decoration: none;
   margin-top: 4px;
-  transition: color var(--d3-dur-fast) var(--d3-ease-luxe), border-color var(--d3-dur-fast)
-    var(--d3-ease-luxe);
+  transition: color var(--d3-dur-fast) var(--d3-ease-luxe),
+    border-color var(--d3-dur-fast) var(--d3-ease-luxe);
   align-self: flex-start;
 }
 

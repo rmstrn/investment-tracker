@@ -40,9 +40,10 @@
   --d4-hairline-strong: rgba(255, 255, 255, 0.1);
 
   /* ── Type stacks (variables → fallback chain) ──────────────────────── */
-  --d4-font-sans: var(--font-d4-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
-    "Helvetica Neue", Arial, sans-serif;
-  --d4-font-mono: var(--font-d4-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
+  --d4-font-sans: var(--font-d4-sans), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --d4-font-mono: var(--font-d4-mono), ui-monospace, SFMono-Regular, "Menlo",
+    "Consolas", monospace;
 
   /* ── Page surface ──────────────────────────────────────────────────── */
   background-color: var(--d4-canvas);
@@ -162,8 +163,8 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1), background 120ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 120ms cubic-bezier(0.16, 1, 0.3, 1),
+    background 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d4"] .d4-cta--primary {
@@ -912,7 +913,11 @@
 [data-style="d4"] .d4-spark__swatch--purple {
   background: var(--d4-purple);
   border-top: 1px dashed var(--d4-purple);
-  background-image: linear-gradient(to right, var(--d4-purple) 50%, transparent 50%);
+  background-image: linear-gradient(
+    to right,
+    var(--d4-purple) 50%,
+    transparent 50%
+  );
   background-size: 6px 2px;
   background-repeat: repeat-x;
   background-color: transparent;
@@ -975,7 +980,8 @@
   background: var(--d4-surface-2);
   border: 1px solid var(--d4-hairline-strong);
   border-radius: 12px; /* palette overlay 12px */
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6), 0 8px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6),
+    0 8px 16px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   overflow: hidden;
