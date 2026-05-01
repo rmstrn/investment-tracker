@@ -1,16 +1,24 @@
 /*
- * Style C — Pressroom Riso.
+ * Style C — Pressroom Riso (polished per C-deep-visual.md).
  *
  * Risograph broadside / zine direction. Three-color spot inks (red, blue,
- * yellow) on uncoated cream. Inter (body, OFL) + Caveat (marginalia, OFL).
- * Misregister halo — every ink-colored shape carries a 1-2px offset
- * duplicate in a second ink at 30% opacity.
+ * yellow) on uncoated cream. Bowlby One (display, OFL) + Source Serif 4
+ * (italic pull-quote, OFL) + Inter (body, OFL) + Caveat (marginalia, OFL).
+ *
+ * Misregister halo offset taxonomy (per spec §3):
+ *   --halo-poster   3px / 0.30 → hero headline, mast-head edition number
+ *   --halo-figure   2px / 0.28 → big numerals, section H2s, CTA stamps
+ *   --halo-trace    1px / 0.22 → chart-segment hovers ONLY (NOT money numerals)
+ *
+ * GUARDRAIL 1 — money numerals NEVER carry a halo. Halo is restricted to
+ * chrome tokens (.c-headline, .c-mast-edition, .c-decorative-rule, .c-chart-trace).
  *
  * Scope: route-local under `[data-style="c"]`. Wired by `layout.tsx`.
  */
 
 [data-style="c"] {
   --c-paper: #f4efe3;
+  --c-paper-deep: #ece5d2;
   --c-ink-black: #1a1814;
   --c-ink-red: #e63946;
   --c-ink-blue: #1f4fa8;
@@ -20,7 +28,19 @@
   --c-loss: #b23a2e;
   --c-registration: #0a0908;
 
+  /* halo offset taxonomy */
+  --halo-poster-x: 3px;
+  --halo-poster-y: 3px;
+  --halo-poster-opacity: 0.3;
+  --halo-figure-x: 2px;
+  --halo-figure-y: 2px;
+  --halo-figure-opacity: 0.28;
+  --halo-trace-x: 1px;
+  --halo-trace-y: 1px;
+  --halo-trace-opacity: 0.22;
+
   --c-font-display: var(--font-c-display), Georgia, "Times New Roman", serif;
+  --c-font-serif: var(--font-c-serif), Georgia, "Times New Roman", serif;
   --c-font-body: var(--font-c-body), system-ui, -apple-system, sans-serif;
   --c-font-pencil: var(--font-c-pencil), "Patrick Hand", cursive;
 
@@ -42,15 +62,19 @@
   background-size: 3px 3px;
 }
 
-/* ── Misregister halo — the signature gesture ───────────────────────── */
-/*
- * Implementation pattern: we use a single CSS pseudo-element
- * (`::before`) to render an offset duplicate of the host's content. The
- * pseudo inherits text content via `content: attr(data-text)` for
- * headlines or is a sibling for SVG/graphic shapes. On hover the offset
- * snaps to 0 with a 200ms ease, drifts back on mouse-out. Cheaper than
- * an SVG `<filter>` displacement and CPU-free at rest.
- */
+/* ── Carbon Print (dark mode hybrid, per spec §5) ────────────────────── */
+[data-style="c"][data-theme="carbon"] {
+  --c-paper: oklch(20% 0.008 80);
+  --c-paper-deep: oklch(17% 0.008 80);
+  --c-ink-black: oklch(94% 0.012 80);
+  --c-ink-red: oklch(70% 0.16 25);
+  --c-ink-blue: oklch(72% 0.13 245);
+  --c-ink-yellow: oklch(82% 0.14 90);
+  --c-pencil: oklch(72% 0.012 80);
+  --c-registration: oklch(80% 0.012 80);
+}
+
+/* ── Misregister halo — taxonomy ─────────────────────────────────────── */
 [data-style="c"] .c-halo {
   position: relative;
   display: inline-block;
@@ -61,16 +85,24 @@
   position: absolute;
   inset: 0;
   color: var(--c-ink-red);
-  opacity: 0.3;
-  transform: translate(2px, 2px);
-  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: none;
-  /* sit BEHIND the real text */
   z-index: -1;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-[data-style="c"] .c-halo:hover::before {
-  transform: translate(0, 0);
+[data-style="c"] .c-halo[data-halo="poster"]::before {
+  transform: translate(var(--halo-poster-x), var(--halo-poster-y));
+  opacity: var(--halo-poster-opacity);
+}
+
+[data-style="c"] .c-halo[data-halo="figure"]::before {
+  transform: translate(var(--halo-figure-x), var(--halo-figure-y));
+  opacity: var(--halo-figure-opacity);
+}
+
+[data-style="c"] .c-halo[data-halo="trace"]::before {
+  transform: translate(var(--halo-trace-x), var(--halo-trace-y));
+  opacity: var(--halo-trace-opacity);
 }
 
 [data-style="c"] .c-halo--blue::before {
@@ -80,6 +112,10 @@
 [data-style="c"] .c-halo--yellow::before {
   color: var(--c-ink-yellow);
   opacity: 0.4;
+}
+
+[data-style="c"] .c-halo:hover::before {
+  transform: translate(0, 0);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -92,9 +128,10 @@
 [data-style="c"] .c-display {
   font-family: var(--c-font-display);
   font-weight: 400;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.015em;
   color: var(--c-ink-black);
-  line-height: 0.96;
+  line-height: 0.92;
+  text-transform: lowercase;
 }
 
 [data-style="c"] .c-eyebrow {
@@ -118,6 +155,75 @@
   color: var(--c-ink-red);
 }
 
+/* ── Pull-quote — Source Serif 4 italic, hanging punctuation ────────── */
+[data-style="c"] .c-pull-quote {
+  font-family: var(--c-font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.18;
+  color: var(--c-ink-blue);
+  margin: 0;
+  padding: 22px 0;
+  border-top: 1px solid var(--c-ink-blue);
+  border-bottom: 1px solid var(--c-ink-blue);
+  text-indent: -0.45em;
+}
+
+/* ── By-line — Inter italic small caps ──────────────────────────────── */
+[data-style="c"] .c-byline {
+  font-family: var(--c-font-body);
+  font-size: 11px;
+  font-style: italic;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-pencil);
+  font-feature-settings: "smcp" 1;
+}
+
+/* ── Figure credit (under every chart) ──────────────────────────────── */
+[data-style="c"] .c-figure-credit {
+  font-family: var(--c-font-body);
+  font-size: 10px;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  color: var(--c-pencil);
+  margin-top: 12px;
+}
+
+/* ── Mast-head strip — full-bleed ink-blue (S3) ──────────────────────── */
+[data-style="c"] .c-mast-strip {
+  width: 100%;
+  background: var(--c-ink-blue);
+  color: var(--c-paper);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 0 clamp(20px, 4vw, 48px);
+  gap: 24px;
+  font-family: var(--c-font-body);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+[data-style="c"] .c-mast-strip__brand {
+  font-family: var(--c-font-display);
+  font-size: 22px;
+  letter-spacing: 0;
+  text-transform: lowercase;
+  line-height: 1;
+}
+
+[data-style="c"] .c-mast-strip__meta {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 32px);
+  flex-wrap: wrap;
+}
+
+/* ── Stamp CTA ──────────────────────────────────────────────────────── */
 [data-style="c"] .c-stamp {
   display: inline-flex;
   align-items: center;
@@ -125,7 +231,7 @@
   background: var(--c-ink-red);
   color: var(--c-paper);
   border: 0;
-  padding: 14px 20px;
+  padding: 14px 22px;
   border-radius: 2px;
   font-family: var(--c-font-body);
   font-weight: 600;
@@ -143,8 +249,8 @@
   inset: 0;
   background: var(--c-ink-blue);
   border-radius: 2px;
-  opacity: 0.3;
-  transform: translate(2px, 2px);
+  opacity: var(--halo-figure-opacity);
+  transform: translate(var(--halo-figure-x), var(--halo-figure-y));
   transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
   z-index: -1;
 }
@@ -157,7 +263,7 @@
   transform: rotate(-1deg);
 }
 
-/* ── Rule + masthead ───────────────────────────────────────────────── */
+/* ── Rule + spot stripe ─────────────────────────────────────────────── */
 [data-style="c"] .c-masthead-rule {
   height: 3px;
   background: var(--c-ink-black);
@@ -173,4 +279,36 @@
 
 [data-style="c"] .c-spot-stripe > span {
   flex: 1;
+}
+
+/* ── Type-set settle — G2 entrance ──────────────────────────────────── */
+@keyframes c-typeset-settle {
+  from {
+    transform: translateY(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+[data-style="c"] .c-typeset-line {
+  display: block;
+  animation: c-typeset-settle 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style="c"] .c-typeset-line {
+    animation: none;
+  }
+}
+
+/* ── Footer registration code ───────────────────────────────────────── */
+[data-style="c"] .c-reg-code {
+  font-family: var(--c-font-body);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--c-pencil);
 }
