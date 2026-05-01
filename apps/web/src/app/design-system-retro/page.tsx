@@ -1,389 +1,565 @@
 'use client';
 
 /**
- * `/design-system-retro` — comparison render for `Logging-Studio/RetroUI`.
+ * `/design-system-retro` — comparison render for `Logging-Studio/RetroUI` AS-IS.
  *
- * Identical content to `/design-system-ekmas`; only the component primitives
- * change. PO picks the visual landing better.
+ * NO Provedo branding. NO Provedo palette. NO Provedo typography overrides.
+ * Components installed verbatim via the official shadcn CLI from the RetroUI
+ * registry (`https://retroui.dev/r/<name>.json`). The route paints with the
+ * library's own out-of-the-box theme so PO can fairly evaluate defaults.
+ *
+ * Pair: `/design-system-ekmas` (ekmas/neobrutalism-components). Loser is
+ * deleted post-decision.
  */
 
-import { BAR_DRIFT_FIXTURE, BarVisx } from '@investment-tracker/ui/charts';
-import { useState } from 'react';
-import { Badge } from './_lib/Badge';
-import { Button } from './_lib/Button';
-import { Card } from './_lib/Card';
-import { Checkbox } from './_lib/Checkbox';
-import { Input } from './_lib/Input';
-import { Label } from './_lib/Label';
-import { Select } from './_lib/Select';
-import { Switch } from './_lib/Switch';
-import { Tabs } from './_lib/Tab';
-import { Text } from './_lib/Text';
-import { Textarea } from './_lib/Textarea';
+import { Accordion } from '@/components/retroui/Accordion';
+import { Alert } from '@/components/retroui/Alert';
+import { Avatar } from '@/components/retroui/Avatar';
+import { Badge } from '@/components/retroui/Badge';
+import { Breadcrumb } from '@/components/retroui/Breadcrumb';
+import { Button } from '@/components/retroui/Button';
+import { Card } from '@/components/retroui/Card';
+import { Checkbox } from '@/components/retroui/Checkbox';
+import { Dialog } from '@/components/retroui/Dialog';
+import { Input } from '@/components/retroui/Input';
+import { Label } from '@/components/retroui/Label';
+import { Loader } from '@/components/retroui/Loader';
+import { Menu } from '@/components/retroui/Menu';
+import { Popover } from '@/components/retroui/Popover';
+import { Progress } from '@/components/retroui/Progress';
+import { Select } from '@/components/retroui/Select';
+import { Slider } from '@/components/retroui/Slider';
+import { Switch } from '@/components/retroui/Switch';
+import { Tabs, TabsContent, TabsTrigger, TabsTriggerList } from '@/components/retroui/Tab';
+import { Text } from '@/components/retroui/Text';
+import { Textarea } from '@/components/retroui/Textarea';
+import { Tooltip } from '@/components/retroui/Tooltip';
+import { AreaChart } from '@/components/retroui/charts/AreaChart';
+import { BarChart } from '@/components/retroui/charts/BarChart';
+import { LineChart } from '@/components/retroui/charts/LineChart';
+import { PieChart } from '@/components/retroui/charts/PieChart';
 
-interface ColorBlock {
-  readonly name: string;
-  readonly hex: string;
-  readonly textOn: 'ink' | 'paper';
+interface PaletteSwatch {
+  readonly token: string;
+  readonly value: string;
+  readonly label: string;
 }
 
-const COLOR_BLOCKS: readonly ColorBlock[] = [
-  { name: 'signature.green', hex: '#88E26C', textOn: 'ink' },
-  { name: 'signal.orange', hex: '#F08A3C', textOn: 'ink' },
-  { name: 'candy.pink', hex: '#F7A1C9', textOn: 'ink' },
-  { name: 'candy.mustard', hex: '#F4CC4A', textOn: 'ink' },
-  { name: 'ink.deep', hex: '#1C1B26', textOn: 'paper' },
-  { name: 'paper.cream', hex: '#F6F1E8', textOn: 'ink' },
+/** RetroUI's own default theme tokens — verbatim from `app/global.css`. */
+const RETROUI_PALETTE: readonly PaletteSwatch[] = [
+  { token: '--background', value: '#F5ECE7', label: 'background' },
+  { token: '--foreground', value: '#000000', label: 'foreground' },
+  { token: '--primary', value: '#ffdb33', label: 'primary' },
+  { token: '--secondary', value: '#000000', label: 'secondary' },
+  { token: '--card', value: '#ffffff', label: 'card' },
+  { token: '--accent', value: '#fae583', label: 'accent' },
+  { token: '--muted', value: '#d5d5d5', label: 'muted' },
+  { token: '--destructive', value: '#e63946', label: 'destructive' },
+  { token: '--border', value: '#000000', label: 'border' },
+];
+
+const BAR_DATA = [
+  { month: 'Jan', sales: 120, profit: 80 },
+  { month: 'Feb', sales: 150, profit: 100 },
+  { month: 'Mar', sales: 100, profit: 60 },
+  { month: 'Apr', sales: 180, profit: 130 },
+  { month: 'May', sales: 220, profit: 160 },
+  { month: 'Jun', sales: 200, profit: 140 },
+];
+
+const LINE_DATA = [
+  { month: 'Jan', desktop: 186, mobile: 80 },
+  { month: 'Feb', desktop: 305, mobile: 200 },
+  { month: 'Mar', desktop: 237, mobile: 120 },
+  { month: 'Apr', desktop: 273, mobile: 190 },
+  { month: 'May', desktop: 209, mobile: 130 },
+  { month: 'Jun', desktop: 314, mobile: 240 },
+];
+
+const AREA_DATA = LINE_DATA;
+
+const PIE_DATA = [
+  { name: 'Stocks', value: 400 },
+  { name: 'Bonds', value: 300 },
+  { name: 'Crypto', value: 200 },
+  { name: 'Cash', value: 100 },
 ];
 
 export default function DesignSystemRetroPage() {
-  const [toastNote, setToastNote] = useState<string | null>(null);
-
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* ─── Library meta-strip ─────────────────────────────────────── */}
-      <div className="border-b-2 border-foreground bg-muted">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/80">
-          <span>library · logging-studio/retroui v0.1.0</span>
-          <span>11 components in showcase · radix + tailwind v4</span>
-          <a
-            href="https://github.com/Logging-Studio/RetroUI"
-            target="_blank"
-            rel="noreferrer"
-            className="underline decoration-2 underline-offset-2 hover:text-foreground"
-          >
-            github →
-          </a>
-        </div>
-      </div>
-
-      {/* ─── Sticky black header ─────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b-2 border-foreground bg-foreground text-background">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">Provedo</span>
-          <nav className="hidden items-center gap-6 text-xs font-medium md:flex">
-            <a href="#hero" className="opacity-70 hover:opacity-100">
-              product
+    <Tooltip.Provider>
+      <div className="min-h-screen bg-background text-foreground">
+        {/* ─── Library meta-strip ────────────────────────────────────── */}
+        <div className="border-b-2 border-border">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
+            <span>library · Logging-Studio/RetroUI</span>
+            <span>22 components · 4 charts · wraps recharts</span>
+            <a
+              href="https://github.com/Logging-Studio/RetroUI"
+              target="_blank"
+              rel="noreferrer"
+              className="underline decoration-2 underline-offset-2"
+            >
+              github →
             </a>
-            <a href="#components" className="opacity-70 hover:opacity-100">
-              components
-            </a>
-            <a href="#colors" className="opacity-70 hover:opacity-100">
-              colors
-            </a>
-            <a href="#charts" className="opacity-70 hover:opacity-100">
-              charts
-            </a>
-          </nav>
-          <Button size="sm" variant="secondary">
-            sign in
-          </Button>
-        </div>
-      </header>
-
-      {/* ─── 1. Hero — full-width candy-pink ─────────────────────────── */}
-      <section
-        id="hero"
-        className="relative border-b-2 border-foreground"
-        style={{ backgroundColor: '#F7A1C9' }}
-      >
-        <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em] text-foreground/70">
-            logging-studio/retroui · provedo render
-          </p>
-          <h1 className="retro-display max-w-4xl text-7xl text-foreground md:text-9xl">
-            notice what you&apos;d miss.
-          </h1>
-          <p className="mt-8 max-w-2xl text-lg text-foreground/80 md:text-xl">
-            we read every account in your name. weekly. one feed. the dividend before it lands, the
-            drawdown before it deepens.
-          </p>
-          <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button size="lg">connect.</Button>
-            <Button size="lg" variant="secondary">
-              look around first →
-            </Button>
           </div>
         </div>
-      </section>
 
-      <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        {/* ─── 2. Components gallery ─────────────────────────────────── */}
-        <section id="components" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            components
-          </p>
-          <h2 className="retro-display mb-12 text-5xl">primitives.</h2>
-
-          {/* Buttons — variants × states */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              buttons · 5 variants × 4 sizes
-            </h3>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button>default</Button>
-              <Button variant="secondary">secondary</Button>
-              <Button variant="outline">outline</Button>
-              <Button variant="link">link</Button>
-              <Button variant="ghost">ghost</Button>
-              <Button disabled>disabled</Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button size="sm">small</Button>
-              <Button>medium</Button>
-              <Button size="lg">large</Button>
-            </div>
-            <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
-                variants in context — primary CTA, secondary CTA, ghost on dark
-              </p>
-              <div
-                className="flex flex-wrap items-center gap-4 p-4"
-                style={{ backgroundColor: '#0A0A0F' }}
-              >
-                <Button>connect.</Button>
-                <Button variant="secondary">explore</Button>
-                <Button variant="outline" className="text-background">
-                  cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Cards */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              cards
-            </h3>
-            <div className="grid gap-6 md:grid-cols-3">
-              <Card className="block w-full">
-                <Card.Header>
-                  <Card.Title>portfolio</Card.Title>
-                  <Card.Description>
-                    aggregate balance across your linked accounts.
-                  </Card.Description>
-                </Card.Header>
-                <Card.Content>
-                  <p className="text-3xl font-bold">$184,201</p>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-foreground/60">
-                    +2.4% week
-                  </p>
-                  <div className="mt-4">
-                    <Button size="sm" variant="secondary">
-                      view holdings
-                    </Button>
-                  </div>
-                </Card.Content>
-              </Card>
-              <Card className="block w-full" style={{ backgroundColor: '#F4CC4A' }}>
-                <Card.Header>
-                  <Card.Title>insight</Card.Title>
-                  <Card.Description>your drift exceeds rebalance band by 3.1pp.</Card.Description>
-                </Card.Header>
-                <Card.Content>
-                  <Badge variant="surface">action needed</Badge>
-                  <div className="mt-4">
-                    <Button size="sm">rebalance.</Button>
-                  </div>
-                </Card.Content>
-              </Card>
-              <Card
-                className="block w-full"
-                style={{ backgroundColor: '#0A0A0F', color: '#FFFFFF' }}
-              >
-                <Card.Header>
-                  <Card.Title className="text-background">stamp</Card.Title>
-                  <Card.Description className="text-background/70">
-                    the math is real, and so is the shadow.
-                  </Card.Description>
-                </Card.Header>
-                <Card.Content>
-                  <p className="font-mono text-xs uppercase tracking-wider text-background/60">
-                    ink-card variant
-                  </p>
-                  <div className="mt-4">
-                    <Button size="sm" variant="outline" className="text-background">
-                      learn more
-                    </Button>
-                  </div>
-                </Card.Content>
-              </Card>
-            </div>
-          </div>
-
-          {/* Forms */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              forms
-            </h3>
-            <Card className="block w-full">
-              <Card.Content>
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="retro-email">email</Label>
-                    <Input id="retro-email" placeholder="rey@provedo.app" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="retro-account">account type</Label>
-                    <Select>
-                      <Select.Trigger id="retro-account">
-                        <Select.Value placeholder="choose..." />
-                      </Select.Trigger>
-                      <Select.Content>
-                        <Select.Item value="brokerage">brokerage</Select.Item>
-                        <Select.Item value="ira">ira</Select.Item>
-                        <Select.Item value="401k">401(k)</Select.Item>
-                        <Select.Item value="hsa">hsa</Select.Item>
-                      </Select.Content>
-                    </Select>
-                  </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label htmlFor="retro-note">note</Label>
-                    <Textarea
-                      id="retro-note"
-                      placeholder="anything we should know about this account?"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Checkbox id="retro-terms" />
-                    <Label htmlFor="retro-terms" className="cursor-pointer">
-                      i&apos;ve read the disclaimer.
-                    </Label>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Switch id="retro-weekly" defaultChecked />
-                    <Label htmlFor="retro-weekly" className="cursor-pointer">
-                      weekly summary email
-                    </Label>
-                  </div>
-                </div>
-              </Card.Content>
-            </Card>
-          </div>
-
-          {/* Tabs + badge + toast */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              tabs · badge · toast
-            </h3>
-            <Tabs defaultValue="overview">
-              <Tabs.List>
-                <Tabs.Trigger value="overview">overview</Tabs.Trigger>
-                <Tabs.Trigger value="holdings">holdings</Tabs.Trigger>
-                <Tabs.Trigger value="activity">activity</Tabs.Trigger>
-              </Tabs.List>
-              <Tabs.Content value="overview">
-                <div className="flex flex-wrap items-center gap-3">
-                  <Badge variant="surface">success</Badge>
-                  <Badge variant="outline">neutral</Badge>
-                  <Badge variant="solid">solid</Badge>
-                  <span className="text-sm text-foreground/70">
-                    five accounts synced two minutes ago.
-                  </span>
-                </div>
-              </Tabs.Content>
-              <Tabs.Content value="holdings">
-                <p className="text-sm">holdings tab — placeholder for the comparison render.</p>
-              </Tabs.Content>
-              <Tabs.Content value="activity">
-                <p className="text-sm">activity tab — placeholder for the comparison render.</p>
-              </Tabs.Content>
-            </Tabs>
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => {
-                  setToastNote(`saved at ${new Date().toLocaleTimeString()}`);
-                  window.setTimeout(() => setToastNote(null), 3000);
-                }}
-              >
-                trigger toast
+        {/* ─── 1. Hero — RetroUI default backdrop ────────────────────── */}
+        <section className="relative border-b-2 border-border bg-background">
+          <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
+            <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em]">
+              retroui · default theme — AS-IS
+            </p>
+            <h1 className="font-head max-w-4xl text-7xl md:text-9xl">RetroUI.</h1>
+            <p className="mt-8 max-w-2xl text-lg md:text-xl">
+              Default RetroUI theme rendered verbatim. Cream background, yellow primary, black
+              border, chunky offset shadows. No Provedo overrides applied.
+            </p>
+            <div className="mt-10 flex flex-wrap items-center gap-4">
+              <Button size="lg">Default</Button>
+              <Button size="lg" variant="secondary">
+                Secondary
               </Button>
-              {toastNote ? (
-                <div className="rounded border-2 border-foreground bg-background px-4 py-2 text-sm shadow-md">
-                  <span className="mr-3 inline-block h-2 w-6 align-middle bg-primary" />
-                  {toastNote}
+              <Button size="lg" variant="outline">
+                Outline
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">
+          {/* ─── 2. Form components ───────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              form · 9 components
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Form
+            </Text>
+            <div className="space-y-12">
+              {/* Buttons full variants */}
+              <div className="space-y-4">
+                <Text as="h3" className="text-xl font-head">
+                  Button — 5 variants × 4 sizes
+                </Text>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button>Default</Button>
+                  <Button variant="secondary">Secondary</Button>
+                  <Button variant="outline">Outline</Button>
+                  <Button variant="link">Link</Button>
+                  <Button variant="ghost">Ghost</Button>
+                  <Button disabled>Disabled</Button>
                 </div>
-              ) : null}
-            </div>
-          </div>
-        </section>
-
-        {/* ─── 3. Color blocks strip ───────────────────────────────────── */}
-        <section id="colors" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            colors
-          </p>
-          <h2 className="retro-display mb-12 text-5xl">palette.</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {COLOR_BLOCKS.map((block) => (
-              <div
-                key={block.hex}
-                className="rounded border-2 border-foreground shadow-md"
-                style={{
-                  backgroundColor: block.hex,
-                  color: block.textOn === 'paper' ? '#FFFFFF' : '#0A0A0F',
-                  padding: '32px 16px',
-                  minHeight: '180px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <span className="font-mono text-[10px] uppercase tracking-[0.18em] opacity-80">
-                  {block.name}
-                </span>
-                <span className="font-mono text-sm font-semibold">{block.hex}</span>
+                <div className="flex flex-wrap items-center gap-4">
+                  <Button size="sm">Small</Button>
+                  <Button>Medium</Button>
+                  <Button size="lg">Large</Button>
+                  <Button size="icon" aria-label="icon button">
+                    ★
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
-        </section>
 
-        {/* ─── 4. Chart sample ─────────────────────────────────────────── */}
-        <section id="charts" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            charts
-          </p>
-          <h2 className="retro-display mb-12 text-5xl">drift band.</h2>
-          <Card className="block w-full p-6">
-            <Card.Header>
-              <Card.Title>allocation drift · target ±2pp</Card.Title>
-              <Card.Description>
-                RetroUI ships Bar / Area / Line / Pie charts — all wrap recharts (extra dep). Visx
-                stays the canonical engine; this card uses BarVisx so PO can compare frame styling
-                side-by-side.
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <BarVisx payload={BAR_DRIFT_FIXTURE} height={260} />
-            </Card.Content>
-            <div className="mt-4 px-6 pb-2">
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
-                retroui charts available · not adopted (avoids recharts dependency)
-              </span>
+              {/* Input + Textarea + Label */}
+              <div className="grid gap-6 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="r-name">Name</Label>
+                  <Input id="r-name" placeholder="Enter your name" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="r-email">Email</Label>
+                  <Input id="r-email" type="email" placeholder="you@example.com" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="r-bio">Bio</Label>
+                  <Textarea id="r-bio" rows={3} placeholder="A few words about yourself..." />
+                </div>
+              </div>
+
+              {/* Select + Switch + Checkbox */}
+              <div className="grid gap-6 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="r-fruit">Choose a fruit</Label>
+                  <Select>
+                    <Select.Trigger id="r-fruit">
+                      <Select.Value placeholder="Select..." />
+                    </Select.Trigger>
+                    <Select.Content>
+                      <Select.Item value="apple">Apple</Select.Item>
+                      <Select.Item value="banana">Banana</Select.Item>
+                      <Select.Item value="cherry">Cherry</Select.Item>
+                      <Select.Item value="date">Date</Select.Item>
+                    </Select.Content>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Switch id="r-airplane" defaultChecked />
+                  <Label htmlFor="r-airplane">Airplane mode</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Checkbox id="r-terms" />
+                  <Label htmlFor="r-terms">Accept terms</Label>
+                </div>
+              </div>
+
+              {/* Slider */}
+              <div className="space-y-2">
+                <Label>Volume</Label>
+                <Slider defaultValue={[50]} max={100} step={1} />
+              </div>
             </div>
-          </Card>
-        </section>
+          </section>
 
-        {/* Text component sample */}
-        <section className="mb-24">
-          <Text as="h3" className="mb-2">
-            typography sample
-          </Text>
-          <Text as="p" className="text-foreground/70">
-            The Text primitive — h1 through h6, p, li, a — handles font scale.
-          </Text>
-        </section>
-      </main>
+          {/* ─── 3. Surface components ────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              surface · 4 components
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Surface
+            </Text>
 
-      {/* ─── 5. Footer band ────────────────────────────────────────────── */}
-      <footer className="border-t-2 border-foreground bg-muted">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-foreground/70">
-            library: Logging-Studio/RetroUI · radix + tailwind 4
-          </p>
-        </div>
-      </footer>
-    </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card>
+                <Card.Header>
+                  <Card.Title>Card</Card.Title>
+                  <Card.Description>Default card surface with chunky shadow.</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <p className="text-sm">
+                    RetroUI cards: 2-px border, hard offset shadow, white card surface against cream
+                    background.
+                  </p>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Card.Title>Avatar</Card.Title>
+                  <Card.Description>3 sizes shown.</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <div className="flex items-center gap-4">
+                    <Avatar className="size-8">
+                      <Avatar.Image src="https://i.pravatar.cc/64?img=11" alt="sm" />
+                      <Avatar.Fallback>SM</Avatar.Fallback>
+                    </Avatar>
+                    <Avatar className="size-12">
+                      <Avatar.Image src="https://i.pravatar.cc/64?img=12" alt="md" />
+                      <Avatar.Fallback>MD</Avatar.Fallback>
+                    </Avatar>
+                    <Avatar className="size-16">
+                      <Avatar.Image src="https://i.pravatar.cc/64?img=13" alt="lg" />
+                      <Avatar.Fallback>LG</Avatar.Fallback>
+                    </Avatar>
+                  </div>
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Card.Title>Badge</Card.Title>
+                  <Card.Description>Variants shown.</Card.Description>
+                </Card.Header>
+                <Card.Content className="flex flex-wrap gap-2">
+                  <Badge>default</Badge>
+                  <Badge variant="solid">solid</Badge>
+                  <Badge variant="outline">outline</Badge>
+                  <Badge variant="surface">surface</Badge>
+                </Card.Content>
+              </Card>
+            </div>
+          </section>
+
+          {/* ─── 4. Overlay + Feedback ────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              overlay + feedback · 7 components
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Overlay
+            </Text>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Dialog */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Dialog</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Dialog>
+                    <Dialog.Trigger asChild>
+                      <Button>Open dialog</Button>
+                    </Dialog.Trigger>
+                    <Dialog.Content>
+                      <Dialog.Header>Confirm action</Dialog.Header>
+                      <Dialog.Description>
+                        This is RetroUI&apos;s native modal dialog.
+                      </Dialog.Description>
+                    </Dialog.Content>
+                  </Dialog>
+                </Card.Content>
+              </Card>
+
+              {/* Tooltip */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Tooltip</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Tooltip>
+                    <Tooltip.Trigger asChild>
+                      <Button variant="outline">Hover me</Button>
+                    </Tooltip.Trigger>
+                    <Tooltip.Content>RetroUI tooltip</Tooltip.Content>
+                  </Tooltip>
+                </Card.Content>
+              </Card>
+
+              {/* Popover */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Popover</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Popover>
+                    <Popover.Trigger asChild>
+                      <Button variant="outline">Open popover</Button>
+                    </Popover.Trigger>
+                    <Popover.Content>
+                      <p className="text-sm">Popover content with chunky border.</p>
+                    </Popover.Content>
+                  </Popover>
+                </Card.Content>
+              </Card>
+
+              {/* Menu */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Menu</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Menu>
+                    <Menu.Trigger asChild>
+                      <Button variant="outline">Open menu</Button>
+                    </Menu.Trigger>
+                    <Menu.Content>
+                      <Menu.Item>Profile</Menu.Item>
+                      <Menu.Item>Settings</Menu.Item>
+                      <Menu.Item>Sign out</Menu.Item>
+                    </Menu.Content>
+                  </Menu>
+                </Card.Content>
+              </Card>
+
+              {/* Alert */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Alert</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Alert>
+                    <Alert.Title>Heads up!</Alert.Title>
+                    <Alert.Description>
+                      This is a RetroUI alert with default styling.
+                    </Alert.Description>
+                  </Alert>
+                </Card.Content>
+              </Card>
+
+              {/* Loader + Progress */}
+              <Card>
+                <Card.Header>
+                  <Card.Title>Loader · Progress</Card.Title>
+                </Card.Header>
+                <Card.Content className="space-y-4">
+                  <Loader />
+                  <Progress value={67} />
+                </Card.Content>
+              </Card>
+            </div>
+          </section>
+
+          {/* ─── 5. Navigation ─────────────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              navigation · 3 components
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Navigation
+            </Text>
+
+            <div className="space-y-8">
+              <Card>
+                <Card.Header>
+                  <Card.Title>Tabs</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Tabs>
+                    <TabsTriggerList>
+                      <TabsTrigger>Overview</TabsTrigger>
+                      <TabsTrigger>Holdings</TabsTrigger>
+                      <TabsTrigger>Activity</TabsTrigger>
+                    </TabsTriggerList>
+                    <TabsContent>Overview content lives in panel one.</TabsContent>
+                    <TabsContent>Holdings content lives in panel two.</TabsContent>
+                    <TabsContent>Activity content lives in panel three.</TabsContent>
+                  </Tabs>
+                </Card.Content>
+              </Card>
+
+              <Card>
+                <Card.Header>
+                  <Card.Title>Breadcrumb</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Breadcrumb>
+                    <Breadcrumb.List>
+                      <Breadcrumb.Item>
+                        <Breadcrumb.Link href="#">Home</Breadcrumb.Link>
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Separator />
+                      <Breadcrumb.Item>
+                        <Breadcrumb.Link href="#">Components</Breadcrumb.Link>
+                      </Breadcrumb.Item>
+                      <Breadcrumb.Separator />
+                      <Breadcrumb.Item>
+                        <Breadcrumb.Page>Breadcrumb</Breadcrumb.Page>
+                      </Breadcrumb.Item>
+                    </Breadcrumb.List>
+                  </Breadcrumb>
+                </Card.Content>
+              </Card>
+
+              <Card>
+                <Card.Header>
+                  <Card.Title>Accordion</Card.Title>
+                </Card.Header>
+                <Card.Content>
+                  <Accordion type="single" collapsible>
+                    <Accordion.Item value="a">
+                      <Accordion.Header>What is RetroUI?</Accordion.Header>
+                      <Accordion.Content>
+                        A retro-styled neo-brutalism component library based on Tailwind v4.
+                      </Accordion.Content>
+                    </Accordion.Item>
+                    <Accordion.Item value="b">
+                      <Accordion.Header>Is it free?</Accordion.Header>
+                      <Accordion.Content>Yes, MIT licensed.</Accordion.Content>
+                    </Accordion.Item>
+                  </Accordion>
+                </Card.Content>
+              </Card>
+            </div>
+          </section>
+
+          {/* ─── 6. Native charts (4) ──────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              data · 4 native chart components (recharts wrappers)
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Charts
+            </Text>
+
+            <div className="grid gap-6 md:grid-cols-2">
+              <Card>
+                <Card.Header>
+                  <Card.Title>Bar Chart</Card.Title>
+                  <Card.Description>Sales · profit by month</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <BarChart data={BAR_DATA} index="month" categories={['sales', 'profit']} />
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Card.Title>Line Chart</Card.Title>
+                  <Card.Description>Desktop · mobile traffic</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <LineChart data={LINE_DATA} index="month" categories={['desktop', 'mobile']} />
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Card.Title>Area Chart</Card.Title>
+                  <Card.Description>Gradient fill default</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <AreaChart data={AREA_DATA} index="month" categories={['desktop', 'mobile']} />
+                </Card.Content>
+              </Card>
+              <Card>
+                <Card.Header>
+                  <Card.Title>Pie Chart</Card.Title>
+                  <Card.Description>Asset allocation</Card.Description>
+                </Card.Header>
+                <Card.Content>
+                  <PieChart data={PIE_DATA} dataKey="value" nameKey="name" />
+                </Card.Content>
+              </Card>
+            </div>
+          </section>
+
+          {/* ─── 7. Default palette ────────────────────────────────────── */}
+          <section className="mb-24">
+            <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+              palette · RetroUI defaults
+            </p>
+            <Text as="h2" className="mb-12 text-5xl font-head">
+              Palette
+            </Text>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+              {RETROUI_PALETTE.map((swatch) => (
+                <div
+                  key={swatch.token}
+                  className="border-2 border-border shadow-md"
+                  style={{
+                    backgroundColor: swatch.value,
+                    color:
+                      swatch.value === '#000000' || swatch.value === '#000' ? '#ffffff' : '#000000',
+                    padding: '32px 16px',
+                    minHeight: '180px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <span className="font-mono text-[10px] uppercase tracking-[0.18em] opacity-80">
+                    {swatch.label}
+                  </span>
+                  <div>
+                    <div className="font-mono text-xs opacity-70">{swatch.token}</div>
+                    <div className="font-mono text-sm font-semibold">{swatch.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </main>
+
+        {/* ─── Footer band ────────────────────────────────────────────── */}
+        <footer className="border-t-2 border-border">
+          <div className="mx-auto max-w-7xl px-6 py-8 font-mono text-xs uppercase tracking-[0.25em]">
+            <p>
+              install:{' '}
+              <code>
+                pnpm dlx shadcn@latest add &apos;https://retroui.dev/r/&lt;name&gt;.json&apos;
+              </code>
+            </p>
+            <p className="mt-1">
+              github:{' '}
+              <a className="underline" href="https://github.com/Logging-Studio/RetroUI">
+                Logging-Studio/RetroUI
+              </a>{' '}
+              · license: MIT · charts wrap{' '}
+              <a className="underline" href="https://recharts.org">
+                recharts
+              </a>
+            </p>
+          </div>
+        </footer>
+      </div>
+    </Tooltip.Provider>
   );
 }

@@ -25,7 +25,9 @@
       "pnpm-lock.yaml",
 
       "**/packages/ui/**",
-      "**/apps/web/src/app/design/**"
+      "**/apps/web/src/app/design/**",
+      "**/apps/web/src/components/ui/**",
+      "**/apps/web/src/components/retroui/**"
     ]
   },
   "formatter": {

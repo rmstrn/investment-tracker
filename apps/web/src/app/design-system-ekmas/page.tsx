@@ -1,344 +1,543 @@
 'use client';
 
 /**
- * `/design-system-ekmas` — comparison render for `ekmas/neobrutalism-components`.
+ * `/design-system-ekmas` — comparison render for `ekmas/neobrutalism-components`
+ * AS-IS.
  *
- * Pair: `/design-system-retro` (RetroUI) shows the same content with the same
- * copy + structure but library swapped — so PO can pick by visual feel.
+ * NO Provedo branding. NO Provedo palette. NO Provedo typography overrides.
+ * Components installed verbatim via the official shadcn CLI from the ekmas
+ * registry (`https://www.neobrutalism.dev/r/<name>.json`). The route paints
+ * with the library's own out-of-the-box theme so PO can fairly evaluate
+ * defaults against `/design-system-retro`.
  *
- * Out of scope: tests (disposable comparison page), feature parity with the
- * canonical `/design-system` route, mascot subsystem, copy variations.
+ * Loser is deleted post-decision.
  */
 
-import { BAR_DRIFT_FIXTURE, BarVisx } from '@investment-tracker/ui/charts';
-import { useState } from 'react';
-import { Badge } from './_lib/badge';
-import { Button } from './_lib/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './_lib/card';
-import { Checkbox } from './_lib/checkbox';
-import { Input } from './_lib/input';
-import { Label } from './_lib/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './_lib/select';
-import { Switch } from './_lib/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './_lib/tabs';
-import { Textarea } from './_lib/textarea';
+import { Bar, BarChart, CartesianGrid, XAxis } from 'recharts';
 
-interface ColorBlock {
-  readonly name: string;
-  readonly hex: string;
-  readonly textOn: 'ink' | 'paper';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  type ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
+interface PaletteSwatch {
+  readonly token: string;
+  readonly value: string;
+  readonly label: string;
 }
 
-const COLOR_BLOCKS: readonly ColorBlock[] = [
-  { name: 'signature.green', hex: '#88E26C', textOn: 'ink' },
-  { name: 'signal.orange', hex: '#F08A3C', textOn: 'ink' },
-  { name: 'candy.pink', hex: '#F7A1C9', textOn: 'ink' },
-  { name: 'candy.mustard', hex: '#F4CC4A', textOn: 'ink' },
-  { name: 'ink.deep', hex: '#1C1B26', textOn: 'paper' },
-  { name: 'paper.cream', hex: '#F6F1E8', textOn: 'ink' },
+/** ekmas's own default theme tokens — verbatim from `src/styling/globals.css`. */
+const EKMAS_PALETTE: readonly PaletteSwatch[] = [
+  { token: '--background', value: 'oklch(93.46% 0.0304 254.32)', label: 'background' },
+  { token: '--secondary-background', value: 'oklch(100% 0 0)', label: 'secondary-bg' },
+  { token: '--main', value: 'oklch(67.47% 0.1725 259.61)', label: 'main' },
+  { token: '--foreground', value: 'oklch(0% 0 0)', label: 'foreground' },
+  { token: '--main-foreground', value: 'oklch(0% 0 0)', label: 'main-fg' },
+  { token: '--border', value: 'oklch(0% 0 0)', label: 'border' },
+  { token: '--ring', value: 'oklch(0% 0 0)', label: 'ring' },
+  { token: '--overlay', value: 'oklch(0% 0 0 / 0.8)', label: 'overlay' },
 ];
 
-export default function DesignSystemEkmasPage() {
-  const [toastNote, setToastNote] = useState<string | null>(null);
+const CHART_DATA = [
+  { month: 'Jan', desktop: 186, mobile: 80 },
+  { month: 'Feb', desktop: 305, mobile: 200 },
+  { month: 'Mar', desktop: 237, mobile: 120 },
+  { month: 'Apr', desktop: 273, mobile: 190 },
+  { month: 'May', desktop: 209, mobile: 130 },
+  { month: 'Jun', desktop: 314, mobile: 240 },
+];
 
+const CHART_CONFIG: ChartConfig = {
+  desktop: {
+    label: 'Desktop',
+    color: 'var(--chart-1)',
+  },
+  mobile: {
+    label: 'Mobile',
+    color: 'var(--chart-2)',
+  },
+};
+
+export default function DesignSystemEkmasPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ─── Library meta-strip ─────────────────────────────────────── */}
-      <div className="border-b-2 border-border bg-secondary-background">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/80">
+      {/* ─── Library meta-strip ────────────────────────────────────── */}
+      <div className="border-b-2 border-border">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em]">
           <span>library · ekmas/neobrutalism-components</span>
-          <span>10 components in showcase · radix + tailwind v4</span>
+          <span>24 components · chart wraps recharts</span>
           <a
             href="https://github.com/ekmas/neobrutalism-components"
             target="_blank"
             rel="noreferrer"
-            className="underline decoration-2 underline-offset-2 hover:text-foreground"
+            className="underline decoration-2 underline-offset-2"
           >
             github →
           </a>
         </div>
       </div>
 
-      {/* ─── Sticky black header ─────────────────────────────────────── */}
-      <header className="sticky top-0 z-40 border-b-2 border-border bg-foreground text-background">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
-          <span className="text-xs font-semibold uppercase tracking-[0.2em]">Provedo</span>
-          <nav className="hidden items-center gap-6 text-xs font-medium md:flex">
-            <a href="#hero" className="opacity-70 hover:opacity-100">
-              product
-            </a>
-            <a href="#components" className="opacity-70 hover:opacity-100">
-              components
-            </a>
-            <a href="#colors" className="opacity-70 hover:opacity-100">
-              colors
-            </a>
-            <a href="#charts" className="opacity-70 hover:opacity-100">
-              charts
-            </a>
-          </nav>
-          <Button size="sm" variant="reverse" className="bg-background text-foreground">
-            sign in
-          </Button>
-        </div>
-      </header>
-
-      {/* ─── 1. Hero — full-width candy-pink ─────────────────────────── */}
-      <section
-        id="hero"
-        className="relative border-b-2 border-border"
-        style={{ backgroundColor: '#F7A1C9' }}
-      >
+      {/* ─── 1. Hero — ekmas default backdrop ──────────────────────── */}
+      <section className="relative border-b-2 border-border bg-background">
         <div className="mx-auto max-w-7xl px-6 py-24 md:py-32">
-          <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em] text-foreground/70">
-            ekmas/neobrutalism-components · provedo render
+          <p className="mb-8 text-xs font-mono uppercase tracking-[0.2em]">
+            neobrutalism · default theme — AS-IS
           </p>
-          <h1 className="ekmas-display max-w-4xl text-7xl text-foreground md:text-9xl">
-            notice what you&apos;d miss.
-          </h1>
-          <p className="mt-8 max-w-2xl text-lg text-foreground/80 md:text-xl">
-            we read every account in your name. weekly. one feed. the dividend before it lands, the
-            drawdown before it deepens.
+          <h1 className="font-heading max-w-4xl text-7xl md:text-9xl">Neobrutalism.</h1>
+          <p className="mt-8 max-w-2xl text-lg md:text-xl font-base">
+            Default ekmas theme rendered verbatim. Light blue background, blue main, white secondary
+            background, hard offset shadow with hover-translate trick. No Provedo overrides applied.
           </p>
           <div className="mt-10 flex flex-wrap items-center gap-4">
-            <Button size="lg">connect.</Button>
+            <Button size="lg">Default</Button>
             <Button size="lg" variant="neutral">
-              look around first →
+              Neutral
+            </Button>
+            <Button size="lg" variant="reverse">
+              Reverse
+            </Button>
+            <Button size="lg" variant="noShadow">
+              No shadow
             </Button>
           </div>
         </div>
       </section>
 
       <main className="mx-auto max-w-7xl px-6 py-16 md:py-24">
-        {/* ─── 2. Components gallery ─────────────────────────────────── */}
-        <section id="components" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            components
-          </p>
-          <h2 className="ekmas-display mb-12 text-5xl">primitives.</h2>
+        {/* ─── 2. Form components ───────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">form · 9 components</p>
+          <h2 className="mb-12 text-5xl font-heading">Form</h2>
 
-          {/* Buttons — variants × states */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              buttons · 4 variants × 5 states
-            </h3>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button>default</Button>
-              <Button variant="neutral">neutral</Button>
-              <Button variant="reverse">reverse</Button>
-              <Button variant="noShadow">no shadow</Button>
-              <Button disabled>disabled</Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-4">
-              <Button size="sm">small</Button>
-              <Button>medium</Button>
-              <Button size="lg">large</Button>
-            </div>
-            <div>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
-                forced hover state — shadow drops, button shifts +4px
-              </p>
+          <div className="space-y-12">
+            {/* Buttons full variants */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-heading">Button — 4 variants × 4 sizes</h3>
               <div className="flex flex-wrap items-center gap-4">
-                <Button data-force-hover className="translate-x-boxShadowX shadow-none">
-                  default :hover
-                </Button>
-                <Button
-                  variant="neutral"
-                  data-force-hover
-                  className="translate-x-boxShadowX shadow-none"
-                >
-                  neutral :hover
+                <Button>Default</Button>
+                <Button variant="neutral">Neutral</Button>
+                <Button variant="reverse">Reverse</Button>
+                <Button variant="noShadow">No shadow</Button>
+                <Button disabled>Disabled</Button>
+              </div>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button size="sm">Small</Button>
+                <Button>Default</Button>
+                <Button size="lg">Large</Button>
+                <Button size="icon" aria-label="icon button">
+                  ★
                 </Button>
               </div>
             </div>
-          </div>
 
-          {/* Cards */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              cards
-            </h3>
+            {/* Input + Textarea + Label */}
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="e-name">Name</Label>
+                <Input id="e-name" placeholder="Enter your name" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="e-email">Email</Label>
+                <Input id="e-email" type="email" placeholder="you@example.com" />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="e-bio">Bio</Label>
+                <Textarea id="e-bio" rows={3} placeholder="A few words about yourself..." />
+              </div>
+            </div>
+
+            {/* Select + Switch + Checkbox */}
             <div className="grid gap-6 md:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-2xl">portfolio</CardTitle>
-                  <CardDescription>aggregate balance across your linked accounts.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold">$184,201</p>
-                  <p className="mt-1 text-xs uppercase tracking-wider text-foreground/60">
-                    +2.4% week
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button size="sm" variant="neutral">
-                    view holdings
-                  </Button>
-                </CardFooter>
-              </Card>
-              <Card style={{ backgroundColor: '#F4CC4A' }}>
-                <CardHeader>
-                  <CardTitle className="text-2xl">insight</CardTitle>
-                  <CardDescription>your drift exceeds rebalance band by 3.1pp.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Badge>action needed</Badge>
-                </CardContent>
-                <CardFooter>
-                  <Button size="sm">rebalance.</Button>
-                </CardFooter>
-              </Card>
-              <Card style={{ backgroundColor: '#0A0A0F', color: '#FFFFFF' }}>
-                <CardHeader>
-                  <CardTitle className="text-2xl">stamp</CardTitle>
-                  <CardDescription className="text-white/70">
-                    the math is real, and so is the shadow.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="font-mono text-xs uppercase tracking-wider text-white/60">
-                    ink-card variant
-                  </p>
-                </CardContent>
-                <CardFooter>
-                  <Button size="sm" variant="reverse">
-                    learn more
-                  </Button>
-                </CardFooter>
-              </Card>
+              <div className="space-y-2">
+                <Label htmlFor="e-fruit">Choose a fruit</Label>
+                <Select>
+                  <SelectTrigger id="e-fruit">
+                    <SelectValue placeholder="Select..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="apple">Apple</SelectItem>
+                    <SelectItem value="banana">Banana</SelectItem>
+                    <SelectItem value="cherry">Cherry</SelectItem>
+                    <SelectItem value="date">Date</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch id="e-airplane" defaultChecked />
+                <Label htmlFor="e-airplane">Airplane mode</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Checkbox id="e-terms" />
+                <Label htmlFor="e-terms">Accept terms</Label>
+              </div>
             </div>
-          </div>
 
-          {/* Forms */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              forms
-            </h3>
-            <Card>
-              <CardContent className="grid gap-6 pt-6 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="ekmas-email">email</Label>
-                  <Input id="ekmas-email" placeholder="rey@provedo.app" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="ekmas-account">account type</Label>
-                  <Select>
-                    <SelectTrigger id="ekmas-account">
-                      <SelectValue placeholder="choose..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="brokerage">brokerage</SelectItem>
-                      <SelectItem value="ira">ira</SelectItem>
-                      <SelectItem value="401k">401(k)</SelectItem>
-                      <SelectItem value="hsa">hsa</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="ekmas-note">note</Label>
-                  <Textarea
-                    id="ekmas-note"
-                    placeholder="anything we should know about this account?"
-                    rows={3}
-                  />
-                </div>
-                <div className="flex items-center gap-3">
-                  <Checkbox id="ekmas-terms" />
-                  <Label htmlFor="ekmas-terms" className="cursor-pointer">
-                    i&apos;ve read the disclaimer.
-                  </Label>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Switch id="ekmas-weekly" defaultChecked />
-                  <Label htmlFor="ekmas-weekly" className="cursor-pointer">
-                    weekly summary email
-                  </Label>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Badge variants */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              badges · 2 variants
-            </h3>
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge>default</Badge>
-              <Badge variant="neutral">neutral</Badge>
-              <Badge>action needed</Badge>
-              <Badge variant="neutral">5 accounts</Badge>
-            </div>
-          </div>
-
-          {/* Tabs + toast */}
-          <div className="mb-12 space-y-4">
-            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              tabs · toast
-            </h3>
-            <Tabs defaultValue="overview">
-              <TabsList>
-                <TabsTrigger value="overview">overview</TabsTrigger>
-                <TabsTrigger value="holdings">holdings</TabsTrigger>
-                <TabsTrigger value="activity">activity</TabsTrigger>
-              </TabsList>
-              <TabsContent value="overview">
-                <Card>
-                  <CardContent className="flex flex-wrap items-center gap-3 pt-6">
-                    <span className="text-sm text-foreground/70">
-                      five accounts synced two minutes ago.
-                    </span>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="holdings">
-                <Card>
-                  <CardContent className="pt-6 text-sm">
-                    holdings tab — placeholder for the comparison render.
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              <TabsContent value="activity">
-                <Card>
-                  <CardContent className="pt-6 text-sm">
-                    activity tab — placeholder for the comparison render.
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-            <div className="flex items-center gap-4">
-              <Button
-                onClick={() => {
-                  setToastNote(`saved at ${new Date().toLocaleTimeString()}`);
-                  window.setTimeout(() => setToastNote(null), 3000);
-                }}
-              >
-                trigger toast
-              </Button>
-              {toastNote ? (
-                <div className="rounded-base border-2 border-border bg-background px-4 py-2 text-sm shadow-shadow">
-                  <span className="mr-3 inline-block h-2 w-6 align-middle bg-main" />
-                  {toastNote}
-                </div>
-              ) : null}
+            {/* Slider */}
+            <div className="space-y-2">
+              <Label>Volume</Label>
+              <Slider defaultValue={[50]} max={100} step={1} />
             </div>
           </div>
         </section>
 
-        {/* ─── 3. Color blocks strip ───────────────────────────────────── */}
-        <section id="colors" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            colors
+        {/* ─── 3. Surface components ────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+            surface · 4 components
           </p>
-          <h2 className="ekmas-display mb-12 text-5xl">palette.</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-            {COLOR_BLOCKS.map((block) => (
+          <h2 className="mb-12 text-5xl font-heading">Surface</h2>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <Card>
+              <CardHeader>
+                <CardTitle>Card</CardTitle>
+                <CardDescription>Default card surface with chunky shadow.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm">
+                  ekmas cards: 2-px border, hard offset shadow on the bottom-right.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button size="sm" variant="neutral">
+                  Action
+                </Button>
+              </CardFooter>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Avatar</CardTitle>
+                <CardDescription>3 sizes shown.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Avatar className="size-8">
+                    <AvatarImage src="https://i.pravatar.cc/64?img=11" alt="sm" />
+                    <AvatarFallback>SM</AvatarFallback>
+                  </Avatar>
+                  <Avatar className="size-12">
+                    <AvatarImage src="https://i.pravatar.cc/64?img=12" alt="md" />
+                    <AvatarFallback>MD</AvatarFallback>
+                  </Avatar>
+                  <Avatar className="size-16">
+                    <AvatarImage src="https://i.pravatar.cc/64?img=13" alt="lg" />
+                    <AvatarFallback>LG</AvatarFallback>
+                  </Avatar>
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle>Badge · Skeleton</CardTitle>
+                <CardDescription>Variants shown.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex flex-wrap gap-2">
+                  <Badge>default</Badge>
+                  <Badge variant="neutral">neutral</Badge>
+                </div>
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-4 w-1/2" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* ─── 4. Overlay + Feedback ────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+            overlay + feedback · 6 components
+          </p>
+          <h2 className="mb-12 text-5xl font-heading">Overlay</h2>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {/* Dialog */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Dialog</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>Open dialog</Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Confirm action</DialogTitle>
+                      <DialogDescription>
+                        This is ekmas&apos;s native modal dialog.
+                      </DialogDescription>
+                    </DialogHeader>
+                  </DialogContent>
+                </Dialog>
+              </CardContent>
+            </Card>
+
+            {/* Tooltip */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tooltip</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="neutral">Hover me</Button>
+                    </TooltipTrigger>
+                    <TooltipContent>ekmas tooltip</TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </CardContent>
+            </Card>
+
+            {/* Popover */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Popover</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="neutral">Open popover</Button>
+                  </PopoverTrigger>
+                  <PopoverContent>
+                    <p className="text-sm">Popover content with chunky border.</p>
+                  </PopoverContent>
+                </Popover>
+              </CardContent>
+            </Card>
+
+            {/* Dropdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Dropdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="neutral">Open menu</Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Profile</DropdownMenuItem>
+                    <DropdownMenuItem>Settings</DropdownMenuItem>
+                    <DropdownMenuItem>Sign out</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </CardContent>
+            </Card>
+
+            {/* Alert */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Alert</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <AlertTitle>Heads up!</AlertTitle>
+                  <AlertDescription>This is an ekmas alert with default styling.</AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+
+            {/* Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Progress value={67} />
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* ─── 5. Navigation ─────────────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+            navigation · 3 components
+          </p>
+          <h2 className="mb-12 text-5xl font-heading">Navigation</h2>
+
+          <div className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Tabs</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="overview">
+                  <TabsList>
+                    <TabsTrigger value="overview">Overview</TabsTrigger>
+                    <TabsTrigger value="holdings">Holdings</TabsTrigger>
+                    <TabsTrigger value="activity">Activity</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="overview">Overview content lives in panel one.</TabsContent>
+                  <TabsContent value="holdings">Holdings content lives in panel two.</TabsContent>
+                  <TabsContent value="activity">Activity content lives in panel three.</TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Breadcrumb</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Breadcrumb>
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="#">Home</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbLink href="#">Components</BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                    <BreadcrumbItem>
+                      <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+                    </BreadcrumbItem>
+                  </BreadcrumbList>
+                </Breadcrumb>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Accordion</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Accordion type="single" collapsible>
+                  <AccordionItem value="a">
+                    <AccordionTrigger>What is neobrutalism?</AccordionTrigger>
+                    <AccordionContent>
+                      A neobrutalism component library based on shadcn/ui — chunky borders, hard
+                      shadows, hover-translate.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="b">
+                    <AccordionTrigger>Is it free?</AccordionTrigger>
+                    <AccordionContent>Yes, MIT licensed.</AccordionContent>
+                  </AccordionItem>
+                </Accordion>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* ─── 6. Native chart ──────────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+            data · 1 native chart primitive (recharts wrapper)
+          </p>
+          <h2 className="mb-12 text-5xl font-heading">Charts</h2>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Bar Chart — desktop · mobile</CardTitle>
+              <CardDescription>
+                Native ekmas Chart wrapper around recharts. Fixture: monthly visitor counts.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={CHART_CONFIG}>
+                <BarChart accessibilityLayer data={CHART_DATA}>
+                  <CartesianGrid vertical={false} />
+                  <XAxis dataKey="month" tickLine={false} tickMargin={10} axisLine={false} />
+                  <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                  <Bar dataKey="desktop" fill="var(--color-desktop)" radius={4} />
+                  <Bar dataKey="mobile" fill="var(--color-mobile)" radius={4} />
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* ─── 7. Default palette ────────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em]">
+            palette · ekmas defaults (oklch)
+          </p>
+          <h2 className="mb-12 text-5xl font-heading">Palette</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {EKMAS_PALETTE.map((swatch) => (
               <div
-                key={block.hex}
+                key={swatch.token}
                 className="border-2 border-border shadow-shadow"
                 style={{
-                  backgroundColor: block.hex,
-                  color: block.textOn === 'paper' ? '#FFFFFF' : '#0A0A0F',
+                  backgroundColor: swatch.value,
+                  color:
+                    swatch.label.includes('foreground') ||
+                    swatch.label === 'border' ||
+                    swatch.label === 'ring' ||
+                    swatch.label === 'overlay'
+                      ? '#ffffff'
+                      : '#000000',
                   padding: '32px 16px',
                   minHeight: '180px',
                   display: 'flex',
@@ -347,46 +546,37 @@ export default function DesignSystemEkmasPage() {
                 }}
               >
                 <span className="font-mono text-[10px] uppercase tracking-[0.18em] opacity-80">
-                  {block.name}
+                  {swatch.label}
                 </span>
-                <span className="font-mono text-sm font-semibold">{block.hex}</span>
+                <div>
+                  <div className="font-mono text-[10px] opacity-70">{swatch.token}</div>
+                  <div className="font-mono text-[11px] font-semibold">{swatch.value}</div>
+                </div>
               </div>
             ))}
           </div>
         </section>
-
-        {/* ─── 4. Chart sample ─────────────────────────────────────────── */}
-        <section id="charts" className="mb-24">
-          <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            charts
-          </p>
-          <h2 className="ekmas-display mb-12 text-5xl">drift band.</h2>
-          <Card className="p-6">
-            <CardHeader>
-              <CardTitle className="text-xl">allocation drift · target ±2pp</CardTitle>
-              <CardDescription>
-                ekmas ships a `Chart` primitive — but it wraps recharts (extra ~95KB dep). Visx
-                stays the canonical chart engine; this card uses BarVisx so PO can compare frame
-                styling side-by-side.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <BarVisx payload={BAR_DRIFT_FIXTURE} height={260} />
-            </CardContent>
-            <CardFooter>
-              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
-                ekmas chart available · not adopted (avoids recharts dependency)
-              </span>
-            </CardFooter>
-          </Card>
-        </section>
       </main>
 
-      {/* ─── 5. Footer band ────────────────────────────────────────────── */}
-      <footer className="border-t-2 border-border bg-secondary-background">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <p className="font-mono text-xs uppercase tracking-[0.25em] text-foreground/70">
-            library: ekmas/neobrutalism-components · radix + tailwind 4
+      {/* ─── Footer band ────────────────────────────────────────────── */}
+      <footer className="border-t-2 border-border">
+        <div className="mx-auto max-w-7xl px-6 py-8 font-mono text-xs uppercase tracking-[0.25em]">
+          <p>
+            install:{' '}
+            <code>
+              pnpm dlx shadcn@latest add
+              &apos;https://www.neobrutalism.dev/r/&lt;name&gt;.json&apos;
+            </code>
+          </p>
+          <p className="mt-1">
+            github:{' '}
+            <a className="underline" href="https://github.com/ekmas/neobrutalism-components">
+              ekmas/neobrutalism-components
+            </a>{' '}
+            · license: MIT · chart wraps{' '}
+            <a className="underline" href="https://recharts.org">
+              recharts
+            </a>
           </p>
         </div>
       </footer>

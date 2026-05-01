@@ -1,101 +1,49 @@
 /*
- * Logging-Studio/RetroUI theme bridge for Tailwind v4.
+ * RetroUI default theme — verbatim from `Logging-Studio/RetroUI/app/global.css`.
  *
- * ROOT CAUSE FIX (2026-05-01):
- * Tailwind v4's `@theme inline` directive ONLY registers utilities when
- * processed at the global CSS entry. Imported from a route-level layout it
- * was being silently dropped, leaving classes like `bg-primary`, `border-border`,
- * `text-foreground`, `font-head` without any compiled rules — so RetroUI
- * buttons / cards rendered with no fill, no border, no character.
+ * NO Provedo overrides. Values are RetroUI's own out-of-the-box defaults so PO
+ * sees the library AS-IS. Scoped to `[data-ds-variant="retro"]` to coexist with
+ * the canonical Provedo theme on the rest of the app.
  *
- * Solution: emit the utilities as plain CSS rules, scoped under
- * `[data-ds-variant="retro"]`. Values reference our Provedo palette tokens.
- *
- * Used by:
- * - Button / Card / Badge / Tab / Input / Textarea / Select / Switch / Checkbox / Label / Text
- *   (see `_lib/*.tsx`)
+ * Source: https://github.com/Logging-Studio/RetroUI/blob/main/app/global.css
+ * Default theme commit verified 2026-05-01.
  */
 
 [data-ds-variant="retro"] {
-  /* Provedo palette mapped onto RetroUI's token contract. */
-  --retro-primary: #88e26c;
-  --retro-primary-foreground: #0a0a0f;
-  --retro-primary-hover: #5bb23e;
-  --retro-secondary: #f4cc4a;
-  --retro-secondary-foreground: #0a0a0f;
-  --retro-secondary-hover: #e7bd2c;
-  --retro-background: #ffffff;
-  --retro-foreground: #0a0a0f;
-  --retro-card: #fffcf4;
-  --retro-muted: #f6f1e8;
-  --retro-muted-foreground: #5a5867;
-  --retro-accent: #c4b5fd;
-  --retro-destructive: #ff7b6b;
-  --retro-border: #0a0a0f;
-  --retro-input: #0a0a0f;
+  --radius: 0;
+  --background: #f5ece7;
+  --foreground: #000;
+  --card: #fff;
+  --card-foreground: #000;
+  --primary: #ffdb33;
+  --primary-hover: #ffcc00;
+  --primary-foreground: #000;
+  --secondary: #000;
+  --secondary-foreground: #fff;
+  --muted: #d5d5d5;
+  --popover: #fff;
+  --muted-foreground: #5a5a5a;
+  --accent: #fae583;
+  --accent-foreground: #000;
+  --destructive: #e63946;
+  --destructive-foreground: #fff;
+  --border: #000;
+  --input: #fff;
 
-  --retro-font-head: var(--font-bagel), Georgia, serif;
-  --retro-font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  /* Chart palette — RetroUI's own out-of-the-box hex values */
+  --chart-1: #c4a1ff;
+  --chart-2: #01ffcc;
+  --chart-3: #e7f192;
+  --chart-4: #000;
+  --chart-5: #ff30cd;
 
-  font-family: var(--retro-font-sans);
-  color: var(--retro-foreground);
-}
+  /* RetroUI ships --font-head as a project-injected variable. Demo site uses
+     "Archivo Black" / similar chunky display; we leave the variable referencing
+     itself so consumers can override at the app level if desired. */
+  --font-head: "Archivo Black", "Arial Black", system-ui, sans-serif;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 
-/* ─── Color utilities ─────────────────────────────────────────────── */
-[data-ds-variant="retro"] .bg-primary { background-color: var(--retro-primary); }
-[data-ds-variant="retro"] .bg-secondary { background-color: var(--retro-secondary); }
-[data-ds-variant="retro"] .bg-background { background-color: var(--retro-background); }
-[data-ds-variant="retro"] .bg-foreground { background-color: var(--retro-foreground); }
-[data-ds-variant="retro"] .bg-card { background-color: var(--retro-card); }
-[data-ds-variant="retro"] .bg-muted { background-color: var(--retro-muted); }
-[data-ds-variant="retro"] .bg-accent { background-color: var(--retro-accent); }
-[data-ds-variant="retro"] .bg-destructive { background-color: var(--retro-destructive); }
-[data-ds-variant="retro"] .bg-transparent { background-color: transparent; }
-
-[data-ds-variant="retro"] .hover\:bg-primary-hover:hover { background-color: var(--retro-primary-hover); }
-[data-ds-variant="retro"] .hover\:bg-secondary-hover:hover { background-color: var(--retro-secondary-hover); }
-[data-ds-variant="retro"] .hover\:bg-accent:hover { background-color: var(--retro-accent); }
-
-[data-ds-variant="retro"] .text-primary-foreground { color: var(--retro-primary-foreground); }
-[data-ds-variant="retro"] .text-secondary-foreground { color: var(--retro-secondary-foreground); }
-[data-ds-variant="retro"] .text-foreground { color: var(--retro-foreground); }
-[data-ds-variant="retro"] .text-background { color: var(--retro-background); }
-[data-ds-variant="retro"] .text-muted-foreground { color: var(--retro-muted-foreground); }
-
-[data-ds-variant="retro"] .border-foreground { border-color: var(--retro-foreground); }
-[data-ds-variant="retro"] .border-border { border-color: var(--retro-border); }
-[data-ds-variant="retro"] .border-input { border-color: var(--retro-input); }
-[data-ds-variant="retro"] .border-black { border-color: #000000; }
-
-/* ─── Fonts ───────────────────────────────────────────────────────── */
-[data-ds-variant="retro"] .font-head { font-family: var(--retro-font-head); }
-[data-ds-variant="retro"] .font-sans { font-family: var(--retro-font-sans); }
-
-/* ─── Radix data-state attribute selectors ───────────────────────── */
-/* Tabs trigger active state (RetroUI uses data-[state=active]:bg-primary etc.) */
-[data-ds-variant="retro"] [data-state="active"].data-\[state\=active\]\:bg-primary,
-[data-ds-variant="retro"] [data-state="active"][class*="data-[state=active]:bg-primary"] {
-  background-color: var(--retro-primary);
-}
-[data-ds-variant="retro"] [data-state="active"][class*="data-[state=active]:border-border"] {
-  border-color: var(--retro-border);
-}
-[data-ds-variant="retro"] [data-state="active"][class*="data-[state=active]:text-primary-foreground"] {
-  color: var(--retro-primary-foreground);
-}
-[data-ds-variant="retro"] [data-state="active"][class*="data-[state=active]:font-semibold"] {
-  font-weight: 600;
-}
-/* Switch checked state */
-[data-ds-variant="retro"] [data-state="checked"][class*="data-[state=checked]:bg-primary"] {
-  background-color: var(--retro-primary);
-}
-
-/* ─── Lower-case chunky display headlines ─────────────────────────── */
-.retro-display {
-  font-family: var(--retro-font-head);
-  font-weight: 400;
-  text-transform: lowercase;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
 }

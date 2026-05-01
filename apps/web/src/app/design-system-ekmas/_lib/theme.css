@@ -1,120 +1,93 @@
 /*
- * ekmas/neobrutalism-components theme bridge for Tailwind v4.
+ * ekmas/neobrutalism-components default theme — verbatim from
+ * `ekmas/neobrutalism-components/src/styling/globals.css`.
  *
- * ROOT CAUSE FIX (2026-05-01):
- * Tailwind v4's `@theme inline` directive ONLY registers utilities when
- * processed at the global CSS entry. Imported from a route-level layout it
- * was being silently dropped, leaving classes like `bg-main`, `border-border`,
- * `shadow-shadow`, `translate-x-boxShadowX` without any compiled rules — so
- * ekmas buttons / cards / chips rendered with no fill, no border, no shadow.
+ * NO Provedo overrides. Values are ekmas's own out-of-the-box defaults so PO
+ * sees the library AS-IS. Scoped to `[data-ds-variant="ekmas"]` to coexist
+ * with the canonical Provedo theme on the rest of the app.
  *
- * Solution: emit the utilities as plain CSS rules, scoped under
- * `[data-ds-variant="ekmas"]` so they don't leak. Values reference our
- * Provedo neo-brutalism palette tokens defined at the bottom of this file.
- *
- * Used by:
- * - Button / Card / Badge / Tabs / Input / Textarea / Select / Switch / Checkbox / Label
- *   (see `_lib/*.tsx`)
+ * Source: https://github.com/ekmas/neobrutalism-components/blob/main/src/styling/globals.css
+ * Default theme commit verified 2026-05-01.
  */
 
 [data-ds-variant="ekmas"] {
-  /* Provedo neo-brutalism palette (PROVEDO_DESIGN_SYSTEM_v3 §3). */
-  --ekmas-main: #88e26c;
-  --ekmas-main-foreground: #0a0a0f;
-  --ekmas-background: #ffffff;
-  --ekmas-secondary-background: #f6f1e8;
-  --ekmas-foreground: #0a0a0f;
-  --ekmas-border: #0a0a0f;
-  --ekmas-ring: #0a0a0f;
-  --ekmas-overlay: rgba(10, 10, 15, 0.8);
+  --border-radius: 5px;
+  --box-shadow-x: 4px;
+  --box-shadow-y: 4px;
+  --reverse-box-shadow-x: -4px;
+  --reverse-box-shadow-y: -4px;
 
-  --ekmas-shadow: 4px 4px 0 0 #0a0a0f;
-  --ekmas-radius-base: 5px;
-  --ekmas-font-base: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-  --ekmas-font-heading: var(--font-bagel), Georgia, serif;
+  --heading-font-weight: 700;
+  --base-font-weight: 500;
+  --font-weight-base: 500;
+  --font-weight-heading: 700;
 
-  --ekmas-box-shadow-x: 4px;
-  --ekmas-box-shadow-y: 4px;
-  --ekmas-reverse-box-shadow-x: -4px;
-  --ekmas-reverse-box-shadow-y: -4px;
+  --background: oklch(93.46% 0.0304 254.32);
+  --secondary-background: oklch(100% 0 0);
+  --foreground: oklch(0% 0 0);
+  --main-foreground: oklch(0% 0 0);
 
-  font-family: var(--ekmas-font-base);
-  color: var(--ekmas-foreground);
+  --main: oklch(67.47% 0.1725 259.61);
+  --border: oklch(0% 0 0);
+  --ring: oklch(0% 0 0);
+  --overlay: oklch(0% 0 0 / 0.8);
+
+  --shadow: var(--box-shadow-x) var(--box-shadow-y) 0px 0px var(--border);
+
+  --chart-1: oklch(67.47% 0.1726 259.49);
+  --chart-2: oklch(67.28% 0.2147 24.22);
+  --chart-3: oklch(86.03% 0.176 92.36);
+  --chart-4: oklch(79.76% 0.2044 153.08);
+  --chart-5: oklch(66.34% 0.1806 277.2);
+  --chart-active-dot: #000;
+
+  --radius-base: var(--border-radius);
+
+  /* ekmas demo site uses "Public Sans" base + heading. Default fallback chain
+     keeps the look approximate without forcing PO to install a font package. */
+  --font-base: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-heading: "Public Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-base);
+  font-weight: var(--font-weight-base);
 }
 
-/* ─── Color utilities ─────────────────────────────────────────────── */
-[data-ds-variant="ekmas"] .bg-main { background-color: var(--ekmas-main); }
-[data-ds-variant="ekmas"] .bg-background { background-color: var(--ekmas-background); }
-[data-ds-variant="ekmas"] .bg-secondary-background { background-color: var(--ekmas-secondary-background); }
-[data-ds-variant="ekmas"] .bg-foreground { background-color: var(--ekmas-foreground); }
-[data-ds-variant="ekmas"] .bg-overlay { background-color: var(--ekmas-overlay); }
+[data-ds-variant="ekmas"] h1,
+[data-ds-variant="ekmas"] h2,
+[data-ds-variant="ekmas"] h3,
+[data-ds-variant="ekmas"] h4,
+[data-ds-variant="ekmas"] h5,
+[data-ds-variant="ekmas"] h6 {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-heading);
+}
 
-[data-ds-variant="ekmas"] .text-main-foreground { color: var(--ekmas-main-foreground); }
-[data-ds-variant="ekmas"] .text-foreground { color: var(--ekmas-foreground); }
-[data-ds-variant="ekmas"] .text-background { color: var(--ekmas-background); }
-
-[data-ds-variant="ekmas"] .border-border { border-color: var(--ekmas-border); }
-[data-ds-variant="ekmas"] .border-b-2.border-border,
-[data-ds-variant="ekmas"] .border-t-2.border-border { border-color: var(--ekmas-border); }
-
-[data-ds-variant="ekmas"] .ring-offset-white { --tw-ring-offset-color: #ffffff; }
-
-/* ─── Shadow + radius ─────────────────────────────────────────────── */
-[data-ds-variant="ekmas"] .shadow-shadow { box-shadow: var(--ekmas-shadow); }
-[data-ds-variant="ekmas"] .rounded-base { border-radius: var(--ekmas-radius-base); }
-
-/* ─── Fonts ───────────────────────────────────────────────────────── */
-[data-ds-variant="ekmas"] .font-base { font-family: var(--ekmas-font-base); }
-[data-ds-variant="ekmas"] .font-heading { font-family: var(--ekmas-font-heading); }
-
-/* ─── Box-shadow translate utilities (the brutalist hover trick) ─── */
-[data-ds-variant="ekmas"] .hover\:translate-x-boxShadowX:hover { transform: translate(var(--ekmas-box-shadow-x), var(--ekmas-box-shadow-y)); }
-[data-ds-variant="ekmas"] .hover\:translate-y-boxShadowY:hover { /* combined with X via single transform above */ }
-[data-ds-variant="ekmas"] .hover\:translate-x-reverseBoxShadowX:hover { transform: translate(var(--ekmas-reverse-box-shadow-x), var(--ekmas-reverse-box-shadow-y)); }
-[data-ds-variant="ekmas"] .hover\:translate-y-reverseBoxShadowY:hover { /* combined */ }
-[data-ds-variant="ekmas"] .hover\:shadow-none:hover { box-shadow: none; }
-[data-ds-variant="ekmas"] .hover\:shadow-shadow:hover { box-shadow: var(--ekmas-shadow); }
-
-/*
- * Forced hover-state demo helpers — render hover state without actual cursor
- * interaction so the components gallery shows every state side-by-side.
- */
-[data-ds-variant="ekmas"] [data-force-hover].translate-x-boxShadowX,
-[data-ds-variant="ekmas"] [data-force-hover].hover\:translate-x-boxShadowX {
-  transform: translate(var(--ekmas-box-shadow-x), var(--ekmas-box-shadow-y));
+/* ekmas's brutalist hover trick — translate by box-shadow offset, drop shadow */
+[data-ds-variant="ekmas"] .hover\:translate-x-boxShadowX:hover {
+  transform: translate(var(--box-shadow-x), var(--box-shadow-y));
+}
+[data-ds-variant="ekmas"] .hover\:translate-y-boxShadowY:hover {
+  /* combined into translate-x */
+}
+[data-ds-variant="ekmas"] .hover\:translate-x-reverseBoxShadowX:hover {
+  transform: translate(var(--reverse-box-shadow-x), var(--reverse-box-shadow-y));
+}
+[data-ds-variant="ekmas"] .hover\:translate-y-reverseBoxShadowY:hover {
+  /* combined */
+}
+[data-ds-variant="ekmas"] .hover\:shadow-shadow:hover {
+  box-shadow: var(--shadow);
+}
+[data-ds-variant="ekmas"] .hover\:shadow-none:hover {
   box-shadow: none;
 }
-
-/* ─── Radix data-state attribute selectors ───────────────────────── */
-/* Tabs trigger active state — uses data-[state=active]:bg-main, etc. */
-[data-ds-variant="ekmas"] [data-state="active"][class*="data-[state=active]:bg-main"] {
-  background-color: var(--ekmas-main);
+[data-ds-variant="ekmas"] .shadow-shadow {
+  box-shadow: var(--shadow);
 }
-[data-ds-variant="ekmas"] [data-state="active"][class*="data-[state=active]:text-main-foreground"] {
-  color: var(--ekmas-main-foreground);
-}
-[data-ds-variant="ekmas"] [data-state="active"][class*="data-[state=active]:border-border"] {
-  border-color: var(--ekmas-border);
-}
-/* Switch checked state — track + thumb position */
-[data-ds-variant="ekmas"] [data-state="checked"][class*="data-[state=checked]:bg-main"] {
-  background-color: var(--ekmas-main);
-}
-[data-ds-variant="ekmas"] [data-state="unchecked"][class*="data-[state=unchecked]:bg-secondary-background"] {
-  background-color: var(--ekmas-secondary-background);
-}
-[data-ds-variant="ekmas"] [data-state="checked"][class*="data-[state=checked]:translate-x-6"] {
-  transform: translateX(1.5rem);
-}
-[data-ds-variant="ekmas"] [data-state="unchecked"][class*="data-[state=unchecked]:translate-x-1"] {
-  transform: translateX(0.25rem);
-}
-
-/* ─── Lower-case chunky display headlines ─────────────────────────── */
-.ekmas-display {
-  font-family: var(--ekmas-font-heading);
-  font-weight: 400;
-  text-transform: lowercase;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+[data-ds-variant="ekmas"] .rounded-base {
+  border-radius: var(--radius-base);
 }
