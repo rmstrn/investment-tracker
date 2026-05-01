@@ -14,20 +14,24 @@ import {
   LINE_FIXTURE,
   LineVisx,
   SPARKLINE_FIXTURE,
+  STACKED_BAR_FIXTURE,
   SparklineVisx,
+  StackedBarVisx,
 } from '@investment-tracker/ui/charts';
 import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1-6 of 9: BarVisx + SparklineVisx + LineVisx
- * + AreaVisx + DonutVisx + CalendarVisx in D1 «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-7 of 9: BarVisx + SparklineVisx + LineVisx
+ * + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx in D1
+ * «Lime Cabin» dialect.
  *
  * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
- * (Lines) + DonutVisx + CalendarVisx (Heatmap) ship here with the D1
- * chart-panel chrome (rail-headed, NOT title-headed). The remaining 3
- * chart kinds stay as `ChartSkeleton` placeholder shells until subsequent
- * restyle dispatches (StackedBar → Treemap → Waterfall).
+ * (Lines) + DonutVisx + CalendarVisx (Heatmap) + StackedBarVisx (Bars)
+ * ship here with the D1 chart-panel chrome (rail-headed, NOT title-
+ * headed). The remaining 2 chart kinds stay as `ChartSkeleton`
+ * placeholder shells until subsequent restyle dispatches (Treemap →
+ * Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -115,6 +119,30 @@ import { RecordRail } from '../_components/RecordRail';
  * `!important` overrides (cascade tradeoff for inline-styled DOM —
  * KICKOFF §7.10).
  *
+ * For StackedBarVisx specifically: per-segment colour resolution path —
+ * **Path A** (alias remap via wrapper modifier). The `Series` schema
+ * does allow per-series `color`, but StackedBarVisx hardcodes
+ * `SERIES_FILL_TOKENS` indexed by series position and never reads
+ * `series[i].color` — so Path B (per-series colour in the fixture) is
+ * closed by the component. The fill chain is `var(--chart-categorical-1
+ * ..5, var(--chart-series-1..5, #fallback))`. The `--chart-categorical-*`
+ * family IS aliased in the global light/dark theme files at `:root[data-
+ * theme="light|dark"]`, and since `data-theme="lime-cabin"` lives on a
+ * route-local div (NOT on `<html>`), those candy palette values cascade
+ * through from the parent theme — the `--chart-series-*` fallback never
+ * fires for stacked bars without an explicit override. The
+ * `.d1-chart-panel--stacked-bar` modifier re-points `--chart-categorical
+ * -1..5` onto the kickoff-spec D1 sequence (text-primary / lime / purple
+ * / text-muted / bg-card-soft) so segments resolve to D1 colours by
+ * implementation. The candy hard ink-shadow drop on each whole-stack
+ * outline (a `<path>` filled with `--text-on-candy` at `fill-opacity
+ * ="0.85"`) is suppressed via a structure-stable selector — it is the
+ * ONLY node in the chart carrying that exact `fill-opacity` attribute
+ * (segment rects use 0.78/1, hairlines use stroke-opacity not
+ * fill-opacity). The candy tooltip surface + 5px hard box-shadow + 1.5px
+ * border are softened to D1 elevation language via `!important`
+ * overrides (cascade tradeoff for inline-styled DOM — KICKOFF §7.10).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -122,23 +150,17 @@ import { RecordRail } from '../_components/RecordRail';
  */
 
 /* ────────────────────────────────────────────────────────────────────── */
-/* Placeholder catalogue — kinds 7-9 stay as ChartSkeleton shells.        */
+/* Placeholder catalogue — kinds 8-9 stay as ChartSkeleton shells.        */
 /* ────────────────────────────────────────────────────────────────────── */
 
 interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'stacked-bar' | 'treemap' | 'waterfall';
+  kind: 'treemap' | 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'BROKER CONTRIBUTION',
-    title: 'StackedBarVisx',
-    subtitle: 'Last 6 months · 3 brokers',
-    kind: 'stacked-bar',
-  },
   {
     rail: 'CONCENTRATION',
     title: 'TreemapVisx',
@@ -288,7 +310,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx ship in the D1 dialect (Phase 2 charts 1-6 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal. The other 3 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx ship in the D1 dialect (Phase 2 charts 1-7 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal; stacked bars resolve via candy-categorical alias remap onto the D1 series sequence with the per-stack hard ink-shadow drop suppressed by a structure-stable selector. The other 2 kinds remain placeholder shells until subsequent restyle dispatches."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -568,7 +590,37 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="3 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="STACKEDBARVISX · BROKER CONTRIBUTION (STACKED_BAR_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--stacked-bar"
+          aria-labelledby="chart-stacked-bar-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="BROKER CONTRIBUTION" />
+          </header>
+          <h3 id="chart-stacked-bar-title" className="sr-only">
+            Broker contribution by asset class
+          </h3>
+          <div className="d1-chart-panel__body">
+            <StackedBarVisx payload={STACKED_BAR_FIXTURE} width={520} height={260} />
+            <p className="d1-chart-panel__caption">
+              Per-segment colours land via Path A — alias remap, since StackedBarVisx hardcodes the
+              fill positions and never reads `series[i].color`. The `.d1-chart-panel--stacked-bar`
+              modifier re-points `--chart-categorical-1..5` onto the kickoff-spec D1 sequence
+              (text-primary / lime / purple / text-muted / bg-card-soft) so the three series resolve
+              as white-stocks / lime-etf / purple-crypto on the dark canvas. The candy hard
+              ink-shadow drop on each whole-stack outline is suppressed via the
+              `path[fill-opacity='0.85']` selector — the shadow path is the only DOM node carrying
+              that exact attribute, so the structure-stable selector lands without component edits.
+              Hairline separators between segments stay (white at 0.45 opacity reads as ink-on-card
+              delineation, not candy halo). Tooltip surface, box-shadow, and border are tamed to D1
+              elevation language via `!important` overrides.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="2 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div

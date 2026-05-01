@@ -1563,6 +1563,99 @@
   border-radius: 12px !important;
 }
 
+/* ── Stacked-bar panel — chart-categorical alias remap + halo tame ─────
+ *
+ * StackedBarVisx (KICKOFF §4.1 spec — Bars section: «Default stack fill:
+ * D1 series colors (the existing `--chart-series-1..5` aliases…)»).
+ *
+ * Per-segment colour resolution path (engineer's investigation):
+ *
+ *   - StackedBarVisx hardcodes `SERIES_FILL_TOKENS = var(--chart-
+ *     categorical-1..5, var(--chart-series-1..5, #fallback))`. The
+ *     candy `--chart-categorical-*` family IS aliased in the global
+ *     light/dark theme files at `:root[data-theme="light|dark"]` —
+ *     since `data-theme="lime-cabin"` lives on a route-local div
+ *     (NOT on `<html>`), the `--chart-categorical-*` values cascade
+ *     through from the parent theme and the fallback to
+ *     `--chart-series-*` does NOT fire. Without this remap, stacks
+ *     would render in the candy categorical palette, leaking outside
+ *     D1 dialect.
+ *
+ *   - The schema (`Series.color`) DOES allow per-series colour, but
+ *     the component does NOT read `series[i].color` — it indexes into
+ *     `SERIES_FILL_TOKENS` by position. Path B (per-series colour in
+ *     fixture) is closed by the component, not the schema.
+ *
+ *   - Path A (alias remap via wrapper modifier) is the only viable
+ *     strategy. We re-point `--chart-categorical-1..5` onto the same
+ *     D1 token sequence the kickoff specifies for `--chart-series-1..5`
+ *     (text-primary / lime / purple / text-muted / bg-card-soft).
+ *
+ * Candy halo taming (mirrors CalendarVisx engineer's pattern):
+ *
+ *   - StackedBarVisx renders ONE hard ink-shadow drop per whole stack:
+ *     a `<path>` filled with `var(--text-on-candy, #1C1B26)` at
+ *     `fill-opacity="0.85"`, translated `(2px, 4px)`. Under the base
+ *     wrapper's `--text-on-candy: --d1-text-primary` mapping that
+ *     becomes a hard WHITE halo behind each stack — wrong for D1's
+ *     «paper-press is candy» reading, and KICKOFF §4.1 explicitly
+ *     retires the candy hard ink-shadow drop on bars («REMOVE the
+ *     candy hard ink-shadow drop»).
+ *
+ *   - The `--text-on-candy` var is ALSO used for: gridline strokes
+ *     (0.08 opacity — fine), the zero baseline ink (0.45 opacity —
+ *     fine on dark), inter-segment hairlines (0.45 opacity — needed
+ *     to delineate segments inside the stack), axis labels, and
+ *     tooltip ink. We CANNOT blanket-remap it to page colour without
+ *     killing readability of all these surfaces.
+ *
+ *   - Solution: structure-stable selector that suppresses ONLY the
+ *     shadow `<path>`. The shadow path is the only DOM node carrying
+ *     `fill-opacity="0.85"` as an attribute (segment rects use a
+ *     dynamic 0.78/1 fill-opacity, never 0.85). We select via
+ *     `[fill-opacity='0.85']` and hide it.
+ *
+ *   - Tooltip box-shadow (`5px 5px 0 0 var(--text-on-candy, ...)`) +
+ *     heavy 1.5px border + cream background are inline-styled and need
+ *     `!important` overrides — cascade tradeoff for inline-styled DOM
+ *     (KICKOFF §7.10 — chart components are off-limits).
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--stacked-bar {
+  /* Re-point candy categorical palette onto D1 series tokens (kickoff
+   * §4.1: text-primary / lime / purple / text-muted / bg-card-soft). */
+  --chart-categorical-1: var(--d1-text-primary);
+  --chart-categorical-2: var(--d1-accent-lime);
+  --chart-categorical-3: var(--d1-accent-purple);
+  --chart-categorical-4: var(--d1-text-muted);
+  --chart-categorical-5: var(--d1-bg-card-soft);
+}
+
+/* Suppress the candy hard ink-shadow drop on each stack outline. The
+ * shadow path is the ONLY node in StackedBarVisx carrying a
+ * `fill-opacity="0.85"` attribute (segment rects use 0.78 / 1 dynamic
+ * values, never 0.85). Structure-stable selector — no component edit
+ * needed. */
+[data-theme='lime-cabin']
+  .d1-chart-panel--stacked-bar
+  [data-testid='chart-stacked-bar-visx']
+  path[fill-opacity='0.85'] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border. Inline-styled, requires `!important` to
+ * override (cascade tradeoff documented in CalendarVisx wrapper). */
+[data-theme='lime-cabin']
+  .d1-chart-panel--stacked-bar
+  [data-testid='chart-stacked-bar-visx']
+  [role='tooltip'] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {
