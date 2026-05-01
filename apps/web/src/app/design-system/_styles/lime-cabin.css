@@ -1465,6 +1465,104 @@
   opacity: 1;
 }
 
+/* ── Calendar panel — status-driven chip semantics + lime today ring ───
+ *
+ * CalendarVisx (KICKOFF §4.1 spec — heatmap section): repurposes status
+ * semantics — received → lime saturation level 4 (high), scheduled →
+ * lime saturation level 2 (mid), announced → text-muted, corp_action →
+ * purple. The 5-level lime-saturation ramp DOES NOT apply per-cell here;
+ * that's the `.d1-heatmap__cell` ramp from `style-d1` (already shipped
+ * in this stylesheet for non-chart use). CalendarVisx is an event
+ * calendar with status-driven chips, not a contribution heatmap — so
+ * the lime saturation lands on the chip fills, not the cell tints.
+ *
+ * Per-event colour resolution path (engineer's investigation):
+ *
+ *   - `eventChipColor()` in CalendarVisx hardcodes status → CSS var:
+ *       received  → `var(--bg-mustard, #F4CC4A)`
+ *       scheduled → `var(--cta-fill, #F08A3C)`
+ *       corp_action → `var(--text-on-candy, #1C1B26)` (diamond)
+ *
+ *   - The schemas (`DividendEvent`, `CorpActionEvent`) are `.strict()` and
+ *     do NOT permit a per-event `color` field — Path B (per-event colour
+ *     in fixture) is closed. Path A (alias remap via wrapper modifier)
+ *     is the only viable strategy.
+ *
+ *   - Base `.d1-chart-panel` already remaps `--cta-fill` → purple. That
+ *     would land scheduled chips on purple — wrong. We need lime @40%
+ *     for scheduled (per spec), so the calendar modifier re-points
+ *     `--cta-fill` back to a lime tint.
+ *
+ *   - `--bg-mustard` is NOT in the base wrapper's remap list — it would
+ *     resolve to its hardcoded `#F4CC4A` mustard fallback (a candy leak).
+ *     We add it here for received-chip lime solid.
+ *
+ *   - `--candy-pink` / `--bg-pink` (today ring) are also unmapped — they
+ *     would render as the candy hot-pink (#F7A1C9) on the today cell.
+ *     Lime is the D1 «look here» / «you are here» signal, so we remap
+ *     both fallback names so the ring picks up lime regardless of which
+ *     CSS-var alias the renderer reaches for.
+ *
+ * Candy halo taming (mirrors DonutVisx engineer's pattern):
+ *
+ *   - CalendarVisx renders a 2px-offset shadow `<rect>` on every event-
+ *     bearing cell, filled with `var(--text-on-candy, #1C1B26)` at 0.85
+ *     opacity (the candy hard ink-shadow drop). Under the base wrapper's
+ *     `--text-on-candy: --d1-text-primary` mapping that becomes a 2px
+ *     white sliver halo on the dark canvas — a candy treatment that the
+ *     KICKOFF §4.1 explicitly retires («REMOVE the candy hard ink-shadow
+ *     drop»). DonutVisx tamed this by re-pointing `--text-on-candy` at
+ *     the page colour, but CalendarVisx threads the same var through the
+ *     day numerals, weekday labels, chip ink, cell stroke, and tooltip
+ *     border — re-pointing it would kill all the readable text. So we
+ *     instead suppress the shadow `<rect>` directly via a structure-
+ *     stable selector: it is the ONLY child rect on a cell `<g>` that
+ *     carries a `fill-opacity` attribute (cell body + today ring set
+ *     `fill-opacity` only via inline style or as 1, not as attribute).
+ *
+ *   - Tooltip box-shadow is inline-styled `5px 5px 0 0 var(--text-on-
+ *     candy, #1C1B26)` — a candy hard drop that under the base wrapper
+ *     becomes a 5px white block. We override with the D1 elevation
+ *     shadow via `!important` (inline style cascade requires it) so
+ *     tooltips land in the same elevation language as the rest of the
+ *     panel.
+ *
+ *   - Tooltip border is inline-styled `1.5px solid var(--text-on-candy,
+ *     #1C1B26)` — a heavy candy outline. We soften to a 1px D1 hairline.
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--calendar {
+  /* Received chip — lime saturation level 4 (solid). */
+  --bg-mustard: var(--d1-accent-lime);
+  /* Scheduled chip — lime saturation level 2 (~40% opacity).
+   * Re-points the base wrapper's purple back to a lime tint per spec. */
+  --cta-fill: rgba(214, 242, 107, 0.4);
+  /* Today ring — D1 «look here» / «you are here» = lime, not candy pink. */
+  --candy-pink: var(--d1-accent-lime);
+  --bg-pink: var(--d1-accent-lime);
+}
+
+/* Suppress the candy hard ink-shadow drop on event-bearing cells.
+ * The shadow rect is the only rect on a cell `<g>` carrying a
+ * `fill-opacity` attribute (set to 0.85 via JSX `fillOpacity={0.85}`). */
+[data-theme='lime-cabin']
+  .d1-chart-panel--calendar
+  [data-cell-iso]
+  > rect[fill-opacity] {
+  display: none;
+}
+
+/* Tame the candy tooltip drop-shadow + heavy border. Inline styles in
+ * the component require `!important` to override; this is the documented
+ * cascade tradeoff (KICKOFF §7.10 — chart components are off-limits). */
+[data-theme='lime-cabin']
+  .d1-chart-panel--calendar
+  [data-testid='chart-calendar-visx']
+  [role='tooltip'] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {

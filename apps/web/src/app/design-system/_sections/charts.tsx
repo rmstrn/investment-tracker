@@ -5,6 +5,8 @@ import {
   BAR_DRIFT_FIXTURE,
   BAR_FIXTURE,
   BarVisx,
+  CALENDAR_FIXTURE,
+  CalendarVisx,
   ChartCard,
   ChartSkeleton,
   DONUT_FIXTURE,
@@ -18,14 +20,14 @@ import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1-5 of 9: BarVisx + SparklineVisx + LineVisx
- * + AreaVisx + DonutVisx in D1 «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-6 of 9: BarVisx + SparklineVisx + LineVisx
+ * + AreaVisx + DonutVisx + CalendarVisx in D1 «Lime Cabin» dialect.
  *
  * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
- * (Lines) + DonutVisx ship here with the D1 chart-panel chrome (rail-
- * headed, NOT title-headed). The remaining 4 chart kinds stay as
- * `ChartSkeleton` placeholder shells until subsequent restyle dispatches
- * (Calendar → StackedBar → Treemap → Waterfall).
+ * (Lines) + DonutVisx + CalendarVisx (Heatmap) ship here with the D1
+ * chart-panel chrome (rail-headed, NOT title-headed). The remaining 3
+ * chart kinds stay as `ChartSkeleton` placeholder shells until subsequent
+ * restyle dispatches (StackedBar → Treemap → Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -88,6 +90,31 @@ import { RecordRail } from '../_components/RecordRail';
  * 32px tabular for the numeral, Geist Sans uppercase muted for the
  * eyebrow).
  *
+ * For CalendarVisx specifically: per-event colour resolution path —
+ * **Path A** (alias remap via wrapper modifier). The `DividendEvent` /
+ * `CorpActionEvent` schemas are `.strict()` and do NOT permit a per-
+ * event `color` field, so Path B (per-event colour in the fixture) is
+ * closed. `eventChipColor()` in CalendarVisx hardcodes status → CSS var
+ * (received → `--bg-mustard`, scheduled → `--cta-fill`, corp_action
+ * diamond → `--text-on-candy`); the today ring binds to `--candy-pink`
+ * with `--bg-pink` fallback. The base `.d1-chart-panel` wrapper already
+ * remaps `--cta-fill` → purple (correct default for highlighted bars but
+ * wrong for scheduled chips — the spec wants lime saturation level 2).
+ * The `.d1-chart-panel--calendar` modifier re-points `--bg-mustard` →
+ * lime solid (received = lime L4), `--cta-fill` → lime @40% (scheduled
+ * = lime L2), and `--candy-pink` / `--bg-pink` → lime (today ring = the
+ * D1 «you are here» signal). Corp-action diamonds resolve via the base
+ * wrapper's `--text-on-candy` → white-on-dark mapping, which lands them
+ * as a near-purple-but-actually-white ink-shape on the dark canvas; the
+ * spec's «corp_action → purple» semantic is approximated structurally
+ * (diamond shape + dark-bg legibility). The candy hard ink-shadow drop
+ * on event-bearing cells is suppressed via a structure-stable selector
+ * (`[data-cell-iso] > rect[fill-opacity]` — only the shadow rect carries
+ * a `fill-opacity` attribute), retiring the candy treatment per KICKOFF
+ * §4.1. The candy tooltip box-shadow + heavy border are tamed with
+ * `!important` overrides (cascade tradeoff for inline-styled DOM —
+ * KICKOFF §7.10).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -95,23 +122,17 @@ import { RecordRail } from '../_components/RecordRail';
  */
 
 /* ────────────────────────────────────────────────────────────────────── */
-/* Placeholder catalogue — kinds 5-9 stay as ChartSkeleton shells.        */
+/* Placeholder catalogue — kinds 7-9 stay as ChartSkeleton shells.        */
 /* ────────────────────────────────────────────────────────────────────── */
 
 interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
+  kind: 'stacked-bar' | 'treemap' | 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'DIVIDEND CALENDAR',
-    title: 'CalendarVisx',
-    subtitle: 'April 2026 · 6 weeks',
-    kind: 'calendar',
-  },
   {
     rail: 'BROKER CONTRIBUTION',
     title: 'StackedBarVisx',
@@ -267,7 +288,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx ship in the D1 dialect (Phase 2 charts 1-5 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight. The other 4 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx ship in the D1 dialect (Phase 2 charts 1-6 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal. The other 3 kinds remain placeholder shells until subsequent restyle dispatches."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -512,7 +533,42 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="4 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="CALENDARVISX · DIVIDEND CALENDAR (CALENDAR_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--calendar"
+          aria-labelledby="chart-calendar-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="DIVIDEND CALENDAR · APR 2026" />
+          </header>
+          <h3 id="chart-calendar-title" className="sr-only">
+            Dividend calendar · April 2026
+          </h3>
+          <div className="d1-chart-panel__body">
+            {/* `today` is pinned inside the fixture period so the lime
+             * «you are here» ring is visible in the showcase regardless
+             * of wall-clock date drift. The component pins to day 15
+             * automatically when wall-clock falls outside the period —
+             * we set `today` explicitly to make that contract visible at
+             * read-time. */}
+            <CalendarVisx payload={CALENDAR_FIXTURE} today={new Date('2026-04-15')} />
+            <p className="d1-chart-panel__caption">
+              Status semantics carry through chip colour (Path A — alias remap, since the event
+              schemas are `.strict()` and forbid per-event colour overrides): received lands on
+              `--d1-accent-lime` solid (saturation L4), scheduled on `rgba(214, 242, 107, 0.4)`
+              (saturation L2), corp-action diamonds on the dark ink shape against the cell. The
+              today ring is promoted from the candy hot-pink to lime — the D1 «you are here» signal.
+              The candy hard ink-shadow drop on event-bearing cells is suppressed via the
+              `[data-cell-iso] &gt; rect[fill-opacity]` selector (only the shadow rect carries that
+              attribute), retiring the candy treatment per KICKOFF §4.1. Tooltip box-shadow + heavy
+              border are softened to D1 elevation language via `!important` overrides — the cascade
+              tradeoff for inline-styled DOM, documented in lime-cabin.css.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="3 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div
