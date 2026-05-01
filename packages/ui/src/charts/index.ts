@@ -118,6 +118,8 @@ export { AreaVisx, type AreaVisxProps } from './visx/AreaVisx';
 export { SparklineVisx, type SparklineVisxProps } from './visx/SparklineVisx';
 export { TreemapVisx, type TreemapVisxProps } from './visx/TreemapVisx';
 export { CalendarVisx, type CalendarVisxProps } from './visx/CalendarVisx';
+export { StackedBarVisx, type StackedBarVisxProps } from './visx/StackedBarVisx';
+export { WaterfallVisx, type WaterfallVisxProps } from './visx/WaterfallVisx';
 
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';

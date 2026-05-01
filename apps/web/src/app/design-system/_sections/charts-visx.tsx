@@ -5,8 +5,9 @@
  *
  * Phase A (2026-05-01): Donut + Bar + Line + Area + Sparkline.
  * Phase B (2026-05-01): Treemap + Calendar.
+ * Phase C (2026-05-01): Stacked Bar + Waterfall.
  *
- * All seven charts share the locked candy-chart language — hard
+ * All nine charts share the locked candy-chart language — hard
  * ink-shadow drop, hover-lift on interactive marks, Bagel chunky hero
  * numerals where size permits, Manrope mono-uppercase axis ticks.
  *
@@ -17,9 +18,12 @@
  * exports for the showcase + future migration cutover.
  *
  * Layout: 2-column responsive grid at desktop, 1-column at mobile, via
- * `repeat(auto-fit, minmax(280px, 1fr))`. Treemap + Calendar live in a
- * second wider row (`minmax(360px, 1fr)`) so each gets enough room for
- * the 7-day weekday axis / 280px tile stack.
+ * `repeat(auto-fit, minmax(280px, 1fr))`. Treemap + Calendar + Stacked
+ * Bar live in a wider row (`minmax(360px, 1fr)`) so each gets enough
+ * room for the 7-day weekday axis / 280px tile stack / 3-broker stack.
+ * Waterfall sits in its own full-width row — it's the PD-flagged
+ * showcase and earns its own band so the chunky pill numeral has full
+ * card-width to land in.
  */
 
 import { PaintDrip } from '@investment-tracker/ui';
@@ -36,9 +40,13 @@ import {
   LINE_FIXTURE,
   LineVisx,
   SPARKLINE_FIXTURE,
+  STACKED_BAR_FIXTURE,
   SparklineVisx,
+  StackedBarVisx,
   TREEMAP_FIXTURE,
   TreemapVisx,
+  WATERFALL_FIXTURE,
+  WaterfallVisx,
 } from '@investment-tracker/ui/charts';
 import type { CSSProperties } from 'react';
 import { DsRow, DsSection } from '../_components/SectionHead';
@@ -67,13 +75,21 @@ const WIDE_GRID_STYLE: CSSProperties = {
   marginTop: '20px',
 };
 
+const FULL_GRID_STYLE: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: '1fr',
+  gap: '20px',
+  alignItems: 'stretch',
+  marginTop: '20px',
+};
+
 export function ChartsVisxSection() {
   return (
     <DsSection
       title="Charts — visx · candy"
-      meta="7 CHARTS · @visx + d3-hierarchy · candy register"
+      meta="9 CHARTS · @visx + d3-hierarchy · candy register"
     >
-      <DsRow label="VISX · CANDY · LINE / AREA / DONUT / BAR / SPARKLINE / TREEMAP / CALENDAR">
+      <DsRow label="VISX · CANDY · LINE / AREA / DONUT / BAR / SPARKLINE / TREEMAP / CALENDAR / STACKED BAR / WATERFALL">
         <div data-surface="candy" style={CANDY_FIELD_STYLE}>
           <div style={GRID_STYLE}>
             <ChartCard
@@ -121,7 +137,8 @@ export function ChartsVisxSection() {
 
           {/* Phase B — Treemap + Calendar in a wider row so each gets the
               breathing room their PD-spec signatures require (paper-press
-              tile pile + 7×N month grid). */}
+              tile pile + 7×N month grid). Phase C adds Stacked Bar to the
+              same wide band — the 3-broker stack reads best at 360px. */}
           <div style={WIDE_GRID_STYLE}>
             <ChartCard
               eyebrow="VISX · CANDY · TREEMAP"
@@ -137,6 +154,27 @@ export function ChartsVisxSection() {
               subtitle="3 received · 2 scheduled · «you are here» today-ring"
             >
               <CalendarVisx payload={CALENDAR_FIXTURE} today={new Date('2026-04-15')} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="VISX · CANDY · STACKED BAR"
+              title="Broker contribution"
+              subtitle="3 brokers · stacks/etf/crypto · whole-stack ink-shadow"
+            >
+              <StackedBarVisx payload={STACKED_BAR_FIXTURE} width={360} height={220} />
+            </ChartCard>
+          </div>
+
+          {/* Phase C — Waterfall earns its own full-width band. PD signature:
+              ending-balance bar = pill container with a Bagel Fat One numeral
+              inside. The chunkiest visual moment in the product. */}
+          <div style={FULL_GRID_STYLE}>
+            <ChartCard
+              eyebrow="VISX · CANDY · WATERFALL"
+              title="Where YTD value came from"
+              subtitle="9 steps · embossed-groove bridges · pill-numeral hero"
+            >
+              <WaterfallVisx payload={WATERFALL_FIXTURE} width={720} height={280} />
             </ChartCard>
           </div>
 
