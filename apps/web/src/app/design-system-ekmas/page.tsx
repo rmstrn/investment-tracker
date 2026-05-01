@@ -43,6 +43,22 @@ export default function DesignSystemEkmasPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* ─── Library meta-strip ─────────────────────────────────────── */}
+      <div className="border-b-2 border-border bg-secondary-background">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/80">
+          <span>library · ekmas/neobrutalism-components</span>
+          <span>10 components in showcase · radix + tailwind v4</span>
+          <a
+            href="https://github.com/ekmas/neobrutalism-components"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-2 underline-offset-2 hover:text-foreground"
+          >
+            github →
+          </a>
+        </div>
+      </div>
+
       {/* ─── Sticky black header ─────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b-2 border-border bg-foreground text-background">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -61,12 +77,9 @@ export default function DesignSystemEkmasPage() {
               charts
             </a>
           </nav>
-          <button
-            type="button"
-            className="rounded-full border-2 border-background bg-background px-4 py-1 text-xs font-semibold text-foreground transition hover:opacity-90"
-          >
+          <Button size="sm" variant="reverse" className="bg-background text-foreground">
             sign in
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -104,10 +117,10 @@ export default function DesignSystemEkmasPage() {
           </p>
           <h2 className="ekmas-display mb-12 text-5xl">primitives.</h2>
 
-          {/* Buttons */}
+          {/* Buttons — variants × states */}
           <div className="mb-12 space-y-4">
             <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              buttons
+              buttons · 4 variants × 5 states
             </h3>
             <div className="flex flex-wrap items-center gap-4">
               <Button>default</Button>
@@ -120,6 +133,23 @@ export default function DesignSystemEkmasPage() {
               <Button size="sm">small</Button>
               <Button>medium</Button>
               <Button size="lg">large</Button>
+            </div>
+            <div>
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
+                forced hover state — shadow drops, button shifts +4px
+              </p>
+              <div className="flex flex-wrap items-center gap-4">
+                <Button data-force-hover className="translate-x-boxShadowX shadow-none">
+                  default :hover
+                </Button>
+                <Button
+                  variant="neutral"
+                  data-force-hover
+                  className="translate-x-boxShadowX shadow-none"
+                >
+                  neutral :hover
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -228,10 +258,23 @@ export default function DesignSystemEkmasPage() {
             </Card>
           </div>
 
-          {/* Tabs + badge + toast */}
+          {/* Badge variants */}
           <div className="mb-12 space-y-4">
             <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              tabs · badge · toast
+              badges · 2 variants
+            </h3>
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge>default</Badge>
+              <Badge variant="neutral">neutral</Badge>
+              <Badge>action needed</Badge>
+              <Badge variant="neutral">5 accounts</Badge>
+            </div>
+          </div>
+
+          {/* Tabs + toast */}
+          <div className="mb-12 space-y-4">
+            <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
+              tabs · toast
             </h3>
             <Tabs defaultValue="overview">
               <TabsList>
@@ -242,8 +285,6 @@ export default function DesignSystemEkmasPage() {
               <TabsContent value="overview">
                 <Card>
                   <CardContent className="flex flex-wrap items-center gap-3 pt-6">
-                    <Badge>success</Badge>
-                    <Badge variant="neutral">neutral</Badge>
                     <span className="text-sm text-foreground/70">
                       five accounts synced two minutes ago.
                     </span>
@@ -314,20 +355,29 @@ export default function DesignSystemEkmasPage() {
           </div>
         </section>
 
-        {/* ─── 4. Chart sample (visx-candy stays on visx) ──────────────── */}
+        {/* ─── 4. Chart sample ─────────────────────────────────────────── */}
         <section id="charts" className="mb-24">
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            charts (visx-candy stays)
+            charts
           </p>
           <h2 className="ekmas-display mb-12 text-5xl">drift band.</h2>
           <Card className="p-6">
             <CardHeader>
               <CardTitle className="text-xl">allocation drift · target ±2pp</CardTitle>
-              <CardDescription>visx-candy bar chart inside an ekmas card frame.</CardDescription>
+              <CardDescription>
+                ekmas ships a `Chart` primitive — but it wraps recharts (extra ~95KB dep). Visx
+                stays the canonical chart engine; this card uses BarVisx so PO can compare frame
+                styling side-by-side.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <BarVisx payload={BAR_DRIFT_FIXTURE} height={260} />
             </CardContent>
+            <CardFooter>
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
+                ekmas chart available · not adopted (avoids recharts dependency)
+              </span>
+            </CardFooter>
           </Card>
         </section>
       </main>

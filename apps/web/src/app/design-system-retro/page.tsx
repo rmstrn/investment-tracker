@@ -41,6 +41,22 @@ export default function DesignSystemRetroPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {/* ─── Library meta-strip ─────────────────────────────────────── */}
+      <div className="border-b-2 border-foreground bg-muted">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-2 font-mono text-[11px] uppercase tracking-[0.18em] text-foreground/80">
+          <span>library · logging-studio/retroui v0.1.0</span>
+          <span>11 components in showcase · radix + tailwind v4</span>
+          <a
+            href="https://github.com/Logging-Studio/RetroUI"
+            target="_blank"
+            rel="noreferrer"
+            className="underline decoration-2 underline-offset-2 hover:text-foreground"
+          >
+            github →
+          </a>
+        </div>
+      </div>
+
       {/* ─── Sticky black header ─────────────────────────────────────── */}
       <header className="sticky top-0 z-40 border-b-2 border-foreground bg-foreground text-background">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
@@ -59,12 +75,9 @@ export default function DesignSystemRetroPage() {
               charts
             </a>
           </nav>
-          <button
-            type="button"
-            className="rounded-full border-2 border-background bg-background px-4 py-1 text-xs font-semibold text-foreground transition hover:opacity-90"
-          >
+          <Button size="sm" variant="secondary">
             sign in
-          </button>
+          </Button>
         </div>
       </header>
 
@@ -102,10 +115,10 @@ export default function DesignSystemRetroPage() {
           </p>
           <h2 className="retro-display mb-12 text-5xl">primitives.</h2>
 
-          {/* Buttons */}
+          {/* Buttons — variants × states */}
           <div className="mb-12 space-y-4">
             <h3 className="font-mono text-xs uppercase tracking-[0.2em] text-foreground/60">
-              buttons
+              buttons · 5 variants × 4 sizes
             </h3>
             <div className="flex flex-wrap items-center gap-4">
               <Button>default</Button>
@@ -119,6 +132,21 @@ export default function DesignSystemRetroPage() {
               <Button size="sm">small</Button>
               <Button>medium</Button>
               <Button size="lg">large</Button>
+            </div>
+            <div>
+              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
+                variants in context — primary CTA, secondary CTA, ghost on dark
+              </p>
+              <div
+                className="flex flex-wrap items-center gap-4 p-4"
+                style={{ backgroundColor: '#0A0A0F' }}
+              >
+                <Button>connect.</Button>
+                <Button variant="secondary">explore</Button>
+                <Button variant="outline" className="text-background">
+                  cancel
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -314,17 +342,26 @@ export default function DesignSystemRetroPage() {
         {/* ─── 4. Chart sample ─────────────────────────────────────────── */}
         <section id="charts" className="mb-24">
           <p className="mb-3 font-mono text-xs uppercase tracking-[0.25em] text-foreground/60">
-            charts (visx-candy stays)
+            charts
           </p>
           <h2 className="retro-display mb-12 text-5xl">drift band.</h2>
           <Card className="block w-full p-6">
             <Card.Header>
               <Card.Title>allocation drift · target ±2pp</Card.Title>
-              <Card.Description>visx-candy bar chart inside a RetroUI card frame.</Card.Description>
+              <Card.Description>
+                RetroUI ships Bar / Area / Line / Pie charts — all wrap recharts (extra dep). Visx
+                stays the canonical engine; this card uses BarVisx so PO can compare frame styling
+                side-by-side.
+              </Card.Description>
             </Card.Header>
             <Card.Content>
               <BarVisx payload={BAR_DRIFT_FIXTURE} height={260} />
             </Card.Content>
+            <div className="mt-4 px-6 pb-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-foreground/50">
+                retroui charts available · not adopted (avoids recharts dependency)
+              </span>
+            </div>
           </Card>
         </section>
 
