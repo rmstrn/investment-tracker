@@ -113,6 +113,9 @@ export { BarChartV2, type BarChartV2Props } from './BarChartV2';
  */
 export { DonutVisx, type DonutVisxProps } from './visx/DonutVisx';
 export { BarVisx, type BarVisxProps } from './visx/BarVisx';
+export { LineVisx, type LineVisxProps } from './visx/LineVisx';
+export { AreaVisx, type AreaVisxProps } from './visx/AreaVisx';
+export { SparklineVisx, type SparklineVisxProps } from './visx/SparklineVisx';
 
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';

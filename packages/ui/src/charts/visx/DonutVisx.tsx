@@ -33,7 +33,13 @@ import type { DonutChartPayload } from '@investment-tracker/shared-types/charts'
 import { Group } from '@visx/group';
 import { Pie } from '@visx/shape';
 import type { PieArcDatum } from '@visx/shape/lib/shapes/Pie';
-import { type CSSProperties, type ReactNode, useId, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useEffect,
+  useId,
+  useState,
+} from 'react';
 import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
 import { useReducedMotion } from '../_shared/useReducedMotion';
@@ -47,6 +53,11 @@ export interface DonutVisxProps {
   size?: number;
   /** Custom centre lockup; falls back to `payload.centerLabel`. */
   centerLabel?: ReactNode;
+  /**
+   * Eyebrow rendered under the chunky center numeral. Defaults to
+   * `'Portfolio'`. Pass empty string to suppress.
+   */
+  centerEyebrow?: string;
   className?: string;
 }
 
@@ -107,6 +118,13 @@ const HOVER_LIFT_PX = 2;
 const HOVER_TRANSITION =
   'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
 
+/** Entrance: sweep duration matches `--motion-duration-deliberate` (720ms). */
+const ENTRANCE_DURATION_MS = 720;
+/** Per-segment stagger — ink builds clockwise. */
+const ENTRANCE_STAGGER_MS = 80;
+/** Cubic-out — quick start, soft settle (matches deliberate easing). */
+const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+
 /* ────────────────────────────────────────────────────────────────────── */
 /* Component                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
@@ -115,11 +133,41 @@ export function DonutVisx({
   payload,
   size = 240,
   centerLabel,
+  centerEyebrow = 'Portfolio',
   className,
 }: DonutVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  // ─── Entrance progress (0 → 1) ───────────────────────────────────────
+  // Reduced-motion: skip RAF, lock at 1 so segments paint full immediately.
+  const [entranceMs, setEntranceMs] = useState<number>(
+    prefersReducedMotion ? Number.POSITIVE_INFINITY : 0,
+  );
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setEntranceMs(Number.POSITIVE_INFINITY);
+      return;
+    }
+    let frame = 0;
+    const t0 = performance.now();
+    const tick = (now: number): void => {
+      const elapsed = now - t0;
+      setEntranceMs(elapsed);
+      // Last segment finishes at duration + (n-1)*stagger; we don't know n here
+      // so just stop at a generous ceiling. RAF cost is negligible.
+      const ceiling =
+        ENTRANCE_DURATION_MS +
+        ENTRANCE_STAGGER_MS * Math.max(0, payload.segments.length - 1) +
+        80;
+      if (elapsed < ceiling) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [prefersReducedMotion, payload.segments.length]);
 
   // ─── Geometry ────────────────────────────────────────────────────────
   // Padding leaves room for the (2px,2px) ink shadow + 2px hover lift
@@ -143,7 +191,7 @@ export function DonutVisx({
   const center =
     centerLabel ??
     (payload.centerLabel ? (
-      <DonutCenterLabel text={payload.centerLabel} />
+      <DonutCenterLabel text={payload.centerLabel} eyebrow={centerEyebrow} />
     ) : null);
 
   return (
@@ -181,7 +229,20 @@ export function DonutVisx({
               {(pie) => (
                 <>
                   {pie.arcs.map((arc, i) => {
-                    const path = pie.path(arc) ?? '';
+                    // Per-segment entrance progress (0 → 1).
+                    const segStart = i * ENTRANCE_STAGGER_MS;
+                    const localElapsed = entranceMs - segStart;
+                    const rawProgress =
+                      localElapsed <= 0
+                        ? 0
+                        : localElapsed >= ENTRANCE_DURATION_MS
+                          ? 1
+                          : localElapsed / ENTRANCE_DURATION_MS;
+                    const progress = easeOutCubic(rawProgress);
+                    const sweepEnd =
+                      arc.startAngle + (arc.endAngle - arc.startAngle) * progress;
+                    const animatedArc = { ...arc, endAngle: sweepEnd };
+                    const path = pie.path(animatedArc) ?? '';
                     const isHover = hoverIndex === i;
                     const lift =
                       isHover && !prefersReducedMotion
@@ -282,17 +343,20 @@ export type DonutVisxArc = PieArcDatum<ResolvedSegment>;
 
 interface DonutCenterLabelProps {
   text: string;
+  /** Manrope eyebrow under the chunky numeral. Pass empty string to suppress. */
+  eyebrow: string;
 }
 
-function DonutCenterLabel({ text }: DonutCenterLabelProps) {
+function DonutCenterLabel({ text, eyebrow }: DonutCenterLabelProps) {
+  // Strip a trailing word like "$226K total" → headline "$226K". The chunky
+  // numeral always reads as the first whitespace-delimited token.
   const trimmed = text.trim();
   const firstSpace = trimmed.indexOf(' ');
   const headline = firstSpace === -1 ? trimmed : trimmed.slice(0, firstSpace);
-  const eyebrow = firstSpace === -1 ? '' : trimmed.slice(firstSpace + 1);
   return (
     <>
       <span style={CENTER_HEADLINE_STYLE}>{headline}</span>
-      {eyebrow ? <span style={CENTER_EYEBROW_STYLE}>Portfolio</span> : null}
+      {eyebrow ? <span style={CENTER_EYEBROW_STYLE}>{eyebrow}</span> : null}
     </>
   );
 }

@@ -3,25 +3,36 @@
 /**
  * §Charts-visx — visx-candy POC showcase (2026-05-01).
  *
- * Renders Donut + Bar via `@visx/*` primitives inside a `[data-surface="candy"]`
- * cascade so the candy register's tokens drive every colour, font, and shadow.
- * Sits directly after the existing `<ChartsSection />` so PO can scroll-compare
- * visx-candy (this) against V2-styled-with-v2-tokens (above).
+ * Phase A scope (2026-05-01): Donut + Bar (polished) + Line + Area +
+ * Sparkline. All five charts share the locked candy-chart language —
+ * hard ink-shadow drop, hover-lift on interactive marks, Bagel chunky
+ * hero numerals, Manrope mono-uppercase axis ticks.
  *
- * Decision after PO review: either migrate the chart layer to visx (with the
- * candy aesthetic baked in) and retire the V2 primitives, or stay on V2 and
- * shelve visx. Either way these visx components are NOT in the runtime
- * dispatcher — they are imported directly from `@investment-tracker/ui/charts`
- * named exports.
+ * Sits directly after the existing `<ChartsSection />` so PO can
+ * scroll-compare visx-candy (this) against the V2 primitives backend
+ * (above). These visx components are NOT in the runtime dispatcher —
+ * they're imported directly from `@investment-tracker/ui/charts` named
+ * exports for the showcase + future migration cutover.
+ *
+ * Layout: 2-column responsive grid at desktop, 1-column at mobile, via
+ * `repeat(auto-fit, minmax(280px, 1fr))`. Card order — Line, Area,
+ * Donut, Bar, Sparkline — surfaces the new charts up top so the PO sees
+ * them first when this section paints.
  */
 
 import { PaintDrip } from '@investment-tracker/ui';
 import {
+  AREA_FIXTURE,
+  AreaVisx,
   BAR_DRIFT_FIXTURE,
   BarVisx,
   ChartCard,
   DONUT_FIXTURE,
   DonutVisx,
+  LINE_FIXTURE,
+  LineVisx,
+  SPARKLINE_FIXTURE,
+  SparklineVisx,
 } from '@investment-tracker/ui/charts';
 import type { CSSProperties } from 'react';
 import { DsRow, DsSection } from '../_components/SectionHead';
@@ -44,25 +55,50 @@ const GRID_STYLE: CSSProperties = {
 
 export function ChartsVisxSection() {
   return (
-    <DsSection title="Charts — visx · candy POC" meta="2 CHARTS · @visx/shape · candy register">
-      <DsRow label="POC — DONUT + BAR · CANDY-PINK FIELD">
+    <DsSection title="Charts — visx · candy" meta="5 CHARTS · @visx/shape · candy register">
+      <DsRow label="VISX · CANDY · LINE / AREA / DONUT / BAR / SPARKLINE">
         <div data-surface="candy" style={CANDY_FIELD_STYLE}>
           <div style={GRID_STYLE}>
             <ChartCard
-              eyebrow="VISX · CANDY POC"
+              eyebrow="VISX · CANDY · LINE"
+              title="Portfolio value"
+              subtitle="Last 30 days · all brokers · monotonic-cubic"
+            >
+              <LineVisx payload={LINE_FIXTURE} width={360} height={200} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="VISX · CANDY · AREA"
+              title="Cumulative P&L"
+              subtitle="Year to date · gradient under monotone curve"
+            >
+              <AreaVisx payload={AREA_FIXTURE} width={360} height={200} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="VISX · CANDY · DONUT"
               title="Allocation by sector"
-              subtitle="5 sectors · $226K total · visx <Pie>"
+              subtitle="5 sectors · $226K total · arc-sweep entrance"
             >
               <div className="flex justify-center">
                 <DonutVisx payload={DONUT_FIXTURE} size={240} />
               </div>
             </ChartCard>
+
             <ChartCard
-              eyebrow="VISX · CANDY POC"
+              eyebrow="VISX · CANDY · BAR"
               title="Position drift"
-              subtitle="Top 5 vs ±2pp rebalance band · visx scaleBand"
+              subtitle="Top 5 vs ±2pp rebalance band · hover for value"
             >
               <BarVisx payload={BAR_DRIFT_FIXTURE} width={360} height={220} />
+            </ChartCard>
+
+            <ChartCard
+              eyebrow="VISX · CANDY · SPARKLINE"
+              title="Portfolio · 7d"
+              subtitle="Inline micro-line · end-numeral only"
+            >
+              <SparklineVisx payload={SPARKLINE_FIXTURE} width={280} height={64} />
             </ChartCard>
           </div>
           <div style={{ marginTop: '24px' }}>

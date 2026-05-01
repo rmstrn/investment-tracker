@@ -30,9 +30,10 @@
 import type { BarChartPayload } from '@investment-tracker/shared-types/charts';
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
-import { type CSSProperties, useId, useState } from 'react';
+import { type CSSProperties, useEffect, useId, useState } from 'react';
 import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { formatValue } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -44,6 +45,12 @@ export interface BarVisxProps {
   /** SVG width (defaults to 100% via container). Optional explicit pin. */
   width?: number;
   height?: number;
+  /**
+   * When `true` paints a chunky Bagel value label above each bar. Default
+   * `false` — keep bar tops clean and let the tooltip carry the value on
+   * hover.
+   */
+  showValueLabels?: boolean;
   className?: string;
 }
 
@@ -67,6 +74,59 @@ const HOVER_TRANSITION =
 
 /** Top-corner radius (chunky candy). */
 const BAR_RADIUS = 8;
+
+/** Entrance — bars rise from baseline, deliberate easing (720ms). */
+const ENTRANCE_DURATION_MS = 720;
+/** Per-bar stagger. */
+const ENTRANCE_STAGGER_MS = 60;
+/** Spring-soft cubic-bezier (matches `--motion-easing-spring-soft`). */
+function easeSpringSoft(t: number): number {
+  // Cubic-bezier(0.34, 1.56, 0.64, 1) approximated. We use a closed-form
+  // approximation that mirrors the same overshoot character without
+  // pulling in a bezier solver.
+  if (t <= 0) return 0;
+  if (t >= 1) return 1;
+  const s = 1.70158;
+  const t1 = t - 1;
+  return t1 * t1 * ((s + 1) * t1 + s) + 1;
+}
+
+const TOOLTIP_STYLE: CSSProperties = {
+  position: 'absolute',
+  pointerEvents: 'none',
+  background: 'var(--bg-cream, var(--card, #FFF8E7))',
+  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
+  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  borderRadius: 8,
+  padding: '6px 10px',
+  fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
+  fontSize: 12,
+  fontWeight: 600,
+  lineHeight: 1.3,
+  whiteSpace: 'nowrap',
+  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
+  transform: 'translate(-50%, -100%)',
+  zIndex: 2,
+};
+
+const TOOLTIP_LABEL_STYLE: CSSProperties = {
+  fontFamily:
+    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontSize: 10,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  fontWeight: 500,
+  opacity: 0.7,
+  marginBottom: 2,
+};
+
+const VALUE_LABEL_STYLE: CSSProperties = {
+  fontFamily: "var(--font-family-display, 'Bagel Fat One', sans-serif)",
+  fontWeight: 400,
+  fontSize: 14,
+  fill: 'var(--text-on-candy, #1C1B26)',
+  fontVariantNumeric: 'tabular-nums',
+};
 
 const AXIS_LABEL_STYLE: CSSProperties = {
   fontFamily:
@@ -134,11 +194,36 @@ export function BarVisx({
   payload,
   width = 360,
   height = 220,
+  showValueLabels = false,
   className,
 }: BarVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+
+  // ─── Entrance progress in ms ─────────────────────────────────────────
+  const [entranceMs, setEntranceMs] = useState<number>(
+    prefersReducedMotion ? Number.POSITIVE_INFINITY : 0,
+  );
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setEntranceMs(Number.POSITIVE_INFINITY);
+      return;
+    }
+    let frame = 0;
+    const t0 = performance.now();
+    const tick = (now: number): void => {
+      const elapsed = now - t0;
+      setEntranceMs(elapsed);
+      const ceiling =
+        ENTRANCE_DURATION_MS +
+        ENTRANCE_STAGGER_MS * Math.max(0, payload.data.length - 1) +
+        80;
+      if (elapsed < ceiling) frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [prefersReducedMotion, payload.data.length]);
 
   // ─── Layout ──────────────────────────────────────────────────────────
   const margin = { top: 12, right: 12, bottom: 28, left: 36 };
@@ -172,6 +257,13 @@ export function BarVisx({
 
   const ariaLabelText = payload.meta.alt ?? payload.meta.title;
 
+  // ─── Tooltip data for the hovered bar ────────────────────────────────
+  const yFormat = payload.yAxis?.format ?? 'currency-compact';
+  const tooltipDatum =
+    hoverIndex !== null && hoverIndex >= 0 && hoverIndex < data.length
+      ? data[hoverIndex]
+      : null;
+
   return (
     <div
       role="img"
@@ -180,7 +272,7 @@ export function BarVisx({
       data-testid="chart-bar-visx"
       data-chart-backend="visx"
       className={`${CHART_FOCUS_RING_CLASS}${className ? ` ${className}` : ''}`}
-      style={{ width: '100%' }}
+      style={{ width: '100%', position: 'relative' }}
       onMouseLeave={() => setHoverIndex(null)}
     >
       <svg
@@ -270,8 +362,20 @@ export function BarVisx({
             const bandX = xScale(xValue) ?? 0;
             const bandW = xScale.bandwidth();
             const isPositive = yValue >= 0;
-            const barTop = isPositive ? yScale(yValue) : zeroY;
-            const barH = Math.abs(yScale(yValue) - zeroY);
+            const fullBarH = Math.abs(yScale(yValue) - zeroY);
+
+            // Per-bar entrance progress.
+            const segStart = i * ENTRANCE_STAGGER_MS;
+            const localElapsed = entranceMs - segStart;
+            const rawProgress =
+              localElapsed <= 0
+                ? 0
+                : localElapsed >= ENTRANCE_DURATION_MS
+                  ? 1
+                  : localElapsed / ENTRANCE_DURATION_MS;
+            const progress = easeSpringSoft(rawProgress);
+            const barH = Math.max(0.001, fullBarH * progress);
+            const barTop = isPositive ? zeroY - barH : zeroY;
 
             // Drift fixture treatment: in-band = neutral ink, out-of-band
             // = full candy ink + signal-orange.
@@ -286,31 +390,25 @@ export function BarVisx({
                 : 'var(--accent-deep, var(--cta-shadow, #C9601E))';
             const fillOpacity = isInBand ? 0.55 : 1;
 
-            const path = topRoundedBarPath(
+            const finalPath = topRoundedBarPath(
               bandX,
               barTop,
               bandW,
-              isPositive ? barH : -barH,
+              barH,
               BAR_RADIUS,
               !isPositive,
             );
-            // Account for path conventions: positive bar — y=barTop,
-            // height=barH; negative bar — start at zeroY going down.
-            const negPath = topRoundedBarPath(
-              bandX,
-              zeroY,
-              bandW,
-              barH,
-              BAR_RADIUS,
-              true,
-            );
-            const finalPath = isPositive ? path : negPath;
 
             const isHover = hoverIndex === i;
             const lift =
               isHover && !prefersReducedMotion
                 ? `translate(${-HOVER_LIFT_PX}px, ${-HOVER_LIFT_PX}px)`
                 : 'translate(0, 0)';
+
+            // Optional value label above the bar (positive bars only —
+            // negative bars get their label below in the same offset
+            // direction).
+            const labelY = isPositive ? barTop - 6 : barTop + barH + 14;
 
             return (
               <g
@@ -337,6 +435,17 @@ export function BarVisx({
                 />
                 {/* Coloured bar on top */}
                 <path d={finalPath} fill={fill} fillOpacity={fillOpacity} />
+                {showValueLabels && progress >= 1 ? (
+                  <text
+                    x={bandX + bandW / 2}
+                    y={labelY}
+                    textAnchor="middle"
+                    style={VALUE_LABEL_STYLE}
+                    aria-hidden="true"
+                  >
+                    {formatValue(yValue, yFormat, payload.yAxis?.currency)}
+                  </text>
+                ) : null}
               </g>
             );
           })}
@@ -360,6 +469,40 @@ export function BarVisx({
           })}
         </Group>
       </svg>
+
+      {tooltipDatum
+        ? (() => {
+            const tx = (xScale(String(tooltipDatum.x)) ?? 0) +
+              xScale.bandwidth() / 2 +
+              margin.left;
+            const ty =
+              (Number(tooltipDatum.y) >= 0
+                ? yScale(Number(tooltipDatum.y))
+                : zeroY) + margin.top;
+            return (
+              <div
+                role="tooltip"
+                aria-hidden="true"
+                style={{
+                  ...TOOLTIP_STYLE,
+                  // px units; left/top in svg-coords map 1:1 because we
+                  // render at intrinsic width/height (no CSS scale).
+                  left: `${(tx / width) * 100}%`,
+                  top: ty - 8,
+                }}
+              >
+                <div style={TOOLTIP_LABEL_STYLE}>{String(tooltipDatum.x)}</div>
+                <div>
+                  {formatValue(
+                    Number(tooltipDatum.y),
+                    yFormat,
+                    payload.yAxis?.currency,
+                  )}
+                </div>
+              </div>
+            );
+          })()
+        : null}
 
       <ChartDataTable payload={payload} id={dataTableId} />
     </div>
