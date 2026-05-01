@@ -9,7 +9,22 @@
       "mono": {
         "$value": "'Geist Mono', ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace",
         "$type": "fontFamily",
-        "$description": "Mono — Geist Mono. Used for eyebrow labels, citation IDs, breadcrumbs, mono metadata."
+        "$description": "Mono — Geist Mono. Used for eyebrow labels, citation IDs, breadcrumbs, mono metadata. Charts subsystem retains JetBrains Mono fallback for tabular numerals."
+      },
+      "display": {
+        "$value": "'Bagel Fat One', system-ui, -apple-system, 'Segoe UI', sans-serif",
+        "$type": "fontFamily",
+        "$description": "v2 — Display family for marketing-candy register only. Single weight (400, the only weight Bagel Fat One ships). OFL. Never below 32px, never in app interior, never in body copy."
+      },
+      "body": {
+        "$value": "Manrope, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+        "$type": "fontFamily",
+        "$description": "v2 — Body + UI family across both registers. Variable, weights 200–800, we use 400/500/600/700. OFL."
+      },
+      "accent": {
+        "$value": "Caveat, 'Segoe Script', cursive",
+        "$type": "fontFamily",
+        "$description": "v2 — Handwritten accent. Marketing micro-moments only — annotations beside chart screenshots, pull-out callouts. Max two instances per marketing page. OFL."
       }
     },
     "size": {
@@ -63,6 +78,41 @@
         "$value": "10px",
         "$type": "dimension",
         "$description": "Mono eyebrow labels (PROVEDO REPLIES, eyebrow-mono) — paired with letterSpacing.eyebrow."
+      },
+      "display-xxl": {
+        "$value": "clamp(64px, 8vw, 112px)",
+        "$type": "dimension",
+        "$description": "v2 — Bagel Fat One hero H1, marketing only. line-height 0.95, tracking -0.02em."
+      },
+      "display-v2-xl": {
+        "$value": "clamp(48px, 5vw, 80px)",
+        "$type": "dimension",
+        "$description": "v2 — Bagel Fat One section heroes, marketing only. line-height 1.0, tracking -0.015em."
+      },
+      "display-v2-lg": {
+        "$value": "clamp(40px, 4vw, 64px)",
+        "$type": "dimension",
+        "$description": "v2 — Bagel Fat One pricing tier titles, comparison column heads. line-height 1.05, tracking -0.01em."
+      },
+      "display-v2-md": {
+        "$value": "36px",
+        "$type": "dimension",
+        "$description": "v2 — Bagel Fat One card hero titles in marketing. line-height 1.1."
+      },
+      "display-v2-sm": {
+        "$value": "32px",
+        "$type": "dimension",
+        "$description": "v2 — Bagel Fat One lower-emphasis decorative heads. Floor for Bagel — never below 32px."
+      },
+      "heading-v2-xl": {
+        "$value": "28px",
+        "$type": "dimension",
+        "$description": "v2 — Manrope app page titles, marketing sub-heads where Bagel feels too loud. weight 700, lh 1.2."
+      },
+      "heading-v2-lg": {
+        "$value": "22px",
+        "$type": "dimension",
+        "$description": "v2 — Manrope card titles, section heads. weight 600, lh 1.25."
       }
     },
     "weight": {

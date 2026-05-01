@@ -1,0 +1,71 @@
+{
+  "semantic-candy": {
+    "$description": "v2 marketing-candy register. Route-scoped via [data-surface=\"candy\"] on <html>. Light-only (marketing has no dark variant). Authored from PROVEDO_DESIGN_SYSTEM_v2.md §2.3 + §6.",
+
+    "bg-pink": {
+      "$value": "{color.candy.pink}",
+      "$type": "color",
+      "$description": "Candy register primary surface — landing hero, comparison table headline rows."
+    },
+    "bg-mustard": {
+      "$value": "{color.candy.mustard}",
+      "$type": "color",
+      "$description": "Candy register secondary surface — alternating section under pink."
+    },
+    "drip-pink": {
+      "$value": "{color.candy.pink-deep}",
+      "$type": "color",
+      "$description": "Drip silhouette transitioning INTO a pink section. Deep variant gives a 1-stop tonal step before the field flattens."
+    },
+    "drip-mustard": {
+      "$value": "{color.candy.mustard-deep}",
+      "$type": "color",
+      "$description": "Drip silhouette transitioning INTO a mustard section."
+    },
+    "text-on-candy": {
+      "$value": "{color.ink-v2.deep}",
+      "$type": "color",
+      "$description": "Text on candy fields — always ink. Never white on candy. AAA on both pink (8.1:1) and mustard (11.4:1)."
+    },
+    "cta-fill": {
+      "$value": "{color.signal.orange}",
+      "$type": "color",
+      "$description": "Primary CTA on candy fields — signal-orange with hard ink shadow."
+    },
+    "cta-shadow": {
+      "$value": "{color.ink-v2.deep}",
+      "$type": "color",
+      "$description": "Hard 5px solid offset for CTA. Never blurred."
+    },
+    "cta-text": {
+      "$value": "{color.ink-v2.deep}",
+      "$type": "color",
+      "$description": "Text on signal-orange CTA — uses ink-deep, AA pass."
+    },
+    "header-bg": {
+      "$value": "{color.ink-v2.deep}",
+      "$type": "color",
+      "$description": "Sticky header — ink-deep across both registers. White nav text reads against candy and paper without conflict."
+    },
+    "header-text": {
+      "$value": "{color.static.white}",
+      "$type": "color",
+      "$description": "Sticky header nav text — white on ink-deep. AAA (14.8:1)."
+    },
+    "card-bg": {
+      "$value": "{color.paper.card}",
+      "$type": "color",
+      "$description": "Candy-bordered card surface — paper-card or static-white, sits on candy fields with 2px ink border + hard shadow."
+    },
+    "card-border": {
+      "$value": "{color.ink-v2.deep}",
+      "$type": "color",
+      "$description": "Candy-bordered card 2px border. The ink keeps the card legible against either pink or mustard field."
+    },
+    "focus-ring": {
+      "$value": "{color.signal.orange}",
+      "$type": "color",
+      "$description": "Universal focus ring across both registers — signal-orange with 3px outline + 2px offset."
+    }
+  }
+}

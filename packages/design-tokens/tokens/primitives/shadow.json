@@ -29,6 +29,52 @@
       "$value": "0 0 0 3px rgba(45, 95, 78, 0.22)",
       "$type": "shadow",
       "$description": "Accessible focus ring — 3px @ jade.deep @ 22% alpha (matches --accent-glow light)."
+    },
+
+    "cta-rest": {
+      "$value": "5px 5px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Signal-orange CTA default. Hard ink offset, no blur. Signature gesture of candy register."
+    },
+    "cta-hover": {
+      "$value": "7px 7px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — CTA hover (lift). translate(-2px,-2px) accompanies the shadow growth."
+    },
+    "cta-active": {
+      "$value": "2px 2px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — CTA pressed (depress). translate(3px,3px) accompanies the shadow shrink — net effect: button visibly stamps."
+    },
+    "card-candy": {
+      "$value": "4px 4px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Marketing cards / panels with ink border on candy fields."
+    },
+    "card-candy-hover": {
+      "$value": "6px 6px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Marketing card hover lift."
+    },
+    "card-paper": {
+      "$value": "0 2px 6px rgba(140,100,55,0.10), 0 12px 28px rgba(140,100,55,0.08)",
+      "$type": "shadow",
+      "$description": "v2 — Default app card on paper-cream substrate. Warm-tinted soft shadow."
+    },
+    "lift-paper": {
+      "$value": "0 4px 10px rgba(140,100,55,0.14), 0 18px 40px rgba(140,100,55,0.10)",
+      "$type": "shadow",
+      "$description": "v2 — Hovered card / hero panel on paper-cream."
+    },
+    "soft-paper": {
+      "$value": "0 1px 3px rgba(28,27,38,0.06), 0 6px 18px rgba(28,27,38,0.05)",
+      "$type": "shadow",
+      "$description": "v2 — Subtle hover, dropdowns on paper register."
+    },
+    "input-inset-paper": {
+      "$value": "inset 2px 2px 4px rgba(140,100,55,0.10), inset -1px -1px 2px rgba(255,250,240,0.85)",
+      "$type": "shadow",
+      "$description": "v2 — Input wells on paper register. Warm inset to read as depressed."
     }
   }
 }

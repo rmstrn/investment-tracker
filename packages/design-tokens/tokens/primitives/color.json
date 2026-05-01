@@ -104,7 +104,89 @@
     "static": {
       "white": { "$value": "#ffffff", "$type": "color" },
       "black": { "$value": "#000000", "$type": "color" },
-      "transparent": { "$value": "transparent", "$type": "color" }
+      "transparent": { "$value": "transparent", "$type": "color" },
+      "ink-on-cta": {
+        "$value": "#1C1B26",
+        "$type": "color",
+        "$description": "v2 — text on signal-orange CTA. Uses ink-deep (5.42:1 AA pass on signal-orange)."
+      }
+    },
+
+    "candy": {
+      "pink": {
+        "$value": "#F7A1C9",
+        "$type": "color",
+        "$description": "v2 — Marketing primary surface. oklch(78% 0.18 350). Candy register (light-only)."
+      },
+      "mustard": {
+        "$value": "#F4CC4A",
+        "$type": "color",
+        "$description": "v2 — Marketing secondary surface. oklch(85% 0.16 95). Candy register (light-only)."
+      },
+      "pink-deep": {
+        "$value": "#D96EA0",
+        "$type": "color",
+        "$description": "v2 — Drip silhouette + 2px ink-stroke fallback. oklch(64% 0.17 350)."
+      },
+      "mustard-deep": {
+        "$value": "#C99A1F",
+        "$type": "color",
+        "$description": "v2 — Drip silhouette. oklch(67% 0.15 90)."
+      }
+    },
+
+    "signal": {
+      "orange": {
+        "$value": "#F08A3C",
+        "$type": "color",
+        "$description": "v2 — Primary CTA fill, accent role across both registers. oklch(72% 0.16 50)."
+      },
+      "orange-deep": {
+        "$value": "#C76A22",
+        "$type": "color",
+        "$description": "v2 — CTA active depress + danger-CTA bg. oklch(58% 0.15 48)."
+      }
+    },
+
+    "ink-v2": {
+      "deep": {
+        "$value": "#1C1B26",
+        "$type": "color",
+        "$description": "v2 — Header bar, hard CTA shadow, primary text on candy + paper. oklch(20% 0.015 280). Replaces v1 ink (#1A1A1A) once Phase 3 lands."
+      },
+      "ink-2": {
+        "$value": "#3A3947",
+        "$type": "color",
+        "$description": "v2 — Secondary text on paper. oklch(33% 0.015 280)."
+      },
+      "ink-3": {
+        "$value": "#5A5867",
+        "$type": "color",
+        "$description": "v2 — Tertiary / metadata. oklch(48% 0.015 280). AA pass on paper."
+      }
+    },
+
+    "paper": {
+      "cream": {
+        "$value": "#F6F1E8",
+        "$type": "color",
+        "$description": "v2 — App bg (paper register). oklch(96.5% 0.012 85). Slightly lighter / warmer than v1 cream.bg."
+      },
+      "card": {
+        "$value": "#FFFCF4",
+        "$type": "color",
+        "$description": "v2 — Card surface (paper register). oklch(99% 0.010 85)."
+      },
+      "inset": {
+        "$value": "#E9E2D2",
+        "$type": "color",
+        "$description": "v2 — Input wells, chips, depressed surfaces (paper register). oklch(91% 0.014 85)."
+      },
+      "grain": {
+        "$value": "rgba(28,27,38,0.020)",
+        "$type": "color",
+        "$description": "v2 — Optional ink-tinted noise/grain overlay alpha for paper substrate. Apply via SVG noise filter or CSS texture."
+      }
     },
 
     "chart": {
