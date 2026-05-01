@@ -1,0 +1,66 @@
+/*
+ * Logging-Studio/RetroUI Tailwind v4 theme bridge.
+ *
+ * RetroUI components reference utilities like `bg-primary`, `bg-secondary`, `bg-card`,
+ * `bg-muted`, `bg-accent`, `bg-destructive`, `text-foreground`, `text-background`,
+ * `border-foreground`, `border-border`, `border-input`, `font-head`, `font-sans`.
+ * Some include hover variants `bg-primary-hover` / `bg-secondary-hover`.
+ *
+ * Same isolation strategy as the ekmas variant — `@theme inline` registers the
+ * utilities globally but the actual values live under `[data-ds-variant="retro"]`
+ * so the canonical `/design-system` route is unaffected.
+ */
+
+@theme inline {
+  --color-primary: var(--retro-primary);
+  --color-primary-foreground: var(--retro-primary-foreground);
+  --color-primary-hover: var(--retro-primary-hover);
+  --color-secondary: var(--retro-secondary);
+  --color-secondary-foreground: var(--retro-secondary-foreground);
+  --color-secondary-hover: var(--retro-secondary-hover);
+  --color-background: var(--retro-background);
+  --color-foreground: var(--retro-foreground);
+  --color-card: var(--retro-card);
+  --color-muted: var(--retro-muted);
+  --color-muted-foreground: var(--retro-muted-foreground);
+  --color-accent: var(--retro-accent);
+  --color-destructive: var(--retro-destructive);
+  --color-border: var(--retro-border);
+  --color-input: var(--retro-input);
+
+  --font-head: var(--retro-font-head);
+  --font-sans: var(--retro-font-sans);
+}
+
+[data-ds-variant="retro"] {
+  /* Provedo neo-brutalism palette mapped onto the RetroUI token contract. */
+  --retro-primary: #88e26c; /* signature.green CTA */
+  --retro-primary-foreground: #0a0a0f;
+  --retro-primary-hover: #5bb23e; /* signature.green-deep */
+  --retro-secondary: #f4cc4a; /* candy.mustard secondary CTA */
+  --retro-secondary-foreground: #0a0a0f;
+  --retro-secondary-hover: #e7bd2c;
+  --retro-background: #ffffff;
+  --retro-foreground: #0a0a0f;
+  --retro-card: #fffcf4;
+  --retro-muted: #f6f1e8;
+  --retro-muted-foreground: #5a5867;
+  --retro-accent: #c4b5fd;
+  --retro-destructive: #ff7b6b;
+  --retro-border: #0a0a0f;
+  --retro-input: #0a0a0f;
+
+  --retro-font-head: var(--font-bagel), Georgia, serif;
+  --retro-font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+
+  font-family: var(--retro-font-sans);
+  color: var(--retro-foreground);
+}
+
+.retro-display {
+  font-family: var(--retro-font-head);
+  font-weight: 400;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}

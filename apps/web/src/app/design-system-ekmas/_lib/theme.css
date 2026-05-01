@@ -1,0 +1,71 @@
+/*
+ * ekmas/neobrutalism-components Tailwind v4 theme bridge.
+ *
+ * The library's components reference utilities like `bg-main`, `bg-secondary-background`,
+ * `text-foreground`, `text-main-foreground`, `border-border`, `shadow-shadow`, `font-base`,
+ * `font-heading`, `rounded-base`, plus custom transforms `translate-x-boxShadowX` /
+ * `translate-y-boxShadowY` (and the `reverse` variants) — all token-driven from CSS variables.
+ *
+ * `@theme inline` registers these as Tailwind utilities globally, but the actual CSS
+ * variable VALUES are scoped to `[data-ds-variant="ekmas"]` below so they only paint
+ * inside the `/design-system-ekmas` route wrapper. The canonical `/design-system` route
+ * is untouched because no element there carries that data attribute.
+ */
+
+@theme inline {
+  --color-main: var(--ekmas-main);
+  --color-main-foreground: var(--ekmas-main-foreground);
+  --color-background: var(--ekmas-background);
+  --color-secondary-background: var(--ekmas-secondary-background);
+  --color-foreground: var(--ekmas-foreground);
+  --color-border: var(--ekmas-border);
+  --color-ring: var(--ekmas-ring);
+  --color-overlay: var(--ekmas-overlay);
+
+  --shadow-shadow: var(--ekmas-shadow);
+  --radius-base: var(--ekmas-radius-base);
+  --font-base: var(--ekmas-font-base);
+  --font-heading: var(--ekmas-font-heading);
+
+  --translate-boxShadowX: var(--ekmas-box-shadow-x);
+  --translate-boxShadowY: var(--ekmas-box-shadow-y);
+  --translate-reverseBoxShadowX: var(--ekmas-reverse-box-shadow-x);
+  --translate-reverseBoxShadowY: var(--ekmas-reverse-box-shadow-y);
+}
+
+[data-ds-variant="ekmas"] {
+  /* Provedo neo-brutalism palette (see PROVEDO_DESIGN_SYSTEM_v3 §3). */
+  --ekmas-main: #88e26c; /* signature.green — primary CTA */
+  --ekmas-main-foreground: #0a0a0f; /* ink on green */
+  --ekmas-background: #ffffff; /* paper.white — app interior default */
+  --ekmas-secondary-background: #f6f1e8; /* paper.cream — marketing surface */
+  --ekmas-foreground: #0a0a0f; /* ink.primary */
+  --ekmas-border: #0a0a0f; /* ink-as-border (brutalist) */
+  --ekmas-ring: #0a0a0f;
+  --ekmas-overlay: rgba(10, 10, 15, 0.8);
+
+  --ekmas-shadow: 4px 4px 0 0 #0a0a0f;
+  --ekmas-radius-base: 5px;
+  --ekmas-font-base: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --ekmas-font-heading: var(--font-bagel), Georgia, serif;
+
+  --ekmas-box-shadow-x: 4px;
+  --ekmas-box-shadow-y: 4px;
+  --ekmas-reverse-box-shadow-x: -4px;
+  --ekmas-reverse-box-shadow-y: -4px;
+
+  /* Stamp the heading font onto Bagel-Fat-One body context for headlines. */
+  font-family: var(--ekmas-font-base);
+}
+
+/*
+ * Lower-cased chunky display headlines — the spec calls Bagel Fat One «chunky
+ * lowercase». Helper class for the hero block.
+ */
+.ekmas-display {
+  font-family: var(--ekmas-font-heading);
+  font-weight: 400;
+  text-transform: lowercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
