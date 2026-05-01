@@ -1,4 +1,4 @@
-import type { SparklinePayload } from '@investment-tracker/shared-types/charts';
+import type { DonutChartPayload, SparklinePayload } from '@investment-tracker/shared-types/charts';
 import {
   AREA_FIXTURE,
   AreaVisx,
@@ -7,6 +7,8 @@ import {
   BarVisx,
   ChartCard,
   ChartSkeleton,
+  DONUT_FIXTURE,
+  DonutVisx,
   LINE_FIXTURE,
   LineVisx,
   SPARKLINE_FIXTURE,
@@ -16,14 +18,14 @@ import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1-4 of 9: BarVisx + SparklineVisx + LineVisx
- * + AreaVisx in D1 «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-5 of 9: BarVisx + SparklineVisx + LineVisx
+ * + AreaVisx + DonutVisx in D1 «Lime Cabin» dialect.
  *
  * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
- * (Lines) ship here with the D1 chart-panel chrome (rail-headed, NOT
- * title-headed). The remaining 5 chart kinds stay as `ChartSkeleton`
- * placeholder shells until subsequent restyle dispatches (Donut →
- * Calendar → StackedBar → Treemap → Waterfall).
+ * (Lines) + DonutVisx ship here with the D1 chart-panel chrome (rail-
+ * headed, NOT title-headed). The remaining 4 chart kinds stay as
+ * `ChartSkeleton` placeholder shells until subsequent restyle dispatches
+ * (Calendar → StackedBar → Treemap → Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -62,6 +64,30 @@ import { RecordRail } from '../_components/RecordRail';
  * here» surface (KICKOFF §4.1 area anatomy + lime-discipline §7.5
  * «data treatment» category).
  *
+ * For DonutVisx specifically: per-segment colour resolution path —
+ * **Path B** in the engineer's investigation. DonutVisx falls back to
+ * `CANDY_PALETTE = var(--chart-categorical-1..5)` for unset segments,
+ * but those vars are NOT aliased in our route-local lime-cabin.css
+ * (only `--chart-series-*` is). The schema (`DonutChartPayload.segments
+ * [*].color`) DOES allow per-segment colour strings, so we supply D1
+ * vars directly in the inline-derived showcase fixtures. This bypasses
+ * the chart-categorical alias gap entirely and gives strict spec
+ * adherence to the lime-saturation order from KICKOFF §4.1
+ * (`bg-card-soft → text-muted → border-strong → lime@40% → lime solid`,
+ * mirroring the heatmap saturation gradient). The optional purple
+ * highlight is demonstrated via direct fixture override on the largest
+ * segment (no `meta.highlightKey` field exists on the schema; the
+ * runtime outcome described in the kickoff is identical to a colour
+ * override). The `.d1-chart-panel--donut` modifier additionally tames
+ * the candy hard ink-shadow drop (component renders each slice path
+ * twice — shadow + fill — and the shadow inherits `--text-on-candy`
+ * which the base wrapper points at white; the modifier re-points it at
+ * `--d1-bg-page` so the 2px shadow sliver disappears into the canvas
+ * and segments read as crisp ink shapes). Centre headline + eyebrow
+ * styling is restored via structure-stable child selectors (Geist Mono
+ * 32px tabular for the numeral, Geist Sans uppercase muted for the
+ * eyebrow).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -76,16 +102,10 @@ interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'donut' | 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
+  kind: 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'ALLOCATION BY SECTOR',
-    title: 'DonutVisx',
-    subtitle: '5 sectors · $226K total',
-    kind: 'donut',
-  },
   {
     rail: 'DIVIDEND CALENDAR',
     title: 'CalendarVisx',
@@ -142,6 +162,69 @@ const SPARKLINE_FLAT_FIXTURE: SparklinePayload = {
 };
 
 /* ────────────────────────────────────────────────────────────────────── */
+/* Donut fixtures — D1 lime-saturation order via per-segment color.       */
+/* ────────────────────────────────────────────────────────────────────── */
+
+/**
+ * `DONUT_FIXTURE` ships with no per-segment colours, falling back to
+ * DonutVisx's `CANDY_PALETTE` (`var(--chart-categorical-1..5)`). The
+ * candy `--chart-categorical-*` family is NOT aliased in our route-local
+ * lime-cabin.css — only `--chart-series-*` is. KICKOFF §4.1 spec calls
+ * for a strict lime-saturation order:
+ *
+ *   bg-card-soft → text-muted → border-strong → lime@40% → lime solid
+ *
+ * mirroring the heatmap saturation gradient. The schema permits
+ * per-segment colour strings (`segments[*].color: string optional`), so
+ * we override the colour list directly. Sort discipline: the fixture is
+ * already descending by value (Tech $92.5K → Other $17.99K). The
+ * heaviest segment maps to the most-saturated lime ('look here'), the
+ * lightest to the lowest-saturation card-soft — biggest = brightest =
+ * the eye lands there first.
+ */
+const D1_DONUT_PALETTE = [
+  'var(--d1-accent-lime)', // 0 — heaviest segment, lime solid
+  'rgba(214, 242, 107, 0.4)', // 1 — lime @ 40%
+  'var(--d1-border-strong)', // 2 — neutral hairline strong
+  'var(--d1-text-muted)', // 3 — neutral mid
+  'var(--d1-bg-card-soft)', // 4 — lightest segment, lowest saturation
+] as const;
+
+const DONUT_FIXTURE_D1: DonutChartPayload = {
+  ...DONUT_FIXTURE,
+  segments: DONUT_FIXTURE.segments.map((s, i) => ({
+    ...s,
+    color: D1_DONUT_PALETTE[i] ?? D1_DONUT_PALETTE[D1_DONUT_PALETTE.length - 1],
+  })),
+};
+
+/**
+ * Purple-highlight variant. KICKOFF §4.1: «ONE optional highlighted
+ * segment in `--d1-accent-purple` (when `payload.meta.highlightKey`
+ * set)». The schema doesn't expose `highlightKey` (verified — the
+ * `DonutChartPayload` `meta` is `ChartMeta + MetaFinancialAggregate`
+ * only). The runtime outcome the kickoff describes is identical to a
+ * direct colour override, so we demonstrate the highlighted-segment
+ * dialect by overriding the heaviest segment's colour to purple — same
+ * "look here" semantic, different signal colour.
+ */
+const DONUT_FIXTURE_D1_HIGHLIGHTED: DonutChartPayload = {
+  ...DONUT_FIXTURE,
+  meta: {
+    ...DONUT_FIXTURE.meta,
+    title: 'Allocation by sector · Tech highlighted',
+    subtitle: '5 sectors · Tech flagged for re-balance review',
+  },
+  segments: DONUT_FIXTURE.segments.map((s, i) => ({
+    ...s,
+    color:
+      i === 0
+        ? 'var(--d1-accent-purple)'
+        : (D1_DONUT_PALETTE[i] ?? D1_DONUT_PALETTE[D1_DONUT_PALETTE.length - 1]),
+  })),
+};
+
+/* ────────────────────────────────────────────────────────────────────── */
 /* Hatched-stripe legend swatch — inline SVG <defs> <pattern>.            */
 /* ────────────────────────────────────────────────────────────────────── */
 
@@ -184,7 +267,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx ship in the D1 dialect (Phase 2 charts 1-4 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern. The other 5 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx ship in the D1 dialect (Phase 2 charts 1-5 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight. The other 4 kinds remain placeholder shells until subsequent restyle dispatches."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -373,7 +456,63 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="5 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="DONUTVISX · ALLOCATION BY SECTOR · LIME SATURATION ORDER (DONUT_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--donut"
+          aria-labelledby="chart-donut-default-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="ALLOCATION BY SECTOR" />
+          </header>
+          <h3 id="chart-donut-default-title" className="sr-only">
+            Allocation by sector · default state
+          </h3>
+          <div className="d1-chart-panel__body">
+            <DonutVisx payload={DONUT_FIXTURE_D1} size={240} centerEyebrow="Portfolio" />
+            <p className="d1-chart-panel__caption">
+              Per-segment colours supplied through the fixture (Path B: schema permits
+              `segments[*].color`; the candy `--chart-categorical-*` aliases are not in scope here,
+              so we override directly). Five-step lime-saturation order — heaviest segment lands on
+              `--d1-accent-lime` solid, lightest on `--d1-bg-card-soft` — mirrors the heatmap
+              saturation gradient. Centre numeral renders Geist Mono 32px tabular with `tnum + ss01
+              + lnum`. The candy hard ink-shadow drop is tamed via the `.d1-chart-panel--donut`
+              modifier (re-points `--text-on-candy` at `--d1-bg-page` so the 2px shadow sliver
+              disappears into the canvas).
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="DONUTVISX · ALLOCATION BY SECTOR · «LOOK HERE» (PURPLE HIGHLIGHT)">
+        <article
+          className="d1-chart-panel d1-chart-panel--donut"
+          aria-labelledby="chart-donut-highlighted-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="ALLOCATION · TECH FLAGGED" />
+          </header>
+          <h3 id="chart-donut-highlighted-title" className="sr-only">
+            Allocation by sector · Tech segment highlighted
+          </h3>
+          <div className="d1-chart-panel__body">
+            <DonutVisx
+              payload={DONUT_FIXTURE_D1_HIGHLIGHTED}
+              size={240}
+              centerEyebrow="Portfolio"
+            />
+            <p className="d1-chart-panel__caption">
+              Optional purple-highlight dialect (KICKOFF §4.1: «ONE optional highlighted segment in
+              `--d1-accent-purple` when `payload.meta.highlightKey` set»). The schema doesn't expose
+              `highlightKey` natively — the runtime outcome is identical to a per-segment colour
+              override, which is what we render here on the heaviest segment («Tech»). Used when a
+              single sector trips a re-balance threshold; the rest of the saturation order stays put
+              so the highlight reads against a neutral field, not a competing lime.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="4 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div

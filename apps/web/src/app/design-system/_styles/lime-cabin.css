@@ -1348,6 +1348,123 @@
   --accent: var(--d1-accent-lime);
 }
 
+/* ── Donut panel — per-segment colour through fixture, plus shadow tame ──
+ *
+ * DonutVisx (KICKOFF §4.1 spec: 5 segments in lime-saturation order
+ * `bg-card-soft → text-muted → border-strong → lime@40% → lime solid`,
+ * mirroring the heatmap saturation gradient; ONE optional purple
+ * highlight; centre numeral in Geist Mono 32px).
+ *
+ * Per-segment colour resolution path (engineer's investigation):
+ *
+ *   - DonutVisx falls back to `CANDY_PALETTE = var(--chart-categorical-1..5)`
+ *     when `segment.color` is unset. The candy `--chart-categorical-*`
+ *     family is NOT aliased in this stylesheet (only `--chart-series-*`
+ *     is), so unset segments would resolve to whatever the global token
+ *     pipeline emits — not the D1 saturation order.
+ *
+ *   - The schema (`DonutChartPayload.segments[*].color`) DOES allow a
+ *     per-segment colour string. Path B (per-segment colour in the
+ *     fixture, supplying D1 vars directly) is the cleanest fit and
+ *     gives strict spec adherence to the saturation order.
+ *
+ *   - The kickoff hint about `payload.meta.highlightKey` is aspirational —
+ *     no such field exists on `DonutChartPayload`. The "purple highlight"
+ *     mode is demonstrated by overriding a single segment's `color` to
+ *     `--d1-accent-purple` directly in the showcase fixture, which is
+ *     exactly the runtime outcome the kickoff describes.
+ *
+ * The wrapper modifier below tames two things the candy-register donut
+ * still leaks under the base `.d1-chart-panel` mapping:
+ *
+ *   1. Hard ink-shadow drop. DonutVisx renders each slice path TWICE — a
+ *      shadow path translated `(2px, 2px)` filled with `--text-on-candy`
+ *      at 0.85 opacity, plus the colored slice on top. The base wrapper
+ *      points `--text-on-candy` at `--d1-text-primary` (white) which
+ *      gives a glowing white halo around every dark segment — wrong for
+ *      D1's «paper-press is candy, ink-on-card is D1» reading. We
+ *      re-remap the shadow surface onto the page colour so the 2px
+ *      sliver disappears into the canvas behind the panel — segments
+ *      read as crisp ink shapes instead of paper-press cards.
+ *
+ *   2. Legend swatch boxShadow + legend text colour both bind to
+ *      `--text-on-candy`. Re-remapping that to `--d1-bg-page` would
+ *      make legend text invisible (dark on dark). We keep legend text
+ *      readable by NOT routing it through the tamed shadow — the
+ *      DonutVisx legend uses inline `color: var(--text-on-candy, ...)`
+ *      which we leave as the base wrapper's white. The legend swatch
+ *      boxShadow does inherit the dark page colour and disappears
+ *      against the panel — acceptable, the swatch is a coloured chip
+ *      and reads on its own.
+ *
+ *   3. Centre headline + eyebrow also bind to `--text-on-candy`. The
+ *      base wrapper's white-on-dark mapping is correct here, so the
+ *      donut wrapper deliberately KEEPS that and only narrows the
+ *      shadow override via a child selector chain that the legend +
+ *      centre lockup don't traverse… except DonutVisx uses `<path fill>`
+ *      attributes, not CSS, so a child selector can't help. The least-
+ *      bad solution: lower the shadow's visibility via `--text-on-candy`
+ *      narrow override AND restore legend / centre text via a separate
+ *      property. Done by setting the centre + legend colours to
+ *      `--d1-text-primary` directly through scoped overrides on the
+ *      `[style]` attribute is not possible without editing the component;
+ *      instead we accept the tradeoff: the shadow goes dark (good) and
+ *      the legend boxShadow goes dark (good) but the legend TEXT also
+ *      goes dark (bad). Mitigation: the legend `<li>` text has `font-medium`
+ *      — we add a scoped override below the donut wrapper to force
+ *      legend text back to `--d1-text-primary` via the `ul` selector
+ *      DonutVisx uses (no class hook, but the structure is stable).
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--donut {
+  /* Tame the hard ink-shadow drop — white halo → page-coloured sliver. */
+  --text-on-candy: var(--d1-bg-page);
+  --ink: var(--d1-bg-page);
+}
+
+/* Restore legend + centre-lockup text to white — the shadow override
+ * above pulls them dark too, which kills readability. DonutVisx renders
+ * the centre lockup inside `.pointer-events-none.absolute.inset-0` and
+ * the legend as a `ul.flex.flex-wrap` sibling. We target both via
+ * structure-stable selectors so no component edit is needed. */
+[data-theme='lime-cabin'] .d1-chart-panel--donut [data-testid='chart-donut-visx'] > ul,
+[data-theme='lime-cabin'] .d1-chart-panel--donut [data-testid='chart-donut-visx'] > div > div {
+  color: var(--d1-text-primary);
+}
+
+/* Centre headline span (Geist Mono 32px tabular). Override the
+ * component's clamp() via a more-specific rule so the D1 spec's 32px
+ * Mono numeral lands consistently. Selector targets the first child
+ * span of the centre lockup div — the headline node from
+ * `DonutCenterLabel`. */
+[data-theme='lime-cabin']
+  .d1-chart-panel--donut
+  [data-testid='chart-donut-visx']
+  > div
+  > div
+  > span:first-child {
+  font-family: var(--d1-font-mono);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--d1-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1, 'ss01' 1;
+}
+
+/* Centre eyebrow span — Geist Sans uppercase muted, looser tracking. */
+[data-theme='lime-cabin']
+  .d1-chart-panel--donut
+  [data-testid='chart-donut-visx']
+  > div
+  > div
+  > span:nth-child(2) {
+  font-family: var(--d1-font-sans);
+  color: var(--d1-text-muted);
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {
