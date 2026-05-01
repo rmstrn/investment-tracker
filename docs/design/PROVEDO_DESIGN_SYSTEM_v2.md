@@ -356,24 +356,13 @@ Hairline rules inside cards (table row separators, etc.) use `1px solid rgba(28,
 
 ---
 
-## 9. Charts Integration
+## 9. Charts integration
 
-**Charts stay in paper register only.** No candy backgrounds behind charts, ever.
+Chart subsystem renders via **visx** (Airbnb, MIT, scoped imports) styled per the **candy register** (signal-orange / candy-pink / mustard / ink-deep) using the locked language: hard ink-shadow drops, hover-lift, Bagel hero numerals, Manrope mono axis, spring-soft motion, ChartFrame a11y wrap.
 
-DonutChartV2 and BarChartV2 inherit v2 tokens by remapping the existing semantic chart-series block:
+Per-chart visual specs live in [`CHARTS_VISX_CANDY_SPEC.md`](./CHARTS_VISX_CANDY_SPEC.md).
 
-- `--chart-bg` → `paper.card` `#FFFCF4`
-- `--chart-grid` → `rgba(28,27,38,0.10)` (already defined, unchanged)
-- `--chart-axis-label` → `ink.ink-3`
-- `--chart-tooltip-bg` → `paper.card`
-- `--chart-tooltip-border` → `rgba(28,27,38,0.14)`
-- `chart-series.1..12` → unchanged from v1.1 (museum-vitrine + editorial extensions). Already a11y-validated. Do not redesign.
-- ChartCard shadow → `shadow-card` (paper soft).
-- Hover slice/bar emboss filter → unchanged from v1.1; signal-orange replaces jade in the hover glow component (`drop-shadow(0 0 4px rgba(240,138,60,0.20))`).
-
-The accent semantic shift (jade → signal-orange) means hover glows, axis emphasis tooltips and "verified" callouts all re-tint to orange. Series colors themselves are preserved — they have no semantic relationship to the v2 brand and were chosen for categorical separation, not brand alignment.
-
-**Forbidden:** rendering any chart on candy-pink or candy-mustard. Marketing charts that appear in pricing or comparison pages must sit inside a paper-card surface.
+V2 custom-SVG chart subsystem (DonutChartV2, BarChartV2, Cartesian primitives, makeBackendDispatch) is being retired. V1 Recharts wrappers are deleted in Phase E. See [`DECISIONS.md`](../DECISIONS.md) entry 2026-05-01.
 
 ---
 

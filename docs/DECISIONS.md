@@ -938,3 +938,7 @@ Reason: complete the visual migration to the candy/paper dual register and
 shed dead token families before α cutover.
 
 Owner: frontend-engineer (Phase 3b).
+
+## 2026-05-01 — Chart subsystem rendering shifts from V2 custom-SVG primitives to visx + candy register
+
+PO directive: charts adopt the same playful candy register as marketing surfaces. visx (Airbnb, MIT, scoped imports) replaces V2 DonutChartV2/BarChartV2 + Cartesian framework + makeBackendDispatch + Recharts V1. See `docs/design/CHARTS_VISX_CANDY_SPEC.md` for the chart-by-chart visual language. Migration is phased; final cleanup deletes V1/V2 + Recharts dep.

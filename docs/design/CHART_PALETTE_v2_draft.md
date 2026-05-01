@@ -1,3 +1,5 @@
+> **Superseded 2026-05-01 by [`CHARTS_VISX_CANDY_SPEC.md`](./CHARTS_VISX_CANDY_SPEC.md).** Kept for historical reference only — V2 custom-primitive chart subsystem is being migrated to visx + candy register.
+
 # Chart palette v2 — draft (museum-vitrine categorical + ink sequential)
 
 **Status:** DRAFT (pending PO greenlight + frontend-engineer integration)
