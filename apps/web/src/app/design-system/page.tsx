@@ -1,97 +1,126 @@
 import { brand } from '@investment-tracker/design-tokens/brand';
-import { ShowcaseHeader } from './_components/ShowcaseHeader';
-import { StagedSections } from './_components/StagedSections';
+import { AiSurfaceSection } from './_sections/ai-surface';
+import { CardsSection } from './_sections/cards';
+import { ChartsSection } from './_sections/charts';
 import { DisclaimerSection } from './_sections/disclaimer';
+import { ElevationAndRadiiSection } from './_sections/elevation-and-radii';
+import { FormsSection } from './_sections/forms';
+import { FoundationSection } from './_sections/foundation';
 import { IconographySection } from './_sections/iconography';
+import { LimeDisciplineSection } from './_sections/lime-discipline';
+import { PillVocabularySection } from './_sections/pill-vocabulary';
+import { PrimitivesSection } from './_sections/primitives';
+import { RecordRailSection } from './_sections/record-rail';
 import { ThemeSection } from './_sections/theme';
-import './_styles/showcase.css';
+import { TypographySection } from './_sections/typography';
 
 export const metadata = {
   title: `Design System · ${brand.productName}`,
-  description: `Single canonical interactive showcase for ${brand.productName} design system v1.1.`,
+  description: `Single canonical D1 «Lime Cabin» showcase for ${brand.productName} — every token, primitive, component, and chart specimen on one surface.`,
   robots: { index: false, follow: false },
 };
 
+interface SideNavLink {
+  readonly href: string;
+  readonly index: string;
+  readonly label: string;
+}
+
+const SIDE_NAV: ReadonlyArray<SideNavLink> = [
+  { href: '#foundation', index: '01', label: 'Foundation' },
+  { href: '#theme', index: '02', label: 'Theme' },
+  { href: '#typography', index: '03', label: 'Typography' },
+  { href: '#pill-vocabulary', index: '04', label: 'Pill Vocabulary' },
+  { href: '#primitives', index: '05', label: 'Primitives' },
+  { href: '#cards', index: '06', label: 'Cards' },
+  { href: '#forms', index: '07', label: 'Forms' },
+  { href: '#elevation-and-radii', index: '08', label: 'Elevation & Radii' },
+  { href: '#iconography', index: '09', label: 'Iconography' },
+  { href: '#record-rail', index: '10', label: 'Record Rail' },
+  { href: '#ai-surface', index: '11', label: 'AI Surface' },
+  { href: '#lime-discipline', index: '12', label: 'Lime Discipline' },
+  { href: '#charts', index: '13', label: 'Charts' },
+  { href: '#disclaimer', index: '14', label: 'Disclaimer' },
+];
+
 /**
- * `/design-system` — single canonical interactive showcase.
+ * `/design-system` — D1 «Lime Cabin» canonical showcase.
  *
- * Re-architected 2026-04-29 to match the static visual reference at
- * `apps/web/public/design-system.html` (Provedo Design System v2 — Showcase).
- * A single stage renders the full primitive set; the sticky header's global
- * theme toggle (`<html data-theme>`) flips dark mode in place — no stacked
- * second stage needed.
+ * Rebuilt 2026-05-01 (Phase 1 Step B of the D1 migration; KICKOFF at
+ * `.superpowers/brainstorm/2026-05-01-d1-fix-pass/KICKOFF.md`).
  *
- * Inside the stage the full section set renders: foundation, signature hero,
- * primitives (curated permutations), forms (product-context inputs), cards
- * (portfolio · insight · empty), charts (visx-candy backend — see
- * `packages/ui/src/charts/visx/*`).
+ * Every D1 token, primitive, component, and chart specimen lives on
+ * this surface. The route runs under `[data-theme="lime-cabin"]` per
+ * the layout wrapper; other routes are unaffected. The 9 chart shells
+ * in §Charts are placeholders — Phase 2 fills them with the visx
+ * components restyled into D1 dialect.
  */
 export default function DesignSystemPage() {
   return (
-    <div className="showcase min-h-screen bg-background-primary text-text-primary">
-      <ShowcaseHeader />
+    <div className="ds-showcase">
+      <nav className="ds-sidenav" aria-label="Design system sections">
+        <div className="ds-sidenav__brand">
+          <span className="d1-nav__brand" aria-hidden>
+            P
+          </span>
+          <div>
+            <p className="ds-sidenav__product">{brand.productName} · Design System</p>
+            <p className="ds-sidenav__title">D1 «Lime Cabin» v4</p>
+          </div>
+        </div>
+        {SIDE_NAV.map((link) => (
+          <a key={link.href} href={link.href} className="ds-sidenav__link">
+            <span className="ds-sidenav__index">{link.index}</span>
+            <span>{link.label}</span>
+          </a>
+        ))}
+      </nav>
 
-      <main className="mx-auto max-w-6xl space-y-6 px-6 py-12 md:px-8">
-        <section className="space-y-3 pb-2">
-          <p
-            className="font-mono uppercase"
-            style={{
-              fontSize: 'var(--showcase-eyebrow-size)',
-              letterSpacing: 'var(--showcase-eyebrow-tracking)',
-              color: 'var(--accent, var(--color-accent-default))',
-              fontWeight: 'var(--showcase-eyebrow-weight)' as unknown as number,
-            }}
-          >
-            {brand.productName} · Design System v2 · Showcase
+      <main>
+        <header style={{ paddingBottom: 16 }}>
+          <p className="ds-page-eyebrow">{brand.productName} · Design System v4 · Lime Cabin</p>
+          <h1 className="ds-page-title">Notice what you’d miss.</h1>
+          <p className="ds-page-lede">
+            Every D1 token, primitive, component, and chart specimen on one surface. The page itself
+            is the canonical reference: every lime surface visible here is sanctioned, every pill
+            belongs to the pill vocabulary, every numeral is Geist Mono with `tnum + ss01`, every
+            persistent data zone is rail-headed.
           </p>
-          <h1
-            className="font-semibold text-text-primary"
+        </header>
+
+        <FoundationSection />
+        <ThemeSection />
+        <TypographySection />
+        <PillVocabularySection />
+        <PrimitivesSection />
+        <CardsSection />
+        <FormsSection />
+        <ElevationAndRadiiSection />
+        <IconographySection />
+        <RecordRailSection />
+        <AiSurfaceSection />
+        <LimeDisciplineSection />
+        <ChartsSection />
+        <DisclaimerSection />
+
+        <footer
+          style={{
+            marginTop: 48,
+            paddingTop: 16,
+            borderTop: '1px solid var(--d1-border-hairline)',
+          }}
+        >
+          <p
             style={{
-              fontSize: 'var(--showcase-page-title-size)',
-              letterSpacing: 'var(--showcase-page-title-tracking)',
-              fontWeight: 'var(--showcase-page-title-weight)' as unknown as number,
-              lineHeight: 1.05,
+              margin: 0,
+              fontFamily: 'var(--d1-font-mono)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+              color: 'var(--d1-text-muted)',
             }}
           >
-            {brand.productName} Design System v2 — refined
-          </h1>
-          <p
-            className="max-w-3xl text-text-secondary"
-            style={{ fontSize: '14px', lineHeight: 1.55 }}
-          >
-            Real React mounts of every Provedo surface. Every interactive element responds to hover
-            / focus / press without remount. Use the global theme toggle in the header to flip dark
-            mode in place.
-          </p>
-        </section>
-
-        {/* Skip-link anchors — Foundation / Primitives / Charts live INSIDE
-            `<StagedSections>` (a client wrapper); the wrapper subscribes to
-            the global theme written by `ShowcaseHeader` on `<html data-theme>`
-            and forwards the derived variant to every section so the page
-            stays visually coherent across theme toggles (no light-island bug).
-            Round-2 a11y F-2 anchor ids (SC 2.4.1 Bypass Blocks) live on
-            wrapper divs inside `StagedSections`. */}
-        <StagedSections />
-
-        {/* Iconography + theme/motion sections live OUTSIDE stages — they're
-            development utilities, not part of the visual canon. */}
-        <section className="space-y-12 pt-8">
-          <IconographySection />
-          <DisclaimerSection />
-          <ThemeSection />
-        </section>
-
-        <footer className="border-t border-border-subtle pt-8 pb-4">
-          <p
-            className="font-mono uppercase"
-            style={{
-              fontSize: '10px',
-              letterSpacing: '0.18em',
-              color: 'var(--text-3)',
-            }}
-          >
-            Generated from <code>@investment-tracker/design-tokens</code> ·{' '}
+            Generated from `_styles/lime-cabin.css` (route-local) ·{' '}
             <code>brand.productName = &quot;{brand.productName}&quot;</code>
           </p>
         </footer>

@@ -1,48 +1,57 @@
-import { RegulatoryDisclaimer } from '@investment-tracker/ui';
-import { Section, SubBlock } from '../_components/Section';
+import { Lock } from 'lucide-react';
+import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 
 /**
- * §Disclaimer — TD-100 RegulatoryDisclaimer compact + verbose.
+ * §Disclaimer — Lane-A regulatory disclosure on a D1 surface.
  *
- * The compact variant is mounted as a sticky-footer in `(app)/layout.tsx`
- * across all 7 chart-bearing app routes — that mount is unaffected by the
- * showcase. This section displays both render variants inline so designers
- * + content reviewers can verify the legal-floor copy without leaving the
- * showcase.
+ * 16px Geist Sans floor (per spec §0). The persistent disclaimer chip
+ * pattern from fix #3 lives in the nav (left placement); the footer
+ * disclosure remains as defence in depth. This section documents both
+ * surfaces.
  */
+
+const FOOTER_COPY =
+  'Read-only access every time. Dividends dated. Drift noted. Nothing prescribed. Provedo surfaces patterns from your own brokerage data; it does not provide investment advice, recommendations, or trade routing. By using Provedo you confirm you understand this is a record-keeping and observation tool, not a financial-advisory service. Your data is read-only across every connected broker. Provedo cannot place trades, withdraw funds, or change your account settings.';
+
 export function DisclaimerSection() {
   return (
-    <Section
+    <DsSection
       id="disclaimer"
-      eyebrow="§ Disclaimer · TD-100"
-      title="Regulatory disclaimer — Lane A"
-      description="Both render variants of <RegulatoryDisclaimer>. Compact mounts in every (app) route footer; verbose mounts only on /legal/disclaimer. Copy is locked — never paraphrase inline."
+      eyebrow="14 · Disclaimer"
+      title="Lane-A regulatory disclosure"
+      lede="Disclosure copy renders at 16px Geist Sans floor (per spec §0). The persistent chip in the nav and the footer strip together carry the «not advice» stance — defence in depth."
     >
-      <SubBlock title="Compact (footer mount)" meta="2-line summary">
-        <div
-          className="rounded-[14px]"
+      <DsRow label="PERSISTENT DISCLAIMER CHIP (NAV — FIX #3)">
+        <span className="d1-disclaimer-chip">
+          <span className="d1-disclaimer-chip__icon" aria-hidden>
+            <Lock size={14} />
+          </span>
+          <span>Read-only · No advice</span>
+        </span>
+        <p
           style={{
-            background: 'var(--card)',
-            boxShadow: 'var(--shadow-soft)',
-            padding: '14px 18px',
+            margin: '12px 0 0',
+            fontFamily: 'var(--d1-font-mono)',
+            fontSize: 11,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            color: 'var(--d1-text-muted)',
           }}
         >
-          <RegulatoryDisclaimer variant="compact" lang="en" />
-        </div>
-      </SubBlock>
+          Left placement, between brand monogram and first nav pill — anchors «read-only» as a
+          product property, not a footer afterthought.
+        </p>
+      </DsRow>
 
-      <SubBlock title="Verbose (full disclaimer page)" meta="7-paragraph floor">
-        <div
-          className="rounded-[14px]"
-          style={{
-            background: 'var(--card)',
-            boxShadow: 'var(--shadow-soft)',
-            padding: '24px 28px',
-          }}
-        >
-          <RegulatoryDisclaimer variant="verbose" lang="en" />
-        </div>
-      </SubBlock>
-    </Section>
+      <DsRow label="FOOTER STRIP (LANE-A 16PX FLOOR)">
+        <p className="d1-disclosure">{FOOTER_COPY}</p>
+      </DsRow>
+
+      <DsCallout heading="Defence in depth">
+        Two regulatory surfaces — the nav chip is always-on chrome; the footer strip is the
+        long-form. Together they carry the Lane-A commitment: Provedo is a record-keeping and
+        observation tool, not a financial-advisory service.
+      </DsCallout>
+    </DsSection>
   );
 }

@@ -1,225 +1,156 @@
-'use client';
-
-import { ArrowRight } from 'lucide-react';
-import type { ReactNode } from 'react';
-import { DsRow, DsSection } from '../_components/SectionHead';
+import { ArrowRight, Lock } from 'lucide-react';
+import { DsRow, DsSection } from '../_components/DsSection';
 
 /**
- * §Primitives — Design System v2 Phase 2.
+ * §Primitives — every button / chip / pill in D1, every state.
  *
- * Per `docs/design/PROVEDO_DESIGN_SYSTEM_v2.md` §7 (component primitives) and
- * §8 (state matrix). Two groups render here:
- *
- *   1. Button — three variants (primary / secondary / ghost) × five states
- *      (default / hover / focus / active / disabled). Pinned states use
- *      class modifiers (`is-hover`, `is-active`, `is-disabled`); the
- *      "default" cell additionally exposes the real CSS pseudo-classes so
- *      reviewers can hover/focus/click and feel the gesture.
- *
- *   2. Input — text input × five states + a marketing variant (`v2-input--candy`)
- *      that survives sitting on a candy field. Per §7.2 last line.
- *
- * Card variants live in the `<CardsSection>` (cards.tsx) per Phase 2 split.
- * Form-level patterns (label + helper + error) live in the `<FormsSection>`.
- *
- * State variants are real CSS pseudo-class hooks — no JS-driven simulation —
- * so keyboard-only review surfaces every state honestly.
+ * Hover, focus, active, disabled. The only state we cannot demonstrate
+ * statically is `:focus-visible` — keyboard-tab into the surface to see
+ * the 2px lime ring with 2px offset.
  */
 
-export interface PrimitivesSectionProps {
-  variant: 'light' | 'dark';
+interface StateColumnProps {
+  label: string;
+  children: React.ReactNode;
 }
 
-type ButtonVariantKey = 'primary' | 'secondary' | 'ghost';
-
-type StateKey = 'default' | 'hover' | 'focus' | 'active' | 'disabled';
-
-const BUTTON_VARIANTS: Array<{ key: ButtonVariantKey; label: string; meta: string }> = [
-  { key: 'primary', label: 'Primary', meta: 'signal-orange · 5/5 ink shadow' },
-  { key: 'secondary', label: 'Secondary', meta: 'ink outline · 4/4 ink shadow' },
-  { key: 'ghost', label: 'Ghost', meta: 'paper register · no shadow' },
-];
-
-const STATES: Array<{ key: StateKey; label: string }> = [
-  { key: 'default', label: 'Default' },
-  { key: 'hover', label: 'Hover' },
-  { key: 'focus', label: 'Focus' },
-  { key: 'active', label: 'Active' },
-  { key: 'disabled', label: 'Disabled' },
-];
-
-export function PrimitivesSection({ variant }: PrimitivesSectionProps) {
+function StateColumn({ label, children }: StateColumnProps) {
   return (
-    <>
-      <DsSection
-        title="Button"
-        meta={
-          variant === 'light' ? 'primary · secondary · ghost · 5 states' : '3 variants × 5 states'
-        }
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <p
+        style={{
+          margin: 0,
+          fontFamily: 'var(--d1-font-mono)',
+          fontSize: 11,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: 'var(--d1-text-muted)',
+        }}
       >
-        {BUTTON_VARIANTS.map((btnVariant) => (
-          <DsRow key={btnVariant.key} label={`${btnVariant.label} — ${btnVariant.meta}`}>
-            <div className="v2-state-grid">
-              {STATES.map((state) => (
-                <StateCell key={`${btnVariant.key}-${state.key}`} label={state.label}>
-                  <V2Button variant={btnVariant.key} state={state.key}>
-                    {btnVariant.key === 'primary' ? (
-                      <>
-                        Get started
-                        <ArrowRight size={16} aria-hidden />
-                      </>
-                    ) : btnVariant.key === 'secondary' ? (
-                      'Watch demo'
-                    ) : (
-                      'Skip for now'
-                    )}
-                  </V2Button>
-                </StateCell>
-              ))}
-            </div>
-          </DsRow>
-        ))}
-      </DsSection>
-
-      <DsSection
-        title="Input"
-        meta={variant === 'light' ? 'paper inset · candy variant' : 'two registers · 5 states'}
-      >
-        <DsRow label="Paper register — text input">
-          <div className="v2-state-grid">
-            {STATES.map((state) => (
-              <StateCell key={`input-${state.key}`} label={state.label}>
-                <V2Input
-                  state={state.key}
-                  ariaLabel={`Email — ${state.label.toLowerCase()} state`}
-                  placeholder="you@inbox.com"
-                  defaultValue={state.key === 'default' ? '' : 'ruslan@provedo.app'}
-                />
-              </StateCell>
-            ))}
-          </div>
-        </DsRow>
-        <DsRow label="Marketing variant — heavier ink border for candy fields">
-          <div className="v2-candy-field" data-surface="candy">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 360 }}>
-              <label
-                className="v2-field__label"
-                htmlFor="ds-v2-candy-email"
-                style={{ color: 'var(--text-on-candy, #1C1B26)' }}
-              >
-                Email — early access
-              </label>
-              <input
-                id="ds-v2-candy-email"
-                type="email"
-                className="v2-input v2-input--candy"
-                placeholder="you@inbox.com"
-                aria-describedby="ds-v2-candy-email-help"
-              />
-              <p
-                id="ds-v2-candy-email-help"
-                className="v2-field__helper"
-                style={{ color: 'var(--text-on-candy, #1C1B26)' }}
-              >
-                Drop your address — we&apos;ll only ping for early access.
-              </p>
-            </div>
-          </div>
-        </DsRow>
-      </DsSection>
-    </>
-  );
-}
-
-/**
- * StateCell — wraps one cell of the state-matrix grid with an uppercase
- * mono label so reviewers can identify each pinned state at a glance.
- */
-function StateCell({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="v2-state-cell">
-      <p className="v2-state-cell__label">{label}</p>
-      <div className="v2-state-cell__stage">{children}</div>
+        {label}
+      </p>
+      <div>{children}</div>
     </div>
   );
 }
 
-/**
- * V2Button — primitives showcase button with both pseudo-class behaviour
- * (default cell only — reviewers can interact with it) and pinned-state
- * class modifiers for the matrix cells. Disabled cell sets the native
- * `disabled` attribute so screen readers announce correctly.
- */
-function V2Button({
-  variant,
-  state,
-  children,
-}: {
-  variant: ButtonVariantKey;
-  state: StateKey;
-  children: ReactNode;
-}) {
-  const variantClass = variant === 'primary' ? '' : ` v2-btn--${variant}`;
-  const stateClass = state === 'default' ? '' : ` is-${state}`;
-  const isDisabled = state === 'disabled';
-  return (
-    <button
-      type="button"
-      className={`v2-btn${variantClass}${stateClass}`}
-      disabled={isDisabled}
-      aria-disabled={isDisabled || undefined}
-      aria-label={`${variant} button — ${state}`}
-      // Pinned focus uses the same outline as :focus-visible so reviewers
-      // see the focus ring without needing keyboard navigation. The
-      // default cell still earns its ring through the real pseudo-class.
-      style={
-        state === 'focus'
-          ? {
-              outline: '3px solid var(--color-signal-orange, #F08A3C)',
-              outlineOffset: '2px',
-            }
-          : undefined
-      }
-    >
-      {children}
-    </button>
-  );
-}
+const stateGridStyle: React.CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+  gap: 16,
+  alignItems: 'start',
+};
 
-/**
- * V2Input — paper-register text input. Pinned states match the live
- * pseudo-classes (`:hover` `:focus-visible`) on the default cell.
- */
-function V2Input({
-  state,
-  ariaLabel,
-  placeholder,
-  defaultValue,
-}: {
-  state: StateKey;
-  ariaLabel: string;
-  placeholder: string;
-  defaultValue?: string;
-}) {
-  const stateClass = state === 'default' ? '' : ` is-${state}`;
-  const isDisabled = state === 'disabled';
+export function PrimitivesSection() {
   return (
-    <input
-      type="email"
-      aria-label={ariaLabel}
-      className={`v2-input${stateClass}`}
-      placeholder={placeholder}
-      defaultValue={defaultValue}
-      disabled={isDisabled}
-      style={
-        state === 'focus'
-          ? {
-              outline: '3px solid var(--color-signal-orange, #F08A3C)',
-              outlineOffset: '2px',
-              borderColor: 'var(--color-signal-orange, #F08A3C)',
-            }
-          : undefined
-      }
-    />
+    <DsSection
+      id="primitives"
+      eyebrow="05 · Primitives"
+      title="Buttons, chips, segmented controls"
+      lede="Every actionable primitive in D1, all states. Hover by mouse, tab in for the focus ring (2px lime, 2px offset), press to see active."
+    >
+      <DsRow label="LIME CTA — DEFAULT · DISABLED · GHOST">
+        <div style={stateGridStyle}>
+          <StateColumn label="Default">
+            <button type="button" className="d1-cta">
+              See the dashboard
+              <ArrowRight size={14} />
+            </button>
+          </StateColumn>
+          <StateColumn label="Disabled">
+            <button type="button" className="d1-cta" disabled>
+              See the dashboard
+              <ArrowRight size={14} />
+            </button>
+          </StateColumn>
+          <StateColumn label="Ghost variant">
+            <button type="button" className="d1-cta d1-cta--ghost">
+              Read the disclosure
+            </button>
+          </StateColumn>
+        </div>
+      </DsRow>
+
+      <DsRow label="NAV PILL — DEFAULT · ACTIVE · DISABLED">
+        <div style={stateGridStyle}>
+          <StateColumn label="Default">
+            <button type="button" className="d1-pill">
+              Insights
+            </button>
+          </StateColumn>
+          <StateColumn label="Active">
+            <button type="button" className="d1-pill d1-pill--active">
+              Overview
+            </button>
+          </StateColumn>
+          <StateColumn label="Disabled">
+            <button type="button" className="d1-pill" disabled>
+              Reports
+            </button>
+          </StateColumn>
+        </div>
+      </DsRow>
+
+      <DsRow label="FILTER CHIP — DEFAULT · ACTIVE · ICON · EXPORT · DISABLED">
+        <div style={stateGridStyle}>
+          <StateColumn label="Default">
+            <button type="button" className="d1-chip">
+              Holdings
+            </button>
+          </StateColumn>
+          <StateColumn label="Active (post-fix #5 muted)">
+            <button type="button" className="d1-chip d1-chip--active">
+              All
+            </button>
+          </StateColumn>
+          <StateColumn label="Icon-only">
+            <button type="button" className="d1-chip d1-chip--icon" aria-label="More filters">
+              <ArrowRight size={14} />
+            </button>
+          </StateColumn>
+          <StateColumn label="Export variant">
+            <button type="button" className="d1-chip d1-chip--export">
+              Export CSV
+            </button>
+          </StateColumn>
+          <StateColumn label="Disabled">
+            <button type="button" className="d1-chip" disabled>
+              Income
+            </button>
+          </StateColumn>
+        </div>
+      </DsRow>
+
+      <DsRow label="SEGMENTED CONTROL — IDLE · ACTIVE">
+        <div className="d1-segmented" role="tablist" aria-label="Period">
+          <button
+            type="button"
+            className="d1-segmented__btn d1-segmented__btn--active"
+            role="tab"
+            aria-selected="true"
+          >
+            Monthly
+          </button>
+          <button type="button" className="d1-segmented__btn" role="tab" aria-selected="false">
+            Annually
+          </button>
+          <button type="button" className="d1-segmented__btn" role="tab" aria-selected="false">
+            All time
+          </button>
+        </div>
+      </DsRow>
+
+      <DsRow label="PREMIUM CHIP + DISCLAIMER CHIP">
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span className="d1-chip-premium">Premium</span>
+          <span className="d1-disclaimer-chip">
+            <span className="d1-disclaimer-chip__icon" aria-hidden>
+              <Lock size={14} />
+            </span>
+            <span>Read-only · No advice</span>
+          </span>
+        </div>
+      </DsRow>
+    </DsSection>
   );
 }

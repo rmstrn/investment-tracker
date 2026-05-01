@@ -1,138 +1,184 @@
-'use client';
-
-import { AlertTriangle } from 'lucide-react';
-import { DsRow, DsSection } from '../_components/SectionHead';
+import { Search } from 'lucide-react';
+import { DsRow, DsSection } from '../_components/DsSection';
 
 /**
- * §Forms — Design System v2 Phase 2.
+ * §Forms — D1-native form primitives on dark surfaces.
  *
- * Per `docs/design/PROVEDO_DESIGN_SYSTEM_v2.md` §7.2 (Input) + §8 (Input row).
- * Where `<PrimitivesSection>` shows the bare Input × five-state matrix in
- * isolation, this section binds inputs to real form-level patterns:
- *
- *   - Label + helper text (default)
- *   - Label + error helper (`aria-invalid` + signal-orange-deep border)
- *   - Compound form layout (two side-by-side fields with shared submit)
- *
- * Both registers are illustrated:
- *   - Paper register — single-column form with inset wells.
- *   - Marketing register — heavier ink-bordered email capture inside a
- *     `[data-surface="candy"]` block so reviewers see how the input
- *     survives sitting on a candy field.
- *
- * No JS state — natural HTML semantics + `aria-invalid` so the error state
- * is announced by screen readers without script.
+ * `bg.surface` fill, hairline border, text-primary on dark, lime focus
+ * ring (`outline` + 3px box-shadow halo at 18% opacity). Filter input
+ * styled per the chat-search pattern so the AI surface filter inherits.
  */
 
-export interface FormsSectionProps {
-  variant: 'light' | 'dark';
-}
-
-export function FormsSection({ variant }: FormsSectionProps) {
-  const ids = {
-    name: `ds-v2-name-${variant}`,
-    portfolio: `ds-v2-portfolio-${variant}`,
-    email: `ds-v2-candy-email-form-${variant}`,
-  };
+export function FormsSection() {
   return (
     <DsSection
-      title="Form fields"
-      meta={variant === 'light' ? 'paper · candy · label-helper-error' : 'two registers'}
+      id="forms"
+      eyebrow="07 · Forms"
+      title="Inputs, selects, checkboxes, toggles"
+      lede="Forms run on the lifted surface (`--d1-bg-surface`), wrap with the hairline border, and announce focus via a 2px lime ring + soft halo. The filter affordance pattern (right) is the only «pill input» — used inside Record Rail entries as the AI search box."
     >
-      <DsRow label="Paper register — label + helper + error">
-        <div
-          // Two-column layout so the default-state field and the error
-          // field share visual weight, making the difference between them
-          // legible at a glance.
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: 18,
-            maxWidth: 720,
-          }}
-        >
-          <div className="v2-field">
-            <label className="v2-field__label" htmlFor={ids.name}>
-              Display name
-            </label>
-            <input
-              id={ids.name}
-              type="text"
-              className="v2-input"
-              placeholder="Ruslan Maistrenko"
-              defaultValue="Ruslan Maistrenko"
-              aria-describedby={`${ids.name}-help`}
+      <DsRow label="TEXT INPUT · SELECT · TEXTAREA">
+        <div className="ds-grid-2">
+          <label className="d1-field">
+            <span className="d1-field__label">Holding</span>
+            <input className="d1-input" type="text" placeholder="MSFT, AAPL, IBKR…" />
+            <span className="d1-field__hint">Matches ticker, name, or ISIN.</span>
+          </label>
+
+          <label className="d1-field">
+            <span className="d1-field__label">Broker</span>
+            <select className="d1-select" defaultValue="ibkr">
+              <option value="ibkr">Interactive Brokers</option>
+              <option value="schwab">Schwab</option>
+              <option value="fidelity">Fidelity</option>
+            </select>
+            <span className="d1-field__hint">Read-only sync. No trade routing.</span>
+          </label>
+
+          <label className="d1-field">
+            <span className="d1-field__label">Note for the record</span>
+            <textarea
+              className="d1-textarea"
+              placeholder="Why did you set the 9% drift cap on Mar 11?"
             />
-            <p id={`${ids.name}-help`} className="v2-field__helper">
-              Visible to anyone you share a portfolio link with.
-            </p>
-          </div>
-          <div className="v2-field">
-            <label className="v2-field__label" htmlFor={ids.portfolio}>
-              Portfolio name
-            </label>
-            <input
-              id={ids.portfolio}
-              type="text"
-              className="v2-input"
-              placeholder="My main portfolio"
-              defaultValue="Main"
-              aria-invalid="true"
-              aria-describedby={`${ids.portfolio}-help`}
-            />
+            <span className="d1-field__hint">
+              Notes anchor the rule. Provedo cites them when the rule fires.
+            </span>
+          </label>
+
+          <label className="d1-field">
+            <span className="d1-field__label">Disabled input</span>
+            <input className="d1-input" type="text" defaultValue="Sync paused" disabled />
+            <span className="d1-field__hint">Reconnect the broker to resume input.</span>
+          </label>
+        </div>
+      </DsRow>
+
+      <DsRow label="CHECKBOX · RADIO · TOGGLE">
+        <div className="ds-grid-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             <p
-              id={`${ids.portfolio}-help`}
-              className="v2-field__helper v2-field__helper--error"
-              style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              style={{
+                margin: 0,
+                fontFamily: 'var(--d1-font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'var(--d1-text-muted)',
+              }}
             >
-              <AlertTriangle size={12} aria-hidden />
-              Already exists. Pick a different name.
+              Checkbox
             </p>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-check" type="checkbox" defaultChecked />
+              Send weekly digest
+            </label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-check" type="checkbox" />
+              Notify on drift
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p
+              style={{
+                margin: 0,
+                fontFamily: 'var(--d1-font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'var(--d1-text-muted)',
+              }}
+            >
+              Radio (period)
+            </p>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-radio" type="radio" name="period" defaultChecked />
+              Monthly
+            </label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-radio" type="radio" name="period" />
+              Annually
+            </label>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <p
+              style={{
+                margin: 0,
+                fontFamily: 'var(--d1-font-mono)',
+                fontSize: 11,
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+                color: 'var(--d1-text-muted)',
+              }}
+            >
+              Toggle
+            </p>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-toggle" type="checkbox" defaultChecked />
+              Persistent disclaimer in nav
+            </label>
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 10,
+                fontSize: 14,
+                color: 'var(--d1-text-primary)',
+              }}
+            >
+              <input className="d1-toggle" type="checkbox" />
+              EU AI Act badge (deferred)
+            </label>
           </div>
         </div>
       </DsRow>
 
-      <DsRow label="Marketing register — early-access capture on candy field">
-        <div className="v2-candy-field" data-surface="candy">
-          <form
-            // Pure visual — no submit handler in the showcase. Marketing
-            // landing wires this to a real CTA later.
-            onSubmit={(e) => e.preventDefault()}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 12,
-              maxWidth: 420,
-            }}
-          >
-            <label
-              className="v2-field__label"
-              htmlFor={ids.email}
-              style={{ color: 'var(--text-on-candy, #1C1B26)' }}
-            >
-              Get early access
-            </label>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <input
-                id={ids.email}
-                type="email"
-                className="v2-input v2-input--candy"
-                placeholder="you@inbox.com"
-                aria-describedby={`${ids.email}-help`}
-                style={{ flex: '1 1 220px', minWidth: 220 }}
-              />
-              <button type="submit" className="v2-btn">
-                Notify me
-              </button>
-            </div>
-            <p
-              id={`${ids.email}-help`}
-              className="v2-field__helper"
-              style={{ color: 'var(--text-on-candy, #1C1B26)', opacity: 0.85 }}
-            >
-              We&apos;ll only ping for early access. No newsletter spam.
-            </p>
-          </form>
+      <DsRow label="FILTER PILL INPUT (AI SURFACE PATTERN)">
+        <div className="d1-chat__search" style={{ maxWidth: 320 }}>
+          <Search size={14} aria-hidden />
+          <span>Filter — not compose</span>
         </div>
       </DsRow>
     </DsSection>

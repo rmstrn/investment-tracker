@@ -1,298 +1,155 @@
-'use client';
-
-import { DsRow, DsSection } from '../_components/SectionHead';
-import { SignatureHero } from '../_components/SignatureHero';
+import { DsRow, DsSection } from '../_components/DsSection';
 
 /**
- * §Foundation — color, typography, depth.
+ * §Foundation — D1 «Lime Cabin» palette swatches.
  *
- * Stage-aware section: receives `variant` ("light" | "dark") so each stage
- * can render its own swatches with the corresponding hex labels even though
- * tokens flip via the parent `data-theme` attribute scope.
- *
- * Real Provedo product copy used in typography demos (no Lorem). Mirrors
- * the static reference (apps/web/public/design-system.html §Typography).
+ * Every D1 token from KICKOFF §0 rendered as a swatch with hex + OKLCH +
+ * role + WCAG ratio (for ink-bearing tokens). The Record Rail token
+ * family lives in `theme.tsx` (numeric tokens, not colour). Notification
+ * amber appears once — the only chip surface allowed to render the
+ * 100% saturated amber per `edge-cases.md` §3.
  */
 
-interface ColorRow {
-  readonly label: string;
-  readonly tokens: readonly {
-    readonly name: string;
-    readonly light: string;
-    readonly dark: string;
-  }[];
-}
-
-const COLOR_ROWS: readonly ColorRow[] = [
-  {
-    label: 'Marketing register · candy + signal',
-    tokens: [
-      { name: 'Candy-pink', light: '#F7A1C9', dark: '#F7A1C9' },
-      { name: 'Candy-mustard', light: '#F4CC4A', dark: '#F4CC4A' },
-      { name: 'Signal-orange', light: '#F08A3C', dark: '#F08A3C' },
-      { name: 'Signal-orange-deep', light: '#C4622E', dark: '#C4622E' },
-    ],
-  },
-  {
-    label: 'App register · paper + ink',
-    tokens: [
-      { name: 'Paper-cream', light: '#F6F1E8', dark: '#F6F1E8' },
-      { name: 'Ink-deep', light: '#1C1B26', dark: '#1C1B26' },
-      { name: 'Text-on-candy', light: '#1C1B26', dark: '#1C1B26' },
-      { name: 'Cream-on-ink', light: '#F4F0E4', dark: '#F4F0E4' },
-    ],
-  },
-];
-
-interface CandySurface {
+interface PaletteToken {
   readonly name: string;
-  readonly bg: string;
-  readonly tokenName: string;
-  readonly noteOnDark?: boolean;
+  readonly hex: string;
+  readonly oklch: string;
+  readonly role: string;
+  readonly contrast?: string;
+  readonly inkFg?: boolean;
 }
 
-const CANDY_SURFACES: readonly CandySurface[] = [
-  { name: 'Candy-pink hero', bg: '#F7A1C9', tokenName: 'semantic-candy.bg-pink' },
-  { name: 'Candy-mustard', bg: '#F4CC4A', tokenName: 'semantic-candy.bg-mustard' },
-  { name: 'Paper-cream', bg: '#F6F1E8', tokenName: 'paper.cream' },
-  { name: 'Ink-deep', bg: '#1C1B26', tokenName: 'ink-v2.deep', noteOnDark: true },
+const PALETTE: ReadonlyArray<PaletteToken> = [
+  {
+    name: '--d1-bg-page',
+    hex: '#141416',
+    oklch: 'oklch(15% 0.005 286)',
+    role: 'Outer canvas — the deepest charcoal, frames every surface',
+  },
+  {
+    name: '--d1-bg-surface',
+    hex: '#1F2024',
+    oklch: 'oklch(22% 0.006 286)',
+    role: 'Lifted surface card — the dashboard’s «paper»',
+  },
+  {
+    name: '--d1-bg-card',
+    hex: '#26272C',
+    oklch: 'oklch(26% 0.006 286)',
+    role: 'KPI / chart / panel default fill',
+  },
+  {
+    name: '--d1-bg-card-soft',
+    hex: '#2C2D33',
+    oklch: 'oklch(28% 0.007 286)',
+    role: 'Hover-lifted card surface; tooltip + active chip fill',
+  },
+  {
+    name: '--d1-accent-lime',
+    hex: '#D6F26B',
+    oklch: 'oklch(92% 0.18 122)',
+    role: 'The «look here» signal — KPI fill, nav active, Record Rail tick',
+    contrast: 'Ink on lime: 15.4:1 (AAA)',
+    inkFg: true,
+  },
+  {
+    name: '--d1-accent-purple',
+    hex: '#7B5CFF',
+    oklch: 'oklch(58% 0.21 286)',
+    role: 'Avatar, Premium chip, «something is happening»',
+    contrast: 'Primary on purple: 4.9:1 (AA)',
+  },
+  {
+    name: '--d1-notification-amber',
+    hex: '#F4C257',
+    oklch: 'oklch(83% 0.16 80)',
+    role: 'Sync-error chip ONLY (per edge-cases §3)',
+    contrast: 'Ink on amber: 12.3:1 (AAA)',
+    inkFg: true,
+  },
+  {
+    name: '--d1-text-primary',
+    hex: '#FAFAFA',
+    oklch: 'oklch(98% 0.001 286)',
+    role: 'Display + KPI numerals + body copy on dark',
+    contrast: 'On bg-card: 15.9:1 (AAA)',
+  },
+  {
+    name: '--d1-text-muted',
+    hex: '#9C9DA3',
+    oklch: 'oklch(66% 0.006 286)',
+    role: 'Secondary copy, eyebrows, axis labels, datestamps',
+    contrast: 'On bg-card: 5.9:1 (AAA on body 16px+)',
+  },
+  {
+    name: '--d1-text-ink',
+    hex: '#0E0F11',
+    oklch: 'oklch(11% 0.005 286)',
+    role: 'Numerals on lime + ink CTA label',
+    contrast: 'On accent-lime: 15.4:1 (AAA)',
+    inkFg: true,
+  },
+  {
+    name: '--d1-border-hairline',
+    hex: 'rgba(255,255,255,0.06)',
+    oklch: 'white @ 6%',
+    role: 'Inner divisions; chart gridlines; KPI/card outlines',
+  },
+  {
+    name: '--d1-border-strong',
+    hex: 'rgba(255,255,255,0.12)',
+    oklch: 'white @ 12%',
+    role: 'Stronger outlines; checkbox/radio idle borders',
+  },
 ];
 
-interface TypeRow {
-  readonly label: string;
-  readonly sample: React.ReactNode;
-  readonly style: React.CSSProperties;
-}
-
-const TYPE_ROWS_V2: readonly TypeRow[] = [
-  {
-    label: 'Bagel display-xxl',
-    sample: 'Real money. Real read.',
-    style: {
-      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
-      fontSize: 'clamp(64px, 8vw, 112px)',
-      lineHeight: 0.95,
-      letterSpacing: '-0.02em',
-      color: 'var(--ink, #1A1A1A)',
-    },
-  },
-  {
-    label: 'Bagel display-xl',
-    sample: 'Stop the scroll.',
-    style: {
-      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
-      fontSize: 'clamp(48px, 5vw, 80px)',
-      lineHeight: 1.0,
-      letterSpacing: '-0.015em',
-      color: 'var(--ink, #1A1A1A)',
-    },
-  },
-  {
-    label: 'Bagel display-md / 36',
-    sample: 'Marketing card hero',
-    style: {
-      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
-      fontSize: '36px',
-      lineHeight: 1.1,
-      letterSpacing: '-0.005em',
-      color: 'var(--ink, #1A1A1A)',
-    },
-  },
-  {
-    label: 'Manrope heading-xl / 28',
-    sample: 'Your portfolio, finally legible.',
-    style: {
-      fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
-      fontSize: '28px',
-      fontWeight: 700,
-      lineHeight: 1.2,
-      letterSpacing: '-0.01em',
-    },
-  },
-  {
-    label: 'Manrope body-lg / 16',
-    sample: 'Calm rooms make better decisions. We help with the room.',
-    style: {
-      fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
-      fontSize: '16px',
-      fontWeight: 400,
-      lineHeight: 1.55,
-    },
-  },
-  {
-    label: 'Caveat accent / 32',
-    sample: '← this number is real',
-    style: {
-      fontFamily: 'var(--font-caveat), cursive',
-      fontSize: '32px',
-      fontWeight: 500,
-      transform: 'rotate(-2deg)',
-      display: 'inline-block',
-      color: 'var(--ink, #1A1A1A)',
-    },
-  },
-];
-
-interface ShadowToken {
-  readonly name: string;
-  readonly varName: string;
-  readonly meta: string;
-  readonly insetBg?: boolean;
-  readonly primary?: boolean;
-}
-
-const SHADOW_TOKENS: readonly ShadowToken[] = [
-  { name: 'soft', varName: '--shadow-soft', meta: 'paper lift' },
-  { name: 'card', varName: '--shadow-card', meta: 'tactile double' },
-  { name: 'lift', varName: '--shadow-lift', meta: 'hero / focused' },
-  { name: 'toast', varName: '--shadow-toast', meta: 'floating' },
-  { name: 'input inset', varName: '--shadow-input-inset', meta: 'depressed', insetBg: true },
-  { name: 'inset light', varName: '--shadow-inset-light', meta: 'chip', insetBg: true },
-];
-
-export interface FoundationSectionProps {
-  variant: 'light' | 'dark';
-}
-
-export function FoundationSection({ variant }: FoundationSectionProps) {
+export function FoundationSection() {
   return (
-    <>
-      <DsSection
-        title="Color tokens"
-        meta={variant === 'light' ? 'Updated' : 'neutral dark · luma-bumped'}
-      >
-        {COLOR_ROWS.map((row) => (
-          <DsRow key={row.label} label={row.label}>
-            <div className="showcase-swatches">
-              {row.tokens.map((tok) => {
-                const value = variant === 'light' ? tok.light : tok.dark;
-                return (
-                  <div key={tok.name} className="showcase-swatch">
-                    <span
-                      aria-hidden
-                      className="showcase-swatch__chip"
-                      style={{ background: value }}
-                    />
-                    <div>
-                      <p className="showcase-swatch__name">{tok.name}</p>
-                      <p className="showcase-swatch__hex">{value}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </DsRow>
-        ))}
-      </DsSection>
-
-      <DsSection title="Typography" meta="Bagel Fat One · Manrope · Caveat (OFL · Latin)">
-        {TYPE_ROWS_V2.map((row) => (
-          <div key={row.label} className="showcase-type-row">
-            <span className="showcase-type-row__label">{row.label}</span>
-            <span className="showcase-type-row__sample" style={row.style}>
-              {row.sample}
-            </span>
-          </div>
-        ))}
-      </DsSection>
-
-      <DsSection title="Surface system" meta="route-scoped · candy = marketing · paper = app">
-        <DsRow label="Four named surfaces · no mixing">
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: 12,
-            }}
-          >
-            {CANDY_SURFACES.map((surf) => (
+    <DsSection
+      id="foundation"
+      eyebrow="01 · Foundation"
+      title="Palette"
+      lede="Every D1 token rendered with hex, OKLCH, semantic role, and (where the token bears ink) the measured WCAG contrast. The page itself is the proof — no token is documented that isn’t in use on this surface."
+    >
+      <DsRow label="8 INK & ACCENT ROLES + 2 BORDERS + 1 NOTIFICATION AMBER">
+        <div className="ds-swatch-grid">
+          {PALETTE.map((t) => (
+            <div key={t.name} className="ds-swatch">
               <div
-                key={surf.name}
+                className="ds-swatch__chip"
                 style={{
-                  background: surf.bg,
-                  border: '1px solid rgba(28,27,38,0.14)',
-                  borderRadius: 16,
-                  padding: '32px 20px',
-                  minHeight: 140,
+                  background: t.hex,
+                  color: t.inkFg ? '#0E0F11' : '#FAFAFA',
                   display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  color: surf.noteOnDark ? '#F4F0E4' : '#1C1B26',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'var(--d1-font-mono)',
+                  fontSize: 12,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
                 }}
               >
-                <p
-                  style={{
-                    fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
-                    fontSize: '15px',
-                    fontWeight: 600,
-                    lineHeight: 1.25,
-                  }}
-                >
-                  {surf.name}
-                </p>
-                <p
-                  style={{
-                    fontFamily: 'var(--font-mono)',
-                    fontSize: '10px',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    opacity: 0.78,
-                  }}
-                >
-                  {surf.tokenName}
-                </p>
+                Aa 1234
               </div>
-            ))}
-          </div>
-        </DsRow>
-      </DsSection>
-
-      <DsSection title="Shadow / elevation" meta="tactile preserved">
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-            gap: 16,
-          }}
-        >
-          {SHADOW_TOKENS.map((tok) => (
-            <div
-              key={tok.name}
-              style={{
-                background: tok.primary
-                  ? 'var(--ink)'
-                  : tok.insetBg
-                    ? 'var(--inset)'
-                    : 'var(--card)',
-                color: tok.primary ? 'var(--card)' : 'var(--ink)',
-                borderRadius: 14,
-                padding: 22,
-                textAlign: 'center',
-                boxShadow: `var(${tok.varName})`,
-              }}
-            >
-              <p style={{ fontSize: '12px', fontWeight: 500, marginBottom: 4 }}>{tok.name}</p>
-              <p
-                style={{
-                  fontFamily: 'var(--font-mono)',
-                  fontSize: '9px',
-                  letterSpacing: '0.1em',
-                  color: tok.primary ? 'rgba(255,255,255,0.55)' : 'var(--text-3)',
-                }}
-              >
-                {tok.meta}
-              </p>
+              <p className="ds-swatch__name">{t.name}</p>
+              <dl className="ds-swatch__meta">
+                <dt>HEX</dt>
+                <dd>{t.hex}</dd>
+                <dt>OKLCH</dt>
+                <dd>{t.oklch}</dd>
+                <dt>ROLE</dt>
+                <dd style={{ color: 'var(--d1-text-muted)' }}>{t.role}</dd>
+                {t.contrast ? (
+                  <>
+                    <dt>WCAG</dt>
+                    <dd>{t.contrast}</dd>
+                  </>
+                ) : null}
+              </dl>
             </div>
           ))}
         </div>
-      </DsSection>
-
-      <DsSection
-        title="Paper register hero · app interior"
-        meta="calmer counterpart to candy marketing"
-      >
-        <SignatureHero />
-      </DsSection>
-    </>
+      </DsRow>
+    </DsSection>
   );
 }

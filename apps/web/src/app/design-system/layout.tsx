@@ -1,23 +1,28 @@
 import { ToastProvider } from '@investment-tracker/ui';
 import type { ReactNode } from 'react';
-import { bagelFatOne, caveat, manrope } from './_fonts';
+import { geistD1, geistMonoD1 } from './_fonts';
+import './_styles/lime-cabin.css';
 
 /**
- * Layout for `/design-system` — wraps the showcase in a ToastProvider so that
- * primitive demos (Toast, copy-to-clipboard chips, etc.) can fire visible
- * notifications without depending on any other app shell.
+ * `/design-system` layout — wraps the route in `data-theme="lime-cabin"`
+ * (route-local opt-in per KICKOFF §2.2 fallback) and exposes the Geist
+ * font CSS variables via the wrapper class.
  *
- * v2: attaches Bagel Fat One / Manrope / Caveat CSS-var classes to a wrapping
- * `<div>`. `next/font/google` handles preloading + font-display: swap. We
- * cannot mutate `<html>` from a nested layout, so the wrapper carries the
- * `font-*-variable` class names and any descendant can read them via the
- * `--font-bagel` / `--font-manrope` / `--font-caveat` custom properties.
+ * The `data-theme="lime-cabin"` attribute scopes every D1 token + every
+ * `.d1-*` selector in `_styles/lime-cabin.css`. Other routes that do
+ * not opt in keep their existing `light` / `dark` surface — this layout
+ * does NOT touch `<html>` and does NOT modify `globals.css`.
+ *
+ * `ToastProvider` stays so any toast-driven primitive demo can fire
+ * notifications without depending on the app shell.
  */
 export default function DesignSystemLayout({ children }: { children: ReactNode }) {
-  const fontVars = `${bagelFatOne.variable} ${manrope.variable} ${caveat.variable}`;
+  const fontVars = `${geistD1.variable} ${geistMonoD1.variable}`;
   return (
     <ToastProvider>
-      <div className={fontVars}>{children}</div>
+      <div data-theme="lime-cabin" className={fontVars}>
+        {children}
+      </div>
     </ToastProvider>
   );
 }

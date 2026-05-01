@@ -1,91 +1,159 @@
-'use client';
-
 import {
   ArrowRight,
+  ArrowUpRight,
   Bell,
-  CheckCircle2,
-  ChevronRight,
-  Info,
-  Landmark,
+  ChartBar,
+  ChartPie,
+  CircleAlert,
+  Eye,
+  Filter,
+  Lock,
   type LucideIcon,
-  Pencil,
+  MoreHorizontal,
   Plus,
+  RefreshCw,
   Search,
   Settings,
-  ShieldCheck,
-  Sparkles,
-  Trash2,
-  TrendingDown,
-  TrendingUp,
   TriangleAlert,
   Wallet,
-  X,
 } from 'lucide-react';
-import { Section } from '../_components/Section';
+import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 
 /**
- * §Iconography — Lucide initial 18-icon set per docs/design/ICONOGRAPHY.md.
+ * §Iconography — Lucide on D1 surfaces.
  *
- * 6×3 grid; each tile shows an icon + its lucide name in mono. Hover lifts
- * the tile and shifts the stroke from `text-3` to `ink`. Click is wired but
- * the showcase intentionally does not surface a clipboard toast yet —
- * promotes when a CopyToClipboardChip primitive lands.
+ * `currentColor` everywhere. Default rendering is `--d1-text-muted`,
+ * hover lifts to `--d1-text-primary`, lime surfaces (CTA, lime KPI)
+ * carry `--d1-text-ink`. 24×24 viewBox; consume at 14-20px.
+ *
+ * The 18-icon initial set per `docs/design/ICONOGRAPHY.md` is what the
+ * D1 app reaches for. Add via PR — never hand-roll a glyph that has a
+ * Lucide equivalent.
  */
 
-interface IconEntry {
+interface IconRow {
   readonly Icon: LucideIcon;
   readonly name: string;
   readonly use: string;
 }
 
-const ICONS: readonly IconEntry[] = [
-  { Icon: CheckCircle2, name: 'check-circle-2', use: 'Success' },
-  { Icon: TriangleAlert, name: 'triangle-alert', use: 'Warning' },
-  { Icon: Info, name: 'info', use: 'Info' },
-  { Icon: X, name: 'x', use: 'Close' },
-  { Icon: Search, name: 'search', use: 'Search' },
-  { Icon: Bell, name: 'bell', use: 'Notify' },
-  { Icon: Settings, name: 'settings', use: 'Settings' },
-  { Icon: ArrowRight, name: 'arrow-right', use: 'CTA' },
-  { Icon: ChevronRight, name: 'chevron-right', use: 'Crumb' },
-  { Icon: Plus, name: 'plus', use: 'Add' },
-  { Icon: Pencil, name: 'pencil', use: 'Edit' },
-  { Icon: Trash2, name: 'trash-2', use: 'Delete' },
-  { Icon: TrendingUp, name: 'trending-up', use: '+ Δ' },
-  { Icon: TrendingDown, name: 'trending-down', use: '− Δ' },
-  { Icon: Wallet, name: 'wallet', use: 'Accounts' },
-  { Icon: Landmark, name: 'landmark', use: 'Broker' },
-  { Icon: Sparkles, name: 'sparkles', use: 'Citation' },
-  { Icon: ShieldCheck, name: 'shield-check', use: 'Trust' },
+const ICONS: ReadonlyArray<IconRow> = [
+  { Icon: Wallet, name: 'wallet', use: 'KPI · portfolio value' },
+  { Icon: ChartBar, name: 'chart-bar', use: 'KPI · drift; allocation panel' },
+  { Icon: ChartPie, name: 'chart-pie', use: 'KPI · sector allocation; donut chart' },
+  { Icon: ArrowUpRight, name: 'arrow-up-right', use: 'KPI ext-link affordance' },
+  { Icon: ArrowRight, name: 'arrow-right', use: 'CTA leading; segmented next' },
+  { Icon: Plus, name: 'plus', use: 'Connect a broker; add account' },
+  { Icon: Lock, name: 'lock', use: 'Disclaimer chip · «Read-only»' },
+  { Icon: Eye, name: 'eye', use: 'Toggle visibility; alt for «Read-only»' },
+  { Icon: Bell, name: 'bell', use: 'Notification icon-pill (badge separately)' },
+  { Icon: Settings, name: 'settings', use: 'Account settings nav icon-pill' },
+  { Icon: Search, name: 'search', use: 'Filter affordance — never composer' },
+  { Icon: Filter, name: 'filter', use: 'Filter chip alt; advanced filter sheet' },
+  { Icon: MoreHorizontal, name: 'more-horizontal', use: 'Overflow nav; row actions' },
+  { Icon: RefreshCw, name: 'refresh-cw', use: 'Stale data retry; broker resync' },
+  { Icon: TriangleAlert, name: 'triangle-alert', use: 'Sync-error chip (amber surface only)' },
+  { Icon: CircleAlert, name: 'circle-alert', use: 'Inline form error icon' },
 ];
+
+interface IconCellProps {
+  Icon: LucideIcon;
+  bg?: string;
+  color?: string;
+  size?: number;
+}
+
+function IconCell({
+  Icon,
+  bg = 'var(--d1-bg-card)',
+  color = 'var(--d1-text-muted)',
+  size = 18,
+}: IconCellProps) {
+  return (
+    <span
+      style={{
+        background: bg,
+        color,
+        borderRadius: 12,
+        width: 44,
+        height: 44,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Icon size={size} aria-hidden />
+    </span>
+  );
+}
 
 export function IconographySection() {
   return (
-    <Section
+    <DsSection
       id="iconography"
-      eyebrow="§ Iconography"
-      title="Lucide — initial 18-icon set"
-      description="SVG, currentColor, 24×24 viewBox. Hover a tile to see the stroke darken from text-3 → ink. Use cases per docs/design/ICONOGRAPHY.md."
+      eyebrow="09 · Iconography"
+      title="Lucide, currentColor, three colour roles"
+      lede="Every glyph is Lucide via SVG with `currentColor`. Default is text-muted; the parent surface decides the colour. Lime CTAs carry text-ink; nav idle carries text-muted; nav hover lifts to text-primary."
     >
-      <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(132px, 1fr))' }}
-      >
-        {ICONS.map(({ Icon, name, use }) => (
-          <button
-            key={name}
-            type="button"
-            className="showcase-icon-tile"
-            aria-label={`${name} icon — used for ${use.toLowerCase()}`}
-          >
-            <Icon size={24} strokeWidth={1.75} aria-hidden />
-            <span className="showcase-icon-tile__label">{name}</span>
-            <span style={{ fontSize: '10px', color: 'var(--text-2)', letterSpacing: '0.02em' }}>
-              {use}
-            </span>
-          </button>
-        ))}
-      </div>
-    </Section>
+      <DsRow label="STARTER SET (18 ICONS)">
+        <div className="ds-grid-3">
+          {ICONS.map(({ Icon, name, use }) => (
+            <div
+              key={name}
+              style={{
+                background: 'var(--d1-bg-card)',
+                borderRadius: 16,
+                padding: 16,
+                display: 'flex',
+                gap: 12,
+                alignItems: 'center',
+                border: '1px solid var(--d1-border-hairline)',
+              }}
+            >
+              <IconCell Icon={Icon} />
+              <div>
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--d1-font-mono)',
+                    fontSize: 12,
+                    color: 'var(--d1-text-primary)',
+                  }}
+                >
+                  {name}
+                </p>
+                <p
+                  style={{
+                    margin: '2px 0 0',
+                    fontSize: 11,
+                    color: 'var(--d1-text-muted)',
+                  }}
+                >
+                  {use}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </DsRow>
+
+      <DsRow label="COLOUR ROLE — MUTED · PRIMARY · INK · AMBER">
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <IconCell Icon={ChartBar} />
+          <IconCell Icon={ChartBar} color="var(--d1-text-primary)" />
+          <IconCell Icon={ChartBar} bg="var(--d1-accent-lime)" color="var(--d1-text-ink)" />
+          <IconCell
+            Icon={TriangleAlert}
+            bg="var(--d1-notification-amber)"
+            color="var(--d1-text-ink)"
+          />
+        </div>
+      </DsRow>
+
+      <DsCallout heading="No emoji as icons">
+        Every glyph is Lucide via inline SVG. No emoji slips into the UI even for «celebratory»
+        states — the brand voice is on-the-record, not congratulatory.
+      </DsCallout>
+    </DsSection>
   );
 }

@@ -1,128 +1,97 @@
-'use client';
-
-import { DsRow, DsSection } from '../_components/SectionHead';
+import { ArrowUpRight, ChartBar, Plus, Wallet } from 'lucide-react';
+import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
+import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Cards — Design System v2 Phase 2.
+ * §Cards — KPI card variants.
  *
- * Per `docs/design/PROVEDO_DESIGN_SYSTEM_v2.md` §7.3 (Card — three variants).
- * The single Card primitive of v1 splits into three explicit, route-bound
- * surface variants:
+ * All variants share the 24px radius, 132/160px min-height, and the
+ * hover-lift (`translateY(-2px)` + 8px shadow). One lime fill at a time
+ * — by rule §7 of the D1 spec.
  *
- *   1. candy-bordered — paper-card bg + 2px ink border + hard 4/4 ink shadow.
- *      Lives on candy-pink or candy-mustard fields. Bagel display heading
- *      inside. Marketing-only.
- *
- *   2. paper-inset — paper-card bg + warm-soft shadow + Manrope only. Default
- *      app-interior surface (portfolio cards, charts, settings).
- *
- *   3. ink-ticker — ink-deep bg + mustard accent strip + tabular-num mono
- *      numerals. Highest-emphasis surface inside the app: live ticker,
- *      summary band, "watching" indicators.
- *
- * Each variant gets one feature card so reviewers can hover and feel the
- * gesture. The candy-bordered card sits inside a `[data-surface="candy"]`
- * field so it earns the candy-pink background that demonstrates how the
- * 2px ink border keeps it legible.
+ * Variants:
+ *  - default dark (Mono numeral on bg-card)
+ *  - lime-highlighted («look here», ink numerals on lime — fix #1 tone)
+ *  - error (post-fix-pass, edge-cases §3 amber hairline)
+ *  - empty (no lime fill; lime icon-chip; «connect a broker»)
  */
 
-export interface CardsSectionProps {
-  variant: 'light' | 'dark';
-}
-
-export function CardsSection({ variant }: CardsSectionProps) {
+export function CardsSection() {
   return (
     <DsSection
-      title="Card"
-      meta={
-        variant === 'light'
-          ? 'candy-bordered · paper-inset · ink-ticker'
-          : '3 variants × surface contracts'
-      }
+      id="cards"
+      eyebrow="06 · Cards"
+      title="KPI cards"
+      lede="The Provedo dashboard reads through the KPI band. One lime fill per view (the «look here» card), never two. The error and empty variants below are post-fix-pass additions for edge-cases §2 and §3."
     >
-      <DsRow label="candy-bordered — marketing on candy field (Bagel display + ink border)">
-        <div className="v2-candy-field" data-surface="candy">
-          <article className="v2-card v2-card--candy" aria-labelledby="ds-v2-candy-card-title">
-            <h4 id="ds-v2-candy-card-title" className="v2-card__display">
-              Notice what you&apos;d miss.
-            </h4>
-            <p className="v2-card__body">
-              Provedo surfaces patterns hidden across your brokers — concentration drift,
-              correlation creep, the position you forgot you doubled.
-            </p>
+      <DsRow label="DEFAULT · LIME · ERROR · EMPTY">
+        <RecordRail label="LEDGER" />
+        <div className="ds-grid-2">
+          {/* Default */}
+          <article className="d1-kpi d1-kpi--portfolio">
+            <header className="d1-kpi__head">
+              <span className="d1-kpi__icon-chip" aria-hidden>
+                <Wallet size={16} />
+              </span>
+              <p className="d1-kpi__label">Portfolio value</p>
+              <span className="d1-kpi__ext" aria-hidden>
+                <ArrowUpRight size={16} />
+              </span>
+            </header>
+            <p className="d1-kpi__num">$847,290</p>
+            <p className="d1-kpi__delta">+12.4% MTD · synced just now</p>
+          </article>
+
+          {/* Lime — drift framing post fix #1 */}
+          <article className="d1-kpi d1-kpi--lime">
+            <header className="d1-kpi__head">
+              <span className="d1-kpi__icon-chip" aria-hidden>
+                <ChartBar size={16} />
+              </span>
+              <p className="d1-kpi__label">Drift · MSFT</p>
+              <span className="d1-kpi__ext" aria-hidden>
+                <ArrowUpRight size={16} />
+              </span>
+            </header>
+            <p className="d1-kpi__num">12.0%</p>
+            <p className="d1-kpi__delta">vs your 9% cap, set Mar 11</p>
+          </article>
+
+          {/* Error — broker disconnected (edge-cases §3) */}
+          <article className="d1-kpi d1-kpi--error">
+            <header className="d1-kpi__head">
+              <span
+                className="d1-kpi__icon-chip"
+                aria-hidden
+                style={{ color: 'var(--d1-notification-amber)' }}
+              >
+                <ChartBar size={16} />
+              </span>
+              <p className="d1-kpi__label">MSFT · sync error</p>
+            </header>
+            <p className="d1-kpi__num">—</p>
+            <p className="d1-kpi__delta">Last successful sync: 2h ago. Retry to refresh.</p>
+          </article>
+
+          {/* Empty — connect a broker (edge-cases §2) */}
+          <article className="d1-kpi d1-kpi--empty">
+            <header className="d1-kpi__head">
+              <span className="d1-kpi__icon-chip" aria-hidden>
+                <Plus size={16} />
+              </span>
+              <p className="d1-kpi__label">Connect a broker</p>
+            </header>
+            <p className="d1-kpi__num">$0</p>
+            <p className="d1-kpi__delta">No accounts connected — IBKR / Schwab / Fidelity</p>
           </article>
         </div>
       </DsRow>
 
-      <DsRow label="paper-inset — app interior default (warm-soft shadow, Manrope only)">
-        <div
-          className="v2-card-pair"
-          // Constrain so cards don't stretch to the full page width — the
-          // hover gesture reads better at card-shaped proportions.
-          style={{ maxWidth: 720 }}
-        >
-          <article className="v2-card v2-card--paper" aria-labelledby="ds-v2-paper-card-1-title">
-            <h4 id="ds-v2-paper-card-1-title" className="v2-card__heading">
-              IBKR · LYNX
-            </h4>
-            <p
-              className="v2-card__heading"
-              style={{
-                fontFamily: 'var(--font-family-mono, ui-monospace, monospace)',
-                fontVariantNumeric: 'tabular-nums',
-                fontSize: 28,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              $184,210
-            </p>
-            <p className="v2-card__body">+2.4% week · 12 positions</p>
-          </article>
-          <article className="v2-card v2-card--paper" aria-labelledby="ds-v2-paper-card-2-title">
-            <h4 id="ds-v2-paper-card-2-title" className="v2-card__heading">
-              BINANCE
-            </h4>
-            <p
-              className="v2-card__heading"
-              style={{
-                fontFamily: 'var(--font-family-mono, ui-monospace, monospace)',
-                fontVariantNumeric: 'tabular-nums',
-                fontSize: 28,
-                letterSpacing: '-0.01em',
-              }}
-            >
-              $42,180
-            </p>
-            <p
-              className="v2-card__body"
-              style={{ color: 'var(--color-signal-orange-deep, #C76A22)', fontWeight: 600 }}
-            >
-              −5.8% week · 7 positions
-            </p>
-          </article>
-        </div>
-      </DsRow>
-
-      <DsRow label="ink-ticker — high-emphasis app strip (mustard accent, mono numerals)">
-        <article
-          className="v2-card v2-card--ink"
-          aria-labelledby="ds-v2-ink-card-title"
-          style={{ maxWidth: 480 }}
-        >
-          <p
-            id="ds-v2-ink-card-title"
-            className="v2-state-cell__label"
-            style={{ color: 'var(--color-candy-mustard, #F4CC4A)' }}
-          >
-            LIVE · NVDA
-          </p>
-          <p className="v2-card__numeral">$144.27</p>
-          <p className="v2-card__body">
-            Combined exposure across 3 of your accounts: 18% — concentrated more than it looks
-            broker-by-broker.
-          </p>
-        </article>
-      </DsRow>
+      <DsCallout heading="One lime card per view">
+        Lime fill is reserved for the most-actionable observation on a given page — drift &gt;
+        tax-lot &gt; dividend event &gt; portfolio value. If nothing is observable (empty
+        portfolio), the rule falls through and no card receives the lime fill.
+      </DsCallout>
     </DsSection>
   );
 }
