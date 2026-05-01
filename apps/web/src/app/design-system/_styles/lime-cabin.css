@@ -1315,6 +1315,39 @@
   --accent: var(--d1-accent-lime);
 }
 
+/* ── Area panel — lime-saturation gradient dialect ─────────────────────
+ *
+ * AreaVisx is authored against the candy register and binds BOTH the
+ * `<linearGradient>` stops AND the line stroke to `var(--cta-fill, ...)`.
+ * The base `.d1-chart-panel` wrapper points `--cta-fill` at purple, which
+ * is the right default for highlighted bars but wrong for the area
+ * dialect (KICKOFF §4.1 spec: area fill renders as a lime-saturation
+ * gradient — `--d1-accent-lime` at 18% opacity → 0% at axis — mirroring
+ * the heatmap's lime-saturation pattern as the D1 chart vocabulary for
+ * the «cumulative trend» story).
+ *
+ * `.d1-chart-panel--area-default` re-remaps the candy stroke + accent
+ * vars onto lime so the gradient stops, the line stroke, and the hover
+ * focus dot all resolve to lime by implementation. The line, gradient,
+ * and dot share colour by design — this is the D1 simplification («the
+ * area IS the data treatment»). On the dark canvas a lime-saturation
+ * gradient reads as the «look here» surface for cumulative trends.
+ *
+ * NOTE on gradient opacity: the AreaVisx component hard-codes
+ * `stopOpacity={0.3}` at the top stop (the spec calls for 18%); since
+ * the component is off-limits per dispatch rules and the 30% lime on
+ * D1's #141416 page surface still reads as a visible-but-restrained
+ * gradient (not a flood), this is accepted as a deviation.
+ *
+ * NOTE on stroke width: AreaVisx hard-codes `STROKE_WIDTH = 2.5`. The
+ * KICKOFF spec calls for 1.5px, but the component is off-limits.
+ * Accepted deviation (matches LineVisx engineer's note).
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--area-default {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {

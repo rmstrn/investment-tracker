@@ -1,5 +1,7 @@
 import type { SparklinePayload } from '@investment-tracker/shared-types/charts';
 import {
+  AREA_FIXTURE,
+  AreaVisx,
   BAR_DRIFT_FIXTURE,
   BAR_FIXTURE,
   BarVisx,
@@ -14,14 +16,14 @@ import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1 + 2 + 3 of 9: BarVisx + SparklineVisx +
- * LineVisx in D1 «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-4 of 9: BarVisx + SparklineVisx + LineVisx
+ * + AreaVisx in D1 «Lime Cabin» dialect.
  *
- * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx (Lines)
- * ship here with the D1 chart-panel chrome (rail-headed, NOT
- * title-headed). The remaining 6 chart kinds stay as `ChartSkeleton`
- * placeholder shells until subsequent restyle dispatches (Area → Donut
- * → Calendar → StackedBar → Treemap → Waterfall).
+ * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
+ * (Lines) ship here with the D1 chart-panel chrome (rail-headed, NOT
+ * title-headed). The remaining 5 chart kinds stay as `ChartSkeleton`
+ * placeholder shells until subsequent restyle dispatches (Donut →
+ * Calendar → StackedBar → Treemap → Waterfall).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -48,6 +50,18 @@ import { RecordRail } from '../_components/RecordRail';
  * on hover, and end-numeral accent dot share colour by implementation —
  * this is the D1 simplification («the line IS the data treatment»).
  *
+ * For AreaVisx specifically: the gradient `<stop>` colours, the line
+ * stroke, and the hover focus dot fill all bind to `var(--cta-fill, ...)`.
+ * The single dialect modifier `.d1-chart-panel--area-default` re-remaps
+ * the candy stroke + accent vars onto `--d1-accent-lime` so the linear
+ * gradient (top-stop @0.3 alpha → bottom-stop @0 alpha — component-
+ * hardcoded, accepted deviation from KICKOFF's 18% spec), the line
+ * stroke, and the hover dot all resolve to lime by implementation. The
+ * lime-saturation gradient mirrors the heatmap's lime-saturation pattern
+ * as the D1 chart vocabulary for cumulative trends — area IS the «look
+ * here» surface (KICKOFF §4.1 area anatomy + lime-discipline §7.5
+ * «data treatment» category).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
@@ -55,18 +69,17 @@ import { RecordRail } from '../_components/RecordRail';
  */
 
 /* ────────────────────────────────────────────────────────────────────── */
-/* Placeholder catalogue — kinds 3-9 stay as ChartSkeleton shells.        */
+/* Placeholder catalogue — kinds 5-9 stay as ChartSkeleton shells.        */
 /* ────────────────────────────────────────────────────────────────────── */
 
 interface ChartShellProps {
   rail: string;
   title: string;
   subtitle: string;
-  kind: 'area' | 'donut' | 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
+  kind: 'donut' | 'calendar' | 'stacked-bar' | 'treemap' | 'waterfall';
 }
 
 const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  { rail: 'CUMULATIVE P&L', title: 'AreaVisx', subtitle: 'Year to date', kind: 'area' },
   {
     rail: 'ALLOCATION BY SECTOR',
     title: 'DonutVisx',
@@ -171,7 +184,7 @@ export function ChartsSection() {
       id="charts"
       eyebrow="13 · Charts"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx ship in the D1 dialect (Phase 2 charts 1-3 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart. The other 6 kinds remain placeholder shells until subsequent restyle dispatches."
+      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx ship in the D1 dialect (Phase 2 charts 1-4 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern. The other 5 kinds remain placeholder shells until subsequent restyle dispatches."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -334,7 +347,33 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="6 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
+      <DsRow label="AREAVISX · CUMULATIVE P&amp;L (AREA_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--area-default"
+          aria-labelledby="chart-area-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="CUMULATIVE P&amp;L" />
+          </header>
+          <h3 id="chart-area-title" className="sr-only">
+            Cumulative P&amp;L · year to date
+          </h3>
+          <div className="d1-chart-panel__body">
+            <AreaVisx payload={AREA_FIXTURE} width={520} height={260} />
+            <p className="d1-chart-panel__caption">
+              The area fill renders as a lime-saturation gradient — `--d1-accent-lime` from 30%
+              opacity at the top to 0% at the axis (component-hardcoded, KICKOFF spec calls for 18%
+              top — accepted deviation). The gradient mirrors the heatmap's lime-saturation
+              vocabulary as the D1 chart treatment for cumulative trends. Line stroke and hover dot
+              share the lime colour by implementation — the area IS the data treatment. Y gridlines
+              at 0.08 stroke-opacity, axis labels in Geist Mono `--d1-text-muted`. Reduced motion
+              locks the entrance at full reveal.
+            </p>
+          </div>
+        </article>
+      </DsRow>
+
+      <DsRow label="5 PLACEHOLDER SHELLS · PHASE 2 IN PROGRESS">
         <div className="ds-grid-2">
           {PLACEHOLDER_SHELLS.map((s) => (
             <div
