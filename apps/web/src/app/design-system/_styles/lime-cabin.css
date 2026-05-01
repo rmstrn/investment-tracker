@@ -53,6 +53,22 @@
   --d1-rail-tick-w: 6px;
   --d1-rail-tick-h: 2px;
 
+  /* ── Chart-* aliases mapping to D1 tokens (Phase 2 — KICKOFF §4.2) ─── */
+  /* Indices 1-5: D1 has a 5-role native palette; 6-12 deferred (TD).   */
+  --chart-series-1: var(--d1-text-primary); /* primary series / hero line */
+  --chart-series-2: var(--d1-accent-lime); /* comparison line / highlight */
+  --chart-series-3: var(--d1-accent-purple); /* highlight bar / negative */
+  --chart-series-4: var(--d1-text-muted); /* secondary cohort / neutral */
+  --chart-series-5: var(--d1-bg-card-soft); /* tertiary / data-bar default */
+
+  --chart-grid: var(--d1-border-hairline);
+  --chart-grid-strong: var(--d1-border-strong);
+  --chart-axis-label: var(--d1-text-muted);
+  --chart-tooltip-bg: var(--d1-bg-card-soft);
+  --chart-tooltip-border: var(--d1-border-hairline);
+  --chart-tooltip-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --chart-cursor: var(--d1-text-muted);
+
   /* ── Type stacks ───────────────────────────────────────────────────── */
   --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont,
     'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
@@ -1101,6 +1117,107 @@
 
 [data-theme='lime-cabin'] .ds-grid-4 {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* ── Chart panel (rail-headed) ─────────────────────────────────────────
+ *
+ * `.d1-chart-panel` is the wrapper for every chart specimen on the
+ * design-system page (Phase 2). It supplies:
+ *
+ *   1. The visual chrome (background card, radius, padding).
+ *   2. A CSS-var override scope so the embedded `*Visx` components —
+ *      which were authored against the candy register's tokens
+ *      (`--cta-fill`, `--text-on-candy`, `--bg-cream`, `--card-highlight`,
+ *      `--accent-deep`, `--cta-shadow`) — borrow D1's lime/purple palette
+ *      without editing the chart components themselves. Mirrors the
+ *      `.d1-panel` override pattern in `style-d1/_lib/theme.css` §583.
+ *   3. Font-family overrides so the candy components stop reaching for
+ *      Manrope / Bagel and use Geist Sans + Geist Mono instead. D1 has
+ *      no display serif: Mono is the universal numeric face.
+ */
+[data-theme='lime-cabin'] .d1-chart-panel {
+  background: var(--d1-bg-card);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--d1-border-hairline);
+
+  /* Candy → D1 token remap (chart-internal vars only) */
+  --text-on-candy: var(--d1-text-primary);
+  --cta-fill: var(--d1-accent-purple);
+  --accent: var(--d1-accent-purple);
+  --accent-deep: var(--d1-accent-purple);
+  --cta-shadow: var(--d1-accent-purple);
+  --card: var(--d1-bg-card);
+  --card-highlight: rgba(255, 255, 255, 0.04);
+  --bg-cream: var(--d1-bg-card-soft);
+  --ink: var(--d1-text-primary);
+  --color-text-secondary: var(--d1-text-muted);
+  --color-text-primary: var(--d1-text-primary);
+  --color-text-tertiary: var(--d1-text-muted);
+  --text-3: var(--d1-text-muted);
+  /* D1 has no display serif — Mono is the universal numeric face. */
+  --font-family-display: var(--d1-font-mono);
+  --font-family-body: var(--d1-font-sans);
+  --font-family-mono: var(--d1-font-mono);
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel__head > .d1-rail {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel__caption {
+  font-family: var(--d1-font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+/* Hatched-bar legend swatch — paired with the inline SVG <pattern>
+ * defined in `_sections/charts.tsx` (NOT CSS background-image — Safari
+ * iOS perf trap, KICKOFF §4.1). */
+[data-theme='lime-cabin'] .d1-hatch-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme='lime-cabin'] .d1-hatch-legend__label {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  color: var(--d1-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme='lime-cabin'] .d1-hatch-legend__value {
+  margin-left: auto;
+  font-family: var(--d1-font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--d1-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 
 /* Reduced motion */
