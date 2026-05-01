@@ -1,0 +1,176 @@
+/*
+ * Style C — Pressroom Riso.
+ *
+ * Risograph broadside / zine direction. Three-color spot inks (red, blue,
+ * yellow) on uncoated cream. Inter (body, OFL) + Caveat (marginalia, OFL).
+ * Misregister halo — every ink-colored shape carries a 1-2px offset
+ * duplicate in a second ink at 30% opacity.
+ *
+ * Scope: route-local under `[data-style="c"]`. Wired by `layout.tsx`.
+ */
+
+[data-style="c"] {
+  --c-paper: #f4efe3;
+  --c-ink-black: #1a1814;
+  --c-ink-red: #e63946;
+  --c-ink-blue: #1f4fa8;
+  --c-ink-yellow: #f5c518;
+  --c-pencil: #5c534a;
+  --c-gain: #2e7d5b;
+  --c-loss: #b23a2e;
+  --c-registration: #0a0908;
+
+  --c-font-display: var(--font-c-display), Georgia, "Times New Roman", serif;
+  --c-font-body: var(--font-c-body), system-ui, -apple-system, sans-serif;
+  --c-font-pencil: var(--font-c-pencil), "Patrick Hand", cursive;
+
+  /* ── Chart override surface (consumed by BarVisx via inline vars) ──── */
+  --cta-fill: var(--c-ink-blue);
+  --cta-shadow: var(--c-ink-black);
+  --accent-deep: var(--c-ink-red);
+  --text-on-candy: var(--c-ink-black);
+  --bg-cream: var(--c-paper);
+  --card-highlight: rgba(255, 252, 245, 0.5);
+
+  background-color: var(--c-paper);
+  color: var(--c-ink-black);
+  font-family: var(--c-font-body);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+
+  /* page-grain: subtle SVG noise via repeating-radial gradient stand-in */
+  background-image: radial-gradient(rgba(26, 24, 20, 0.04) 1px, transparent 1px);
+  background-size: 3px 3px;
+}
+
+/* ── Misregister halo — the signature gesture ───────────────────────── */
+/*
+ * Implementation pattern: we use a single CSS pseudo-element
+ * (`::before`) to render an offset duplicate of the host's content. The
+ * pseudo inherits text content via `content: attr(data-text)` for
+ * headlines or is a sibling for SVG/graphic shapes. On hover the offset
+ * snaps to 0 with a 200ms ease, drifts back on mouse-out. Cheaper than
+ * an SVG `<filter>` displacement and CPU-free at rest.
+ */
+[data-style="c"] .c-halo {
+  position: relative;
+  display: inline-block;
+}
+
+[data-style="c"] .c-halo::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  color: var(--c-ink-red);
+  opacity: 0.3;
+  transform: translate(2px, 2px);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  /* sit BEHIND the real text */
+  z-index: -1;
+}
+
+[data-style="c"] .c-halo:hover::before {
+  transform: translate(0, 0);
+}
+
+[data-style="c"] .c-halo--blue::before {
+  color: var(--c-ink-blue);
+}
+
+[data-style="c"] .c-halo--yellow::before {
+  color: var(--c-ink-yellow);
+  opacity: 0.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style="c"] .c-halo::before {
+    transition: none;
+  }
+}
+
+/* ── Display ───────────────────────────────────────────────────────── */
+[data-style="c"] .c-display {
+  font-family: var(--c-font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--c-ink-black);
+  line-height: 0.96;
+}
+
+[data-style="c"] .c-eyebrow {
+  font-family: var(--c-font-body);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--c-ink-black);
+  font-weight: 600;
+}
+
+[data-style="c"] .c-pencil {
+  font-family: var(--c-font-pencil);
+  color: var(--c-pencil);
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: 0.01em;
+}
+
+[data-style="c"] .c-pencil--red {
+  color: var(--c-ink-red);
+}
+
+[data-style="c"] .c-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--c-ink-red);
+  color: var(--c-paper);
+  border: 0;
+  padding: 14px 20px;
+  border-radius: 2px;
+  font-family: var(--c-font-body);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-style="c"] .c-stamp::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--c-ink-blue);
+  border-radius: 2px;
+  opacity: 0.3;
+  transform: translate(2px, 2px);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: -1;
+}
+
+[data-style="c"] .c-stamp:hover::before {
+  transform: translate(0, 0);
+}
+
+[data-style="c"] .c-stamp:hover {
+  transform: rotate(-1deg);
+}
+
+/* ── Rule + masthead ───────────────────────────────────────────────── */
+[data-style="c"] .c-masthead-rule {
+  height: 3px;
+  background: var(--c-ink-black);
+  margin: 0;
+  border: 0;
+}
+
+[data-style="c"] .c-spot-stripe {
+  display: flex;
+  height: 14px;
+  width: 100%;
+}
+
+[data-style="c"] .c-spot-stripe > span {
+  flex: 1;
+}

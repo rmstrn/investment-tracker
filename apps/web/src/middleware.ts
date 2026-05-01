@@ -4,6 +4,9 @@ const isPublic = createRouteMatcher([
   '/',
   '/pricing',
   '/design(.*)',
+  // Visual-direction comparison routes (`/style-a`, `/style-b`, `/style-c`).
+  // PO-internal mini-landings; not indexed (route metadata sets robots:noindex).
+  '/style-(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',
   // Next.js 15 auto-generated icon route from `app/icon.tsx`. Must be
