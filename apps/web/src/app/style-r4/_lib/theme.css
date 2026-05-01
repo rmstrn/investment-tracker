@@ -1,0 +1,479 @@
+/*
+ * R4 — «The Archivist's Study» theme.
+ *
+ * Expressive / illustrated / character-led. Mailchimp 2014–2018 × Stripe Press
+ * × Maira Kalman. Illustration HOSTS, data is the VAULT. Spatial separation
+ * is the trust hinge: illustration NEVER touches the data layer.
+ *
+ * Palette (per R4-expressive-illustrated.md §3):
+ *   --r4-paper       #F4EFE6  page bg, warm cream (never pure white)
+ *   --r4-ink         #1B1A17  body, headlines, ALL numerals (AAA 14.8:1 on paper)
+ *   --r4-ink-soft    #4A463E  captions, metadata, sub-copy
+ *   --r4-vault       #F8F4EB  data-surface bg (15.3:1 ink-on-vault, AAA)
+ *   --r4-rule        #1B1A17  1px hairlines on data tables — the vault edge
+ *   --r4-rust        #B8442A  primary CTA fill, illustration spot-colour
+ *   --r4-moss        #3F6B47  positive deltas + accent illustration
+ *   --r4-cobalt      #2A3E78  links + accent illustration
+ *
+ * Scope: every selector under `[data-style="r4"]`. NO bare :root, NO bare
+ * body, NO bare element selectors. Tokens prefixed `--r4-*` so they cannot
+ * collide with style-r1|r2|r3 or any other comparison route.
+ *
+ * Wired by `./layout.tsx` via the route-local `<div data-style="r4">`.
+ */
+
+[data-style="r4"] {
+  /* ── Palette ───────────────────────────────────────────────────────── */
+  --r4-paper: #f4efe6;
+  --r4-ink: #1b1a17;
+  --r4-ink-soft: #4a463e;
+  --r4-vault: #f8f4eb;
+  --r4-rule: #1b1a17;
+  --r4-rust: #b8442a;
+  --r4-rust-deep: #95361f;
+  --r4-moss: #3f6b47;
+  --r4-cobalt: #2a3e78;
+
+  /* Semantic up/down — caret + ink weight, never colour-only */
+  --r4-up: var(--r4-moss);
+  --r4-down: var(--r4-rust);
+
+  /* ── Type stacks (variables → fallback chain) ──────────────────────── */
+  --r4-font-display: var(--font-r4-display), "Iowan Old Style", "Palatino Linotype",
+    Georgia, "Times New Roman", serif;
+  --r4-font-body: var(--font-r4-body), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  --r4-font-mono: var(--font-r4-mono), ui-monospace, SFMono-Regular, "Menlo",
+    "Consolas", monospace;
+  --r4-font-label: var(--font-r4-label), -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, sans-serif;
+
+  /* ── Page surface ──────────────────────────────────────────────────── */
+  background-color: var(--r4-paper);
+  color: var(--r4-ink);
+  font-family: var(--r4-font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Top nav strip ────────────────────────────────────────────────────── */
+[data-style="r4"] .r4-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px clamp(24px, 5vw, 56px);
+  border-bottom: 1px solid rgba(27, 26, 23, 0.08);
+}
+
+[data-style="r4"] .r4-nav__brand {
+  font-family: var(--r4-font-display);
+  font-variation-settings: "opsz" 144, "wght" 600;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+  color: var(--r4-ink);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+[data-style="r4"] .r4-nav__brand-mark {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background: var(--r4-rust);
+  border-radius: 2px;
+  transform: translateY(1px) rotate(45deg);
+}
+
+[data-style="r4"] .r4-nav__links {
+  display: flex;
+  gap: clamp(16px, 2.5vw, 32px);
+  align-items: center;
+  font-family: var(--r4-font-body);
+  font-size: 14px;
+  color: var(--r4-ink-soft);
+}
+
+[data-style="r4"] .r4-nav__link {
+  color: var(--r4-ink-soft);
+  text-decoration: none;
+  transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="r4"] .r4-nav__link:hover {
+  color: var(--r4-ink);
+}
+
+/* ── Headline ─────────────────────────────────────────────────────────── */
+[data-style="r4"] .r4-display {
+  font-family: var(--r4-font-display);
+  font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 100;
+  font-size: clamp(44px, 7.4vw, 84px);
+  line-height: 1.05;
+  letter-spacing: -0.018em;
+  color: var(--r4-ink);
+  margin: 0;
+  max-width: 14ch;
+  text-wrap: balance;
+}
+
+/* ── Sub paragraph ────────────────────────────────────────────────────── */
+[data-style="r4"] .r4-sub {
+  font-family: var(--r4-font-body);
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--r4-ink-soft);
+  max-width: 38ch;
+  margin: 28px 0 0;
+}
+
+/* ── Section label (Inter Tight, small caps, 13px) ────────────────────── */
+[data-style="r4"] .r4-label {
+  font-family: var(--r4-font-label);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--r4-ink-soft);
+}
+
+/* ── Money figure — AAA contrast, JetBrains Mono tabular ──────────────── */
+[data-style="r4"] .r4-figure {
+  font-family: var(--r4-font-mono);
+  color: var(--r4-ink);
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 1;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+[data-style="r4"] .r4-figure--display {
+  font-size: clamp(28px, 3.6vw, 38px);
+  line-height: 1.1;
+  font-weight: 600;
+}
+
+[data-style="r4"] .r4-figure--inline {
+  font-weight: 600;
+}
+
+[data-style="r4"] .r4-figure--total {
+  font-weight: 700;
+}
+
+/* Caret glyph — moss for gain, rust for loss. Numeral remains ink. */
+[data-style="r4"] .r4-caret {
+  font-family: var(--r4-font-mono);
+  font-weight: 700;
+  margin-right: 6px;
+  font-size: 0.85em;
+  display: inline-block;
+  transform: translateY(-1px);
+}
+
+[data-style="r4"] .r4-caret--up {
+  color: var(--r4-moss);
+}
+
+[data-style="r4"] .r4-caret--down {
+  color: var(--r4-rust);
+}
+
+/* ── CTA: rust filled, ink fg, 12px radius ────────────────────────────── */
+[data-style="r4"] .r4-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--r4-font-body);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--r4-ink);
+  background: var(--r4-rust);
+  border: 0;
+  border-radius: 12px;
+  padding: 14px 22px;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 1px 0 rgba(27, 26, 23, 0.12),
+    inset 0 -2px 0 rgba(149, 54, 31, 0.45);
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="r4"] .r4-cta__arrow {
+  display: inline-block;
+  transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="r4"] .r4-cta:hover,
+[data-style="r4"] .r4-cta:focus-visible {
+  background: var(--r4-rust-deep);
+  outline: 0;
+}
+
+[data-style="r4"] .r4-cta:hover .r4-cta__arrow,
+[data-style="r4"] .r4-cta:focus-visible .r4-cta__arrow {
+  transform: translateX(4px);
+}
+
+[data-style="r4"] .r4-cta:focus-visible {
+  outline: 2px solid var(--r4-cobalt);
+  outline-offset: 4px;
+}
+
+/* ── Secondary text-link (ink underline) ──────────────────────────────── */
+[data-style="r4"] .r4-sublink {
+  font-family: var(--r4-font-body);
+  font-size: 16px;
+  color: var(--r4-ink);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 5px;
+  text-decoration-color: var(--r4-ink);
+  transition: text-decoration-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-style="r4"] .r4-sublink:hover {
+  color: var(--r4-rust);
+  text-decoration-color: var(--r4-rust);
+}
+
+/* ── Vault card — the data quarantine ─────────────────────────────────── */
+[data-style="r4"] .r4-vault {
+  background: var(--r4-vault);
+  border: 1px solid var(--r4-rule);
+  border-radius: 4px;
+  padding: clamp(28px, 3.4vw, 44px);
+  /* No box-shadow — the hairline carries the edge. */
+}
+
+[data-style="r4"] .r4-vault__title {
+  font-family: var(--r4-font-display);
+  font-variation-settings: "opsz" 96, "wght" 500;
+  font-size: clamp(22px, 2.4vw, 28px);
+  line-height: 1.2;
+  letter-spacing: -0.012em;
+  color: var(--r4-ink);
+  margin: 0 0 6px;
+}
+
+[data-style="r4"] .r4-vault__caption {
+  font-family: var(--r4-font-display);
+  font-style: italic;
+  font-variation-settings: "opsz" 24, "wght" 400;
+  font-size: 16px;
+  color: var(--r4-ink-soft);
+  margin: 16px 0 0;
+}
+
+[data-style="r4"] .r4-ledger {
+  margin: 28px 0 0;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+[data-style="r4"] .r4-ledger__row > td {
+  padding: 14px 0;
+  border-top: 1px solid rgba(27, 26, 23, 0.18);
+  vertical-align: baseline;
+}
+
+[data-style="r4"] .r4-ledger__row:first-child > td {
+  border-top: 0;
+}
+
+[data-style="r4"] .r4-ledger__row--total > td {
+  border-top: 2px solid var(--r4-rule);
+  padding-top: 18px;
+}
+
+[data-style="r4"] .r4-ledger__label {
+  font-family: var(--r4-font-body);
+  font-size: 15px;
+  color: var(--r4-ink);
+  text-align: left;
+  width: 100%;
+}
+
+[data-style="r4"] .r4-ledger__share {
+  font-family: var(--r4-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 14px;
+  color: var(--r4-ink-soft);
+  min-width: 5ch;
+  text-align: right;
+  padding-left: clamp(16px, 3vw, 40px) !important;
+  white-space: nowrap;
+}
+
+[data-style="r4"] .r4-ledger__amount {
+  font-family: var(--r4-font-mono);
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 1;
+  font-size: 17px;
+  font-weight: 500;
+  color: var(--r4-ink);
+  min-width: 11ch;
+  text-align: right;
+  padding-left: clamp(16px, 3vw, 40px) !important;
+  white-space: nowrap;
+}
+
+[data-style="r4"] .r4-ledger__row--total .r4-ledger__amount,
+[data-style="r4"] .r4-ledger__row--total .r4-ledger__label {
+  font-weight: 700;
+}
+
+/* ── Vault chart frame ────────────────────────────────────────────────── */
+[data-style="r4"] .r4-vault__chart {
+  margin: 32px -8px 0;
+}
+
+/* ── AI surface — vault-coloured card with hairline + byline ──────────── */
+[data-style="r4"] .r4-ai {
+  background: var(--r4-vault);
+  border: 1px solid var(--r4-rule);
+  border-radius: 4px;
+  padding: clamp(24px, 2.6vw, 32px);
+}
+
+[data-style="r4"] .r4-ai__byline {
+  font-family: var(--r4-font-label);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--r4-ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+[data-style="r4"] .r4-ai__byline-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--r4-rust);
+  border-radius: 50%;
+}
+
+[data-style="r4"] .r4-ai__body {
+  font-family: var(--r4-font-body);
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--r4-ink);
+  margin: 14px 0 0;
+  max-width: 56ch;
+}
+
+[data-style="r4"] .r4-ai__footnote {
+  font-family: var(--r4-font-mono);
+  font-size: 11px;
+  vertical-align: super;
+  color: var(--r4-cobalt);
+  margin-left: 2px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+[data-style="r4"] .r4-ai__footnote:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Disclosure strip (Inter, NOT Fraunces) ──────────────────────────── */
+[data-style="r4"] .r4-disclosure {
+  font-family: var(--r4-font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--r4-ink);
+  max-width: 76ch;
+}
+
+[data-style="r4"] .r4-disclosure__marker {
+  font-family: var(--r4-font-mono);
+  font-size: 11px;
+  vertical-align: super;
+  color: var(--r4-cobalt);
+  margin-right: 4px;
+  font-weight: 600;
+}
+
+/* ── Illustration container ───────────────────────────────────────────── */
+[data-style="r4"] .r4-illus {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  aspect-ratio: 5 / 4;
+  display: block;
+  margin-left: auto;
+}
+
+[data-style="r4"] .r4-illus svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+
+/* Hand-drawn jitter on key strokes — feels less mechanical. */
+[data-style="r4"] .r4-illus .stroke-jitter {
+  stroke-dasharray: 200 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ── Footer micro-strip ───────────────────────────────────────────────── */
+[data-style="r4"] .r4-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: var(--r4-font-label);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--r4-ink-soft);
+  padding: 24px clamp(24px, 5vw, 56px);
+  border-top: 1px solid rgba(27, 26, 23, 0.12);
+  margin-top: clamp(40px, 6vw, 80px);
+}
+
+/* ── Responsive: collapse two-column hero, shrink illustration ────────── */
+@media (max-width: 960px) {
+  [data-style="r4"] .r4-hero-grid {
+    grid-template-columns: 1fr !important;
+  }
+  [data-style="r4"] .r4-illus {
+    max-width: 480px;
+    margin: 8px auto 0;
+  }
+}
+
+@media (max-width: 560px) {
+  [data-style="r4"] .r4-display {
+    font-size: 44px;
+  }
+  [data-style="r4"] .r4-illus {
+    max-width: 320px;
+  }
+  [data-style="r4"] .r4-ledger__share {
+    /* Drop the percent column on narrow screens — label + amount only. */
+    display: none;
+  }
+  [data-style="r4"] .r4-ledger__amount {
+    font-size: 16px;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="r4"] .r4-cta,
+  [data-style="r4"] .r4-cta__arrow,
+  [data-style="r4"] .r4-sublink,
+  [data-style="r4"] .r4-nav__link {
+    transition: none;
+  }
+}
