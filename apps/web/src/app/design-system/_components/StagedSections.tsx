@@ -6,6 +6,7 @@ import { ChartsSection } from '../_sections/charts';
 import { FormsSection } from '../_sections/forms';
 import { FoundationSection } from '../_sections/foundation';
 import { MarketingCandySection } from '../_sections/marketing-candy';
+import { MascotFinalsSection } from '../_sections/mascot-finals';
 import { PrimitivesSection } from '../_sections/primitives';
 import { StageFrame } from './StageFrame';
 
@@ -57,6 +58,9 @@ export function StagedSections() {
       </div>
       <div id="marketing-candy" className="showcase-anchor">
         <MarketingCandySection />
+      </div>
+      <div id="mascot-finals" className="showcase-anchor">
+        <MascotFinalsSection />
       </div>
     </StageFrame>
   );

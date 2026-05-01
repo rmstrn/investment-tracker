@@ -146,6 +146,11 @@ export {
   VERBOSE_COPY as REGULATORY_DISCLAIMER_VERBOSE_COPY,
 } from './components/regulatory-disclaimer';
 
+// Mascots — candy-register hero illustrations (variant comparison)
+export { MascotMachine, type MascotMachineProps } from './mascots/MascotMachine';
+export { MascotOrb, type MascotOrbProps } from './mascots/MascotOrb';
+export { MascotConsole, type MascotConsoleProps } from './mascots/MascotConsole';
+
 // Utilities
 export { cn } from './lib/cn';
 export { useReducedMotion } from './lib/useReducedMotion';
