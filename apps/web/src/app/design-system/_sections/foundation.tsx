@@ -47,6 +47,30 @@ const COLOR_ROWS: readonly ColorRow[] = [
       { name: 'Bronze', light: '#A04A3D', dark: '#BD6A55' },
     ],
   },
+  {
+    label: 'v2 — marketing register · candy + paper + signal',
+    tokens: [
+      { name: 'Candy-pink', light: '#F7A1C9', dark: '#F7A1C9' },
+      { name: 'Candy-mustard', light: '#F4CC4A', dark: '#F4CC4A' },
+      { name: 'Signal-orange', light: '#F08A3C', dark: '#F08A3C' },
+      { name: 'Ink-deep (v2)', light: '#1C1B26', dark: '#1C1B26' },
+      { name: 'Paper-cream', light: '#F6F1E8', dark: '#F6F1E8' },
+    ],
+  },
+];
+
+interface CandySurface {
+  readonly name: string;
+  readonly bg: string;
+  readonly tokenName: string;
+  readonly noteOnDark?: boolean;
+}
+
+const CANDY_SURFACES: readonly CandySurface[] = [
+  { name: 'Candy-pink hero', bg: '#F7A1C9', tokenName: 'semantic-candy.bg-pink' },
+  { name: 'Candy-mustard', bg: '#F4CC4A', tokenName: 'semantic-candy.bg-mustard' },
+  { name: 'Paper-cream', bg: '#F6F1E8', tokenName: 'paper.cream' },
+  { name: 'Ink-deep', bg: '#1C1B26', tokenName: 'ink-v2.deep', noteOnDark: true },
 ];
 
 interface TypeRow {
@@ -99,6 +123,75 @@ const TYPE_ROWS: readonly TypeRow[] = [
       letterSpacing: '0.16em',
       textTransform: 'uppercase' as const,
       color: 'var(--text-2)',
+    },
+  },
+];
+
+const TYPE_ROWS_V2: readonly TypeRow[] = [
+  {
+    label: 'Bagel display-xxl',
+    sample: 'Real money. Real read.',
+    style: {
+      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
+      fontSize: 'clamp(64px, 8vw, 112px)',
+      lineHeight: 0.95,
+      letterSpacing: '-0.02em',
+      color: 'var(--ink, #1A1A1A)',
+    },
+  },
+  {
+    label: 'Bagel display-xl',
+    sample: 'Stop the scroll.',
+    style: {
+      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
+      fontSize: 'clamp(48px, 5vw, 80px)',
+      lineHeight: 1.0,
+      letterSpacing: '-0.015em',
+      color: 'var(--ink, #1A1A1A)',
+    },
+  },
+  {
+    label: 'Bagel display-md / 36',
+    sample: 'Marketing card hero',
+    style: {
+      fontFamily: 'var(--font-bagel), system-ui, sans-serif',
+      fontSize: '36px',
+      lineHeight: 1.1,
+      letterSpacing: '-0.005em',
+      color: 'var(--ink, #1A1A1A)',
+    },
+  },
+  {
+    label: 'Manrope heading-xl / 28',
+    sample: 'Your portfolio, finally legible.',
+    style: {
+      fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
+      fontSize: '28px',
+      fontWeight: 700,
+      lineHeight: 1.2,
+      letterSpacing: '-0.01em',
+    },
+  },
+  {
+    label: 'Manrope body-lg / 16',
+    sample: 'Calm rooms make better decisions. We help with the room.',
+    style: {
+      fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
+      fontSize: '16px',
+      fontWeight: 400,
+      lineHeight: 1.55,
+    },
+  },
+  {
+    label: 'Caveat accent / 32',
+    sample: '← this number is real',
+    style: {
+      fontFamily: 'var(--font-caveat), cursive',
+      fontSize: '32px',
+      fontWeight: 500,
+      transform: 'rotate(-2deg)',
+      display: 'inline-block',
+      color: 'var(--ink, #1A1A1A)',
     },
   },
 ];
@@ -165,6 +258,71 @@ export function FoundationSection({ variant }: FoundationSectionProps) {
             </span>
           </div>
         ))}
+      </DsSection>
+
+      <DsSection
+        title="Typography v2 — display + accent"
+        meta="Bagel Fat One · Manrope · Caveat (OFL)"
+      >
+        {TYPE_ROWS_V2.map((row) => (
+          <div key={row.label} className="showcase-type-row">
+            <span className="showcase-type-row__label">{row.label}</span>
+            <span className="showcase-type-row__sample" style={row.style}>
+              {row.sample}
+            </span>
+          </div>
+        ))}
+      </DsSection>
+
+      <DsSection title="v2 — Surface system" meta="route-scoped · candy = marketing · paper = app">
+        <DsRow label="Four named surfaces · no mixing">
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: 12,
+            }}
+          >
+            {CANDY_SURFACES.map((surf) => (
+              <div
+                key={surf.name}
+                style={{
+                  background: surf.bg,
+                  border: '1px solid rgba(28,27,38,0.14)',
+                  borderRadius: 16,
+                  padding: '32px 20px',
+                  minHeight: 140,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  color: surf.noteOnDark ? '#F4F0E4' : '#1C1B26',
+                }}
+              >
+                <p
+                  style={{
+                    fontFamily: 'var(--font-manrope), ui-sans-serif, system-ui, sans-serif',
+                    fontSize: '15px',
+                    fontWeight: 600,
+                    lineHeight: 1.25,
+                  }}
+                >
+                  {surf.name}
+                </p>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '10px',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    opacity: 0.78,
+                  }}
+                >
+                  {surf.tokenName}
+                </p>
+              </div>
+            ))}
+          </div>
+        </DsRow>
       </DsSection>
 
       <DsSection title="Shadow / elevation" meta="tactile preserved">
