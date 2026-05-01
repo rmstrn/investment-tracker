@@ -1220,6 +1220,71 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/* ── Sparkline panel — per-trend lime/purple/muted endpoint semantics ──
+ *
+ * SparklineVisx is authored with a single `strokeVar` that drives BOTH
+ * the line stroke AND the endpoint dot fill, branching on `payload.trend`
+ * between `--cta-fill` (up/flat) and `--accent-deep`/`--cta-shadow`
+ * (down). The base `.d1-chart-panel` remaps these to purple, which is
+ * fine for bars but wrong for sparkline trend semantics (KICKOFF §4.1
+ * spec: lime up / purple down / muted flat).
+ *
+ * `.d1-chart-panel--spark-{trend}` modifiers re-remap the candy vars per
+ * trend so a single sparkline reads its trend through colour without
+ * editing SparklineVisx itself. The line + endpoint dot share colour by
+ * implementation; this is a deliberate D1 simplification of the spec
+ * («line is data, endpoint is semantic») — the trend colour IS the data
+ * treatment for a sparkline at this size, and at 200×64 the endpoint
+ * dot is tightly coupled to the line.
+ *
+ * `--text-on-candy` (white via base wrapper) drives the end-numeral fill
+ * + the 1.25px inner stroke ring around the endpoint dot — both readable
+ * on dark canvas, no override needed.
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--spark-up {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel--spark-down {
+  --accent-deep: var(--d1-accent-purple);
+  --cta-shadow: var(--d1-accent-purple);
+  --cta-fill: var(--d1-accent-purple);
+  --accent: var(--d1-accent-purple);
+}
+
+[data-theme='lime-cabin'] .d1-chart-panel--spark-flat {
+  --cta-fill: var(--d1-text-muted);
+  --accent: var(--d1-text-muted);
+}
+
+/* Multi-spark row — three sparklines side by side, equal columns. */
+[data-theme='lime-cabin'] .d1-spark-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+[data-theme='lime-cabin'] .d1-spark-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme='lime-cabin'] .d1-spark-cell__label {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+/* Sparkline panel uses a tighter min-height since the chart is small. */
+[data-theme='lime-cabin'] .d1-chart-panel__body--spark {
+  min-height: auto;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {
