@@ -916,3 +916,25 @@ That's a 3-PR sequence, not a 2-PR split. Building it correctly is a multi-hour 
 **Revisit.** After 2 weeks of V2 in production OR after first user research session that surfaces a clarity issue with any of the 5 calls. Otherwise locked.
 
 **Cross-references.** `docs/design/DONUT_ANATOMY_v2_draft.md` (the source of the 5 questions); `docs/design/DONUT_GRADIENT_v2_draft.md` (sibling spec); `docs/design/CHART_PALETTE_v2_draft.md` (museum-palette base); CONSTRAINTS.md Rule 3 (delegation rationale).
+
+## 2026-05-01 — Design System v2 supersedes v1; editorial-mh3 + jade + terra tokens removed
+
+Phase 3b of the DS v2 migration is destructive. The `editorial-mh3` primitive
+file (5-hue × 2-theme × 3-stop chart palette) has been deleted; its hex values
+are inlined directly into the `chart-categorical.{1..5}.{base,top,bottom}`
+semantic aliases (chart visual identity unchanged per spec §9). The `jade.*`
+and `terra.*` primitive blocks have been removed from `color.json`; consumer
+semantic entries (`accent`, `terra`, `state.positive/negative/warning`,
+`portfolio.gain/loss`, `border.focus`) re-point to `signal.orange` /
+`signal.orange-deep` per spec §11.1. `PROVEDO_DESIGN_SYSTEM_v1.md` carries a
+deprecation banner pointing at `PROVEDO_DESIGN_SYSTEM_v2.md`.
+
+CSS var names (`--accent`, `--terra`, `--accent-glow`, `--chart-categorical-N-{base,top,bottom}`)
+are preserved — only their underlying values flip. No consumer code touched
+except the obsolete `contrast.test.ts` (deleted; its premise was tied to the
+removed primitive file).
+
+Reason: complete the visual migration to the candy/paper dual register and
+shed dead token families before α cutover.
+
+Owner: frontend-engineer (Phase 3b).

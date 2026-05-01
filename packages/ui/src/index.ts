@@ -2,6 +2,13 @@
 export { Logo, type LogoProps, type LogoVariant } from './brand/Logo';
 export { ThemeToggle } from './brand/ThemeToggle';
 
+// Dividers — section transitions (marketing register)
+export {
+  PaintDrip,
+  type PaintDripProps,
+  type PaintDripVariant,
+} from './dividers/PaintDrip';
+
 // Primitives — generic
 export { AskAiButton, type AskAiButtonProps } from './primitives/AskAiButton';
 export { Avatar, type AvatarProps } from './primitives/Avatar';

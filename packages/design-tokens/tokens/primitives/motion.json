@@ -50,6 +50,11 @@
         "$value": "180ms",
         "$type": "duration",
         "$description": "DonutChart V2 entrance — per-slice fade-in duration. Combined with donut-sweep (600ms) and n=5 yields a 105 ms stagger."
+      },
+      "deliberate": {
+        "$value": "720ms",
+        "$type": "duration",
+        "$description": "Section-to-section paint-drip transition (candy register). Source: PROVEDO_DESIGN_SYSTEM_v2.md §5.2 dur-deliberate."
       }
     },
     "easing": {
@@ -77,6 +82,16 @@
         "$value": "cubic-bezier(0.16, 1, 0.3, 1)",
         "$type": "cubicBezier",
         "$description": "Alias for default — exponential-out reads as Mercury cadence."
+      },
+      "spring-soft": {
+        "$value": "cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "$type": "cubicBezier",
+        "$description": "Soft overshoot for candy CTA hover lift + paint-drip reveal. Source: PROVEDO_DESIGN_SYSTEM_v2.md §5.1 ease-spring-soft."
+      },
+      "press": {
+        "$value": "cubic-bezier(0.4, 0, 0.6, 1)",
+        "$type": "cubicBezier",
+        "$description": "Symmetric curve for button depress on click — net effect of a stamp. Source: PROVEDO_DESIGN_SYSTEM_v2.md §5.1 ease-press."
       }
     }
   }

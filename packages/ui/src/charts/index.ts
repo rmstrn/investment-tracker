@@ -105,6 +105,15 @@ export {
 } from './DonutChartV2';
 export { BarChartV2, type BarChartV2Props } from './BarChartV2';
 
+/**
+ * visx-powered candy POC exports (2026-05-01). NOT a third backend — these
+ * are imported directly by the `/design-system#charts-visx` showcase
+ * section so PO can compare visx-candy vs V2-primitives side-by-side
+ * before committing to a migration. Do not wire into the dispatcher.
+ */
+export { DonutVisx, type DonutVisxProps } from './visx/DonutVisx';
+export { BarVisx, type BarVisxProps } from './visx/BarVisx';
+
 export { LineChart, type LineChartProps } from './LineChart';
 export { AreaChart, type AreaChartProps } from './AreaChart';
 export { Calendar, type CalendarProps } from './Calendar';

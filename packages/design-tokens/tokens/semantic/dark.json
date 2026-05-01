@@ -31,27 +31,27 @@
       "$description": "Tertiary text — dark theme. Showcase --text-3."
     },
     "accent": {
-      "$value": "{color.jade.bright}",
+      "$value": "#F8A85C",
       "$type": "color",
-      "$description": "Forest-jade lighter — dark theme status accent. Showcase --accent."
+      "$description": "v2 — Lifted signal-orange for cocoa bg (8.9:1 AAA). Re-pointed from jade-bright in DS v2 Phase 3b. Per spec §2.4."
     },
     "accent-shadow": {
-      "$value": "rgba(92, 154, 133, 0.30)",
+      "$value": "rgba(248, 168, 92, 0.30)",
       "$type": "color",
-      "$description": "Drop-shadow tint for filled-accent — dark theme. Showcase --accent-shadow."
+      "$description": "v2 — Drop-shadow tint for filled-accent (dark, lifted-orange @ 30%)."
     },
     "accent-glow": {
-      "$value": "rgba(92, 154, 133, 0.22)",
+      "$value": "rgba(248, 168, 92, 0.22)",
       "$type": "color",
-      "$description": "Pulse halo + focus glow — dark theme. Showcase --accent-glow."
+      "$description": "v2 — Pulse halo + focus glow (dark, lifted-orange @ 22%)."
     },
     "terra": {
-      "$value": "{color.terra.bright}",
+      "$value": "{color.signal.orange-deep}",
       "$type": "color",
-      "$description": "Bronze red-shifted — drift / danger. Dark theme. Showcase --terra."
+      "$description": "v2 — Signal-orange-deep retained on dark for danger semantic. Re-pointed from terra-bright in DS v2 Phase 3b."
     },
     "terra-shadow": {
-      "$value": "rgba(189, 106, 85, 0.30)",
+      "$value": "rgba(199, 106, 34, 0.30)",
       "$type": "color"
     },
     "modal-overlay": {
@@ -101,21 +101,33 @@
       "default": { "$value": "rgba(255, 255, 255, 0.18)", "$type": "color" },
       "strong": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
       "divider": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
-      "focus": { "$value": "{color.jade.bright}", "$type": "color" }
+      "focus": { "$value": "#F8A85C", "$type": "color" }
     },
 
     "state": {
       "positive": {
-        "default": { "$value": "{color.jade.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(92, 154, 133, 0.16)", "$type": "color" }
+        "default": {
+          "$value": "#F8A85C",
+          "$type": "color",
+          "$description": "v2 — re-pointed from jade-bright (lifted signal-orange for cocoa bg)."
+        },
+        "subtle": { "$value": "rgba(248, 168, 92, 0.16)", "$type": "color" }
       },
       "negative": {
-        "default": { "$value": "{color.terra.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(189, 106, 85, 0.15)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra-bright in DS v2 Phase 3b."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.15)", "$type": "color" }
       },
       "warning": {
-        "default": { "$value": "{color.terra.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(189, 106, 85, 0.15)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — warning collapsed to signal-orange-deep."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.15)", "$type": "color" }
       },
       "info": {
         "default": { "$value": "{color.neutral.text-secondary-dark}", "$type": "color" },
@@ -125,12 +137,20 @@
 
     "portfolio": {
       "gain": {
-        "default": { "$value": "{color.jade.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(92, 154, 133, 0.14)", "$type": "color" }
+        "default": {
+          "$value": "#F8A85C",
+          "$type": "color",
+          "$description": "v2 — re-pointed from jade-bright (lifted signal-orange for cocoa bg)."
+        },
+        "subtle": { "$value": "rgba(248, 168, 92, 0.14)", "$type": "color" }
       },
       "loss": {
-        "default": { "$value": "{color.terra.bright}", "$type": "color" },
-        "subtle": { "$value": "rgba(189, 106, 85, 0.12)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra-bright in DS v2 Phase 3b."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.12)", "$type": "color" }
       },
       "neutral": {
         "default": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
@@ -256,40 +276,88 @@
     "chart-categorical": {
       "1": {
         "base": {
-          "$value": "{color.editorial-mh3.roasted-cocoa.dark.base}",
+          "$value": "#B5876D",
           "$type": "color",
-          "$description": "Categorical series 1 — roasted-cocoa base. Replaces museum-slate."
+          "$description": "Categorical series 1 — roasted-cocoa base (dark). WCAG 6.4:1 vs #0E0E12. Inlined from former editorial-mh3 primitive (deleted in DS v2 Phase 3b)."
         },
         "top": {
-          "$value": "{color.editorial-mh3.roasted-cocoa.dark.top}",
+          "$value": "#C99B82",
           "$type": "color",
-          "$description": "Categorical series 1 — roasted-cocoa top stop for H3 linear-gradient."
+          "$description": "Categorical series 1 — roasted-cocoa top stop (dark, ΔL +0.05 vs base)."
         },
         "bottom": {
-          "$value": "{color.editorial-mh3.roasted-cocoa.dark.bottom}",
+          "$value": "#A07358",
           "$type": "color",
-          "$description": "Categorical series 1 — roasted-cocoa bottom stop for H3 linear-gradient."
+          "$description": "Categorical series 1 — roasted-cocoa bottom stop (dark, ΔL −0.05 vs base)."
         }
       },
       "2": {
-        "base": { "$value": "{color.editorial-mh3.burnished-gold.dark.base}", "$type": "color" },
-        "top": { "$value": "{color.editorial-mh3.burnished-gold.dark.top}", "$type": "color" },
-        "bottom": { "$value": "{color.editorial-mh3.burnished-gold.dark.bottom}", "$type": "color" }
+        "base": {
+          "$value": "#E0BC6E",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold base (dark). WCAG 8.1:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#EBCB85",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#D5AD57",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold bottom stop (dark)."
+        }
       },
       "3": {
-        "base": { "$value": "{color.editorial-mh3.aubergine.dark.base}", "$type": "color" },
-        "top": { "$value": "{color.editorial-mh3.aubergine.dark.top}", "$type": "color" },
-        "bottom": { "$value": "{color.editorial-mh3.aubergine.dark.bottom}", "$type": "color" }
+        "base": {
+          "$value": "#9C7DA0",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine base (dark). WCAG 6.1:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#B093B4",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#88688C",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine bottom stop (dark)."
+        }
       },
       "4": {
-        "base": { "$value": "{color.editorial-mh3.wine.dark.base}", "$type": "color" },
-        "top": { "$value": "{color.editorial-mh3.wine.dark.top}", "$type": "color" },
-        "bottom": { "$value": "{color.editorial-mh3.wine.dark.bottom}", "$type": "color" }
+        "base": {
+          "$value": "#C88AA0",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine base (dark). WCAG 6.5:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#D6A1B4",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#BA738C",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine bottom stop (dark)."
+        }
       },
       "5": {
-        "base": { "$value": "{color.editorial-mh3.slate-blue.dark.base}", "$type": "color" },
-        "top": { "$value": "{color.editorial-mh3.slate-blue.dark.top}", "$type": "color" },
-        "bottom": { "$value": "{color.editorial-mh3.slate-blue.dark.bottom}", "$type": "color" }
+        "base": {
+          "$value": "#9CB0C8",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue base (dark). WCAG 6.6:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#B0C2D6",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#88A0BB",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue bottom stop (dark)."
+        }
       }
     },
 

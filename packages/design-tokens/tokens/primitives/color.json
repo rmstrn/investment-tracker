@@ -52,32 +52,6 @@
       }
     },
 
-    "jade": {
-      "deep": {
-        "$value": "#2D5F4E",
-        "$type": "color",
-        "$description": "Forest-jade for light theme — status / citation / verified accent. NOT teal, NOT money-green."
-      },
-      "bright": {
-        "$value": "#5C9A85",
-        "$type": "color",
-        "$description": "Forest-jade for dark theme — status accent. Lifted from #4A8775 (3.87:1 sub-AA on #26262E) to #5C9A85 (≈4.72:1 AA pass) per 2026-04-29 a11y audit. Keeps forest-jade spirit; survives OLED without glow-creep."
-      }
-    },
-
-    "terra": {
-      "deep": {
-        "$value": "#A04A3D",
-        "$type": "color",
-        "$description": "Bronze for light theme — drift / negative delta / danger / warning. Old leather, NOT orange."
-      },
-      "bright": {
-        "$value": "#BD6A55",
-        "$type": "color",
-        "$description": "Bronze for dark theme — drift / danger. Red-shifted bronze, NOT alarm-red."
-      }
-    },
-
     "neutral": {
       "text-secondary-light": {
         "$value": "#4D4D4D",
@@ -228,7 +202,7 @@
       "dark-1": {
         "$value": "#5C9A85",
         "$type": "color",
-        "$description": "Chart series 1 (jade bright) — dark theme. Lifted to match {color.jade.bright} (a11y bump 2026-04-29)."
+        "$description": "Chart series 1 — dark theme. Forest-jade-derived literal hex, lifted for a11y on cocoa bg (2026-04-29). Independent of v2 jade-deletion since this is a literal-hex chart token."
       },
       "dark-2": {
         "$value": "#BD6A55",

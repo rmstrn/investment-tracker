@@ -1,5 +1,8 @@
 # Provedo Design System v1.1
 
+> **DEPRECATED — Superseded by [`PROVEDO_DESIGN_SYSTEM_v2.md`](./PROVEDO_DESIGN_SYSTEM_v2.md) on 2026-05-01.**
+> v2 introduces the candy/paper dual-register model, deletes the editorial-mh3 / jade / terra token families, and re-points accent/danger to signal-orange / signal-orange-deep. This document is kept for historical reference only.
+
 **Date:** 2026-04-27 (amended same-day)
 **Version:** v1.1
 **Status:** LOCKED — showcase shipped to staging (`apps/web/public/design-system.html`); component port to `packages/ui` pending

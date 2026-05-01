@@ -968,3 +968,636 @@ html[data-reduced-motion="true"] .showcase *::after {
 .showcase-chart-card--full {
   grid-column: 1 / -1;
 }
+
+/* ============================================================
+   v2 Component primitives — Phase 2 of Design System v2.
+   Per PROVEDO_DESIGN_SYSTEM_v2.md §7 (component primitives) and
+   §8 (state matrix). Classes prefixed `v2-` to coexist alongside
+   the v1.1 `.showcase-*` classes during the transition.
+   ============================================================ */
+
+/* Stable cell wrapper used to render state-matrix grids — one cell
+   per [variant × state] combination. The state ribbon sits above
+   the live element so reviewers can see exactly which state is on
+   stage without hovering. Hover/focus/active/disabled variants use
+   real CSS pseudo-classes wherever possible (pinned states use
+   class modifiers — no JS state simulation). */
+.v2-state-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.v2-state-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 14px;
+  background: var(--color-paper-card, #FFFCF4);
+  border: 1px solid rgba(28, 27, 38, 0.08);
+  border-radius: 12px;
+}
+
+.v2-state-cell__label {
+  margin: 0;
+  font-family: var(--font-family-mono, ui-monospace, monospace);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-ink-v2-ink-3, #5A5867);
+}
+
+.v2-state-cell__stage {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 64px;
+  /* Reserve room for hard-shadow buttons when they translate -2/-2 on
+     hover so the shadow doesn't get clipped by the card edge. */
+  padding: 12px 16px 12px 8px;
+}
+
+/* ----------------------------------------------------------
+   v2 Button — three variants (primary / secondary / ghost).
+   Spec §7.1. Hard ink shadow as the signature gesture; depress
+   on press. State variants are real CSS pseudo-classes. Pinned
+   state modifiers (.is-hover / .is-active) let the showcase
+   render every cell of the state matrix without script.
+   ---------------------------------------------------------- */
+.v2-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border: 2px solid var(--color-ink-v2-deep, #1C1B26);
+  border-radius: 8px;
+  background: var(--color-signal-orange, #F08A3C);
+  color: var(--color-ink-v2-deep, #1C1B26);
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  letter-spacing: 0;
+  cursor: pointer;
+  box-shadow: var(--shadow-cta-rest, 5px 5px 0 0 #1C1B26);
+  /* Translate transition pairs with shadow size — together they form
+     the press/depress gesture from §5.3. */
+  transition:
+    transform var(--motion-duration-fast, 160ms) var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    box-shadow var(--motion-duration-fast, 160ms) var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+
+.v2-btn:hover:not(:disabled),
+.v2-btn.is-hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-cta-hover, 7px 7px 0 0 #1C1B26);
+}
+
+.v2-btn:focus-visible {
+  outline: 3px solid var(--color-signal-orange, #F08A3C);
+  outline-offset: 2px;
+}
+
+.v2-btn:active:not(:disabled),
+.v2-btn.is-active {
+  transform: translate(3px, 3px);
+  box-shadow: var(--shadow-cta-active, 2px 2px 0 0 #1C1B26);
+  transition-duration: var(--motion-duration-instant, 80ms);
+  transition-timing-function: var(--motion-easing-press, cubic-bezier(0.4, 0, 0.6, 1));
+}
+
+.v2-btn:disabled,
+.v2-btn.is-disabled {
+  background: var(--color-paper-inset, #E9E2D2);
+  color: var(--color-ink-v2-ink-3, #5A5867);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Secondary — ink outline, transparent fill, slightly softer rest shadow. */
+.v2-btn--secondary {
+  background: transparent;
+  box-shadow: var(--shadow-card-candy, 4px 4px 0 0 #1C1B26);
+}
+
+.v2-btn--secondary:hover:not(:disabled),
+.v2-btn--secondary.is-hover {
+  box-shadow: var(--shadow-card-candy-hover, 6px 6px 0 0 #1C1B26);
+}
+
+.v2-btn--secondary:disabled,
+.v2-btn--secondary.is-disabled {
+  background: transparent;
+  border-color: var(--color-ink-v2-ink-3, #5A5867);
+}
+
+/* Ghost — paper register only. No border, no shadow. Underline on hover. */
+.v2-btn--ghost {
+  background: transparent;
+  border: 2px solid transparent;
+  box-shadow: none;
+  color: var(--color-ink-v2-deep, #1C1B26);
+}
+
+.v2-btn--ghost:hover:not(:disabled),
+.v2-btn--ghost.is-hover {
+  background: rgba(28, 27, 38, 0.06);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transform: none;
+  box-shadow: none;
+}
+
+.v2-btn--ghost:active:not(:disabled),
+.v2-btn--ghost.is-active {
+  background: rgba(28, 27, 38, 0.12);
+  transform: none;
+  box-shadow: none;
+}
+
+.v2-btn--ghost:disabled,
+.v2-btn--ghost.is-disabled {
+  background: transparent;
+  color: var(--color-ink-v2-ink-3, #5A5867);
+}
+
+/* ----------------------------------------------------------
+   v2 Input — paper register input + select. Spec §7.2.
+   Marketing variant (`--candy`) adds a 2px ink border for
+   legibility against candy fields per §7.2 last line.
+   ---------------------------------------------------------- */
+.v2-input {
+  display: block;
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--color-paper-inset, #E9E2D2);
+  color: var(--color-ink-v2-deep, #1C1B26);
+  border: 1px solid rgba(28, 27, 38, 0.14);
+  border-radius: 8px;
+  box-shadow: var(--shadow-input-inset-paper);
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 16px;
+  line-height: 1.5;
+  transition:
+    border-color var(--motion-duration-fast, 160ms) ease,
+    box-shadow var(--motion-duration-fast, 160ms) ease;
+}
+
+.v2-input::placeholder {
+  color: var(--color-ink-v2-ink-3, #5A5867);
+  opacity: 1;
+}
+
+.v2-input:hover:not(:disabled),
+.v2-input.is-hover {
+  border-color: rgba(28, 27, 38, 0.22);
+}
+
+.v2-input:focus-visible,
+.v2-input.is-focus {
+  border-color: var(--color-signal-orange, #F08A3C);
+  outline: 3px solid var(--color-signal-orange, #F08A3C);
+  outline-offset: 2px;
+}
+
+.v2-input.is-error,
+.v2-input[aria-invalid='true'] {
+  border-color: var(--color-signal-orange-deep, #C76A22);
+}
+
+.v2-input:disabled,
+.v2-input.is-disabled {
+  color: var(--color-ink-v2-ink-3, #5A5867);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Marketing variant — input on candy field. Heavier ink border so the
+   form survives sitting against pink/mustard. */
+.v2-input--candy {
+  background: var(--color-paper-card, #FFFCF4);
+  border: 2px solid var(--color-ink-v2-deep, #1C1B26);
+  box-shadow: none;
+}
+
+.v2-input--candy:focus-visible {
+  outline: 3px solid var(--color-signal-orange, #F08A3C);
+  outline-offset: 2px;
+}
+
+/* Form label / helper / error — spec §7.2 + §8 row "Input". */
+.v2-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.v2-field__label {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-ink-v2-deep, #1C1B26);
+}
+
+.v2-field__helper {
+  margin: 0;
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-ink-v2-ink-3, #5A5867);
+}
+
+.v2-field__helper--error {
+  color: var(--color-signal-orange-deep, #C76A22);
+  font-weight: 500;
+}
+
+/* ----------------------------------------------------------
+   v2 Card — three variants per spec §7.3.
+   `.v2-card--candy`  candy-bordered (marketing on candy field)
+   `.v2-card--paper`  paper-inset (app interior default)
+   `.v2-card--ink`    ink-ticker (high-emphasis app strip)
+   ---------------------------------------------------------- */
+.v2-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  border-radius: 16px;
+  background: var(--color-paper-card, #FFFCF4);
+}
+
+.v2-card__display {
+  margin: 0;
+  font-family: var(--font-family-display, 'Bagel Fat One', sans-serif);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.005em;
+  color: var(--color-ink-v2-deep, #1C1B26);
+}
+
+.v2-card__heading {
+  margin: 0;
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-weight: 600;
+  font-size: 22px;
+  line-height: 1.25;
+  color: var(--color-ink-v2-deep, #1C1B26);
+}
+
+.v2-card__body {
+  margin: 0;
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-ink-v2-ink-2, #3A3947);
+}
+
+/* Candy-bordered: 2px ink border + hard ink shadow. Sits on candy field. */
+.v2-card--candy {
+  border: 2px solid var(--color-ink-v2-deep, #1C1B26);
+  box-shadow: var(--shadow-card-candy, 4px 4px 0 0 #1C1B26);
+  border-radius: 16px;
+  transition:
+    transform var(--motion-duration-fast, 160ms) cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow var(--motion-duration-fast, 160ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v2-card--candy:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-card-candy-hover, 6px 6px 0 0 #1C1B26);
+}
+
+/* Paper-inset: warm-soft shadow, hairline border. */
+.v2-card--paper {
+  border: 1px solid rgba(28, 27, 38, 0.10);
+  border-radius: 8px;
+  box-shadow: var(--shadow-card-paper);
+  transition:
+    transform var(--motion-duration-fast, 160ms) cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow var(--motion-duration-fast, 160ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.v2-card--paper:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lift-paper);
+}
+
+/* Ink ticker: ink-deep bg, mustard accent strip on the leading edge,
+   mono numerals. Highest-emphasis surface inside the app. */
+.v2-card--ink {
+  position: relative;
+  border: 1px solid rgba(28, 27, 38, 0.40);
+  border-radius: 8px;
+  background: var(--color-ink-v2-deep, #1C1B26);
+  color: var(--color-paper-cream, #F6F1E8);
+  padding-left: 28px;
+}
+
+.v2-card--ink::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 6px;
+  background: var(--color-candy-mustard, #F4CC4A);
+  border-radius: 8px 0 0 8px;
+}
+
+.v2-card--ink .v2-card__heading,
+.v2-card--ink .v2-card__display {
+  color: var(--color-paper-cream, #F6F1E8);
+}
+
+.v2-card--ink .v2-card__body {
+  color: rgba(244, 240, 228, 0.80);
+}
+
+.v2-card--ink .v2-card__numeral {
+  font-family: var(--font-family-mono, ui-monospace, monospace);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-candy-mustard, #F4CC4A);
+}
+
+/* Side-by-side surface demo — candy vs paper cards. */
+.v2-card-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+/* Candy field — used inside the design-system showcase to demonstrate
+   the candy register. Pulls the candy semantic var (must be inside an
+   element carrying data-surface="candy") with a fallback to the
+   primitive value so the demo still paints when JS is disabled. */
+.v2-candy-field {
+  padding: 32px;
+  border-radius: 16px;
+  background: var(--bg-pink, var(--color-candy-pink, #F7A1C9));
+  color: var(--text-on-candy, var(--color-ink-v2-deep, #1C1B26));
+}
+
+.v2-candy-field--mustard {
+  background: var(--bg-mustard, var(--color-candy-mustard, #F4CC4A));
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   Phase 3a — Marketing-candy hero showcase
+   See `_sections/marketing-candy.tsx`. Demonstrates the full candy
+   register: ink mini-header → pink hero → drip → mustard "how it works"
+   → drip → ink trust strip. All spec-bound to v2 motion + color tokens.
+   ───────────────────────────────────────────────────────────────────── */
+
+.mc-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(28, 27, 38, 0.14);
+}
+
+.mc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 14px 24px;
+  background: var(--header-bg, var(--color-ink-v2-deep, #1C1B26));
+  color: var(--header-text, #FFFFFF);
+  font-family: var(--font-family-body, Manrope, sans-serif);
+}
+.mc-wordmark {
+  font-family: var(--font-family-display, 'Bagel Fat One', sans-serif);
+  font-size: 22px;
+  letter-spacing: -0.01em;
+}
+.mc-nav {
+  display: flex;
+  gap: 22px;
+  font-size: 13px;
+}
+.mc-nav__link {
+  color: inherit;
+  text-decoration: none;
+  opacity: 0.85;
+}
+.mc-nav__link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+.mc-pill {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.mc-pill:hover {
+  background: rgba(255, 255, 255, 0.20);
+}
+
+.mc-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 32px;
+  padding: 56px 48px 64px;
+  background: var(--bg-pink, var(--color-candy-pink, #F7A1C9));
+  color: var(--text-on-candy, var(--color-ink-v2-deep, #1C1B26));
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .mc-hero {
+    grid-template-columns: 1fr;
+    padding: 40px 24px;
+  }
+}
+.mc-hero__display {
+  font-family: var(--font-family-display, 'Bagel Fat One', sans-serif);
+  font-size: clamp(48px, 6vw, 84px);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+  text-transform: lowercase;
+  color: inherit;
+}
+.mc-chip {
+  display: inline-block;
+  padding: 4px 14px;
+  margin: 0 6px;
+  background: var(--color-candy-mustard, #F4CC4A);
+  color: var(--color-ink-v2-deep, #1C1B26);
+  border: 2px solid var(--color-ink-v2-deep, #1C1B26);
+  border-radius: 8px;
+  transform: rotate(-3deg);
+  line-height: 1;
+}
+.mc-hero__sub {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 18px;
+  line-height: 1.55;
+  max-width: 56ch;
+  margin: 0 0 28px;
+}
+.mc-hero__cta-row {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+.mc-cta-primary {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 14px 24px;
+  background: var(--cta-fill, var(--color-signal-orange, #F08A3C));
+  color: var(--color-ink-v2-deep, #1C1B26);
+  border: 2px solid var(--color-ink-v2-deep, #1C1B26);
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 5px 5px 0 0 var(--cta-shadow, var(--color-ink-v2-deep, #1C1B26));
+  transition:
+    transform var(--motion-duration-fast, 100ms) var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1)),
+    box-shadow var(--motion-duration-fast, 100ms) var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1));
+}
+.mc-cta-primary:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 0 var(--cta-shadow, var(--color-ink-v2-deep, #1C1B26));
+}
+.mc-cta-primary:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 0 var(--cta-shadow, var(--color-ink-v2-deep, #1C1B26));
+  transition:
+    transform var(--motion-duration-instant, 80ms) var(--motion-easing-press, cubic-bezier(0.4, 0, 0.6, 1)),
+    box-shadow var(--motion-duration-instant, 80ms) var(--motion-easing-press, cubic-bezier(0.4, 0, 0.6, 1));
+}
+.mc-cta-primary:focus-visible {
+  outline: 3px solid var(--color-signal-orange, #F08A3C);
+  outline-offset: 2px;
+}
+.mc-cta-link {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.mc-cta-link:hover {
+  color: var(--color-signal-orange-deep, #C76A22);
+}
+.mc-hero__mascot {
+  align-self: stretch;
+  min-height: 240px;
+  border: 2px dashed var(--color-ink-v2-deep, #1C1B26);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: rgba(28, 27, 38, 0.60);
+  background: rgba(255, 255, 255, 0.18);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mc-cta-primary,
+  .mc-cta-primary:hover,
+  .mc-cta-primary:active {
+    transition: none;
+    transform: none;
+  }
+}
+
+.mc-mustard {
+  padding: 56px 48px 64px;
+  background: var(--bg-mustard, var(--color-candy-mustard, #F4CC4A));
+  color: var(--text-on-candy, var(--color-ink-v2-deep, #1C1B26));
+}
+@media (max-width: 768px) {
+  .mc-mustard {
+    padding: 40px 24px;
+  }
+}
+.mc-mustard__display {
+  font-family: var(--font-family-display, 'Bagel Fat One', sans-serif);
+  font-size: clamp(36px, 4vw, 56px);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  margin: 0 0 32px;
+  text-transform: lowercase;
+}
+.mc-mustard__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+@media (max-width: 768px) {
+  .mc-mustard__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.mc-step {
+  padding: 24px;
+}
+.mc-step__index {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  opacity: 0.6;
+  margin: 0 0 12px;
+}
+.mc-step__title {
+  font-family: var(--font-family-display, 'Bagel Fat One', sans-serif);
+  font-size: 32px;
+  line-height: 1;
+  margin: 0 0 12px;
+  text-transform: lowercase;
+}
+.mc-step__copy {
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--color-ink-v2-deep, #1C1B26);
+}
+
+.mc-trust {
+  background: var(--color-ink-v2-deep, #1C1B26);
+  color: #F4F0E4;
+  padding: 20px 48px;
+}
+@media (max-width: 768px) {
+  .mc-trust {
+    padding: 16px 24px;
+  }
+}
+.mc-trust__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  font-family: var(--font-family-body, Manrope, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.mc-trust__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
