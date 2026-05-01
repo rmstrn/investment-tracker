@@ -25,36 +25,21 @@ interface ColorRow {
 
 const COLOR_ROWS: readonly ColorRow[] = [
   {
-    label: 'Surfaces',
-    tokens: [
-      { name: 'BG', light: '#E8E0D0', dark: '#0E0E12' },
-      { name: 'Card', light: '#FAF7F0', dark: '#26262E' },
-      { name: 'Inset', light: '#D6CCB8', dark: '#070709' },
-    ],
-  },
-  {
-    label: 'Ink + Text · primary CTA = ink, не green',
-    tokens: [
-      { name: 'Ink (CTA)', light: '#1A1A1A', dark: '#F4F1EA' },
-      { name: 'Text 2', light: '#4D4D4D', dark: '#B5B5B5' },
-      { name: 'Text 3', light: '#5A5A5A', dark: '#9A9A9A' },
-    ],
-  },
-  {
-    label: 'Small accents · только для статусов / цитат / успеха',
-    tokens: [
-      { name: 'Forest-jade', light: '#2D5F4E', dark: '#5C9A85' },
-      { name: 'Bronze', light: '#A04A3D', dark: '#BD6A55' },
-    ],
-  },
-  {
-    label: 'v2 — marketing register · candy + paper + signal',
+    label: 'Marketing register · candy + signal',
     tokens: [
       { name: 'Candy-pink', light: '#F7A1C9', dark: '#F7A1C9' },
       { name: 'Candy-mustard', light: '#F4CC4A', dark: '#F4CC4A' },
       { name: 'Signal-orange', light: '#F08A3C', dark: '#F08A3C' },
-      { name: 'Ink-deep (v2)', light: '#1C1B26', dark: '#1C1B26' },
+      { name: 'Signal-orange-deep', light: '#C4622E', dark: '#C4622E' },
+    ],
+  },
+  {
+    label: 'App register · paper + ink',
+    tokens: [
       { name: 'Paper-cream', light: '#F6F1E8', dark: '#F6F1E8' },
+      { name: 'Ink-deep', light: '#1C1B26', dark: '#1C1B26' },
+      { name: 'Text-on-candy', light: '#1C1B26', dark: '#1C1B26' },
+      { name: 'Cream-on-ink', light: '#F4F0E4', dark: '#F4F0E4' },
     ],
   },
 ];
@@ -78,54 +63,6 @@ interface TypeRow {
   readonly sample: React.ReactNode;
   readonly style: React.CSSProperties;
 }
-
-const TYPE_ROWS: readonly TypeRow[] = [
-  {
-    label: 'Display 48',
-    sample: (
-      <>
-        Notice <span style={{ fontWeight: 700 }}>what</span> you&apos;d miss.
-      </>
-    ),
-    style: { fontSize: '48px', fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 1 },
-  },
-  {
-    label: 'H1 / 32',
-    sample: 'Your portfolio, finally legible.',
-    style: { fontSize: '32px', fontWeight: 600, letterSpacing: '-0.03em' },
-  },
-  {
-    label: 'H2 / 22',
-    sample: 'Every account. One conversation.',
-    style: { fontSize: '22px', fontWeight: 600, letterSpacing: '-0.025em' },
-  },
-  {
-    label: 'Body / 13',
-    sample: 'Your IBKR account drifted 3.2% from target last week.',
-    style: { fontSize: '13px', lineHeight: 1.55 },
-  },
-  {
-    label: 'Numerals',
-    sample: '$184,210 · 12.4% · 142 lots',
-    style: {
-      fontSize: '24px',
-      fontWeight: 600,
-      fontFeatureSettings: '"tnum" 1',
-      letterSpacing: '-0.03em',
-    },
-  },
-  {
-    label: 'Mono / 11',
-    sample: 'PORTFOLIO · ANSWER · ENGINE',
-    style: {
-      fontFamily: 'var(--font-mono)',
-      fontSize: '11px',
-      letterSpacing: '0.16em',
-      textTransform: 'uppercase' as const,
-      color: 'var(--text-2)',
-    },
-  },
-];
 
 const TYPE_ROWS_V2: readonly TypeRow[] = [
   {
@@ -211,7 +148,6 @@ const SHADOW_TOKENS: readonly ShadowToken[] = [
   { name: 'toast', varName: '--shadow-toast', meta: 'floating' },
   { name: 'input inset', varName: '--shadow-input-inset', meta: 'depressed', insetBg: true },
   { name: 'inset light', varName: '--shadow-inset-light', meta: 'chip', insetBg: true },
-  { name: 'primary CTA', varName: '--shadow-primary-extrude', meta: 'ink extrude', primary: true },
 ];
 
 export interface FoundationSectionProps {
@@ -249,21 +185,7 @@ export function FoundationSection({ variant }: FoundationSectionProps) {
         ))}
       </DsSection>
 
-      <DsSection title="Typography — Geist only" meta="no italic · tabular numerals">
-        {TYPE_ROWS.map((row) => (
-          <div key={row.label} className="showcase-type-row">
-            <span className="showcase-type-row__label">{row.label}</span>
-            <span className="showcase-type-row__sample" style={row.style}>
-              {row.sample}
-            </span>
-          </div>
-        ))}
-      </DsSection>
-
-      <DsSection
-        title="Typography v2 — display + accent"
-        meta="Bagel Fat One · Manrope · Caveat (OFL)"
-      >
+      <DsSection title="Typography" meta="Bagel Fat One · Manrope · Caveat (OFL · Latin)">
         {TYPE_ROWS_V2.map((row) => (
           <div key={row.label} className="showcase-type-row">
             <span className="showcase-type-row__label">{row.label}</span>
@@ -274,7 +196,7 @@ export function FoundationSection({ variant }: FoundationSectionProps) {
         ))}
       </DsSection>
 
-      <DsSection title="v2 — Surface system" meta="route-scoped · candy = marketing · paper = app">
+      <DsSection title="Surface system" meta="route-scoped · candy = marketing · paper = app">
         <DsRow label="Four named surfaces · no mixing">
           <div
             style={{
@@ -366,8 +288,8 @@ export function FoundationSection({ variant }: FoundationSectionProps) {
       </DsSection>
 
       <DsSection
-        title="Signature hero card"
-        meta={variant === 'light' ? 'extra lift · ink CTA' : 'cream-on-dark CTA'}
+        title="Paper register hero · app interior"
+        meta="calmer counterpart to candy marketing"
       >
         <SignatureHero />
       </DsSection>
