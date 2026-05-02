@@ -1778,6 +1778,113 @@
   border-radius: 12px !important;
 }
 
+/* ── Waterfall panel — lime positive / purple negative + halo tame ────
+ *
+ * WaterfallVisx component path: `packages/ui/src/charts/visx/WaterfallVisx.tsx`.
+ *
+ * Per-bar colour resolution path: **Path A (alias remap via wrapper
+ * modifier)**. Investigation findings:
+ *
+ *   1. WaterfallVisx is fully candy-CSS-var driven (no `tokens.ts`
+ *      helper imports). Bar fills branch on `kind`:
+ *        - anchor-start / anchor-end → `var(--text-on-candy, #1C1B26)`
+ *        - positive → `var(--cta-fill, var(--accent, #F08A3C))`
+ *        - negative → `var(--accent-deep, var(--cta-shadow, #C9601E))`
+ *      Path A is wide open — wrapper can remap candy vars onto D1
+ *      tokens without touching the chart component.
+ *
+ *   2. The schema (`WaterfallStep` is `.strict()` and forbids `color`).
+ *      Path B (per-step colour in fixture) is closed by the schema —
+ *      Path A is the only viable strategy.
+ *
+ *   3. Base `.d1-chart-panel` wrapper already maps:
+ *        - `--text-on-candy` → `--d1-text-primary` (white) — anchors
+ *          render as max-contrast white blocks against the dark canvas,
+ *          reading as the «absolute value reference» moments. Correct.
+ *        - `--cta-fill` → `--d1-accent-purple` — wrong for D1 dialect:
+ *          KICKOFF §4.1 «Bars» says positive in lime, negative in purple.
+ *          Modifier re-points to `--d1-accent-lime`.
+ *        - `--accent-deep` → `--d1-accent-purple` — correct for negative.
+ *          Kept by inheritance.
+ *
+ *   4. PD-signature pill numeral (Bagel Fat One «hero moment» painted
+ *      INSIDE the ending bar). The component reaches for
+ *      `var(--font-family-display, 'Bagel Fat One', sans-serif)`. The
+ *      base wrapper remaps `--font-family-display` → `var(--d1-font-mono)`
+ *      so Bagel Fat One never resolves — Geist Mono lands as the D1
+ *      universal numeric face. The numeral fill is `var(--bg-cream, ...)`
+ *      → base wrapper maps to `--d1-bg-card-soft` (dark surface) which
+ *      reads as dark ink on the white anchor bar. AAA contrast secured.
+ *
+ *   5. Bridge connectors (drawn between consecutive bars at the previous
+ *      bar's top edge) bind to `var(--text-on-candy, ...)` (1px line at
+ *      0.45 stroke-opacity) + `var(--card-highlight, ...)` (1px embossed
+ *      highlight at 1px Y-offset). Under base wrapper:
+ *        - `--text-on-candy` → white at 0.45 op = subtle white-on-dark
+ *          dashed hairline — acceptable substitute for the spec's
+ *          `--d1-border-hairline` 1px hairline. Reads as the «previous
+ *          running total» reference between bars.
+ *        - `--card-highlight` → `rgba(255,255,255,0.04)` = barely visible
+ *          embossed-groove highlight on the dark canvas. The double-line
+ *          embossed-groove pattern (cardinal candy treatment) collapses
+ *          visually into a single faint dashed hairline — the «embossed»
+ *          treatment can't survive on dark canvas without an inverted
+ *          surface, but the spec's hairline semantic is preserved.
+ *      Accepted as deviation — the bridge IS subtle.
+ *
+ *   6. Candy hard ink-shadow drop on every bar (`<path>` filled with
+ *      `var(--text-on-candy, #1C1B26)` at `fillOpacity={0.85}`,
+ *      translated `(2px, 4px)`). KICKOFF §4.1 retires the candy hard
+ *      ink-shadow drop on bars («REMOVE the candy hard ink-shadow drop
+ *      (5px offset). Replace with subtle 1px shadow…»). Under the base
+ *      wrapper's `--text-on-candy: --d1-text-primary` mapping the
+ *      shadow becomes a hard WHITE halo behind every bar — wrong for D1.
+ *      Suppressed via the same structure-stable selector as Donut /
+ *      Stacked / Treemap: `path[fill-opacity='0.85']` is the only DOM
+ *      node carrying that exact attribute (anchor + bar paths use no
+ *      `fill-opacity`, the gridlines use `<line>` not `<path>`).
+ *
+ *   7. Tooltip surface, box-shadow, and border are inline-styled (cream
+ *      bg, ink color, 1.5px ink border, 5px hard ink box-shadow) and
+ *      need `!important` overrides. Same cascade tradeoff documented in
+ *      Calendar / StackedBar / Treemap wrappers (KICKOFF §7.10 — chart
+ *      components are off-limits).
+ */
+[data-theme='lime-cabin'] .d1-chart-panel--waterfall {
+  /* Positive contributors → lime saturation (overrides base wrapper purple).
+   * Negative contributors keep base wrapper's `--accent-deep` → purple.
+   * Anchors keep base wrapper's `--text-on-candy` → white. */
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+/* Suppress the candy hard ink-shadow drop on every bar — KICKOFF §4.1
+ * retires the candy treatment. The shadow path is the only `<path>` in
+ * WaterfallVisx carrying a `fill-opacity="0.85"` attribute (anchor +
+ * bar paths use no `fill-opacity`, gridlines use `<line>`).
+ * Structure-stable selector — no component edit needed. */
+[data-theme='lime-cabin']
+  .d1-chart-panel--waterfall
+  [data-testid='chart-waterfall-visx']
+  path[fill-opacity='0.85'] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border, all inline-styled. Force D1 elevation
+ * language with `!important` (cascade tradeoff documented in Calendar /
+ * StackedBar / Treemap wrappers — KICKOFF §7.10). */
+[data-theme='lime-cabin']
+  .d1-chart-panel--waterfall
+  [data-testid='chart-waterfall-visx']
+  [role='tooltip'] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   [data-theme='lime-cabin'] * {

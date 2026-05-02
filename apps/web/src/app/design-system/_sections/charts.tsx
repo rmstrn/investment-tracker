@@ -7,8 +7,6 @@ import {
   BarVisx,
   CALENDAR_FIXTURE,
   CalendarVisx,
-  ChartCard,
-  ChartSkeleton,
   DONUT_FIXTURE,
   DonutVisx,
   LINE_FIXTURE,
@@ -19,21 +17,22 @@ import {
   StackedBarVisx,
   TREEMAP_FIXTURE,
   TreemapVisx,
+  WATERFALL_FIXTURE,
+  WaterfallVisx,
 } from '@investment-tracker/ui/charts';
 import { DsCallout, DsRow, DsSection } from '../_components/DsSection';
 import { RecordRail } from '../_components/RecordRail';
 
 /**
- * §Charts — Phase 2 charts 1-8 of 9: BarVisx + SparklineVisx + LineVisx
- * + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx + TreemapVisx
- * in D1 «Lime Cabin» dialect.
+ * §Charts — Phase 2 charts 1-9 of 9 (COMPLETE): BarVisx + SparklineVisx
+ * + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx +
+ * TreemapVisx + WaterfallVisx in D1 «Lime Cabin» dialect. All nine chart
+ * kinds now render real D1-dialect components — zero placeholders.
  *
  * Per KICKOFF §4.1: BarVisx (Bars) + SparklineVisx + LineVisx + AreaVisx
  * (Lines) + DonutVisx + CalendarVisx (Heatmap) + StackedBarVisx (Bars)
- * + TreemapVisx (Treemap) ship here with the D1 chart-panel chrome
- * (rail-headed, NOT title-headed). The remaining 1 chart kind stays as
- * a `ChartSkeleton` placeholder shell until the final restyle dispatch
- * (Waterfall).
+ * + TreemapVisx (Treemap) + WaterfallVisx (Bars) ship here with the D1
+ * chart-panel chrome (rail-headed, NOT title-headed).
  *
  * Token strategy (KICKOFF §4.2 — route-local aliases): chart-* aliases
  * are emitted in `_styles/lime-cabin.css` mapping to D1 tokens, AND the
@@ -183,31 +182,48 @@ import { RecordRail } from '../_components/RecordRail';
  * border are tamed to D1 elevation language via `!important` overrides
  * (cascade tradeoff for inline-styled DOM — KICKOFF §7.10).
  *
+ * For WaterfallVisx specifically: per-bar colour resolution path —
+ * **Path A** (alias remap via wrapper modifier). Investigation finding:
+ * WaterfallVisx is fully candy-CSS-var driven (no `tokens.ts` helper
+ * imports) — bar fills branch on `kind` between `--text-on-candy`
+ * (anchors), `--cta-fill` (positive), and `--accent-deep` (negative).
+ * The schema (`WaterfallStep` is `.strict()`) forbids per-step `color`,
+ * so Path B is closed — Path A is the only viable strategy. The
+ * `.d1-chart-panel--waterfall` modifier re-points `--cta-fill` →
+ * `--d1-accent-lime` (positive bars per KICKOFF §4.1: «positive in
+ * lime, negative in purple»). Negative contributors keep base wrapper's
+ * `--accent-deep` → purple. Anchors keep base wrapper's
+ * `--text-on-candy` → white, reading as max-contrast «absolute value
+ * reference» blocks against the dark canvas. The PD-signature pill
+ * numeral inside the ending bar — originally a Bagel Fat One «hero
+ * moment» — resolves to Geist Mono via the base wrapper's
+ * `--font-family-display` → `--d1-font-mono` remap (D1 has no display
+ * serif; Mono is the universal numeric face). The pill numeral fill
+ * (`--bg-cream`) resolves to `--d1-bg-card-soft` (dark surface) which
+ * reads as dark ink on the white anchor bar — AAA contrast secured.
+ * Bridge connectors between bars (drawn at the previous bar's top edge
+ * via two stacked dashed `<line>` elements — the embossed-groove
+ * pattern) bind to `--text-on-candy` (0.45 stroke-op) +
+ * `--card-highlight` (faint highlight). Under base wrapper these become
+ * a subtle white-on-dark dashed hairline + barely-visible embossed
+ * highlight; the double-line embossed-groove treatment can't survive on
+ * dark canvas without an inverted surface, so the bridge collapses
+ * visually into a single faint dashed hairline — the spec's «previous
+ * running total» reference semantic is preserved as an acceptable
+ * deviation. The candy hard ink-shadow drop on every bar (the 5px-
+ * offset «paper-press» signature, KICKOFF §4.1 explicit «REMOVE» list)
+ * is suppressed via the same `path[fill-opacity='0.85']` selector used
+ * by Donut / Stacked / Treemap — the shadow path is the ONLY
+ * `<path>` in WaterfallVisx carrying that exact attribute (anchor + bar
+ * paths use no `fill-opacity`, gridlines use `<line>`). Tooltip surface,
+ * box-shadow, and border are tamed via `!important` overrides — the
+ * cascade tradeoff for inline-styled DOM (KICKOFF §7.10).
+ *
  * Hatched-stripe vocabulary is carried by the inline `<HatchedSwatch>`
  * SVG `<defs><pattern>` (8px pitch, lime at 35% opacity over
  * `#26272c`, 45° rotate). NEVER CSS background-image — Safari iOS perf
  * trap (D1 spec §9 risk #6, KICKOFF §4.1).
  */
-
-/* ────────────────────────────────────────────────────────────────────── */
-/* Placeholder catalogue — kind 9 (Waterfall) stays as ChartSkeleton.     */
-/* ────────────────────────────────────────────────────────────────────── */
-
-interface ChartShellProps {
-  rail: string;
-  title: string;
-  subtitle: string;
-  kind: 'waterfall';
-}
-
-const PLACEHOLDER_SHELLS: ReadonlyArray<ChartShellProps> = [
-  {
-    rail: 'WHERE VALUE CAME FROM',
-    title: 'WaterfallVisx',
-    subtitle: 'YTD · 2026-01-01 to 2026-04-30',
-    kind: 'waterfall',
-  },
-];
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* Sparkline trend variants — derived inline from SPARKLINE_FIXTURE.      */
@@ -342,9 +358,9 @@ export function ChartsSection() {
   return (
     <DsSection
       id="charts"
-      eyebrow="13 · Charts"
+      eyebrow="13 · Charts · 9 of 9 · 0 placeholders"
       title="9 chart kinds in D1 dialect"
-      lede="Chart panels in D1 are rail-headed, not title-headed. BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx + TreemapVisx ship in the D1 dialect (Phase 2 charts 1-8 of 9): hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal; stacked bars resolve via candy-categorical alias remap onto the D1 series sequence with the per-stack hard ink-shadow drop suppressed by a structure-stable selector; treemap tiles colour by today's change — lime positive, purple negative, neutral bg-card — with dark ink labels for AAA on saturated tiles and the candy «paper-pressed pile» edge-shadow suppressed for the 1px gap-effect. The remaining 1 kind stays as a placeholder shell until the final restyle dispatch."
+      lede="Chart panels in D1 are rail-headed, not title-headed. All nine chart kinds — BarVisx + SparklineVisx + LineVisx + AreaVisx + DonutVisx + CalendarVisx + StackedBarVisx + TreemapVisx + WaterfallVisx — ship in the D1 dialect: hatched lime stripes for default bars, solid purple for highlighted/negative, in-band drift bars at neutral 0.55 opacity; sparklines carry trend through colour — lime up, purple down, muted flat; line charts default to white-on-dark, with one optional lime «look here» line per chart; areas render as a lime-saturation gradient mirroring the heatmap pattern; donuts run a 5-step lime-saturation order with optional purple highlight; the dividend calendar pushes status semantics through chip colour — received lime solid, scheduled lime @40%, corp-action diamond ink — with the today ring promoted to lime as the «you are here» signal; stacked bars resolve via candy-categorical alias remap onto the D1 series sequence with the per-stack hard ink-shadow drop suppressed by a structure-stable selector; treemap tiles colour by today's change — lime positive, purple negative, neutral bg-card — with dark ink labels for AAA on saturated tiles and the candy «paper-pressed pile» edge-shadow suppressed for the 1px gap-effect; waterfall walks YTD attribution with white anchor blocks for absolute references, lime positive contributors and purple negative contributors, dashed hairline connectors between bars, and the PD-signature pill numeral inside the ending balance reading as Geist Mono dark-on-white (Bagel Fat One never resolves under the base wrapper's display-font remap)."
     >
       <DsRow label="BARVISX · MONTHLY P&amp;L (BAR_FIXTURE)">
         <article className="d1-chart-panel" aria-labelledby="chart-pnl-title">
@@ -691,40 +707,41 @@ export function ChartsSection() {
         </article>
       </DsRow>
 
-      <DsRow label="1 PLACEHOLDER SHELL · PHASE 2 IN PROGRESS">
-        <div className="ds-grid-2">
-          {PLACEHOLDER_SHELLS.map((s) => (
-            <div
-              key={s.title}
-              style={{
-                background: 'var(--d1-bg-card)',
-                borderRadius: 24,
-                padding: 20,
-                border: '1px solid var(--d1-border-hairline)',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 16,
-              }}
-            >
-              <RecordRail label={s.rail} />
-              <ChartCard
-                eyebrow={s.title}
-                title={s.title}
-                subtitle={s.subtitle}
-                style={{
-                  background: 'transparent',
-                  boxShadow: 'none',
-                  padding: 0,
-                  borderRadius: 0,
-                }}
-              >
-                <div style={{ minHeight: 180 }}>
-                  <ChartSkeleton kind={s.kind} />
-                </div>
-              </ChartCard>
-            </div>
-          ))}
-        </div>
+      <DsRow label="WATERFALLVISX · WHERE YOUR VALUE CAME FROM (WATERFALL_FIXTURE)">
+        <article
+          className="d1-chart-panel d1-chart-panel--waterfall"
+          aria-labelledby="chart-waterfall-title"
+        >
+          <header className="d1-chart-panel__head">
+            <RecordRail label="WHERE YOUR VALUE CAME FROM" />
+          </header>
+          <h3 id="chart-waterfall-title" className="sr-only">
+            YTD value attribution waterfall
+          </h3>
+          <div className="d1-chart-panel__body">
+            <WaterfallVisx payload={WATERFALL_FIXTURE} width={520} height={300} />
+            <p className="d1-chart-panel__caption">
+              Per-bar colours land via Path A (alias remap) — WaterfallVisx is fully candy-CSS-var
+              driven (no `tokens.ts` helper imports), and the `WaterfallStep` schema is `.strict()`
+              so per-step `color` overrides are forbidden. The `.d1-chart-panel--waterfall` modifier
+              re-points `--cta-fill` onto `--d1-accent-lime` so positive contributors render in lime
+              per KICKOFF §4.1 («positive in lime, negative in purple»). Negative contributors keep
+              the base wrapper's `--accent-deep` → purple. Anchor bars (start + end) keep the base
+              wrapper's `--text-on-candy` → white, reading as max-contrast «absolute value
+              reference» blocks against the dark canvas. The PD-signature pill numeral inside the
+              ending balance — originally a Bagel Fat One «hero moment» — resolves to Geist Mono via
+              the base wrapper's display-font remap (D1 has no display serif; Mono is the universal
+              numeric face). Dashed hairline bridge connectors between bars carry the «previous
+              running total» reference semantic; the embossed-groove double-line treatment collapses
+              into a single faint hairline on the dark canvas — accepted deviation since the spec's
+              hairline semantic is preserved. The candy hard ink-shadow drop on every bar is
+              suppressed via `path[fill-opacity='0.85']` (the only `&lt;path&gt;` carrying that
+              exact attribute), retiring the candy treatment per KICKOFF §4.1. Tooltip surface,
+              box-shadow, and border are tamed via `!important` overrides — the cascade tradeoff for
+              inline-styled DOM, documented in lime-cabin.css.
+            </p>
+          </div>
+        </article>
       </DsRow>
     </DsSection>
   );
