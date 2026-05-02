@@ -1,10 +1,16 @@
-# D1 «Lime Cabin» Depth System — Architecture Brief v3
+# D1 «Lime Cabin» Depth System — Architecture Brief v3 + v4 + v5
 
 **Author:** architect
-**Date:** 2026-05-02
+**Date:** 2026-05-02 (v3+v4+v5 consolidated)
 **Status:** Architectural lock — supersedes `D1_DEPTH_ARCHITECTURE.md` (v2, archived).
-**Scope:** CSS architecture for the v3 depth grammar. Token taxonomy, file layout, composition strategy, migration sequence, future-extensibility tests, anti-pattern enforcement.
+**Scope:** CSS architecture for the v3 depth grammar + v4 cool-violet palette redirect + v5 lime-mono brand identity. Token taxonomy, file layout, composition strategy, migration sequence, future-extensibility tests, anti-pattern enforcement.
 **Pairing:** Composes with product-designer's value spec at `docs/design/D1_DEPTH_SYSTEM_v3.md` (parallel-track). Frontend-engineer consumes both.
+
+**Document layout:**
+- §1-§18 below — v3 depth grammar (ADR-1 through ADR-9), unchanged from initial 2026-05-02 lock.
+- §19 onwards — v4 + v5 delta (ADR-10 through ADR-17). Token taxonomy and enforcement for the lime-mono brand identity + cool-violet canvas.
+
+The v3 ADRs are NOT rewritten by v4/v5; they are extended. ADR-3 (depth-only `depth.css`), ADR-4 (color tokens in `theme.css` + `lime-cabin.css`, OKLCH-first), ADR-7 (canonical recipe stacking) all carry over and bound the v4/v5 placement decisions below.
 
 ---
 
@@ -691,4 +697,535 @@ Per ADR-6. The banner sits at the top of `depth.css` and is the first thing a de
 
 ---
 
-*End of architecture brief v3. Frontend-engineer consumes this brief alongside product-designer's value spec at `docs/design/D1_DEPTH_SYSTEM_v3.md`.*
+*End of v3 depth grammar section. v4 + v5 delta begins below.*
+
+---
+
+## 19 · v4 + v5 delta — context
+
+PO greenlit two further pivots on 2026-05-02:
+
+- **v4 — palette redirect.** The v3 hue 75° «editorial-warm» tonal-neutrals read as «brown» in live render. PO directive: pivot to cool-violet hue 280°, drop lightness band from 15/20/24/27% to 12/16/19/23%, hold green/red on charts at the amber register (L ~80-82, C ~0.13-0.14). Status quartet hue-aligned to data hues (success → 145°, error → 25°, warning → 87° amber, info → ~240° cool).
+- **v5 — lime-mono brand identity.** `--d1-accent-purple` blended into the 280° cool-violet canvas (one violet family) and lost distinctiveness. PO directive: drop purple entirely; lime carries 100% of brand-primary signal across five functional variants (canvas / soft / hairline / signal / mute). Provedo joins the single-brand-color identity register (Stripe / Coinbase / Robinhood / Spotify).
+
+Lock memo: `C:\Users\rmais\.claude\projects\D--investment-tracker\memory\project_d1_depth_system_2026-05-02.md`. Specialist verdicts (HIGH confidence, all): `docs/design/v4_*.md`, `docs/design/v5_*.md`.
+
+The v4 + v5 changes are surface-token-only (no depth-recipe changes). They flow into the architecture exclusively through the color/surface token files (`theme.css`, `lime-cabin.css`) per ADR-4. `depth.css` is untouched.
+
+ADRs 10-17 below are scoped to:
+- 5-stop lime ladder (ADR-10)
+- Purple removal pattern (ADR-11)
+- Lime-creep enforcement (ADR-12)
+- Three component-recipe locks: AI avatar (ADR-13), premium chip (ADR-14), active-state (ADR-15)
+- Status quartet alias-vs-separate (ADR-16)
+- Hex fallback re-affirmation under v4 + v5 expanded palette (ADR-17)
+
+---
+
+## 20 · ADR-10 · 5-stop lime ladder — token taxonomy and placement
+
+### Decision
+
+Five lime tokens land in the existing palette block in BOTH `apps/web/src/app/style-d1/_lib/theme.css` AND `apps/web/src/app/design-system/_styles/lime-cabin.css` (mirror), under the existing surface-token block. Names are semantic-functional, not generic-tonal:
+
+```
+--d1-accent-lime-canvas      oklch(20% 0.012 117)   /* atmospheric tint, disclaimer wash */
+--d1-accent-lime-soft        oklch(34% 0.045 117)   /* chip / avatar fill, premium bg */
+--d1-accent-lime-hairline    oklch(68% 0.13  117)   /* 1px strokes, borders, focus rings */
+--d1-accent-lime-signal      oklch(91% 0.21  117)   /* SIGNATURE — Record Rail / look-here KPI / CTA */
+--d1-accent-lime-mute        oklch(72% 0.16  117)   /* AI byline body / cohort / hover-deepen / default chart bar */
+```
+
+`--d1-accent-lime-signal = oklch(91% 0.21 117)` is unchanged from the existing `--d1-accent-lime` value (`#D6F26B`, the locked Lime-Cabin signature).
+
+The legacy `--d1-accent-lime` token is **retained as a deprecated alias** for one migration slice:
+
+```css
+/* DEPRECATED — alias to --d1-accent-lime-signal for v3 → v5 migration safety.
+ * Remove after migration step 9 lands and grep returns zero direct consumers. */
+--d1-accent-lime: var(--d1-accent-lime-signal);
+```
+
+`--d1-accent-lime-soft` (legacy `rgba(214, 242, 107, 0.35)` hatched-stripe value) is retained but **redefined** to point at the new ladder's `lime-soft` semantic. Existing consumers (hatched stripes on partial-loss columns) continue to resolve; visual delta is documented in PD's value spec.
+
+### Rationale
+
+**Placement in `theme.css` + `lime-cabin.css`, NOT `depth.css`.** ADR-3 (v3) defines `depth.css` as the single source of truth for atom + recipe layers ONLY. Color tokens — including the lime ladder — are part of the surface palette and live with their peers (`--d1-bg-page`, `--d1-status-*`). This keeps file lifecycles independent: a lime-tone re-tune does not force a `depth.css` edit, and a depth-recipe re-tune does not force a `theme.css` edit. Confirmed; no architectural divergence.
+
+**Semantic-functional names over tonal-numeric names.** Tonal names (`lime-100` … `lime-900`) invite arbitrary new stops. Semantic-functional names — each stop has a single named role — close the door on improvisation. A future contributor who needs «a slightly different lime for a tooltip» has to either bind one of the five OR reopen the ladder via this ADR. The ladder is a contract, not a swatch palette.
+
+**Legacy alias retained for one slice.** 73 existing `--d1-accent-lime` references touch component CSS, theme bindings, chart fixtures, and showcase narratives. A hard-cut would force every reference to be edited atomically in one commit (~1300 lines of churn). The alias lets ADR-11's purple removal land cleanly while lime references migrate progressively. ADR-11's enforcement contains the alias to one slice — see migration step 9.
+
+**OKLCH-first, no hex fallback.** ADR-4 (v3) is the binding rule: surface tokens declared OKLCH-first. Five new lime tokens follow. No hex fallback per ADR-17 below. The lock memo specifies OKLCH triples only — confirmed.
+
+### Alternatives considered
+
+- **Place lime ladder in `depth.css`.** Rejected: violates ADR-3 file-split. Lime is color, depth.css is depth.
+- **Hard-cut legacy alias (no `--d1-accent-lime` retained).** Rejected: forces 73 references migrated in a single commit. ADR-11's hard-delete pattern for purple is justified because purple is GOING AWAY; lime's signature value is staying — the alias is a no-cost migration aid that disappears in a follow-up slice.
+- **Tonal-numeric names (`--d1-lime-50/200/500/700/900`).** Rejected: invites arbitrary new stops. Five named functions (canvas/soft/hairline/signal/mute) is a closed contract.
+- **Hex fallback per token via `@supports` query.** Rejected per ADR-17.
+
+### Consequences
+
+- **Positive:** Lime ladder is a five-element closed contract; future drift is caught in PR review against the named ladder.
+- **Positive:** Migration is incremental — alias buys one slice of breathing room.
+- **Negative:** Alias adds one indirection layer in DevTools (resolves to `--d1-accent-lime-signal` then to OKLCH). One-slice cost, then removed.
+- **Migration effort:** S (token addition) + M (component re-binding spread across the migration table).
+- **Risks:** Alias drift if removal slice is delayed. Mitigation: track in `docs/engineering/TECH_DEBT.md` as a P2 with explicit «remove after PR #86» owner.
+
+### Implementation handoff
+
+Frontend-engineer adds the five tokens immediately after the existing `--d1-bg-input` line in both `theme.css` and `lime-cabin.css`. The legacy `--d1-accent-lime` line is rewritten in place as the alias declaration. Comment banner above the alias documents its temporary status.
+
+---
+
+## 21 · ADR-11 · Purple removal — hard delete with grep-fail-fast CI guard (Option A)
+
+### Decision
+
+**Option A: hard delete.** All occurrences of `--d1-accent-purple`, `--d1-accent-purple-soft`, and any `--d1-purple-*` aliases are removed in a single migration commit. A CI grep guard is added to `.github/workflows/` (or equivalent existing lint pipeline) that fails the build if any of the following patterns reappear in `apps/web/src/`:
+
+```
+--d1-accent-purple
+--d1-accent-purple-soft
+--d1-purple-
+```
+
+Grep guard implementation (job step):
+
+```yaml
+# .github/workflows/ci.yml — add to existing lint job
+- name: Guard against deprecated purple tokens
+  run: |
+    if rg --quiet -e '--d1-accent-purple' -e '--d1-purple-' apps/web/src; then
+      echo "::error::Deprecated purple token reference found. See ADR-11 in docs/design/D1_DEPTH_ARCHITECTURE_v3.md"
+      rg -n -e '--d1-accent-purple' -e '--d1-purple-' apps/web/src
+      exit 1
+    fi
+```
+
+(Frontend-engineer chooses the precise CI integration point — existing `pnpm lint` step, dedicated job, or pre-commit hook. The grep pattern is the contract.)
+
+### Rationale
+
+The 30+ existing purple references map across two distinct semantic loads:
+1. **Negative on charts** (`--chart-series-3`, `--chart-categorical-3`, treemap negative tiles, stacked-bar highlight). v4 redirects these to `--d1-data-negative` (terracotta `oklch(78% 0.14 25)`).
+2. **Brand-primary co-pilot** (CTA fill, accent-deep, premium-chip background, AI mark). v5 redistributes these to lime variants per the role mapping in the lock memo (CTA → `lime-signal`, premium chip → `lime-soft`, AI avatar → `lime-soft` plate + ink glyph, drift indicator → red).
+
+Each role gets a different replacement token. **Aliasing all purple uses to a single replacement (Option B) would silently mis-color every reference**: chart negatives would render lime, AI avatars would render terracotta, etc. The semantic divergence makes a soft-alias actively dangerous.
+
+**Why Option A (CI guard) over Option C (banner only):** purple removal is a one-shot operation with a clear endpoint. The CI guard is six lines of YAML and runs once per PR. Compared to an ongoing comment banner that depends on grep discipline, the CI guard makes regression literally impossible — a stale purple reference fails the build. For a one-shot deletion, this is correct authority/cost ratio.
+
+**Why not soft alias for migration safety (Option B):** soft alias would force a single replacement across heterogeneous semantic uses. There is no single «correct» purple replacement. Hard cut + per-call-site re-binding is the only correct migration. The lock memo's role redistribution table is the authoritative mapping; the grep guard ensures the migration is complete.
+
+### Alternatives considered
+
+- **Option B: soft alias `--d1-accent-purple` → one of the lime variants for transitional safety.** Rejected: see «Why not» above. Heterogeneous semantic loads. Picking any single alias target mis-colors three of the four use cases.
+- **Option C: hard delete + comment banner only, no CI guard.** Rejected: relies on grep discipline forever. Cheaper than A in the short term, but a single missed reference at migration-time silently regresses (token resolves to `unset` → browser default → likely white or transparent in unexpected places). The CI guard catches the regression in PR.
+- **Replace each purple usage with a hardcoded `unset` / `transparent` and then re-bind incrementally.** Rejected: leaves a transient broken state across 30+ call sites.
+
+### Consequences
+
+- **Positive:** Purple is gone with structural certainty. No silent regressions possible after CI guard lands.
+- **Positive:** The role redistribution is explicit at every call site (no «one alias to rule them all» to debug).
+- **Negative:** The migration commit is large (~30 call sites in one PR) and must be reviewed atomically.
+- **Migration effort:** M (call sites are mechanically findable; per-site re-binding is the cost).
+- **Risks:** A new contributor copy-pastes `--d1-accent-purple` from training data or a stale tutorial. Mitigation: CI guard catches it in PR.
+
+### Implementation handoff
+
+Tech-lead decomposes the migration into two slices:
+1. **Slice A:** Add lime ladder + status quartet redirect + CI grep guard (token additions only, no removals). CI guard is dormant — no purple references yet to flag because none have been removed.
+2. **Slice B:** Per-call-site purple → lime/red/amber re-binding per the lock memo's role redistribution table. CI guard becomes active once any purple is removed; final commit removes the last purple declaration and the CI guard fully bites.
+
+Frontend-engineer pairs with PD on the per-call-site mapping during Slice B.
+
+---
+
+## 22 · ADR-12 · Lime-creep enforcement — selector allowlist (Option D)
+
+### Decision
+
+**Option D: selector allowlist** documented in this ADR + comment banner in `theme.css` + `lime-cabin.css`. The architectural rule is binary: only the following named selectors may bind `--d1-accent-lime-signal`. Anywhere else = architectural violation, caught in PR review.
+
+**Lime-signal allowlist (binding `--d1-accent-lime-signal` is permitted ONLY on these selectors and their direct descendants):**
+
+```
+.d1-rail                          /* Provedo signature element */
+.d1-rail__line
+.d1-rail__tick
+.d1-kpi--lookhere                 /* the look-here KPI ring/border */
+.d1-kpi--portfolio                /* alias of look-here on dashboard */
+.d1-cta--primary                  /* primary CTA fill */
+.d1-cta--primary:hover            /* primary CTA hover deepen */
+.d1-focus-ring                    /* 2px composite focus ring */
+.d1-ai-byline                     /* AI attribution text-link */
+.d1-pill--active                  /* active-state inset stroke (ADR-15) */
+.d1-segmented__btn--active        /* active-state inset stroke (ADR-15) */
+```
+
+Anything else binding `lime-signal` is an architectural violation. The list lives at the top of `theme.css` (and is mirrored in `lime-cabin.css`) as a banner comment so a developer adding a new component sees it on file open.
+
+```css
+/*
+ * D1 LIME-MONO BRAND — LIME-SIGNAL ALLOWLIST (ADR-12)
+ * ─────────────────────────────────────────────────────
+ * --d1-accent-lime-signal MAY ONLY be bound on:
+ *   .d1-rail / .d1-rail__line / .d1-rail__tick
+ *   .d1-kpi--lookhere / .d1-kpi--portfolio
+ *   .d1-cta--primary (incl :hover)
+ *   .d1-focus-ring
+ *   .d1-ai-byline
+ *   .d1-pill--active
+ *   .d1-segmented__btn--active
+ *
+ * Hard rules:
+ *   ≤ 2 lime-signal events per viewport
+ *   ≤ 1 lime-signal per row
+ *   ≤ 1 lime stop per card (variants do not compound)
+ *
+ * Anywhere else binding lime-signal = architectural violation.
+ * Reopening the allowlist requires reopening this ADR.
+ *
+ * Decorative lime borders on generic containers are FORBIDDEN.
+ * Use --d1-accent-lime-hairline ONLY inside the four component
+ * recipes (.d1-avatar--ai, .d1-chip-premium, .d1-pill--active,
+ * .d1-segmented__btn--active, .d1-focus-ring). See ADR-13/14/15.
+ */
+```
+
+### Rationale
+
+The four enforcement options exist on a tooling-cost / authority spectrum:
+
+| Option | Authoring cost | Authority | Where it bites |
+|---|---|---|---|
+| A. Documentation discipline | Zero | Low | Code review only |
+| B. Custom Biome lint rule | High (~1 day) | High | Compile time |
+| C. Visual regression Playwright pixel count | Highest | Highest | CI runtime, slow, brittle |
+| D. Architectural selector allowlist | Low | Medium-high | Code review + ADR conformance |
+
+**Option D wins on cost/authority ratio for a small-team + AI-agent maintenance model.**
+
+**Why not B (custom Biome rule):** counting `var(--d1-accent-lime-signal)` per file is straightforward, but the rule misses the *semantic* requirement (≤ 2 per viewport, ≤ 1 per row). The viewport rule is a runtime concept; static analysis cannot prove it. The selector-binding rule (Option D) maps onto a static-checkable artifact (which selectors bind the token), and the viewport budget is enforced via the allowlist's selector count — by design, the allowed selectors are sparse enough that ≥ 3 lime-signal events per viewport requires multiple of them simultaneously, which is naturally rare.
+
+**Why not C (Playwright pixel count):** runtime authority but extremely brittle. A lime-signal stroke at 1px on a 1440px viewport is dozens of pixels — measurement noise dominates. False positives derail the gate.
+
+**Why not A (pure documentation):** insufficient bite for a high-leverage rule. PO has explicitly directed against lime-creep; the ADR + named allowlist is the architectural commitment.
+
+The allowlist is **structural authority**: a PR adding `lime-signal` to a new selector must amend this ADR's allowlist and justify the addition. This is the right friction level. New brand surfaces should be rare; reopening the ADR gates them through review.
+
+**On `lime-hairline`, `lime-soft`, `lime-mute`, `lime-canvas`:** the allowlist applies to `lime-signal` only — the highest-energy variant. The other four variants have wider allowed scope but are still bound primarily inside the named component recipes (ADR-13/14/15). The risk of decorative drift is highest on `lime-signal` because of its visual punch; the other variants are quieter and less prone to misuse.
+
+### Alternatives considered
+
+See table in Rationale.
+
+### Consequences
+
+- **Positive:** Allowlist is a minimum-friction architectural artifact — one comment banner + one ADR section. No tooling.
+- **Positive:** ≤ 2-per-viewport and ≤ 1-per-row rules are derivable from the allowlist (the named selectors are sparse enough that natural usage stays within budget).
+- **Negative:** Enforcement depends on PR review reading the allowlist. If the team scales beyond «solo human + AI agents», a stylelint rule may need to be added.
+- **Migration effort:** S (one banner + one ADR section).
+- **Risks:** Banner ignored. Mitigation: PO + Right-Hand call out lime-creep in PR feedback; the ADR exists as the citation artifact.
+
+### Implementation handoff
+
+Frontend-engineer adds the banner to both `theme.css` and `lime-cabin.css` palette blocks. Code-reviewer cites this ADR when flagging out-of-allowlist `lime-signal` bindings.
+
+---
+
+## 23 · ADR-13 · AI avatar component recipe — `.d1-avatar--ai`
+
+### Decision
+
+The AI avatar is bound to a single component selector with a hard-locked recipe:
+
+```css
+.d1-avatar--ai {
+  background: var(--d1-accent-lime-soft);
+  color: var(--d1-text-primary);                      /* ink "P" — NEVER lime */
+  font-family: var(--d1-font-mono);
+  /* 1px lime hairline INSET — sits inside the avatar disk */
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline);
+  /* radius / size / centering specced by PD */
+}
+```
+
+**Architectural guards:**
+
+1. The `.d1-avatar--ai` glyph color **must** be `var(--d1-text-primary)`. Filled-lime monograms (`color: var(--d1-accent-lime-*)` on the glyph) are forbidden. Stripe-Dashboard pattern is preserved: AI is co-resident, not a sub-brand.
+2. The lime touch is **structural only**: 1px hairline border + soft fill. No filled glyph, no decorative lime ring, no lime-signal anywhere on the avatar.
+3. A code-review rule (cited from this ADR): «if `.d1-avatar--ai` selector binds `--d1-accent-lime-signal` OR `color: var(--d1-accent-lime-*)`, that's a brand violation per ADR-13. Reject the PR.»
+
+### Rationale
+
+Brand-strategist + frontend-design converged on the structure-not-color treatment; product-designer was outvoted. The architectural articulation is:
+
+- **Lime carries identity, not entity.** A filled-lime monogram makes AI a *thing* (sub-brand). Ink-monogram makes AI a *role inside the brand* (cohabits with humans on equal footing).
+- **Hairline inset border (Linear/Notion 2026 pattern) signals «AI» structurally** without claiming the highest-energy lime token.
+- **The glyph is type, not color.** Geist Mono «P» on lime-soft is the brand mark; the lime is the chair, not the person.
+
+The recipe is a single-selector contract. The component exists at one place; the architectural rule attaches there. Lower architectural overhead than abstracting an «avatar atom» that would then need a guard against being parameterized into a filled-lime variant.
+
+### Alternatives considered
+
+- **Lint hint warning if `--d1-accent-lime-*` is bound to `color:` declaration on `.d1-avatar*` selectors.** Rejected: Biome/stylelint custom rule cost exceeds the value. Single-selector inspection via code review is sufficient.
+- **Allow filled-lime variant (`.d1-avatar--ai-filled`).** Rejected per BS+FE majority + lock memo.
+- **Bind `lime-mute` instead of `lime-soft` for fill.** Rejected: PD spec carries the OKLCH calibration; architect's role is to lock the *role* (soft fill, not signal/mute), not the precise stop. Soft is the chip/avatar/premium-bg semantic per the 5-stop ladder.
+
+### Consequences
+
+- **Positive:** AI avatar is a one-selector contract; brand violation is grep-detectable.
+- **Positive:** Lime-creep impossible on AI surfaces — recipe locks it.
+- **Migration effort:** S (one component recipe).
+
+### Implementation handoff
+
+Product-designer specs exact dimensions / radius / type weight / line-height. Frontend-engineer implements the recipe in `lime-cabin.css` under a `/* ── AI avatar (ADR-13) ─── */` section comment that cites the ADR.
+
+---
+
+## 24 · ADR-14 · Premium chip component recipe — `.d1-chip-premium`
+
+### Decision
+
+The premium chip is bound to a single selector with hard-locked recipe + typography contract:
+
+```css
+.d1-chip-premium {
+  background: var(--d1-accent-lime-soft);
+  color: var(--d1-text-primary);                      /* ink-deep — NEVER lime */
+  font-family: var(--d1-font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline);
+  /* radius / padding / type-size specced by PD */
+}
+```
+
+**Architectural guards:**
+
+1. The four typography rules — `font-family: var(--d1-font-mono)`, `text-transform: uppercase`, `letter-spacing: 0.06em`, ink color on text — **are part of the architectural contract**, not stylistic preference. Type carries the premium load; color reinforces. Removing any of the four breaks the recipe.
+2. No `lime-signal` on premium chips. No filled-lime text. No multi-stop variants (e.g. «extra premium» lime-mute fill) — variants do NOT compound per the lock memo's lime-creep prevention rules.
+3. Code-review rule: «if `.d1-chip-premium` is missing any of the four typography rules OR binds `lime-signal` / lime text color, that's a recipe violation per ADR-14.»
+
+### Rationale
+
+3-of-3 specialists converged on type-dominant premium. The architectural articulation:
+
+- **Mono uppercase + tracking is the «premium» signifier** in the editorial-paper register Provedo locked (Field Notes / Letterpress). Lowercase or sans would soften the chip into a generic tag.
+- **Lime-soft fill + hairline border carry the «brand-primary touch»** without claiming the signal stop.
+- **Type-as-premium is more durable than color-as-premium.** A future re-tune of the lime ladder won't break the premium recipe; a re-tune of the type stack would (and is unlikely without a full design pass).
+
+Locking the typography in CSS — not in a comment, not in a Storybook story — means it's enforced at the rendering level. A consumer can't accidentally drop the uppercase and still call it `.d1-chip-premium`.
+
+### Alternatives considered
+
+- **Make typography optional («minimum recipe» = bg+border, type modifiable).** Rejected: dilutes the brand contract. The premium chip is not a generic chip.
+- **Lock typography via CSS custom properties (`--chip-premium-tracking: 0.06em`) so it's tunable.** Rejected: variability surface that doesn't earn its keep. The 0.06em number is a specific design decision, not a knob.
+- **Use `lime-canvas` fill for «extra premium» variant.** Rejected: variant compounding violates lime-creep rules. One variant, one recipe.
+
+### Consequences
+
+- **Positive:** Premium chip is recipe-locked. Cannot be diluted by stylistic drift.
+- **Positive:** Type-led design is durable across palette re-tunes.
+- **Negative:** Adding a new chip variant (e.g. «free tier») cannot use this recipe — must be a separate component.
+- **Migration effort:** S.
+
+### Implementation handoff
+
+PD specs the exact type-size / padding / radius. Frontend-engineer implements per the architectural lock.
+
+---
+
+## 25 · ADR-15 · Active-state component recipe — Linear 2026 inset stroke pattern
+
+### Decision
+
+Active state on pills + segmented buttons rebinds to a 1px inset `lime-signal` stroke. Glyph color is **explicitly held at `--d1-text-primary`** — does NOT change on active.
+
+```css
+.d1-pill--active,
+.d1-segmented__btn--active {
+  /* Inset lime-signal stroke — Linear 2026 pattern (FE-design ref).
+   * Cleaner than Stripe Dashboard's recoloured-glyph approach. */
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal);
+  color: var(--d1-text-primary);                      /* HARD GUARD: no glyph recolor */
+  /* background can shift to --d1-bg-card-soft per design lock */
+}
+```
+
+**Architectural guards:**
+
+1. The glyph color **must remain** `--d1-text-primary` on active state. No `color: var(--d1-accent-lime-*)` on `.d1-pill--active` or its children.
+2. The active-state stroke uses `lime-signal` (allowlisted per ADR-12).
+3. No transition animation on the stroke. Active is a state, not a motion.
+4. Code-review rule: «if `.d1-pill--active` or `.d1-segmented__btn--active` re-colors glyphs, that's an active-state violation per ADR-15.»
+
+### Rationale
+
+The Linear 2026 inset-stroke pattern (FE-design reference) wins over Stripe Dashboard's recolored-glyph because:
+
+- **Glyph stability across state changes preserves text readability.** A glyph that changes color on active forces the eye to re-adapt; an inset stroke leaves the type stable and signals state through chrome.
+- **The stroke composes with the existing focus ring contract.** Focus ring lives outside the element; active-state stroke lives inside. They never overlap.
+- **The 1px inset matches the hairline+border vocabulary used elsewhere** (avatar inset border, premium chip inset border). Consistency across recipes.
+
+The hard glyph-color guard is critical: a developer accidentally adding `color: var(--d1-accent-lime-mute)` on hover-then-active would create a Stripe-like recolor that dilutes the Linear pattern. The architectural rule is binary: glyphs stay ink.
+
+### Alternatives considered
+
+- **Stripe-style: glyph recolors to `lime-signal` on active.** Rejected per FE-design + lock memo. Glyph stability wins.
+- **Solid lime-soft fill on active (no stroke).** Rejected: too heavy; reads as «pressed» not «active». Active state is a *state*, press-tier semantics already cover the click moment.
+- **Outline stroke (outside the border).** Rejected: would clash with focus ring at 2px outer.
+
+### Consequences
+
+- **Positive:** Active state is a recipe-locked, glyph-stable visual.
+- **Positive:** Composes cleanly with existing focus-ring contract.
+- **Migration effort:** S (selector binding + active-state cleanup).
+
+### Implementation handoff
+
+Frontend-engineer adds `.d1-pill--active` and `.d1-segmented__btn--active` blocks to `lime-cabin.css` and `theme.css` (mirror) under `/* ── Active state (ADR-15) ─── */` comments.
+
+---
+
+## 26 · ADR-16 · Status quartet — separate from data delta tokens (no aliasing)
+
+### Decision
+
+The four status tokens (`--d1-status-success` / `--d1-status-error` / `--d1-status-warning` / `--d1-status-info`) and the three data-delta tokens (`--d1-data-positive` / `--d1-data-negative` / `--d1-notification-amber`) are declared as **independent tokens, not aliases**, despite hue-aligned values.
+
+```css
+/* Status quartet — system messaging (sync OK, validation, drift, observation) */
+--d1-status-success    oklch(82% 0.13 145)   /* matches data-positive hue, MAY drift */
+--d1-status-error      oklch(78% 0.14 25)    /* matches data-negative hue, MAY drift */
+--d1-status-warning    oklch(82% 0.135 87)   /* matches notification-amber hue, MAY drift */
+--d1-status-info       oklch(70% 0.08 240)   /* cool blue-grey — no data-side counterpart */
+
+/* Data delta — chart positives/negatives, gain/loss columns */
+--d1-data-positive     oklch(82% 0.13 145)   /* mature pistachio */
+--d1-data-negative     oklch(78% 0.14 25)    /* terracotta — L 78 to hold red, NOT salmon */
+--d1-notification-amber oklch(82% 0.135 87)  /* count badges — pre-existing token, kept */
+```
+
+(Final OKLCH triples are PD's deliverable; values shown above mirror the v4 lock for context.)
+
+**Architectural guard:** status-* tokens MUST NOT be declared as `var(--d1-data-*)` aliases. They start hue-aligned but drift independently.
+
+### Rationale
+
+The temptation to alias is real: the values match. But aliasing couples two semantic axes that have different consumers and different evolution paths.
+
+**Status semantics:** «is the system in a known good state?» — sync indicator, validation result, drift breach alert, info pip. Optimized for in-chrome legibility (small UI elements, pill chips, banner backgrounds). May need a contrast bump on dark canvas; may need a desaturation for a less-loud variant.
+
+**Data delta semantics:** «is the number going up or down?» — chart bars, gain-loss columns, sparkline directions, heatmap polarity. Optimized for chart-readable color (saturation matters for series differentiation; chroma may need to push when a chart has many series).
+
+**The two axes WILL diverge.** A future tweak — e.g. PD bumps `--d1-data-negative` chroma to 0.16 to hold red against a denser chart series — should NOT propagate to `--d1-status-error` (which lives on form-validation messages where 0.16 chroma reads alarmist). Aliasing freezes them together; separate declarations leave the divergence path open.
+
+**Why hue-align them in the first place if they're going to diverge?** Because at this moment they share visual character (gouache triad, amber register). The lock memo's «status-* hue-aligned to data hues» is a *design directive*, not a *token relationship*. The architecture preserves the design directive in the values today while leaving room for tomorrow's tuning.
+
+### Per-pair verdict
+
+| Pair | Current values | Verdict | Reason |
+|---|---|---|---|
+| `--d1-status-success` ↔ `--d1-data-positive` | 145°, L 82, similar C | **SEPARATE** | Same canvas today, different consumers tomorrow |
+| `--d1-status-error` ↔ `--d1-data-negative` | 25°, similar C | **SEPARATE** | (existing values already differ slightly per v3 token block — confirms the divergence pattern is real) |
+| `--d1-status-warning` ↔ `--d1-notification-amber` | 87° | **SEPARATE** | Notification-amber is a count-badge token (UI chrome); status-warning is system messaging |
+
+### Alternatives considered
+
+- **Alias status-* to data-* across the board.** Rejected: couples two divergence paths; a single chroma tweak on data-side breaks status-side semantics.
+- **Alias only the pair where values are identical (`status-warning` → `notification-amber`).** Rejected: inconsistent rule («sometimes alias, sometimes not») is harder to remember than the binary rule («never alias»).
+- **Drop `--d1-notification-amber` entirely; status-warning replaces it.** Rejected: count-badge semantic is real and pre-dates the status quartet. Two tokens, two consumers.
+
+### Consequences
+
+- **Positive:** Each axis can evolve independently. Future PR re-tuning data-positive doesn't side-effect status-success.
+- **Positive:** The «hue-aligned today» fact is a design directive in the comment, not a coupling in the code.
+- **Negative:** Eight tokens (4 status + 3 data + 1 amber) carry partial value duplication. Acceptable maintenance overhead for the decoupling.
+- **Migration effort:** none beyond v4 lock (tokens already declared).
+
+### Implementation handoff
+
+PD specs final OKLCH triples for both groups. Frontend-engineer keeps both groups as independent declarations in `theme.css` + `lime-cabin.css`. Banner comment above the status block states: «status-* MAY drift from data-* over time; do not alias.»
+
+---
+
+## 27 · ADR-17 · Hex fallback strategy — OKLCH-only (Option A), re-affirmed
+
+### Decision
+
+**Option A: OKLCH-only, no hex fallback.** Confirms ADR-4's stance under v4+v5 expanded palette.
+
+The full token surface — surface tokens (6), lime ladder (5), status quartet (4), data delta (3), notification-amber (1), text tokens (3), border tokens (2) — is declared OKLCH-first, no parallel hex declarations, no `@supports` fallback queries.
+
+### Rationale
+
+**Browser support sufficient:** OKLCH is Baseline 2024 (Safari 15.4+ / Chrome 111+ / Firefox 113+ — all ≥ 2 years old at v3 ship time). Global support ~96% per caniuse 2026. Provedo's target market is US + EU on modern browsers (per `project_target_market_2026-05-01.md`); pre-Baseline-2024 browsers are out of scope.
+
+**Token-count discipline:** v4+v5 expanded the palette from ~14 tokens to ~24 tokens. Hex fallback would double the count to ~48. Drift risk grows as token count grows; doubled token count = doubled drift surface.
+
+**Re-tune operations are OKLCH operations.** The 5-stop lime ladder is calibrated by chroma + lightness shifts at fixed hue. Hex hides chroma. A future re-tune (e.g. PD shifts `lime-signal` chroma 0.21 → 0.19 for printed-deck legibility) is one-token-in-place in OKLCH; in hex it's a manual color-picker round-trip.
+
+**No PostCSS auto-fallback (Option C):** PostCSS plugin (e.g. `postcss-oklab-function`) auto-generates fallback at build, which works but adds a build dependency for a fallback we've decided not to invest in. If the cost-benefit ratio shifts (e.g. an enterprise customer with a locked-down browser stack appears), revisit.
+
+**No per-token `@supports` query (Option B):** doubles author cost on every new token; same drift problem as parallel declarations.
+
+### Alternatives considered
+
+- **Option B: hex fallback per token via `@supports (color: oklch(0% 0 0))` query.** Rejected: per-token authoring overhead, drift risk, ~96% support already.
+- **Option C: PostCSS plugin auto-generates fallback at build.** Rejected: build dependency for an undermined need; revisit only if enterprise-browser ICP appears.
+
+### Consequences
+
+- **Positive:** Single source of truth per token; no drift surface.
+- **Positive:** Re-tune operations stay readable in source.
+- **Negative:** Users on pre-Baseline-2024 browsers (~4% globally) see browser-default colors (typically white text on black — harmless degraded mode, never broken-looking).
+- **Migration effort:** none (re-affirmation; current state).
+- **Risks:** ICP shifts to include legacy enterprise (e.g. Windows IE-mode kiosks). Mitigation: revisit in a dedicated ADR when/if it happens.
+
+### Implementation handoff
+
+No-op. v4+v5 token additions follow the existing OKLCH-first pattern. Frontend-engineer does not introduce hex fallbacks.
+
+---
+
+## 28 · v4 + v5 migration sequence delta
+
+The v3 migration table (§14) is amended with the following additional steps. They sequence into the v3 migration before step 18 (the final cleanup) so the lime-mono brand identity lands inside the same PR (#86) cycle.
+
+| # | Step | File(s) | Visual delta | Notes |
+|---|---|---|---|---|
+| 14a | Add 5-stop lime ladder tokens (`--d1-accent-lime-canvas` / `-soft` / `-hairline` / `-signal` / `-mute`) | `theme.css`, `lime-cabin.css` | None — tokens declared, alias bridges existing consumers | Slice A of ADR-11 |
+| 14b | Rewrite `--d1-accent-lime` as alias to `--d1-accent-lime-signal`; redefine `--d1-accent-lime-soft` to ladder semantic | `theme.css`, `lime-cabin.css` | Visually unchanged — alias preserves signature value | One-slice deprecation marker |
+| 14c | Add ADR-12 lime-signal allowlist banner to both palette files | `theme.css`, `lime-cabin.css` | None — comment-only | Architectural guard |
+| 14d | Add CI grep guard against `--d1-accent-purple` and `--d1-purple-` patterns | `.github/workflows/*` (or equivalent) | None — guard dormant until purple removed | ADR-11 enforcement |
+| 14e | Add `.d1-avatar--ai`, `.d1-chip-premium` recipes (ADR-13, ADR-14) | `lime-cabin.css` | New components render with v5 brand identity | Recipes locked |
+| 14f | Add `.d1-pill--active`, `.d1-segmented__btn--active` recipes (ADR-15) | `lime-cabin.css` | Active state shifts from prior color to lime-signal inset stroke | Glyph stability preserved |
+| 14g | Per-call-site purple → lime/red/amber re-binding (Slice B of ADR-11) — see role redistribution table in lock memo | `lime-cabin.css`, `theme.css`, `charts.tsx`, `theme.tsx`, `foundation.tsx` | Charts: negatives become terracotta. CTA / accent-deep / cta-shadow: lime-signal. Premium chip / hatched stripe: lime-soft. AI mark: lime-soft + ink. Drift indicator: red. | Largest visual delta in v4+v5 cycle |
+| 14h | Remove `--d1-accent-purple` + `--d1-accent-purple-soft` declarations from both files | `theme.css`, `lime-cabin.css` | None — last consumers re-bound in 14g | CI guard now bites |
+| 14i | Update `theme.tsx` palette table to reflect lime ladder + status quartet (no purple row) | `design-system/_sections/theme.tsx` | Showcase reflects lime-mono identity | Documentation |
+| 14j | (Post-PR-#86) Remove deprecated `--d1-accent-lime` alias once grep returns zero direct consumers | `theme.css`, `lime-cabin.css` | None — alias was a no-op resolution | Final lime taxonomy cleanup |
+
+**Cutover safety:** steps 14a-14f are token + recipe additions only — visually invisible until consumers bind. Step 14g is the largest visual delta and lands as a focused commit. Step 14h is a token deletion that depends on 14g being complete; CI guard catches any miss. Step 14j is post-PR-#86 follow-up and tracked in TECH_DEBT.md.
+
+---
+
+## 29 · v4 + v5 ADR summary
+
+| ADR | Decision | One-line rationale |
+|---|---|---|
+| ADR-10 | 5-stop lime ladder in `theme.css` + `lime-cabin.css`; legacy `--d1-accent-lime` aliased to `-signal` for one slice | Closed semantic-functional contract; alias buys migration breathing room |
+| ADR-11 | Hard delete + CI grep-fail-fast guard for `--d1-accent-purple` (Option A) | Heterogeneous role redistribution makes single-target alias semantically wrong |
+| ADR-12 | Selector allowlist for `--d1-accent-lime-signal` (Option D) — banner comment + ADR conformance | Lightest-touch architectural authority; matches solo-human + AI-agent maintenance model |
+| ADR-13 | `.d1-avatar--ai` recipe-locked: lime-soft fill + ink «P» glyph + 1px lime-hairline inset | Brand contract: lime carries identity, type carries entity; filled-lime monogram forbidden |
+| ADR-14 | `.d1-chip-premium` recipe-locked typography (mono / uppercase / 0.06em / ink color) is part of contract | Type-led premium is durable across palette re-tunes |
+| ADR-15 | `.d1-pill--active` + `.d1-segmented__btn--active` use 1px inset lime-signal stroke; glyph color held at `text-primary` | Linear 2026 pattern; glyph stability across state changes |
+| ADR-16 | Status quartet declared as separate tokens, NOT aliases of data-delta tokens | Two divergence paths; aliasing freezes them; separate values leave room |
+| ADR-17 | OKLCH-only, no hex fallback (Option A — re-affirms ADR-4 under expanded palette) | Baseline 2024 covers ICP; doubled token count = doubled drift surface |
+
+---
+
+*End of architecture brief v3 + v4 + v5. Frontend-engineer consumes this brief alongside product-designer's value spec at `docs/design/D1_DEPTH_SYSTEM_v3.md`.*
