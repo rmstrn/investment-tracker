@@ -101,7 +101,7 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── CTA + nav primitives ──────────────────────────────────────────── */
+/* CTA — Press tier (lime-on-lime); full state arc rest/hover/active. */
 [data-theme="lime-cabin"] .d1-cta {
   display: inline-flex;
   align-items: center;
@@ -117,31 +117,58 @@
   padding: 0 20px;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Lime-on-lime emboss (depth v3 §7.7). */
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.4);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-theme="lime-cabin"] .d1-cta:hover {
   transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 0 rgba(14, 15, 17, 0.16), 0
+    2px 0 0 rgba(14, 15, 17, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="lime-cabin"] .d1-cta:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 3px -1px rgba(14, 15, 17, 0.32), inset 0 -1px 0 0
+    rgba(255, 255, 255, 0.05);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-theme="lime-cabin"] .d1-cta:focus-visible {
-  outline: 2px solid var(--d1-accent-lime);
-  outline-offset: 3px;
+  outline: 0;
+  box-shadow: var(--d1-elev-focus-ring-on-lime), inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0
+    -1px 0 0 rgba(14, 15, 17, 0.18), 0 1px 0 0 rgba(14, 15, 17, 0.4);
 }
 
 [data-theme="lime-cabin"] .d1-cta:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: var(--d1-elev-disabled);
 }
 
+/* Ghost CTA — Press tier on transparent bg; preserve 1px hairline border. */
 [data-theme="lime-cabin"] .d1-cta--ghost {
   background: transparent;
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px var(--d1-border-strong);
+  box-shadow: inset 0 0 0 1px var(--d1-border-strong), var(--d1-elev-press-rest);
 }
 
-/* ── Pill nav ──────────────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-cta--ghost:hover {
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px var(--d1-border-strong), var(--d1-elev-press-hover);
+}
+
+[data-theme="lime-cabin"] .d1-cta--ghost:active {
+  transform: translateY(0);
+  box-shadow: inset 0 0 0 1px var(--d1-border-strong), var(--d1-elev-press-active);
+}
+
+/* Nav brand — Read tier (standard amplitude); identity tile reads as a card. */
 [data-theme="lime-cabin"] .d1-nav__brand {
   display: inline-flex;
   align-items: center;
@@ -154,6 +181,7 @@
   font-family: var(--d1-font-sans);
   font-weight: 700;
   font-size: 15px;
+  box-shadow: var(--d1-elev-read-standard-rest);
 }
 
 [data-theme="lime-cabin"] .d1-disclaimer-chip {
@@ -180,6 +208,7 @@
   flex-shrink: 0;
 }
 
+/* Pill nav — Press tier; rest emboss visible against transparent bg. */
 [data-theme="lime-cabin"] .d1-pill {
   display: inline-flex;
   align-items: center;
@@ -197,13 +226,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), background
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-theme="lime-cabin"] .d1-pill:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-theme="lime-cabin"] .d1-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-theme="lime-cabin"] .d1-pill:focus-visible {
@@ -214,12 +255,18 @@
 [data-theme="lime-cabin"] .d1-pill:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--d1-elev-disabled);
 }
 
+/* Active pill — lime-on-lime variant (depth v3 §7.7). */
 [data-theme="lime-cabin"] .d1-pill--active,
 [data-theme="lime-cabin"] .d1-pill--active:hover {
   background: var(--d1-accent-lime);
   color: var(--d1-text-ink);
+  transform: none;
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.2);
 }
 
 [data-theme="lime-cabin"] .d1-pill__icon {
@@ -244,6 +291,7 @@
   margin-left: 2px;
 }
 
+/* Nav icon-pill — Press tier; full state arc. */
 [data-theme="lime-cabin"] .d1-nav__icon-pill {
   display: inline-flex;
   align-items: center;
@@ -255,11 +303,23 @@
   color: var(--d1-text-muted);
   border: 0;
   cursor: pointer;
-  transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-theme="lime-cabin"] .d1-nav__icon-pill:hover {
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-theme="lime-cabin"] .d1-nav__icon-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-theme="lime-cabin"] .d1-nav__icon-pill:focus-visible {
@@ -267,6 +327,7 @@
   outline-offset: 2px;
 }
 
+/* Nav avatar — Read tier (standard amplitude); identity tile. */
 [data-theme="lime-cabin"] .d1-nav__avatar {
   display: inline-flex;
   align-items: center;
@@ -279,6 +340,7 @@
   font-family: var(--d1-font-sans);
   font-weight: 700;
   font-size: 14px;
+  box-shadow: var(--d1-elev-read-standard-rest);
 }
 
 [data-theme="lime-cabin"] .d1-chip-premium {
@@ -296,23 +358,20 @@
   vertical-align: middle;
 }
 
-/* ── KPI cards ─────────────────────────────────────────────────────── */
+/*
+ * KPI cards — Read tier (standard amplitude). Hover-NO-OP: KPI cards
+ * are PASSIVE; no `:hover` rule by design (depth v3 ADR-6).
+ */
 [data-theme="lime-cabin"] .d1-kpi {
   position: relative;
-  background: var(--d1-bg-card);
+  background: var(--d1-bg-card-elevated);
   border-radius: 24px;
   padding: 20px;
   min-height: 132px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
-    cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-[data-theme="lime-cabin"] .d1-kpi:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--d1-elev-read-standard-rest);
 }
 
 [data-theme="lime-cabin"] .d1-kpi__head {
@@ -366,16 +425,21 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
+/* Portfolio KPI — Read tier pronounced amplitude (the headline figure). */
 [data-theme="lime-cabin"] .d1-kpi--portfolio {
   min-height: 160px;
+  box-shadow: var(--d1-elev-read-pronounced-rest);
 }
 
 [data-theme="lime-cabin"] .d1-kpi--portfolio .d1-kpi__num {
   font-size: clamp(48px, 4vw + 32px, 56px);
 }
 
+/* Lime-highlighted KPI — Press-grade firmness on lime substrate. */
 [data-theme="lime-cabin"] .d1-kpi--lime {
   background: var(--d1-accent-lime);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.4);
 }
 
 [data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__label,
@@ -389,14 +453,19 @@
   opacity: 0.85;
 }
 
+/* Icon-chip on lime substrate — inverted emboss per depth v3 §11.8. */
 [data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__icon-chip {
   background: rgba(14, 15, 17, 0.08);
   color: var(--d1-text-ink);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 0 rgba(14, 15, 17, 0.15);
 }
 
-/* Error variant — amber hairline indicator on stale data */
+/*
+ * Error variant — Read tier supporting + 1px status-error inset ring.
+ * Replaces v2 amber notification color with the new status-error token.
+ */
 [data-theme="lime-cabin"] .d1-kpi--error {
-  box-shadow: inset 0 0 0 1px var(--d1-notification-amber);
+  box-shadow: inset 0 0 0 1px var(--d1-status-error), var(--d1-elev-read-standard-rest);
 }
 
 /* Empty variant — neutral, lime plus icon, no fill */
@@ -408,7 +477,7 @@
   color: var(--d1-text-muted);
 }
 
-/* ── Filter chip ───────────────────────────────────────────────────── */
+/* Filter chip — Press tier; rest emboss on transparent bg. */
 [data-theme="lime-cabin"] .d1-chip {
   display: inline-flex;
   align-items: center;
@@ -426,13 +495,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), background
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-theme="lime-cabin"] .d1-chip:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-theme="lime-cabin"] .d1-chip:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-theme="lime-cabin"] .d1-chip:focus-visible {
@@ -443,18 +524,25 @@
 [data-theme="lime-cabin"] .d1-chip:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none;
+  box-shadow: var(--d1-elev-disabled);
 }
 
+/*
+ * Active chip — lime hairline preserved as primary signal; Press-rest
+ * composed beneath (lime hairline reads first per depth v3 §11.5).
+ */
 [data-theme="lime-cabin"] .d1-chip--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), var(--d1-elev-press-rest);
 }
 
 [data-theme="lime-cabin"] .d1-chip--active:hover {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6), var(--d1-elev-press-hover);
 }
 
 [data-theme="lime-cabin"] .d1-chip--icon {
@@ -469,16 +557,18 @@
   color: var(--d1-text-primary);
 }
 
-/* ── Segmented toggle ──────────────────────────────────────────────── */
+/* Segmented track — Write tier sub-canvas (engrave-down). */
 [data-theme="lime-cabin"] .d1-segmented {
   display: inline-flex;
   align-items: center;
-  background: var(--d1-bg-page);
+  background: var(--d1-bg-input);
   border-radius: 9999px;
   padding: 3px;
   gap: 2px;
+  box-shadow: var(--d1-elev-write-rest);
 }
 
+/* Segmented btn — flat at rest (sits inside Tier 2 well); Press hover/active. */
 [data-theme="lime-cabin"] .d1-segmented__btn {
   font-family: var(--d1-font-sans);
   font-weight: 500;
@@ -490,8 +580,19 @@
   padding: 0 12px;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
+}
+
+[data-theme="lime-cabin"] .d1-segmented__btn:hover {
+  color: var(--d1-text-primary);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-theme="lime-cabin"] .d1-segmented__btn:active {
+  box-shadow: var(--d1-elev-press-active);
+  transition: box-shadow var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-theme="lime-cabin"] .d1-segmented__btn:focus-visible {
@@ -499,10 +600,14 @@
   outline-offset: 2px;
 }
 
+/*
+ * Segmented active — coin sits inside the well. Lime hairline preserved;
+ * Press-rest composed beneath (dual polarity: Tier 2 well, Tier 3 coin).
+ */
 [data-theme="lime-cabin"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), var(--d1-elev-press-rest);
 }
 
 /* ── Heatmap ───────────────────────────────────────────────────────── */
@@ -633,7 +738,7 @@
   color: var(--d1-text-primary);
 }
 
-/* Filter affordance above the entries (kept from style-d1) */
+/* Chat search — Write tier sub-canvas; recipe replaces hairline border. */
 [data-theme="lime-cabin"] .d1-chat__search {
   display: flex;
   align-items: center;
@@ -641,11 +746,19 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 9999px;
-  background: var(--d1-bg-page);
+  background: var(--d1-bg-input);
   color: var(--d1-text-muted);
   font-family: var(--d1-font-sans);
   font-size: 13px;
-  border: 1px solid var(--d1-border-hairline);
+  border: 0;
+  box-shadow: var(--d1-elev-write-rest);
+  transition: box-shadow var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
+}
+
+[data-theme="lime-cabin"] .d1-chat__search:focus-within {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+  box-shadow: var(--d1-elev-write-focus);
 }
 
 /* ── Lane-A regulatory disclosure strip ────────────────────────────── */
@@ -659,7 +772,7 @@
   padding: 8px 8px 0;
 }
 
-/* ── Form primitives (D1-native) ───────────────────────────────────── */
+/* Form primitives — Write tier sub-canvas (engrave-down). */
 [data-theme="lime-cabin"] .d1-input,
 [data-theme="lime-cabin"] .d1-select,
 [data-theme="lime-cabin"] .d1-textarea {
@@ -667,12 +780,12 @@
   font-family: var(--d1-font-sans);
   font-size: 14px;
   color: var(--d1-text-primary);
-  background: var(--d1-bg-surface);
-  border: 1px solid var(--d1-border-hairline);
+  background: var(--d1-bg-input);
+  border: 0;
   border-radius: 12px;
   padding: 10px 14px;
-  transition: border-color 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-write-rest);
+  transition: box-shadow var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
   outline: 0;
 }
 
@@ -681,17 +794,15 @@
   color: var(--d1-text-muted);
 }
 
-[data-theme="lime-cabin"] .d1-input:hover,
-[data-theme="lime-cabin"] .d1-select:hover,
-[data-theme="lime-cabin"] .d1-textarea:hover {
-  border-color: var(--d1-border-strong);
-}
-
 [data-theme="lime-cabin"] .d1-input:focus-visible,
 [data-theme="lime-cabin"] .d1-select:focus-visible,
 [data-theme="lime-cabin"] .d1-textarea:focus-visible {
-  border-color: var(--d1-accent-lime);
-  box-shadow: 0 0 0 3px rgba(214, 242, 107, 0.18);
+  /* Compose write-focus + 3px lime halo (existing focus pattern). */
+  box-shadow: var(--d1-elev-write-focus), 0 0 0 3px rgba(214, 242, 107, 0.18);
+}
+
+[data-theme="lime-cabin"] .d1-input--error {
+  box-shadow: var(--d1-elev-write-error);
 }
 
 [data-theme="lime-cabin"] .d1-input:disabled,
@@ -699,6 +810,7 @@
 [data-theme="lime-cabin"] .d1-textarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: var(--d1-elev-disabled);
 }
 
 [data-theme="lime-cabin"] .d1-textarea {
@@ -1150,14 +1262,22 @@
  *      Manrope / Bagel and use Geist Sans + Geist Mono instead. D1 has
  *      no display serif: Mono is the universal numeric face.
  */
+/*
+ * Chart panel — Read tier (quiet amplitude). Hover-NO-OP: chart panels
+ * are passive containers (depth v3 ADR-6). Rail-mitigation rule below
+ * uses :has(.d1-rail) to drop top-highlight when a Record Rail is present
+ * (depth v3 ADR-5 / PD §9). Bg drops 1px hairline border in favour of
+ * the Read recipe's outer ink-baseline + inner top-light.
+ */
 [data-theme="lime-cabin"] .d1-chart-panel {
-  background: var(--d1-bg-card);
+  background: var(--d1-bg-card-elevated);
   border-radius: 24px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  border: 1px solid var(--d1-border-hairline);
+  border: 0;
+  box-shadow: var(--d1-elev-read-quiet-rest);
 
   /* Candy → D1 token remap (chart-internal vars only) */
   --text-on-candy: var(--d1-text-primary);
@@ -1165,7 +1285,7 @@
   --accent: var(--d1-accent-purple);
   --accent-deep: var(--d1-accent-purple);
   --cta-shadow: var(--d1-accent-purple);
-  --card: var(--d1-bg-card);
+  --card: var(--d1-bg-card-elevated);
   --card-highlight: rgba(255, 255, 255, 0.04);
   --bg-cream: var(--d1-bg-card-soft);
   --ink: var(--d1-text-primary);
@@ -1177,6 +1297,15 @@
   --font-family-display: var(--d1-font-mono);
   --font-family-body: var(--d1-font-sans);
   --font-family-mono: var(--d1-font-mono);
+}
+
+/*
+ * Rail-headed chart panel — Record Rail's lime tick stays the loudest
+ * hairline at the top edge. Top-highlight atom dropped; baseline carries
+ * the depth signal alone (depth v3 ADR-5).
+ */
+[data-theme="lime-cabin"] .d1-chart-panel:has(.d1-rail) {
+  box-shadow: var(--d1-elev-read-quiet-rest--rail-headed);
 }
 
 [data-theme="lime-cabin"] .d1-chart-panel__head {
