@@ -596,9 +596,9 @@ export default function StyleD4Page() {
                   ))}
                   {HEATMAP_ROWS.map((row, rIdx) => (
                     <RowFragment
-                      key={HEATMAP_ROW_LABELS[rIdx]}
+                      key={HEATMAP_ROW_LABELS[rIdx] ?? ''}
                       row={row}
-                      label={HEATMAP_ROW_LABELS[rIdx]}
+                      label={HEATMAP_ROW_LABELS[rIdx] ?? ''}
                       rowIdx={rIdx}
                     />
                   ))}
