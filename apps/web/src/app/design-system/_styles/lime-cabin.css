@@ -13,7 +13,7 @@
  *
  * v4: hue 75 → cool-violet 280° + L drop + data-positive / data-negative
  *     + status quartet (declared SEPARATE from data-* per ADR-16).
- * v5: --d1-accent-purple DROPPED (architect ADR-11); lime ladder added
+ * v5: legacy purple accent DROPPED (architect ADR-11); lime ladder added
  *     (5-stop semantic-functional names per ADR-10); component recipes
  *     re-bound (.d1-chip-premium ADR-14, .d1-pill--active + .d1-segmented
  *     __btn--active ADR-15, .d1-avatar--ai ADR-13).

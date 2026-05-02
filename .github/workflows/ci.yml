@@ -46,6 +46,18 @@ jobs:
       - name: Lint (workspace scripts)
         run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run lint
 
+      # ADR-11 (D1 Depth v5) — purple was hard-deleted; lime-mono brand
+      # identity must not regress. Fails the build if any reference to
+      # --d1-accent-purple or --d1-purple-* reappears in apps/web/src.
+      # Historical proposal docs under docs/design/v4_*.md / v5_*.md / and
+      # superseded design dispatch artefacts are excluded.
+      - name: Guard against deprecated --d1-accent-purple tokens (ADR-11)
+        run: |
+          if grep -RnE -- '--d1-accent-purple|--d1-purple-' apps/web/src; then
+            echo "::error::Deprecated purple token reference found. See ADR-11 in docs/design/D1_DEPTH_ARCHITECTURE_v3.md"
+            exit 1
+          fi
+
       - name: Typecheck
         run: pnpm -r --filter="!./apps/api" --filter="!./apps/ai" --if-present run typecheck
 
