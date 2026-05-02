@@ -56,9 +56,9 @@
   --d1-data-positive: oklch(82% 0.13 145);
   --d1-data-negative: oklch(78% 0.14 25);
   --d1-notification-amber: oklch(82% 0.135 87);
-  --d1-data-positive-soft: oklch(82% 0.08 145);
-  --d1-data-negative-soft: oklch(78% 0.09 25);
-  --d1-notification-amber-soft: oklch(82% 0.08 87);
+  --d1-data-positive-soft: oklch(70% 0.05 145); /* v5.3 PO 2026-05-02 — mid-tone fill */
+  --d1-data-negative-soft: oklch(65% 0.06 25); /* v5.3 PO 2026-05-02 — mid-tone fill, hue 25 reads warmer */
+  --d1-notification-amber-soft: oklch(70% 0.05 87); /* v5.3 PO 2026-05-02 — softens amber on dark canvas */
 
   --d1-text-primary: oklch(98% 0.001 280);
   --d1-text-muted: oklch(64% 0.005 280);
@@ -75,10 +75,10 @@
   --d1-status-error: oklch(78% 0.14 25);
   --d1-status-warning: oklch(82% 0.135 87);
   --d1-status-info: oklch(72% 0.1 240);
-  --d1-status-success-soft: oklch(82% 0.08 145);
-  --d1-status-error-soft: oklch(78% 0.09 25);
-  --d1-status-warning-soft: oklch(82% 0.08 87);
-  --d1-status-info-soft: oklch(72% 0.06 240);
+  --d1-status-success-soft: oklch(70% 0.05 145); /* v5.3 — aligned with data-positive-soft */
+  --d1-status-error-soft: oklch(65% 0.06 25); /* v5.3 — aligned with data-negative-soft */
+  --d1-status-warning-soft: oklch(70% 0.05 87); /* v5.3 — aligned with notification-amber-soft */
+  --d1-status-info-soft: oklch(60% 0.05 240); /* v5.3 — info L drops proportionally */
 
   /* ── Provedo Record Rail ───────────────────────────────────────────── */
   --d1-rail-height: 14px;

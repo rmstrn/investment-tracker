@@ -118,9 +118,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-data-positive-soft',
-    value: 'oklch(82% 0.08 145)',
+    value: 'oklch(70% 0.05 145)',
     format: 'oklch',
-    role: 'FILL/SURFACE — KPI delta bg, chip fill, chart-fill positives (v5.1)',
+    role: 'FILL/SURFACE — KPI delta bg, chip fill, chart-fill positives (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -133,9 +133,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-data-negative-soft',
-    value: 'oklch(78% 0.09 25)',
+    value: 'oklch(65% 0.06 25)',
     format: 'oklch',
-    role: 'FILL/SURFACE — KPI delta bg, chip fill, chart-fill negatives (v5.1)',
+    role: 'FILL/SURFACE — KPI delta bg, chip fill, chart-fill negatives (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -148,9 +148,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-notification-amber-soft',
-    value: 'oklch(82% 0.08 87)',
+    value: 'oklch(70% 0.05 87)',
     format: 'oklch',
-    role: 'FILL/SURFACE — chip backgrounds, badge fills (v5.1 retune)',
+    role: 'FILL/SURFACE — chip backgrounds, badge fills (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -162,9 +162,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-status-success-soft',
-    value: 'oklch(82% 0.08 145)',
+    value: 'oklch(70% 0.05 145)',
     format: 'oklch',
-    role: 'STATUS FILL — success chip / badge background',
+    role: 'STATUS FILL — success chip / badge background (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -176,9 +176,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-status-error-soft',
-    value: 'oklch(78% 0.09 25)',
+    value: 'oklch(65% 0.06 25)',
     format: 'oklch',
-    role: 'STATUS FILL — error chip / badge background',
+    role: 'STATUS FILL — error chip / badge background (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -190,9 +190,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-status-warning-soft',
-    value: 'oklch(82% 0.08 87)',
+    value: 'oklch(70% 0.05 87)',
     format: 'oklch',
-    role: 'STATUS FILL — warning chip / badge background',
+    role: 'STATUS FILL — warning chip / badge background (v5.3 mid-tone)',
     inkFg: true,
   },
   {
@@ -204,9 +204,9 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-status-info-soft',
-    value: 'oklch(72% 0.06 240)',
+    value: 'oklch(60% 0.05 240)',
     format: 'oklch',
-    role: 'STATUS FILL — info chip / badge background',
+    role: 'STATUS FILL — info chip / badge background (v5.3 mid-tone)',
     inkFg: true,
   },
   {

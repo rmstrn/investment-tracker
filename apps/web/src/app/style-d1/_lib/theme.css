@@ -74,9 +74,9 @@
   --d1-data-positive: oklch(82% 0.13 145); /* mature pistachio — text/ink uses */
   --d1-data-negative: oklch(78% 0.14 25); /* terracotta — text/ink uses, L 78 holds red NOT salmon */
   --d1-notification-amber: oklch(82% 0.135 87); /* count-badge ink, status text — anchor of gouache triad */
-  --d1-data-positive-soft: oklch(82% 0.08 145); /* fill/surface — KPI delta bg, chip fill, chart-fill positives */
-  --d1-data-negative-soft: oklch(78% 0.09 25); /* fill/surface — KPI delta bg, chip fill, chart-fill negatives */
-  --d1-notification-amber-soft: oklch(82% 0.08 87); /* fill/surface — chip backgrounds, badge fills */
+  --d1-data-positive-soft: oklch(70% 0.05 145); /* v5.3 PO 2026-05-02: L 82→70 + chroma 0.08→0.05 — mid-tone fill, no «pop bright» on dark canvas */
+  --d1-data-negative-soft: oklch(65% 0.06 25); /* v5.3 PO 2026-05-02: L 78→65 + chroma 0.09→0.06 — red hue 25 reads warmer at higher L, drop further */
+  --d1-notification-amber-soft: oklch(70% 0.05 87); /* v5.3 PO 2026-05-02: L 82→70 + chroma 0.08→0.05 — softens card amber pop on dark canvas */
 
   --d1-text-primary: oklch(98% 0.001 280); /* AAA on bg-card; cool-tinted */
   --d1-text-muted: oklch(64% 0.005 280); /* AA-large + AAA on 16px+ body */
@@ -97,10 +97,10 @@
   --d1-status-error: oklch(78% 0.14 25); /* matches data-negative hue, MAY drift */
   --d1-status-warning: oklch(82% 0.135 87); /* matches notification-amber hue, MAY drift */
   --d1-status-info: oklch(72% 0.1 240); /* cool blue-grey — no data-side counterpart */
-  --d1-status-success-soft: oklch(82% 0.08 145); /* fill/surface — success chip bg */
-  --d1-status-error-soft: oklch(78% 0.09 25); /* fill/surface — error chip bg */
-  --d1-status-warning-soft: oklch(82% 0.08 87); /* fill/surface — warning chip bg */
-  --d1-status-info-soft: oklch(72% 0.06 240); /* fill/surface — info chip bg */
+  --d1-status-success-soft: oklch(70% 0.05 145); /* v5.3 — aligned with data-positive-soft retune */
+  --d1-status-error-soft: oklch(65% 0.06 25); /* v5.3 — aligned with data-negative-soft retune */
+  --d1-status-warning-soft: oklch(70% 0.05 87); /* v5.3 — aligned with notification-amber-soft retune */
+  --d1-status-info-soft: oklch(60% 0.05 240); /* v5.3 — info also drops L proportionally (was 72/0.06) */
 
   /* ── Provedo Record Rail (signature element) ───────────────────────── */
   --d1-rail-height: 14px;

@@ -114,8 +114,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-data-positive-soft',
-    value: 'oklch(82% 0.08 145)',
-    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.1)',
+    value: 'oklch(70% 0.05 145)',
+    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.3 mid-tone)',
   },
   {
     token: '--d1-data-negative',
@@ -124,8 +124,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-data-negative-soft',
-    value: 'oklch(78% 0.09 25)',
-    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.1)',
+    value: 'oklch(65% 0.06 25)',
+    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.3 mid-tone)',
   },
   {
     token: '--d1-notification-amber',
@@ -134,8 +134,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-notification-amber-soft',
-    value: 'oklch(82% 0.08 87)',
-    role: 'FILL/SURFACE — badge fills (v5.1)',
+    value: 'oklch(70% 0.05 87)',
+    role: 'FILL/SURFACE — badge fills (v5.3 mid-tone)',
   },
   {
     token: '--d1-status-success',
@@ -144,8 +144,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-status-success-soft',
-    value: 'oklch(82% 0.08 145)',
-    role: 'STATUS FILL — success chip background',
+    value: 'oklch(70% 0.05 145)',
+    role: 'STATUS FILL — success chip background (v5.3 mid-tone)',
   },
   {
     token: '--d1-status-error',
@@ -154,8 +154,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-status-error-soft',
-    value: 'oklch(78% 0.09 25)',
-    role: 'STATUS FILL — error chip background',
+    value: 'oklch(65% 0.06 25)',
+    role: 'STATUS FILL — error chip background (v5.3 mid-tone)',
   },
   {
     token: '--d1-status-warning',
@@ -164,8 +164,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-status-warning-soft',
-    value: 'oklch(82% 0.08 87)',
-    role: 'STATUS FILL — warning chip background',
+    value: 'oklch(70% 0.05 87)',
+    role: 'STATUS FILL — warning chip background (v5.3 mid-tone)',
   },
   {
     token: '--d1-status-info',
@@ -174,8 +174,8 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-status-info-soft',
-    value: 'oklch(72% 0.06 240)',
-    role: 'STATUS FILL — info chip background',
+    value: 'oklch(60% 0.05 240)',
+    role: 'STATUS FILL — info chip background (v5.3 mid-tone)',
   },
   { token: '--d1-text-primary', value: 'oklch(98% 0.001 280)', role: 'Display + body on dark' },
   { token: '--d1-text-muted', value: 'oklch(64% 0.005 280)', role: 'Secondary; eyebrows; axis' },
