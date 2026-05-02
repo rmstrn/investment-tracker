@@ -46,16 +46,17 @@
   /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
    * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
    *   .d1-rail · .d1-rail__line · .d1-rail__tick
-   *   .d1-kpi--portfolio
+   *   .d1-kpi--lookhere · .d1-kpi--lime · .d1-kpi--portfolio
    *   .d1-cta--primary · .d1-cta--primary:hover
    *   .d1-focus-ring · :focus-visible (composite ring composer)
    *   .d1-ai-byline · .d1-pill--active · .d1-segmented__btn--active
    * Anywhere else binding `lime-signal` = architectural violation.
    *
-   * v5.5 (PO «ядовитый» 2026-05-02): look-here KPI fill (.d1-kpi--lime)
-   * demoted from lime-signal (L 91 C 0.21) to lime-mute (L 72 C 0.16).
-   * Mid-tone golden-green «look-here» without «glasses-pierced bright».
-   * Ink-deep text contrast holds at 8.49:1 (AAA-body). */
+   * v5.7 (PO «верни цвет с Pinterest» 2026-05-02): look-here KPI fill
+   * (.d1-kpi--lime) RESTORED to lime-signal — v5.6 retuned the token to
+   * oklch(94% 0.20 119) ≈ #DAFF7D matching the Pinterest eyedropper.
+   * v5.5 lime-mute swap reverted; the «ядовитый» complaint was driven by
+   * the previous saturated-yellow value, not by the signal slot itself. */
   --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
   --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
   --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
@@ -623,12 +624,13 @@
   font-size: clamp(48px, 4vw + 32px, 56px);
 }
 
-/* Look-here KPI — Press-grade firmness on lime-mute substrate (v5.5).
- * Fill demoted from lime-signal L 91 → lime-mute L 72 per PO «ядовитый»
- * 2026-05-02 — mid-tone golden-green at this tile size, AAA-body text
- * contrast preserved at 8.49:1 against ink-deep. */
+/* Look-here KPI — Press-grade firmness on lime-signal substrate.
+ * v5.7 (PO 2026-05-02): restored to lime-signal — v5.6 retuned the token
+ * to oklch(94% 0.20 119) ≈ #DAFF7D per Pinterest eyedropper, which is
+ * the bright pure-yellow PO wants for the Drift KPI. AAA-large preserved
+ * (ink-deep on lime-signal ≈ 17:1). */
 [data-style="d1"] .d1-kpi--lime {
-  background: var(--d1-accent-lime-mute);
+  background: var(--d1-accent-lime-signal);
   /* Custom emboss — std white-light invisible on lime; ramp to 22% white,
    * 18% ink-bottom, 40% ink-baseline (depth v3 §7.7). */
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
