@@ -16,7 +16,6 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
-    "@amcharts/amcharts5": "^5.17.2",
     "@clerk/nextjs": "^6.39.3",
     "@headlessui/react": "^2.2.10",
     "@investment-tracker/api-client": "workspace:*",
@@ -47,7 +46,6 @@
     "next-themes": "^0.4.6",
     "react": "19.2.5",
     "react-dom": "19.2.5",
-    "recharts": "^2.15.4",
     "sonner": "^2.0.7",
     "tailwind-merge": "^2.6.0"
   },
