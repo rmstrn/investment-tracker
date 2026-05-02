@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { geistD1, geistMonoD1 } from './_lib/fonts';
+import './_lib/depth.css';
 import './_lib/theme.css';
 
 /**

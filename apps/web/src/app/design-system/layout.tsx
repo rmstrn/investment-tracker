@@ -1,6 +1,7 @@
 import { ToastProvider } from '@investment-tracker/ui';
 import type { ReactNode } from 'react';
 import { geistD1, geistMonoD1 } from './_fonts';
+import '../style-d1/_lib/depth.css';
 import './_styles/lime-cabin.css';
 
 /**

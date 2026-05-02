@@ -1,0 +1,145 @@
+/*
+ * D1 Depth System — atoms + recipes (single source of truth).
+ *
+ * Implements the «deboss-at-rest + lift-on-interaction + Coin & Plate
+ * inverse polarity» grammar locked 2026-05-02.
+ *
+ *   - Lock memo: project_d1_depth_system_2026-05-02
+ *   - Value spec: docs/design/D1_DEPTH_SYSTEM.md   (PD — what)
+ *   - Architecture: docs/design/D1_DEPTH_ARCHITECTURE.md  (architect — how)
+ *
+ * Architecture invariant — two-layer composition (architect ADR-3):
+ *
+ *   ATOM layer    primitive `box-shadow` declarations (raw rgba+offset).
+ *                 Never read by component selectors. Edit these to tune
+ *                 the whole system; recipes inherit. Per-component
+ *                 polarity flips (lime-on-lime, error variants) re-bind
+ *                 atoms locally instead of re-writing recipes.
+ *
+ *   RECIPE layer  composed `box-shadow` lists referencing atoms. This
+ *                 is what `.d1-kpi`, `.d1-cta`, etc. consume. Token
+ *                 names follow `--d1-elev-{tier}-{state}` (architect
+ *                 ADR-2). Tier 1 = recessed/static, Tier 2 = embossed/
+ *                 interactive — polarity is in the tier number, not a
+ *                 separate suffix (the «Coin & Plate» signature is an
+ *                 architectural invariant, not a runtime choice).
+ *
+ * Stacking order (architect ADR-6): focus-ring outermost, lift outer
+ * middle, emboss/engrave innermost. CSS paints box-shadow layers
+ * back-to-front in reverse list order, so first-listed = on top.
+ *
+ * Scope: dual-scoped to `[data-style="d1"], [data-theme="lime-cabin"]`
+ * so both `/style-d1` and `/design-system` consume the same tokens
+ * without drift. Component bindings stay in their existing route-local
+ * files (theme.css and lime-cabin.css) because they bind under the
+ * same wrapper selectors.
+ */
+
+[data-style="d1"],
+[data-theme="lime-cabin"] {
+  /* ── Atom layer — raw shadows, never read by selectors ─────────────── */
+
+  /* Engrave (tier 1 / recessed) — paper pressed slightly into canvas.
+   * Calibrated against --d1-bg-card #26272C and --d1-bg-page #141416.
+   * Top-light at 4% reads as a hairline; bottom-dark at 32% reads as
+   * a 1px etch. >12% white = 90s skeumorphic bevel (failure mode).
+   * >40% black = halo on charcoal (failure mode). */
+  --d1-elev-atom-engrave-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  --d1-elev-atom-engrave-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.32);
+
+  /* Engrave hover — top-light fades, bottom-dark deepens. Used only on
+   * tier-1 surfaces that earn an intentional hover lift (KPI cards). */
+  --d1-elev-atom-engrave-top-hover: inset 0 1px 0 0 rgba(255, 255, 255, 0.02);
+  --d1-elev-atom-engrave-bottom-hover: inset 0 -1px 0 0 rgba(0, 0, 0, 0.4);
+
+  /* Emboss (tier 2 / raised) — interactive surfaces lifted just above
+   * the press. Stronger top-light (8%) invites the press; restrained
+   * bottom-dark (24%) anchors. */
+  --d1-elev-atom-emboss-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+  --d1-elev-atom-emboss-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.24);
+
+  /* Emboss hover — top-light intensifies, bottom-dark eases. */
+  --d1-elev-atom-emboss-top-hover: inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  --d1-elev-atom-emboss-bottom-hover: inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
+
+  /* Pressed (tier 2 active) — surface sinks: inner top shadow, no
+   * outer shadow. Reads as «button pressed into the panel». */
+  --d1-elev-atom-pressed-top: inset 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --d1-elev-atom-pressed-bottom: inset 0 -1px 0 0 rgba(255, 255, 255, 0.02);
+
+  /* Outer drop atoms — single ink-baseline 1px line + soft blur. No
+   * multi-layer atmospheric stacks (banned per anti-pattern list). */
+  --d1-elev-atom-ink-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.35);
+  --d1-elev-atom-ink-baseline-hover: 0 2px 0 0 rgba(0, 0, 0, 0.5);
+  --d1-elev-atom-lift-soft: 0 4px 12px -2px rgba(0, 0, 0, 0.32);
+  --d1-elev-atom-lift-strong: 0 8px 20px -4px rgba(0, 0, 0, 0.45);
+
+  /* ── Recipe layer — what component selectors consume ───────────────── */
+
+  /* Tier 1 — RECESSED (debossed). Static surfaces at rest. */
+  --d1-elev-tier1-rest: var(--d1-elev-atom-engrave-top), var(--d1-elev-atom-engrave-bottom);
+
+  /* Tier 1 — RECESSED hover. Top-light fades, bottom-dark deepens,
+   * outer ink-baseline shadow appears for the «lifted off the press»
+   * moment. Used only where tier-1 is known-interactive (KPI cards). */
+  --d1-elev-tier1-hover: var(--d1-elev-atom-engrave-top-hover),
+    var(--d1-elev-atom-engrave-bottom-hover), var(--d1-elev-atom-ink-baseline-hover),
+    var(--d1-elev-atom-lift-strong);
+
+  /* Tier 2 — EMBOSSED rest. Interactive surfaces «coin» on the page. */
+  --d1-elev-tier2-rest: var(--d1-elev-atom-emboss-top), var(--d1-elev-atom-emboss-bottom),
+    var(--d1-elev-atom-ink-baseline);
+
+  /* Tier 2 — EMBOSSED hover. Soft halo joins. */
+  --d1-elev-tier2-hover: var(--d1-elev-atom-emboss-top-hover),
+    var(--d1-elev-atom-emboss-bottom-hover), var(--d1-elev-atom-ink-baseline-hover),
+    var(--d1-elev-atom-lift-soft);
+
+  /* Tier 2 — ACTIVE (transient mouse-down). Surface sinks. */
+  --d1-elev-tier2-active: var(--d1-elev-atom-pressed-top), var(--d1-elev-atom-pressed-bottom);
+
+  /* Disabled — flatten. Combine with opacity:0.5 at the rule level. */
+  --d1-elev-disabled: none;
+
+  /* Flat opt-out — disclaimer chip + Record Rail explicitly opt out
+   * of the depth system. `box-shadow: var(--d1-elev-flat)` reads as
+   * intent («this opted out, didn't forget») vs. an absent declaration. */
+  --d1-elev-flat: none;
+
+  /* Focus-ring composer — lime CTA / lime KPI / active-pill on lime
+   * fill, where outline:2px solid lime is invisible. Layered shadow:
+   * 4px page-canvas spacer + 6px lime ring. Composes with any tier
+   * shadow that precedes it in the box-shadow list (focus-ring is
+   * outermost = first in declaration). */
+  --d1-elev-focus-ring-on-lime: 0 0 0 4px var(--d1-bg-page), 0 0 0 6px var(--d1-accent-lime);
+
+  /* ── Motion ────────────────────────────────────────────────────────── */
+  --d1-elev-duration-rest-to-hover: 200ms;
+  --d1-elev-duration-hover-to-active: 80ms;
+  --d1-elev-duration-active-to-rest: 220ms;
+  --d1-elev-easing: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Reduced motion (architect ADR-4) ───────────────────────────────────
+ * Static box-shadow values at rest are identical with and without
+ * reduced motion — depth is a static surface property, not a motion.
+ * Only the transition collapses to instant. Per-component transform
+ * suppression for hover/active lives in each route's theme file. */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="d1"] [class*="d1-"],
+  [data-theme="lime-cabin"] [class*="d1-"] {
+    transition-duration: 0ms !important;
+  }
+}
+
+/* ── prefers-contrast: more (architect ADR-7) ───────────────────────────
+ * AAA-contrast users get visibly stronger bevels by re-binding the
+ * dark-edge atoms. Recipes inherit automatically. ~5% of users. */
+@media (prefers-contrast: more) {
+  [data-style="d1"],
+  [data-theme="lime-cabin"] {
+    --d1-elev-atom-engrave-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.5);
+    --d1-elev-atom-emboss-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.32);
+    --d1-elev-atom-ink-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.5);
+  }
+}
