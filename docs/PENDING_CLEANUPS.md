@@ -66,16 +66,6 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Why deferred:** No signal of breakage. Trivial fix when triggered.
 **Owner:** product-designer + frontend-engineer (single shared edit), tech-lead reviews.
 
-### 12. finance-skills + c-level-skills upstream structure mismatch (LOW — track for plugin maintainer)
-**Trigger:** If `claude-code-skills` plugin maintainer ships a structural fix (top-level `skills/` subdirectory) — then we can remove the user-level copies and re-enable plugin loading.
-**Last reviewed:** 2026-04-29 — no upstream signal.
-**Scope:**
-- Currently 9 skills (3 finance + 6 c-level) live as direct copies in `~/.claude/skills/` — see `docs/ADR-2026-04-29-plugin-architecture.md`
-- If upstream fixes structure: delete the 9 user-level copies, plugin will load 31 skills natively
-- Otherwise: when bumping plugin version, manually re-copy if upstream changed content
-**Why deferred:** Working as-is; upstream fix is on plugin maintainer, not us.
-**Owner:** Right-Hand (notification trigger), PO decides re-deploy.
-
 ### 13. Embed `## Default skill stack` section per agent (gradual rollout)
 **Trigger:** Whenever an agent file in `.claude/agents/` is opened for edit (scope change / skill discovery / persona refresh).
 **Last reviewed:** 2026-04-29 — appendix in CONSTRAINTS.md amended to mandate `superpowers:brainstorming` baseline; per-agent embed deferred.
@@ -106,6 +96,11 @@ Tracks doc-level follow-ups that are known-to-do but intentionally deferred to a
 **Trigger:** Same as item #1 (name lock).
 **Closed:** Part of name-lock sweep commit 2026-04-23. (Annotation later superseded by item #7 Provedo lock; rounds 1-6 preserved as historical record.)
 **Commit:** 3524b33.
+
+### 12. finance-skills + c-level-skills upstream structure mismatch — COMPLETED 2026-05-02
+**Trigger:** Plugin loader was emitting «Path escapes plugin directory: ./ (skills)» errors on every load.
+**Closed:** Both broken plugins disabled in `.claude/settings.json`'s `enabledPlugins` (gitignored, per-developer). 9 skills (3 finance + 6 c-level) remain working as direct user-level copies in `~/.claude/skills/`. References updated in `.claude/agents/finance-advisor.md` + `docs/finance/PRICING_TIER_VALIDATION.md` to drop the now-meaningless `finance-skills:` / `c-level-skills:` prefix. ADR `2026-04-29-plugin-architecture.md` annotated with disabled-status note. Two `/doctor` plugin errors silenced.
+**Commit:** chore/disable-broken-plugins branch — see PR.
 
 ---
 

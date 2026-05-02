@@ -1,6 +1,7 @@
 # ADR — 2026-04-29 — Plugin × project-agent architecture
 
 **Status:** ACCEPTED (PO greenlit 2026-04-29 — «делай как считаешь нужно, используя скилы и лучшие практики»)
+**Update 2026-05-02:** `finance-skills` + `c-level-skills` plugins disabled in `.claude/settings.json` `enabledPlugins` (PO directive — silenced the recurring `/doctor` «Path escapes plugin directory» errors). The 9 user-level skill copies (3 finance + 6 c-level) at `~/.claude/skills/` continue to load and remain the active source. References updated in `.claude/agents/finance-advisor.md` + `docs/finance/PRICING_TIER_VALIDATION.md` to drop the now-meaningless `finance-skills:` / `c-level-skills:` prefix. PENDING_CLEANUPS item #12 closed.
 **Author:** Right-Hand
 **Scope:** how 14 enabled marketplace plugins compose with 17 project agents
 **Counterpart memory:** `project_plugin_architecture_2026-04-29.md`
