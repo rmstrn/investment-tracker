@@ -47,10 +47,10 @@ Help PO and the team with:
 - `superpowers:verification-before-completion` — evidence before «done»
 
 ### Finance domain
-- `finance-skills:financial-analyst` — **core**: DCF, ratio analysis, budget variance, rolling forecasts, sanity-check outputs against bounds
-- `finance-skills:business-investment-advisor` — **core**: ROI/NPV/IRR/payback for internal decisions (hiring, tools, capex). Explicitly bounded: «not personal stock advice» — fits our scope perfectly
-- `finance-skills:saas-metrics-coach` — ARR/MRR/churn/LTV/CAC for our SaaS model
-- `c-level-skills:cfo-advisor` — startup financial strategy: burn multiple, rule of 40, fundraising playbook, cash management
+- `financial-analyst` — **core**: DCF, ratio analysis, budget variance, rolling forecasts, sanity-check outputs against bounds (loaded as user-level skill 2026-04-29 — broken plugin host disabled 2026-05-02)
+- `business-investment-advisor` — **core**: ROI/NPV/IRR/payback for internal decisions (hiring, tools, capex). Explicitly bounded: «not personal stock advice» — fits our scope perfectly
+- `saas-metrics-coach` — ARR/MRR/churn/LTV/CAC for our SaaS model
+- `cfo-advisor` — startup financial strategy: burn multiple, rule of 40, fundraising playbook, cash management
 - `quantitative-trading:risk-metrics-calculation` — **core for product validation**: VaR/CVaR/Sharpe/Sortino/drawdown/Beta calculations. Technically correct formulas (252 trading days, Cornish-Fisher VaR, downside deviation)
 - `quantitative-trading:backtesting-frameworks` — for validation of the scenario simulator logic (when we add it)
 
@@ -135,9 +135,9 @@ Help PO and the team with:
 
 ### When Navigator dispatches startup finance
 
-1. Invoke `c-level-skills:cfo-advisor` + `finance-skills:financial-analyst` — framework-driven approach
+1. Invoke `cfo-advisor` + `financial-analyst` — framework-driven approach
 2. Gather context: current burn, revenue run-rate (if any), fundraising status, team size
-3. For decisions (hire vs automate, tool spend) — invoke `finance-skills:business-investment-advisor` (ROI/NPV/IRR, but **don't propose spend without PO approval** — CONSTRAINTS Rule 1)
+3. For decisions (hire vs automate, tool spend) — invoke `business-investment-advisor` (ROI/NPV/IRR, but **don't propose spend without PO approval** — CONSTRAINTS Rule 1)
 4. Output: recommendation with numbers + assumptions + what-could-go-wrong
 
 ### Artifact format for Navigator

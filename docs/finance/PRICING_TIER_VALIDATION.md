@@ -4,7 +4,7 @@
 **Date:** 2026-04-23
 **Status:** pre-alpha validation; numbers are hypotheses until real cohort data lands
 **Depends on:** `02_POSITIONING.md` v3.1 pricing tiers, `COACH_TIER_PLACEMENT.md`, `BENCHMARKS_SOURCED.md`, `AI_CONTENT_VALIDATION_TEMPLATES.md`
-**Skills applied:** `finance-skills:saas-metrics-coach` (tier structure), `c-level-skills:cfo-advisor` (unit economics + conversion funnel), `finance-skills:business-investment-advisor` (ROI/NPV-per-tier)
+**Skills applied:** `saas-metrics-coach` (tier structure), `cfo-advisor` (unit economics + conversion funnel), `business-investment-advisor` (ROI/NPV-per-tier)
 
 ---
 
