@@ -1,27 +1,19 @@
-import { auth } from '@clerk/nextjs/server';
 import type { Metadata } from 'next';
-import type { PlanTier } from './_components/PricingTable';
-import { PricingTable } from './_components/PricingTable';
+import { AuthAwarePricingTable } from './_components/AuthAwarePricingTable';
 
 export const metadata: Metadata = {
   title: 'Pricing — Provedo',
   description:
     'Simple pricing. Free forever for basic tracking. Paid tiers unlock deeper AI and tax reports.',
+  alternates: { canonical: '/pricing' },
 };
 
-function isPlanTier(value: unknown): value is PlanTier {
-  return value === 'free' || value === 'plus' || value === 'pro';
-}
+// Static generation — the pricing surface itself is identical for every
+// visitor; the per-user «current plan» badge is a client-side
+// personalization handled inside <AuthAwarePricingTable/>.
+export const dynamic = 'force-static';
 
-export default async function PricingPage() {
-  const { userId, sessionClaims } = await auth();
-
-  let currentPlan: PlanTier | undefined;
-  if (userId) {
-    const meta = (sessionClaims?.publicMetadata ?? {}) as { tier?: unknown };
-    currentPlan = isPlanTier(meta.tier) ? meta.tier : 'free';
-  }
-
+export default function PricingPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
       <header className="mx-auto max-w-2xl text-center">
@@ -33,7 +25,7 @@ export default async function PricingPage() {
         </p>
       </header>
       <div className="mt-14 md:mt-20">
-        <PricingTable currentPlan={currentPlan} />
+        <AuthAwarePricingTable />
       </div>
       <p className="mt-10 text-center text-xs text-text-tertiary">
         Prices in USD. Taxes calculated at checkout.

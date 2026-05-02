@@ -1,23 +1,25 @@
-import { auth } from '@clerk/nextjs/server';
 import { Button, Card, CardDescription, CardTitle } from '@investment-tracker/ui';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
+import { RedirectIfAuthed } from './_components/RedirectIfAuthed';
 
 export const metadata: Metadata = {
   title: 'Provedo — AI-native portfolio tracker',
   description:
     'AI-native portfolio tracker. Instead of charts and spreadsheets, have a conversation with your investments.',
+  alternates: { canonical: '/' },
 };
 
-export default async function LandingPage() {
-  const { userId } = await auth();
-  if (userId) {
-    redirect('/dashboard');
-  }
+// Static generation — the landing renders identical HTML for every
+// visitor; authed users get a client-side redirect via <RedirectIfAuthed/>.
+// Trades a brief flash for sub-100ms FCP + SEO on the dominant anonymous
+// audience.
+export const dynamic = 'force-static';
 
+export default function LandingPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+      <RedirectIfAuthed />
       <div className="space-y-20 md:space-y-28">
         <Hero />
         <ThreePillars />
