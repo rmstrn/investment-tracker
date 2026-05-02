@@ -40,7 +40,7 @@ const THEMES: ReadonlyArray<ThemeRow> = [
     name: 'lime-cabin',
     bg: '#141416',
     text: '#FAFAFA',
-    accent: '#D6F26B',
+    accent: '#DAFF7D',
     note: 'D1 «Lime Cabin» — the canonical Provedo surface (locked 2026-05-01)',
   },
 ];
@@ -99,7 +99,7 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   },
   {
     token: '--d1-accent-lime-signal',
-    value: 'oklch(91% 0.21 117)',
+    value: 'oklch(94% 0.2 119)',
     role: 'SIGNATURE — Record Rail / look-here / CTA',
   },
   {

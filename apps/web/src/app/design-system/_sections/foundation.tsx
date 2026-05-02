@@ -95,7 +95,7 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   },
   {
     name: '--d1-accent-lime-signal',
-    value: 'oklch(91% 0.21 117)',
+    value: 'oklch(94% 0.2 119)',
     format: 'oklch',
     role: 'SIGNATURE — Record Rail / look-here KPI / CTA primary',
     contrast: 'Ink on signal: 15.4:1 (AAA)',

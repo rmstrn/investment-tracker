@@ -59,7 +59,7 @@
   --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
   --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
   --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
-  --d1-accent-lime-signal: oklch(91% 0.21 117); /* SIGNATURE — Record Rail / look-here / CTA */
+  --d1-accent-lime-signal: oklch(94% 0.2 119); /* SIGNATURE — Record Rail / look-here / CTA — matches Pinterest reference eyedropper #DAFF7D — locked 2026-05-02 */
   --d1-accent-lime-mute: oklch(72% 0.16 117); /* AI byline / cohort / default chart bar */
 
   /* DEPRECATED — alias for v3 → v5 migration safety (architect ADR-10).
