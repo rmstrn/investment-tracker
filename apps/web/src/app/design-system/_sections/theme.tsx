@@ -77,7 +77,11 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
     value: 'oklch(23% 0.005 280)',
     role: 'Read-tier KPI / panel fill',
   },
-  { token: '--d1-bg-input', value: 'oklch(8% 0.004 280)', role: 'Sub-canvas form well' },
+  {
+    token: '--d1-bg-input',
+    value: 'oklch(10% 0.004 280)',
+    role: 'Sub-canvas form well (v5.2 softer deboss)',
+  },
   {
     token: '--d1-accent-lime-canvas',
     value: 'oklch(20% 0.012 117)',

@@ -53,8 +53,8 @@ const PALETTE: ReadonlyArray<PaletteToken> = [
   {
     name: '--d1-bg-input',
     hex: 'oklch',
-    oklch: 'oklch(8% 0.004 280)',
-    role: 'Write-tier sub-canvas well (form fields)',
+    oklch: 'oklch(10% 0.004 280)',
+    role: 'Write-tier sub-canvas well (form fields) — v5.2 softer deboss',
   },
   {
     name: '--d1-accent-lime-canvas',

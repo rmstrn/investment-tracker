@@ -41,7 +41,7 @@
   --d1-bg-card: oklch(19% 0.005 280); /* non-elevated containers */
   --d1-bg-card-soft: oklch(22% 0.005 280); /* press-tier hover bg, segmented active bg */
   --d1-bg-card-elevated: oklch(23% 0.005 280); /* Read-tier surface fill (KPI / panel) */
-  --d1-bg-input: oklch(8% 0.004 280); /* Write-tier sub-canvas well */
+  --d1-bg-input: oklch(10% 0.004 280); /* Write-tier sub-canvas well — softer deboss (v5.2 retune from 8% per PO «черные инпуты» 2026-05-02) */
 
   /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
    * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
