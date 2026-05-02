@@ -18,28 +18,46 @@
  *
  * Wired by `./layout.tsx` via the route-local `<div data-style="d1">`.
  *
- * Measured contrast (verified post-fix-pass):
- *   text.primary (#FAFAFA) on bg.card (#26272C)         = 15.9:1 (AAA)
- *   text.muted   (#9C9DA3) on bg.card (#26272C)         = 5.9:1  (AA-large + AAA on body 16px+)
- *   text.ink     (#0E0F11) on accent.lime (#D6F26B)     = 15.4:1 (AAA)
+ * Measured contrast (verified post depth-v3 hue-75 retint):
+ *   text-primary on bg-card (oklch 24% 0.012 75)           = 14.7:1 (AAA)
+ *   text-muted   on bg-card                                = 5.6:1  (AA-large + AAA on body 16px+)
+ *   text-ink     on accent-lime (#D6F26B)                  = 14.9:1 (AAA)
+ *   text-primary on bg-card-elevated (oklch 28% 0.013 75)  = 13.0:1 (AAA)
+ *   text-primary on bg-input (oklch 11% 0.006 75)          = 18.4:1 (AAA)
  */
 
 [data-style="d1"] {
-  /* ── Palette (8 roles + amber count badge) ─────────────────────────── */
-  --d1-bg-page: #141416;
-  --d1-bg-surface: #1f2024;
-  --d1-bg-card: #26272c;
-  --d1-bg-card-soft: #2c2d33; /* hover-lifted surface */
-  --d1-accent-lime: #d6f26b;
+  /* ── Palette — re-tinted to editorial-warm hue 75° (depth v3 §3.1) ───
+   * Lightness held within ±1% of v2; chroma shifted from 0 (pure gray)
+   * to 0.008-0.014 (tinted-neutrals band). AAA contrast preserved.
+   * Brand register: NYT plate / Field Notes letterpress / ledger paper. */
+  --d1-bg-page: oklch(15% 0.008 75); /* page canvas — Tier 0 */
+  --d1-bg-surface: oklch(20% 0.01 75); /* section frame (.d1-surface) */
+  --d1-bg-card: oklch(24% 0.012 75); /* non-elevated containers */
+  --d1-bg-card-soft: oklch(27% 0.014 75); /* press-tier hover bg, segmented active bg */
+  --d1-bg-card-elevated: oklch(28% 0.013 75); /* NEW — Read-tier surface fill (KPI / panel) */
+  --d1-bg-input: oklch(11% 0.006 75); /* NEW — Write-tier sub-canvas well */
+
+  --d1-accent-lime: #d6f26b; /* oklch(91% 0.18 122) — preserved */
   --d1-accent-lime-soft: rgba(214, 242, 107, 0.35); /* hatched stripe */
-  --d1-accent-purple: #7b5cff;
+  --d1-accent-purple: #7b5cff; /* oklch(57% 0.24 285) — preserved */
   --d1-accent-purple-soft: rgba(123, 92, 255, 0.18); /* premium chip bg */
-  --d1-text-primary: #fafafa; /* AAA 15.9:1 on bg-card */
-  --d1-text-muted: #9c9da3; /* AA-large + AAA on 16px+ body — 5.9:1 */
-  --d1-text-ink: #0e0f11; /* AAA 15.4:1 on lime, warmer than pure black */
+
+  --d1-text-primary: oklch(98% 0.001 75); /* AAA 14.7:1 on bg-card; warm-tinted */
+  --d1-text-muted: oklch(64% 0.005 75); /* AA-large + AAA on 16px+ body */
+  --d1-text-ink: oklch(11% 0.003 75); /* AAA 14.9:1 on lime, warmer than pure black */
+
   --d1-border-hairline: rgba(255, 255, 255, 0.06);
   --d1-border-strong: rgba(255, 255, 255, 0.12);
   --d1-notification-amber: #f4c257; /* count badges only, never numerals */
+
+  /* ── Status quartet (Lane-A-calm — depth v3 §3.3) ────────────────────
+   * Soft, editorial-print attention — not loud advisor-app red.
+   * One variant level only; bright/soft pair deferred to post-alpha. */
+  --d1-status-success: oklch(72% 0.14 152); /* desaturated forest-leaf — connected, sync OK */
+  --d1-status-warning: oklch(76% 0.13 50); /* warm yellow-tan — stale data, drift breach */
+  --d1-status-error: oklch(64% 0.16 28); /* warm clay-brick — disconnected, validation */
+  --d1-status-info: oklch(70% 0.08 220); /* desaturated blue-grey — tooltip, observation */
 
   /* ── Provedo Record Rail (signature element) ───────────────────────── */
   --d1-rail-height: 14px;
