@@ -1,3 +1,8 @@
+/* Depth atoms + recipes (single source of truth, dual-scoped to both
+ * `[data-style="d1"]` and `[data-theme="lime-cabin"]`). MUST stay above
+ * any rule so the @import directive is valid CSS. */
+@import "../../style-d1/_lib/depth.css";
+
 /*
  * D1 «Lime Cabin» theme — route-local mirror for `/design-system`.
  *
