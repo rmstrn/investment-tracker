@@ -34,8 +34,8 @@ import type { StackedBarChartPayload } from '@investment-tracker/shared-types/ch
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { type CSSProperties, useEffect, useId, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -97,8 +97,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -108,8 +107,7 @@ const TOOLTIP_LABEL_STYLE: CSSProperties = {
 };
 
 const AXIS_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -188,9 +186,7 @@ export function StackedBarVisx({
       const elapsed = now - t0;
       setEntranceMs(elapsed);
       const ceiling =
-        ENTRANCE_DURATION_MS +
-        ENTRANCE_STAGGER_MS * Math.max(0, payload.data.length - 1) +
-        80;
+        ENTRANCE_DURATION_MS + ENTRANCE_STAGGER_MS * Math.max(0, payload.data.length - 1) + 80;
       if (elapsed < ceiling) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -206,9 +202,7 @@ export function StackedBarVisx({
   const series = payload.series;
 
   // ─── Per-stack totals ────────────────────────────────────────────────
-  const totals = data.map((row) =>
-    series.reduce((acc, s) => acc + Number(row[s.key] ?? 0), 0),
-  );
+  const totals = data.map((row) => series.reduce((acc, s) => acc + Number(row[s.key] ?? 0), 0));
   const yMax = Math.max(0, ...totals);
 
   // ─── Scales ──────────────────────────────────────────────────────────
@@ -230,11 +224,8 @@ export function StackedBarVisx({
 
   // ─── Tooltip data ────────────────────────────────────────────────────
   const hoveredRow = hover ? data[hover.stackIndex] : null;
-  const hoveredSeries = hover
-    ? series.find((s) => s.key === hover.seriesKey) ?? null
-    : null;
-  const hoveredValue =
-    hoveredRow && hoveredSeries ? Number(hoveredRow[hoveredSeries.key] ?? 0) : 0;
+  const hoveredSeries = hover ? (series.find((s) => s.key === hover.seriesKey) ?? null) : null;
+  const hoveredValue = hoveredRow && hoveredSeries ? Number(hoveredRow[hoveredSeries.key] ?? 0) : 0;
 
   return (
     <div
@@ -270,13 +261,7 @@ export function StackedBarVisx({
                   strokeOpacity={0.08}
                   strokeWidth={1}
                 />
-                <text
-                  x={-8}
-                  y={ty}
-                  dy="0.32em"
-                  textAnchor="end"
-                  style={AXIS_LABEL_STYLE}
-                >
+                <text x={-8} y={ty} dy="0.32em" textAnchor="end" style={AXIS_LABEL_STYLE}>
                   {formatValue(tick, yFormat, payload.yAxis?.currency)}
                 </text>
               </g>
@@ -359,8 +344,7 @@ export function StackedBarVisx({
               const yTop = cursorY - h;
               cursorY = yTop;
               const fill =
-                SERIES_FILL_TOKENS[i % SERIES_FILL_TOKENS.length] ??
-                SERIES_FILL_TOKENS[0];
+                SERIES_FILL_TOKENS[i % SERIES_FILL_TOKENS.length] ?? SERIES_FILL_TOKENS[0];
               return {
                 key: s.key,
                 label: s.label,
@@ -400,7 +384,6 @@ export function StackedBarVisx({
                   fill="var(--text-on-candy, #1C1B26)"
                   fillOpacity={0.85}
                   transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                  aria-hidden="true"
                 />
                 {/* Clip segments + hairlines to the stack outline so the
                     top-only corner radius applies to the assembled stack
@@ -413,8 +396,7 @@ export function StackedBarVisx({
                 <g clipPath={`url(#${stackClipId})`}>
                   {segments.map((seg) => {
                     if (seg.value <= 0) return null;
-                    const isHover =
-                      isStackHover && hover?.seriesKey === seg.key;
+                    const isHover = isStackHover && hover?.seriesKey === seg.key;
                     return (
                       <g key={`seg-${seg.key}`}>
                         <rect
@@ -423,12 +405,8 @@ export function StackedBarVisx({
                           width={bandW}
                           height={seg.h}
                           fill={seg.fill}
-                          fillOpacity={
-                            isStackHover && !isHover ? 0.78 : 1
-                          }
-                          onMouseEnter={() =>
-                            setHover({ stackIndex, seriesKey: seg.key })
-                          }
+                          fillOpacity={isStackHover && !isHover ? 0.78 : 1}
+                          onMouseEnter={() => setHover({ stackIndex, seriesKey: seg.key })}
                         />
                       </g>
                     );
@@ -477,10 +455,7 @@ export function StackedBarVisx({
 
       {hover && hoveredRow && hoveredSeries
         ? (() => {
-            const tx =
-              (xScale(String(hoveredRow.x)) ?? 0) +
-              xScale.bandwidth() / 2 +
-              margin.left;
+            const tx = (xScale(String(hoveredRow.x)) ?? 0) + xScale.bandwidth() / 2 + margin.left;
             const stackTotal = totals[hover.stackIndex] ?? 0;
             const stackTopY = yScale(stackTotal) + margin.top;
             return (
@@ -496,9 +471,7 @@ export function StackedBarVisx({
                 <div style={TOOLTIP_LABEL_STYLE}>
                   {String(hoveredRow.x)} · {hoveredSeries.label}
                 </div>
-                <div>
-                  {formatValue(hoveredValue, yFormat, payload.yAxis?.currency)}
-                </div>
+                <div>{formatValue(hoveredValue, yFormat, payload.yAxis?.currency)}</div>
               </div>
             );
           })()

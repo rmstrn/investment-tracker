@@ -22,7 +22,7 @@
 import type { AreaChartPayload } from '@investment-tracker/shared-types/charts';
 import { Group } from '@visx/group';
 import { scaleLinear, scaleTime } from '@visx/scale';
-import { area as d3Area, curveMonotoneX, line as d3Line } from 'd3-shape';
+import { curveMonotoneX, area as d3Area, line as d3Line } from 'd3-shape';
 import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
@@ -32,8 +32,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue, formatXAxis } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -62,11 +62,10 @@ const STROKE_WIDTH = 2.5;
 const SHADOW_OFFSET_X = 2;
 const SHADOW_OFFSET_Y = 3;
 const ENTRANCE_DURATION_MS = 1100;
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const AXIS_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -94,8 +93,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -119,12 +117,7 @@ function toDate(v: string | number, fallbackIndex: number): Date {
 /* Component                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function AreaVisx({
-  payload,
-  width = 360,
-  height = 200,
-  className,
-}: AreaVisxProps) {
+export function AreaVisx({ payload, width = 360, height = 200, className }: AreaVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -199,9 +192,7 @@ export function AreaVisx({
   }, [points, xScale, yScale, baselineY]);
 
   // ─── Entrance — clip-path inset reveal from bottom ───────────────────
-  const [drawProgress, setDrawProgress] = useState<number>(
-    prefersReducedMotion ? 1 : 0,
-  );
+  const [drawProgress, setDrawProgress] = useState<number>(prefersReducedMotion ? 1 : 0);
   useEffect(() => {
     if (prefersReducedMotion) {
       setDrawProgress(1);
@@ -347,9 +338,7 @@ export function AreaVisx({
             }}
           >
             {/* Filled gradient area */}
-            {areaPathD ? (
-              <path d={areaPathD} fill={`url(#${gradientId})`} />
-            ) : null}
+            {areaPathD ? <path d={areaPathD} fill={`url(#${gradientId})`} /> : null}
 
             {/* Hover guide-line + focus circle */}
             {tooltipPoint && !prefersReducedMotion ? (
@@ -363,7 +352,6 @@ export function AreaVisx({
                   strokeOpacity={0.35}
                   strokeWidth={1}
                   strokeDasharray="2 3"
-                  aria-hidden="true"
                 />
                 <circle
                   cx={xScale(tooltipPoint.x)}
@@ -372,7 +360,6 @@ export function AreaVisx({
                   fill="var(--cta-fill, #F08A3C)"
                   stroke="var(--text-on-candy, #1C1B26)"
                   strokeWidth={1.5}
-                  aria-hidden="true"
                 />
               </>
             ) : null}
@@ -388,7 +375,6 @@ export function AreaVisx({
                 strokeLinejoin="round"
                 fill="none"
                 transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                aria-hidden="true"
               />
             ) : null}
 
@@ -433,16 +419,8 @@ export function AreaVisx({
                   top: ty - 12,
                 }}
               >
-                <div style={TOOLTIP_LABEL_STYLE}>
-                  {formatXAxis(tooltipPoint.xRaw, xFormat)}
-                </div>
-                <div>
-                  {formatValue(
-                    tooltipPoint.y,
-                    yFormat,
-                    payload.yAxis?.currency,
-                  )}
-                </div>
+                <div style={TOOLTIP_LABEL_STYLE}>{formatXAxis(tooltipPoint.xRaw, xFormat)}</div>
+                <div>{formatValue(tooltipPoint.y, yFormat, payload.yAxis?.currency)}</div>
               </div>
             );
           })()

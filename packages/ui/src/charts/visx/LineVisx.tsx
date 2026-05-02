@@ -46,8 +46,8 @@ import {
   useRef,
   useState,
 } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue, formatXAxis } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -76,11 +76,10 @@ const STROKE_WIDTH = 2.5;
 const SHADOW_OFFSET_X = 2;
 const SHADOW_OFFSET_Y = 3;
 const ENTRANCE_DURATION_MS = 1100;
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const AXIS_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -98,8 +97,7 @@ const END_NUMERAL_STYLE: CSSProperties = {
 };
 
 const END_DELTA_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -127,8 +125,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -156,12 +153,7 @@ function toDate(v: string | number, fallbackIndex: number): Date {
 /* Component                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function LineVisx({
-  payload,
-  width = 360,
-  height = 200,
-  className,
-}: LineVisxProps) {
+export function LineVisx({ payload, width = 360, height = 200, className }: LineVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -228,10 +220,11 @@ export function LineVisx({
 
   // ─── Entrance — stroke-dashoffset draw-in ────────────────────────────
   const [pathLength, setPathLength] = useState<number>(0);
-  const [drawProgress, setDrawProgress] = useState<number>(
-    prefersReducedMotion ? 1 : 0,
-  );
+  const [drawProgress, setDrawProgress] = useState<number>(prefersReducedMotion ? 1 : 0);
 
+  // pathD is the semantic trigger — when the path string changes the
+  // measurement must re-run even though pathD is read only via pathRef.current.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathD is the semantic trigger for re-measurement
   useEffect(() => {
     if (pathRef.current) {
       const len = pathRef.current.getTotalLength();
@@ -239,6 +232,9 @@ export function LineVisx({
     }
   }, [pathD]);
 
+  // pathLength is the semantic trigger — the draw-in animation must restart
+  // whenever the measured path length changes (e.g. after data update + re-measurement).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathLength is the semantic trigger for animation restart
   useEffect(() => {
     if (prefersReducedMotion) {
       setDrawProgress(1);
@@ -312,8 +308,7 @@ export function LineVisx({
 
   // Stroke-dashoffset draw-in.
   const strokeDasharray = pathLength > 0 ? `${pathLength} ${pathLength}` : undefined;
-  const strokeDashoffset =
-    pathLength > 0 ? pathLength * (1 - drawProgress) : undefined;
+  const strokeDashoffset = pathLength > 0 ? pathLength * (1 - drawProgress) : undefined;
 
   return (
     <div
@@ -391,7 +386,6 @@ export function LineVisx({
                 strokeOpacity={0.35}
                 strokeWidth={1}
                 strokeDasharray="2 3"
-                aria-hidden="true"
               />
               <circle
                 cx={xScale(tooltipPoint.x)}
@@ -400,7 +394,6 @@ export function LineVisx({
                 fill="var(--cta-fill, #F08A3C)"
                 stroke="var(--text-on-candy, #1C1B26)"
                 strokeWidth={1.5}
-                aria-hidden="true"
               />
             </>
           ) : null}
@@ -418,7 +411,6 @@ export function LineVisx({
               transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
               strokeDasharray={strokeDasharray}
               strokeDashoffset={strokeDashoffset}
-              aria-hidden="true"
             />
           ) : null}
 
@@ -446,7 +438,6 @@ export function LineVisx({
                 r={5}
                 fill="var(--text-on-candy, #1C1B26)"
                 fillOpacity={0.85}
-                aria-hidden="true"
               />
               <circle
                 cx={xScale(lastPoint.x)}
@@ -460,7 +451,6 @@ export function LineVisx({
                 x={xScale(lastPoint.x) + 10}
                 y={yScale(lastPoint.y) - 4}
                 style={END_NUMERAL_STYLE}
-                aria-hidden="true"
               >
                 {formatValue(lastPoint.y, yFormat, payload.yAxis?.currency)}
               </text>
@@ -469,7 +459,6 @@ export function LineVisx({
                   x={xScale(lastPoint.x) + 10}
                   y={yScale(lastPoint.y) + 12}
                   style={END_DELTA_STYLE}
-                  aria-hidden="true"
                 >
                   {endDeltaPct >= 0 ? '+' : '−'}
                   {Math.abs(endDeltaPct).toFixed(1)}%
@@ -506,16 +495,8 @@ export function LineVisx({
                   top: ty - 12,
                 }}
               >
-                <div style={TOOLTIP_LABEL_STYLE}>
-                  {formatXAxis(tooltipPoint.xRaw, xFormat)}
-                </div>
-                <div>
-                  {formatValue(
-                    tooltipPoint.y,
-                    yFormat,
-                    payload.yAxis?.currency,
-                  )}
-                </div>
+                <div style={TOOLTIP_LABEL_STYLE}>{formatXAxis(tooltipPoint.xRaw, xFormat)}</div>
+                <div>{formatValue(tooltipPoint.y, yFormat, payload.yAxis?.currency)}</div>
               </div>
             );
           })()

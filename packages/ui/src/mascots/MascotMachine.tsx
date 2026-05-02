@@ -150,9 +150,16 @@ export function MascotMachine({ size = 240, className }: MascotMachineProps) {
           [60, 214],
           [168, 214],
         ] as ReadonlyArray<readonly [number, number]>
-      ).map(([cx, cy], i) => (
-        <g key={i}>
-          <circle cx={cx} cy={cy} r="3.5" fill="url(#mm-brass)" stroke={COLORS.ink} strokeWidth="1.4" />
+      ).map(([cx, cy]) => (
+        <g key={`rivet-${cx}-${cy}`}>
+          <circle
+            cx={cx}
+            cy={cy}
+            r="3.5"
+            fill="url(#mm-brass)"
+            stroke={COLORS.ink}
+            strokeWidth="1.4"
+          />
           <circle cx={cx - 0.8} cy={cy - 0.8} r="1.2" fill={COLORS.highlight} opacity="0.8" />
         </g>
       ))}
@@ -236,7 +243,14 @@ export function MascotMachine({ size = 240, className }: MascotMachineProps) {
       />
       <circle cx="91" cy="185" r="3.6" fill="url(#mm-brass)" stroke={COLORS.ink} strokeWidth="1" />
       {/* Two indicator buttons */}
-      <circle cx="108" cy="185" r="4" fill={COLORS.signalOrange} stroke={COLORS.ink} strokeWidth="1.5" />
+      <circle
+        cx="108"
+        cy="185"
+        r="4"
+        fill={COLORS.signalOrange}
+        stroke={COLORS.ink}
+        strokeWidth="1.5"
+      />
       <circle cx="120" cy="185" r="4" fill={COLORS.pixelOn} stroke={COLORS.ink} strokeWidth="1.5" />
       {/* Dial */}
       <circle cx="140" cy="185" r="6" fill="url(#mm-brass)" stroke={COLORS.ink} strokeWidth="1.5" />
@@ -313,12 +327,7 @@ export function MascotMachine({ size = 240, className }: MascotMachineProps) {
       </circle>
       <circle cx="120" cy="42" r="9" fill={COLORS.signalOrange} opacity="0.25">
         {!reduced && (
-          <animate
-            attributeName="r"
-            values="8;14;8"
-            dur="1.4s"
-            repeatCount="indefinite"
-          />
+          <animate attributeName="r" values="8;14;8" dur="1.4s" repeatCount="indefinite" />
         )}
         {!reduced && (
           <animate
@@ -357,8 +366,22 @@ function TankTreads() {
         <rect key={`lt-${x}`} x={x} y="236" width="6" height="14" fill="#33303A" rx="1" />
       ))}
       {/* Wheels */}
-      <circle cx="52" cy="243" r="6" fill={COLORS.brassLight} stroke={COLORS.ink} strokeWidth="1.6" />
-      <circle cx="96" cy="243" r="6" fill={COLORS.brassLight} stroke={COLORS.ink} strokeWidth="1.6" />
+      <circle
+        cx="52"
+        cy="243"
+        r="6"
+        fill={COLORS.brassLight}
+        stroke={COLORS.ink}
+        strokeWidth="1.6"
+      />
+      <circle
+        cx="96"
+        cy="243"
+        r="6"
+        fill={COLORS.brassLight}
+        stroke={COLORS.ink}
+        strokeWidth="1.6"
+      />
       <circle cx="52" cy="243" r="2" fill={COLORS.ink} />
       <circle cx="96" cy="243" r="2" fill={COLORS.ink} />
 
@@ -376,8 +399,22 @@ function TankTreads() {
       {[140, 150, 160, 170, 180, 190].map((x) => (
         <rect key={`rt-${x}`} x={x} y="236" width="6" height="14" fill="#33303A" rx="1" />
       ))}
-      <circle cx="144" cy="243" r="6" fill={COLORS.brassLight} stroke={COLORS.ink} strokeWidth="1.6" />
-      <circle cx="188" cy="243" r="6" fill={COLORS.brassLight} stroke={COLORS.ink} strokeWidth="1.6" />
+      <circle
+        cx="144"
+        cy="243"
+        r="6"
+        fill={COLORS.brassLight}
+        stroke={COLORS.ink}
+        strokeWidth="1.6"
+      />
+      <circle
+        cx="188"
+        cy="243"
+        r="6"
+        fill={COLORS.brassLight}
+        stroke={COLORS.ink}
+        strokeWidth="1.6"
+      />
       <circle cx="144" cy="243" r="2" fill={COLORS.ink} />
       <circle cx="188" cy="243" r="2" fill={COLORS.ink} />
     </g>

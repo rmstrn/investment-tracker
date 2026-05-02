@@ -26,8 +26,8 @@ import { Group } from '@visx/group';
 import { scaleLinear, scaleTime } from '@visx/scale';
 import { curveMonotoneX, line as d3Line } from 'd3-shape';
 import { type CSSProperties, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -57,7 +57,7 @@ const STROKE_WIDTH = 2;
 const SHADOW_OFFSET_X = 1.5;
 const SHADOW_OFFSET_Y = 2;
 const ENTRANCE_DURATION_MS = 800;
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 const END_NUMERAL_STYLE: CSSProperties = {
   fontFamily: "var(--font-family-display, 'Bagel Fat One', sans-serif)",
@@ -93,9 +93,7 @@ export function SparklineVisx({
   const prefersReducedMotion = useReducedMotion();
   const pathRef = useRef<SVGPathElement | null>(null);
   const [pathLength, setPathLength] = useState<number>(0);
-  const [drawProgress, setDrawProgress] = useState<number>(
-    prefersReducedMotion ? 1 : 0,
-  );
+  const [drawProgress, setDrawProgress] = useState<number>(prefersReducedMotion ? 1 : 0);
 
   // ─── Layout ──────────────────────────────────────────────────────────
   // Reserve label slot only if the end-numeral is rendered.
@@ -148,6 +146,9 @@ export function SparklineVisx({
   }, [points, xScale, yScale]);
 
   // ─── Path-length probe (for stroke-dashoffset draw-in) ───────────────
+  // pathD is the semantic trigger — when the path string changes the
+  // measurement must re-run even though pathD is read only via pathRef.current.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathD is the semantic trigger for re-measurement
   useEffect(() => {
     if (pathRef.current) {
       const len = pathRef.current.getTotalLength();
@@ -155,6 +156,9 @@ export function SparklineVisx({
     }
   }, [pathD]);
 
+  // pathLength is the semantic trigger — the draw-in animation must restart
+  // whenever the measured path length changes (e.g. after data update + re-measurement).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathLength is the semantic trigger for animation restart
   useEffect(() => {
     if (prefersReducedMotion) {
       setDrawProgress(1);
@@ -173,8 +177,7 @@ export function SparklineVisx({
   }, [prefersReducedMotion, pathLength]);
 
   const strokeDasharray = pathLength > 0 ? `${pathLength} ${pathLength}` : undefined;
-  const strokeDashoffset =
-    pathLength > 0 ? pathLength * (1 - drawProgress) : undefined;
+  const strokeDashoffset = pathLength > 0 ? pathLength * (1 - drawProgress) : undefined;
 
   const lastPoint = points[points.length - 1];
   const trendUp = payload.trend === 'up';
@@ -219,7 +222,6 @@ export function SparklineVisx({
               transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
               strokeDasharray={strokeDasharray}
               strokeDashoffset={strokeDashoffset}
-              aria-hidden="true"
             />
           ) : null}
 
@@ -247,7 +249,6 @@ export function SparklineVisx({
                 r={3.5}
                 fill="var(--text-on-candy, #1C1B26)"
                 fillOpacity={0.85}
-                aria-hidden="true"
               />
               <circle
                 cx={xScale(lastPoint.x) ?? 0}
@@ -262,13 +263,8 @@ export function SparklineVisx({
                   x={(xScale(lastPoint.x) ?? 0) + 8}
                   y={(yScale(lastPoint.y) ?? 0) + 5}
                   style={END_NUMERAL_STYLE}
-                  aria-hidden="true"
                 >
-                  {formatValue(
-                    lastPoint.y,
-                    payload.format ?? 'currency-compact',
-                    payload.currency,
-                  )}
+                  {formatValue(lastPoint.y, payload.format ?? 'currency-compact', payload.currency)}
                 </text>
               ) : null}
             </g>

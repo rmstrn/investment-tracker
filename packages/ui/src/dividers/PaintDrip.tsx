@@ -83,13 +83,7 @@ function useIsBelowMobileBreakpoint(): boolean {
   return isBelow;
 }
 
-export function PaintDrip({
-  from,
-  to,
-  height = 80,
-  variant = 'soft',
-  className,
-}: PaintDripProps) {
+export function PaintDrip({ from, to, height = 80, variant = 'soft', className }: PaintDripProps) {
   const isMobile = useIsBelowMobileBreakpoint();
   const path = DRIP_PATHS[variant];
 

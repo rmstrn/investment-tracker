@@ -33,15 +33,9 @@ import type { DonutChartPayload } from '@investment-tracker/shared-types/charts'
 import { Group } from '@visx/group';
 import { Pie } from '@visx/shape';
 import type { PieArcDatum } from '@visx/shape/lib/shapes/Pie';
-import {
-  type CSSProperties,
-  type ReactNode,
-  useEffect,
-  useId,
-  useState,
-} from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
+import { type CSSProperties, type ReactNode, useEffect, useId, useState } from 'react';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -123,7 +117,7 @@ const ENTRANCE_DURATION_MS = 720;
 /** Per-segment stagger — ink builds clockwise. */
 const ENTRANCE_STAGGER_MS = 80;
 /** Cubic-out — quick start, soft settle (matches deliberate easing). */
-const easeOutCubic = (t: number): number => 1 - Math.pow(1 - t, 3);
+const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
 /* ────────────────────────────────────────────────────────────────────── */
 /* Component                                                               */
@@ -158,9 +152,7 @@ export function DonutVisx({
       // Last segment finishes at duration + (n-1)*stagger; we don't know n here
       // so just stop at a generous ceiling. RAF cost is negligible.
       const ceiling =
-        ENTRANCE_DURATION_MS +
-        ENTRANCE_STAGGER_MS * Math.max(0, payload.segments.length - 1) +
-        80;
+        ENTRANCE_DURATION_MS + ENTRANCE_STAGGER_MS * Math.max(0, payload.segments.length - 1) + 80;
       if (elapsed < ceiling) {
         frame = requestAnimationFrame(tick);
       }
@@ -239,8 +231,7 @@ export function DonutVisx({
                           ? 1
                           : localElapsed / ENTRANCE_DURATION_MS;
                     const progress = easeOutCubic(rawProgress);
-                    const sweepEnd =
-                      arc.startAngle + (arc.endAngle - arc.startAngle) * progress;
+                    const sweepEnd = arc.startAngle + (arc.endAngle - arc.startAngle) * progress;
                     const animatedArc = { ...arc, endAngle: sweepEnd };
                     const path = pie.path(animatedArc) ?? '';
                     const isHover = hoverIndex === i;
@@ -259,9 +250,7 @@ export function DonutVisx({
                         onMouseLeave={() => setHoverIndex(null)}
                         style={{
                           transform: lift,
-                          transition: prefersReducedMotion
-                            ? undefined
-                            : HOVER_TRANSITION,
+                          transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
                           cursor: 'pointer',
                         }}
                       >
@@ -271,7 +260,6 @@ export function DonutVisx({
                           fill="var(--text-on-candy, #1C1B26)"
                           fillOpacity={0.85}
                           transform={`translate(${SHADOW_OFFSET_PX} ${SHADOW_OFFSET_PX})`}
-                          aria-hidden="true"
                         />
                         {/* Coloured slice on top */}
                         <path d={path} fill={arc.data.color} />
@@ -301,8 +289,7 @@ export function DonutVisx({
         style={{
           fontSize: 11,
           color: 'var(--text-on-candy, var(--color-text-secondary, #1C1B26))',
-          fontFamily:
-            "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
+          fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
         }}
       >
         {segments.map((s, i) => (
@@ -316,9 +303,7 @@ export function DonutVisx({
                 borderRadius: 3,
                 background: s.color,
                 outline:
-                  i === hoverIndex
-                    ? '1.5px solid var(--text-on-candy, currentColor)'
-                    : undefined,
+                  i === hoverIndex ? '1.5px solid var(--text-on-candy, currentColor)' : undefined,
                 outlineOffset: i === hoverIndex ? 2 : undefined,
                 boxShadow: '1.5px 1.5px 0 0 var(--text-on-candy, #1C1B26)',
               }}

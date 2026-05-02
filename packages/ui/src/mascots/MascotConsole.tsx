@@ -78,7 +78,6 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
-      tabIndex={0}
       xmlns="http://www.w3.org/2000/svg"
     >
       <defs>
@@ -179,13 +178,7 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
           letterSpacing="0.05em"
         >
           {!reduced && (
-            <animate
-              attributeName="x"
-              from="172"
-              to="-180"
-              dur="14s"
-              repeatCount="indefinite"
-            />
+            <animate attributeName="x" from="172" to="-180" dur="14s" repeatCount="indefinite" />
           )}
           {TICKER_TEXT.repeat(2)}
         </text>
@@ -202,21 +195,21 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
         {/* Inner dial */}
         <circle cx="100" cy="98" r="20" fill={COLORS.paper} stroke={COLORS.ink} strokeWidth="1.4" />
         {/* Tick marks (12) */}
-        {Array.from({ length: 12 }).map((_, i) => {
-          const a = (i * 30 - 90) * (Math.PI / 180);
+        {Array.from({ length: 12 }, (_, i) => i).map((tickIndex) => {
+          const a = (tickIndex * 30 - 90) * (Math.PI / 180);
           const x1 = 100 + 16 * Math.cos(a);
           const y1 = 98 + 16 * Math.sin(a);
           const x2 = 100 + 19 * Math.cos(a);
           const y2 = 98 + 19 * Math.sin(a);
           return (
             <line
-              key={i}
+              key={`tick-${tickIndex * 30}deg`}
               x1={x1}
               y1={y1}
               x2={x2}
               y2={y2}
               stroke={COLORS.ink}
-              strokeWidth={i % 3 === 0 ? 1.6 : 0.8}
+              strokeWidth={tickIndex % 3 === 0 ? 1.6 : 0.8}
             />
           );
         })}
@@ -272,8 +265,8 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
           stroke={COLORS.ink}
           strokeWidth="1.6"
         />
-        {Array.from({ length: 4 }).map((_, row) =>
-          Array.from({ length: 8 }).map((__, col) => {
+        {Array.from({ length: 4 }, (_, row) => row).map((row) =>
+          Array.from({ length: 8 }, (_, col) => col).map((col) => {
             const cx = 50 + col * 14;
             const cy = 146 + row * 7;
             // Wave pattern: brighter near hovered "wave crest"
@@ -284,7 +277,7 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
             const lit = waveOn || baseOn;
             return (
               <circle
-                key={`dm-${row}-${col}`}
+                key={`dm-${cx}-${cy}`}
                 cx={cx}
                 cy={cy}
                 r="2"
@@ -292,7 +285,7 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
                 opacity={lit ? 1 : 0.4}
               />
             );
-          })
+          }),
         )}
       </g>
 
@@ -392,7 +385,14 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
           ] as ReadonlyArray<{ x: number; label: string }>
         ).map((p) => (
           <g key={p.label}>
-            <circle cx={p.x} cy="258" r="5" fill={COLORS.inkDeep} stroke={COLORS.ink} strokeWidth="1.2" />
+            <circle
+              cx={p.x}
+              cy="258"
+              r="5"
+              fill={COLORS.inkDeep}
+              stroke={COLORS.ink}
+              strokeWidth="1.2"
+            />
             <circle cx={p.x} cy="258" r="2" fill={COLORS.charcoalLight} />
             <text
               x={p.x}
@@ -484,9 +484,16 @@ export function MascotConsole({ size = 240, className }: MascotConsoleProps) {
           [38, 296],
           [162, 296],
         ] as ReadonlyArray<readonly [number, number]>
-      ).map(([cx, cy], i) => (
-        <g key={`screw-${i}`}>
-          <circle cx={cx} cy={cy} r="2" fill="url(#mc-brass)" stroke={COLORS.ink} strokeWidth="0.8" />
+      ).map(([cx, cy]) => (
+        <g key={`screw-${cx}-${cy}`}>
+          <circle
+            cx={cx}
+            cy={cy}
+            r="2"
+            fill="url(#mc-brass)"
+            stroke={COLORS.ink}
+            strokeWidth="0.8"
+          />
           <line x1={cx - 1.4} y1={cy} x2={cx + 1.4} y2={cy} stroke={COLORS.ink} strokeWidth="0.6" />
         </g>
       ))}

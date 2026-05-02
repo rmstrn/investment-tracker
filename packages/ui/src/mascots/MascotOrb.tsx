@@ -103,12 +103,7 @@ export function MascotOrb({ size = 240, className }: MascotOrbProps) {
           />
         )}
         {!reduced && (
-          <animate
-            attributeName="opacity"
-            values="0.7;1;0.7"
-            dur="6s"
-            repeatCount="indefinite"
-          />
+          <animate attributeName="opacity" values="0.7;1;0.7" dur="6s" repeatCount="indefinite" />
         )}
       </circle>
 
@@ -207,14 +202,14 @@ function ParticleSpiral({ reduced }: ParticleSpiralProps) {
         const x = 120 + d.r * Math.cos((d.phase * Math.PI) / 180);
         const y = 120 + d.r * Math.sin((d.phase * Math.PI) / 180);
         return (
-          <g key={i}>
+          <g key={`dot-${d.r}-${d.phase}`}>
             <circle cx={x} cy={y} r={d.size} fill={d.color} opacity="0.9">
               {!reduced && (
                 <animateTransform
                   attributeName="transform"
                   type="rotate"
-                  from={`0 120 120`}
-                  to={`360 120 120`}
+                  from={'0 120 120'}
+                  to={'360 120 120'}
                   dur={`${10 + i * 1.4}s`}
                   repeatCount="indefinite"
                 />

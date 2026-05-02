@@ -38,10 +38,10 @@
  */
 
 import type { TreemapPayload } from '@investment-tracker/shared-types/charts';
-import { hierarchy, treemap as d3Treemap } from 'd3-hierarchy';
+import { treemap as d3Treemap, hierarchy } from 'd3-hierarchy';
 import { type CSSProperties, useEffect, useId, useMemo, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -127,8 +127,7 @@ const TILE_LABEL_TICKER_STYLE: CSSProperties = {
 };
 
 const TILE_LABEL_WEIGHT_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   fontWeight: 500,
   letterSpacing: '0.08em',
@@ -155,8 +154,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -202,8 +200,7 @@ function layoutTiles(
       key: '__root__',
       value: 0,
     },
-    (datum) =>
-      datum.key === '__root__' ? (items as unknown as readonly Datum[]) : undefined,
+    (datum) => (datum.key === '__root__' ? (items as unknown as readonly Datum[]) : undefined),
   ).sum((d) => (d.key === '__root__' ? 0 : d.value));
   const layout = d3Treemap<Datum>().size([width, height]).padding(padding).round(true);
   const rect = layout(root);
@@ -220,12 +217,7 @@ function layoutTiles(
 /* Component                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function TreemapVisx({
-  payload,
-  width = 360,
-  height = 280,
-  className,
-}: TreemapVisxProps) {
+export function TreemapVisx({ payload, width = 360, height = 280, className }: TreemapVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverKey, setHoverKey] = useState<string | null>(null);
@@ -245,9 +237,7 @@ export function TreemapVisx({
       const elapsed = now - t0;
       setEntranceMs(elapsed);
       const ceiling =
-        ENTRANCE_DURATION_MS +
-        ENTRANCE_STAGGER_MS * Math.max(0, payload.tiles.length - 1) +
-        80;
+        ENTRANCE_DURATION_MS + ENTRANCE_STAGGER_MS * Math.max(0, payload.tiles.length - 1) + 80;
       if (elapsed < ceiling) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -369,12 +359,7 @@ export function TreemapVisx({
               }}
             >
               {/* Bottom + right edge ink — paper-pressed pile signature */}
-              <path
-                d={edgePath}
-                fill="var(--text-on-candy, #1C1B26)"
-                fillOpacity={0.85}
-                aria-hidden="true"
-              />
+              <path d={edgePath} fill="var(--text-on-candy, #1C1B26)" fillOpacity={0.85} />
               {/* Tile fill */}
               <rect
                 x={t.x}
@@ -409,7 +394,6 @@ export function TreemapVisx({
                       fill: ink.fill,
                       fillOpacity: ink.opacity,
                     }}
-                    aria-hidden="true"
                   >
                     {t.ticker}
                   </text>
@@ -422,7 +406,6 @@ export function TreemapVisx({
                         fill: ink.fill,
                         fillOpacity: ink.opacity * 0.85,
                       }}
-                      aria-hidden="true"
                     >
                       {`${t.weightPct.toFixed(1)}%`}
                     </text>
@@ -438,7 +421,6 @@ export function TreemapVisx({
                     fill: ink.fill,
                     fillOpacity: ink.opacity,
                   }}
-                  aria-hidden="true"
                 >
                   {t.isOther ? 'OTHER' : t.ticker}
                 </text>
@@ -487,9 +469,7 @@ export function TreemapVisx({
             top: hoverTile.y - 8,
           }}
         >
-          <div style={TOOLTIP_LABEL_STYLE}>
-            {hoverTile.isOther ? 'OTHER' : hoverTile.ticker}
-          </div>
+          <div style={TOOLTIP_LABEL_STYLE}>{hoverTile.isOther ? 'OTHER' : hoverTile.ticker}</div>
           <div>
             {hoverTile.isOther
               ? `${hoverTile.itemCount ?? 0} positions · ${hoverTile.weightPct.toFixed(1)}%`

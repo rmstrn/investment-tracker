@@ -42,8 +42,8 @@ import type {
 } from '@investment-tracker/shared-types/charts';
 import { scaleBand } from '@visx/scale';
 import { type CSSProperties, useEffect, useId, useMemo, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
 /* ────────────────────────────────────────────────────────────────────── */
@@ -86,7 +86,7 @@ const ENTRANCE_PER_ROW_MS = 280;
 const ENTRANCE_ROW_STAGGER_MS = 40;
 
 function easeOutCubic(t: number): number {
-  return 1 - Math.pow(1 - t, 3);
+  return 1 - (1 - t) ** 3;
 }
 
 const CELL_BG = 'var(--bg-cream, var(--card, #FFF8E7))';
@@ -94,8 +94,7 @@ const INK = 'var(--text-on-candy, var(--ink, #1C1B26))';
 const TODAY_RING = 'var(--candy-pink, var(--bg-pink, #F7A1C9))';
 
 const DAY_NUMERAL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 11,
   fontWeight: 600,
   letterSpacing: '0.04em',
@@ -105,8 +104,7 @@ const DAY_NUMERAL_STYLE: CSSProperties = {
 };
 
 const WEEKDAY_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   fontWeight: 500,
   letterSpacing: '0.08em',
@@ -117,8 +115,7 @@ const WEEKDAY_STYLE: CSSProperties = {
 };
 
 const EVENT_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 9,
   fontWeight: 600,
   letterSpacing: '0.04em',
@@ -145,8 +142,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -230,8 +226,7 @@ function eventChipColor(event: CalendarEvent): {
 } {
   if (event.eventType === 'corp_action') {
     const e = event as CorpActionEvent;
-    const ratio =
-      e.actionType === 'split' && e.ratio ? e.ratio : e.actionType.replace(/_/g, ' ');
+    const ratio = e.actionType === 'split' && e.ratio ? e.ratio : e.actionType.replace(/_/g, ' ');
     return {
       fill: 'var(--text-on-candy, #1C1B26)',
       ink: 'var(--bg-cream, #FFF8E7)',
@@ -263,11 +258,7 @@ function formatChipAmount(n: number): string {
 /* Component                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-export function CalendarVisx({
-  payload,
-  today,
-  className,
-}: CalendarVisxProps) {
+export function CalendarVisx({ payload, today, className }: CalendarVisxProps) {
   const dataTableId = useId();
   const prefersReducedMotion = useReducedMotion();
   const [hoverIso, setHoverIso] = useState<string | null>(null);
@@ -308,7 +299,7 @@ export function CalendarVisx({
     todayIso >= periodStart && todayIso <= periodEnd
       ? todayIso
       : // Pin halfway through the period for the showcase.
-        cells.find((c) => c.inMonth && c.day === 15)?.iso ?? todayIso;
+        (cells.find((c) => c.inMonth && c.day === 15)?.iso ?? todayIso);
 
   // Entrance progress
   const [entranceMs, setEntranceMs] = useState<number>(
@@ -432,7 +423,6 @@ export function CalendarVisx({
                   rx={CELL_RADIUS}
                   fill="var(--text-on-candy, #1C1B26)"
                   fillOpacity={0.85}
-                  aria-hidden="true"
                 />
               ) : null}
               {/* Cell body */}
@@ -464,7 +454,6 @@ export function CalendarVisx({
                     transformBox: 'view-box',
                     transformOrigin: '0 0',
                   }}
-                  aria-hidden="true"
                 />
               ) : null}
               {/* Day numeral — top-left */}
@@ -473,7 +462,6 @@ export function CalendarVisx({
                 y={y + 16}
                 style={DAY_NUMERAL_STYLE}
                 fillOpacity={hasEvents ? 1 : 0.55}
-                aria-hidden="true"
               >
                 {cell.day}
               </text>
@@ -484,7 +472,7 @@ export function CalendarVisx({
                 const chip = eventChipColor(event);
                 const chipY = y + 28 + idx * 16;
                 return (
-                  <g key={`${cell.iso}-chip-${idx}`} aria-hidden="true">
+                  <g key={`${cell.iso}-chip-${idx}`}>
                     {chip.isDiamond ? (
                       <path
                         d={`M ${x + 8} ${chipY + 6} L ${x + 14} ${chipY} L ${x + 20} ${chipY + 6} L ${x + 14} ${chipY + 12} Z`}
@@ -525,7 +513,6 @@ export function CalendarVisx({
                     fill: INK,
                     fillOpacity: 0.7,
                   }}
-                  aria-hidden="true"
                 >
                   {`+${cell.events.length - 2}`}
                 </text>

@@ -31,8 +31,8 @@ import type { BarChartPayload } from '@investment-tracker/shared-types/charts';
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { type CSSProperties, useEffect, useId, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -110,8 +110,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -129,8 +128,7 @@ const VALUE_LABEL_STYLE: CSSProperties = {
 };
 
 const AXIS_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -216,9 +214,7 @@ export function BarVisx({
       const elapsed = now - t0;
       setEntranceMs(elapsed);
       const ceiling =
-        ENTRANCE_DURATION_MS +
-        ENTRANCE_STAGGER_MS * Math.max(0, payload.data.length - 1) +
-        80;
+        ENTRANCE_DURATION_MS + ENTRANCE_STAGGER_MS * Math.max(0, payload.data.length - 1) + 80;
       if (elapsed < ceiling) frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);
@@ -260,9 +256,7 @@ export function BarVisx({
   // ─── Tooltip data for the hovered bar ────────────────────────────────
   const yFormat = payload.yAxis?.format ?? 'currency-compact';
   const tooltipDatum =
-    hoverIndex !== null && hoverIndex >= 0 && hoverIndex < data.length
-      ? data[hoverIndex]
-      : null;
+    hoverIndex !== null && hoverIndex >= 0 && hoverIndex < data.length ? data[hoverIndex] : null;
 
   return (
     <div
@@ -298,13 +292,7 @@ export function BarVisx({
                   strokeOpacity={0.08}
                   strokeWidth={1}
                 />
-                <text
-                  x={-8}
-                  y={ty}
-                  dy="0.32em"
-                  textAnchor="end"
-                  style={AXIS_LABEL_STYLE}
-                >
+                <text x={-8} y={ty} dy="0.32em" textAnchor="end" style={AXIS_LABEL_STYLE}>
                   {tick > 0 ? `+${tick}` : tick}
                 </text>
               </g>
@@ -379,10 +367,8 @@ export function BarVisx({
 
             // Drift fixture treatment: in-band = neutral ink, out-of-band
             // = full candy ink + signal-orange.
-            const isDriftFixture =
-              payload.yAxis?.format === 'percent-delta';
-            const isInBand =
-              isDriftFixture && Math.abs(yValue) <= DRIFT_BAND_PP;
+            const isDriftFixture = payload.yAxis?.format === 'percent-delta';
+            const isInBand = isDriftFixture && Math.abs(yValue) <= DRIFT_BAND_PP;
             const fill = isInBand
               ? 'var(--text-on-candy, #1C1B26)'
               : isPositive
@@ -419,9 +405,7 @@ export function BarVisx({
                 onMouseLeave={() => setHoverIndex(null)}
                 style={{
                   transform: lift,
-                  transition: prefersReducedMotion
-                    ? undefined
-                    : HOVER_TRANSITION,
+                  transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
                   cursor: 'pointer',
                 }}
               >
@@ -431,7 +415,6 @@ export function BarVisx({
                   fill="var(--text-on-candy, #1C1B26)"
                   fillOpacity={isInBand ? 0.4 : 0.85}
                   transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                  aria-hidden="true"
                 />
                 {/* Coloured bar on top */}
                 <path d={finalPath} fill={fill} fillOpacity={fillOpacity} />
@@ -441,7 +424,6 @@ export function BarVisx({
                     y={labelY}
                     textAnchor="middle"
                     style={VALUE_LABEL_STYLE}
-                    aria-hidden="true"
                   >
                     {formatValue(yValue, yFormat, payload.yAxis?.currency)}
                   </text>
@@ -472,13 +454,9 @@ export function BarVisx({
 
       {tooltipDatum
         ? (() => {
-            const tx = (xScale(String(tooltipDatum.x)) ?? 0) +
-              xScale.bandwidth() / 2 +
-              margin.left;
+            const tx = (xScale(String(tooltipDatum.x)) ?? 0) + xScale.bandwidth() / 2 + margin.left;
             const ty =
-              (Number(tooltipDatum.y) >= 0
-                ? yScale(Number(tooltipDatum.y))
-                : zeroY) + margin.top;
+              (Number(tooltipDatum.y) >= 0 ? yScale(Number(tooltipDatum.y)) : zeroY) + margin.top;
             return (
               <div
                 role="tooltip"
@@ -492,13 +470,7 @@ export function BarVisx({
                 }}
               >
                 <div style={TOOLTIP_LABEL_STYLE}>{String(tooltipDatum.x)}</div>
-                <div>
-                  {formatValue(
-                    Number(tooltipDatum.y),
-                    yFormat,
-                    payload.yAxis?.currency,
-                  )}
-                </div>
+                <div>{formatValue(Number(tooltipDatum.y), yFormat, payload.yAxis?.currency)}</div>
               </div>
             );
           })()

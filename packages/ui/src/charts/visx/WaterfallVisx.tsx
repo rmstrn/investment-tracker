@@ -37,8 +37,8 @@ import type { WaterfallPayload, WaterfallStep } from '@investment-tracker/shared
 import { Group } from '@visx/group';
 import { scaleBand, scaleLinear } from '@visx/scale';
 import { type CSSProperties, useEffect, useId, useState } from 'react';
-import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { ChartDataTable } from '../_shared/ChartDataTable';
+import { CHART_FOCUS_RING_CLASS } from '../_shared/a11y';
 import { formatValue } from '../_shared/formatters';
 import { useReducedMotion } from '../_shared/useReducedMotion';
 
@@ -113,8 +113,7 @@ const TOOLTIP_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -124,8 +123,7 @@ const TOOLTIP_LABEL_STYLE: CSSProperties = {
 };
 
 const TOOLTIP_RUNNING_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -136,8 +134,7 @@ const TOOLTIP_RUNNING_STYLE: CSSProperties = {
 };
 
 const AXIS_LABEL_STYLE: CSSProperties = {
-  fontFamily:
-    "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
+  fontFamily: "var(--font-family-mono, 'Geist Mono', ui-monospace, SFMono-Regular, monospace)",
   fontSize: 10,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
@@ -160,13 +157,7 @@ const PILL_NUMERAL_STYLE: CSSProperties = {
 /* ────────────────────────────────────────────────────────────────────── */
 
 /** Path-d for a fully-rounded rect (all four corners) — pill / chunky bar. */
-function roundedRectPath(
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  r: number,
-): string {
+function roundedRectPath(x: number, y: number, width: number, height: number, r: number): string {
   const radius = Math.min(r, width / 2, Math.max(0.001, height) / 2);
   return [
     `M ${x + radius} ${y}`,
@@ -305,8 +296,7 @@ export function WaterfallVisx({
   }
 
   // Pill numeral fade: starts when the LAST bar lands.
-  const lastBarLandsMs =
-    (steps.length - 1) * ENTRANCE_STAGGER_MS + ENTRANCE_DURATION_MS;
+  const lastBarLandsMs = (steps.length - 1) * ENTRANCE_STAGGER_MS + ENTRANCE_DURATION_MS;
   const pillElapsed = entranceMs - lastBarLandsMs;
   const pillOpacity = prefersReducedMotion
     ? 1
@@ -319,8 +309,7 @@ export function WaterfallVisx({
   const yFormat = 'currency-compact';
   const ariaLabelText = payload.meta.alt ?? payload.meta.title;
 
-  const hoveredLayout =
-    hoverIndex !== null ? resolvedLayouts[hoverIndex] ?? null : null;
+  const hoveredLayout = hoverIndex !== null ? (resolvedLayouts[hoverIndex] ?? null) : null;
 
   return (
     <div
@@ -356,13 +345,7 @@ export function WaterfallVisx({
                   strokeOpacity={0.08}
                   strokeWidth={1}
                 />
-                <text
-                  x={-8}
-                  y={ty}
-                  dy="0.32em"
-                  textAnchor="end"
-                  style={AXIS_LABEL_STYLE}
-                >
+                <text x={-8} y={ty} dy="0.32em" textAnchor="end" style={AXIS_LABEL_STYLE}>
                   {formatValue(tick, yFormat, payload.currency)}
                 </text>
               </g>
@@ -383,7 +366,7 @@ export function WaterfallVisx({
             // the y of the running total at that point in the walk).
             const bridgeY = yScale(prev.runningTotal);
             return (
-              <g key={`bridge-${curr.step.key}`} aria-hidden="true">
+              <g key={`bridge-${curr.step.key}`}>
                 <line
                   x1={prevX}
                   x2={currX}
@@ -431,13 +414,7 @@ export function WaterfallVisx({
                 ? `translate(${-HOVER_LIFT_PX}px, ${-HOVER_LIFT_PX}px)`
                 : 'translate(0, 0)';
 
-            const path = roundedRectPath(
-              bandX,
-              animatedY,
-              bandW,
-              animatedH,
-              BAR_RADIUS,
-            );
+            const path = roundedRectPath(bandX, animatedY, bandW, animatedH, BAR_RADIUS);
 
             const isEndAnchor = l.kind === 'anchor-end';
 
@@ -460,7 +437,6 @@ export function WaterfallVisx({
                   fill="var(--text-on-candy, #1C1B26)"
                   fillOpacity={0.85}
                   transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                  aria-hidden="true"
                 />
                 {/* Coloured bar on top */}
                 <path d={path} fill={fill} />
@@ -474,7 +450,6 @@ export function WaterfallVisx({
                     dy="0.36em"
                     textAnchor="middle"
                     style={{ ...PILL_NUMERAL_STYLE, opacity: pillOpacity }}
-                    aria-hidden="true"
                   >
                     {formatValue(payload.endValue, yFormat, payload.currency)}
                   </text>
@@ -504,14 +479,10 @@ export function WaterfallVisx({
 
       {hoveredLayout
         ? (() => {
-            const tx =
-              (xScale(hoveredLayout.step.key) ?? 0) +
-              xScale.bandwidth() / 2 +
-              margin.left;
+            const tx = (xScale(hoveredLayout.step.key) ?? 0) + xScale.bandwidth() / 2 + margin.left;
             const ty = hoveredLayout.y + margin.top;
             const isAnchor =
-              hoveredLayout.kind === 'anchor-start' ||
-              hoveredLayout.kind === 'anchor-end';
+              hoveredLayout.kind === 'anchor-start' || hoveredLayout.kind === 'anchor-end';
             return (
               <div
                 role="tooltip"
@@ -525,11 +496,7 @@ export function WaterfallVisx({
                 <div style={TOOLTIP_LABEL_STYLE}>{hoveredLayout.step.label}</div>
                 <div>
                   {isAnchor
-                    ? formatValue(
-                        hoveredLayout.step.deltaAbs,
-                        yFormat,
-                        payload.currency,
-                      )
+                    ? formatValue(hoveredLayout.step.deltaAbs, yFormat, payload.currency)
                     : `${hoveredLayout.step.deltaAbs >= 0 ? '+' : '−'}${formatValue(
                         Math.abs(hoveredLayout.step.deltaAbs),
                         yFormat,
@@ -537,12 +504,7 @@ export function WaterfallVisx({
                       )}`}
                 </div>
                 <div style={TOOLTIP_RUNNING_STYLE}>
-                  Running ·{' '}
-                  {formatValue(
-                    hoveredLayout.runningTotal,
-                    yFormat,
-                    payload.currency,
-                  )}
+                  Running · {formatValue(hoveredLayout.runningTotal, yFormat, payload.currency)}
                 </div>
               </div>
             );
