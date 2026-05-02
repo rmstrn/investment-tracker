@@ -110,17 +110,72 @@ const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
   {
     token: '--d1-data-positive',
     value: 'oklch(82% 0.13 145)',
-    role: 'Chart positives — pistachio',
+    role: 'TEXT/STROKE — pistachio (line strokes, axis ink)',
+  },
+  {
+    token: '--d1-data-positive-soft',
+    value: 'oklch(82% 0.08 145)',
+    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.1)',
   },
   {
     token: '--d1-data-negative',
     value: 'oklch(78% 0.14 25)',
-    role: 'Chart negatives — terracotta',
+    role: 'TEXT/STROKE — terracotta (line strokes, axis ink)',
+  },
+  {
+    token: '--d1-data-negative-soft',
+    value: 'oklch(78% 0.09 25)',
+    role: 'FILL/SURFACE — chart fills, KPI delta bg (v5.1)',
   },
   {
     token: '--d1-notification-amber',
     value: 'oklch(82% 0.135 87)',
-    role: 'Count badges (gouache anchor)',
+    role: 'TEXT/INK — count-badge ink, status text',
+  },
+  {
+    token: '--d1-notification-amber-soft',
+    value: 'oklch(82% 0.08 87)',
+    role: 'FILL/SURFACE — badge fills (v5.1)',
+  },
+  {
+    token: '--d1-status-success',
+    value: 'oklch(82% 0.13 145)',
+    role: 'STATUS TEXT — success (matches data-positive hue)',
+  },
+  {
+    token: '--d1-status-success-soft',
+    value: 'oklch(82% 0.08 145)',
+    role: 'STATUS FILL — success chip background',
+  },
+  {
+    token: '--d1-status-error',
+    value: 'oklch(78% 0.14 25)',
+    role: 'STATUS TEXT — error (matches data-negative hue)',
+  },
+  {
+    token: '--d1-status-error-soft',
+    value: 'oklch(78% 0.09 25)',
+    role: 'STATUS FILL — error chip background',
+  },
+  {
+    token: '--d1-status-warning',
+    value: 'oklch(82% 0.135 87)',
+    role: 'STATUS TEXT — warning',
+  },
+  {
+    token: '--d1-status-warning-soft',
+    value: 'oklch(82% 0.08 87)',
+    role: 'STATUS FILL — warning chip background',
+  },
+  {
+    token: '--d1-status-info',
+    value: 'oklch(72% 0.1 240)',
+    role: 'STATUS TEXT — info (cool blue-grey)',
+  },
+  {
+    token: '--d1-status-info-soft',
+    value: 'oklch(72% 0.06 240)',
+    role: 'STATUS FILL — info chip background',
   },
   { token: '--d1-text-primary', value: 'oklch(98% 0.001 280)', role: 'Display + body on dark' },
   { token: '--d1-text-muted', value: 'oklch(64% 0.005 280)', role: 'Secondary; eyebrows; axis' },
