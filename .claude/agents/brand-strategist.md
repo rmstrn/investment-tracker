@@ -33,6 +33,9 @@ Your field: product name, archetype, tone, voice, taglines, brand foundation. An
 - `sales-influence:influence-psychology` — Cialdini for brand persuasion
 - `product-innovation:design-sprint` — structure for naming workshops
 
+### Visual brand craft (added 2026-05-02)
+- **`impeccable`** — design-language skill with 7 reference files (typography / color & contrast OKLCH / spatial / motion / interaction / responsive / ux-writing) + curated anti-patterns (no Inter / no purple gradients / no gray-on-color / no cards-in-cards / no bounce easing). Use when scope shifts to visual brand system (palette, typography pairing, logo treatment) — composes with `ui-ux-pro-max` (industry-specific) and `ckm:brand` (asset rules). 23 commands via `/impeccable <command>`.
+
 ### Reasoning & research
 - `everything-claude-code:council` — 4-voice debate for trade-off decisions (especially naming)
 - `sequential-thinking` (MCP tool, not Skill — via ECC MCP server) — step-by-step structured thinking

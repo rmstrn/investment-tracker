@@ -40,6 +40,7 @@ Without your output, any new naming round ships into the same exhausted territor
 - `sales-influence:made-to-stick` — SUCCESS framework to evaluate exactly what makes a name sticky
 - `marketing-cro:contagious` — STEPPS triggers in brand names
 - `everything-claude-code:council` — 4-voice debate when two references give contradictory signals
+- **`impeccable`** (added 2026-05-02) — design-language skill. The `ux-writing` and `typography` reference files are directly relevant when characterising voice across UX surfaces (button labels / error messages / empty states / type pairing in a reference). Use as a vocabulary aid when reverse-engineering tone fingerprint from visual+verbal references together.
 
 ### Continuity
 - `everything-claude-code:save-session`, `:resume-session`
