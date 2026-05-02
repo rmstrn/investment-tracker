@@ -36,11 +36,16 @@
   /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
    * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
    *   .d1-rail · .d1-rail__line · .d1-rail__tick
-   *   .d1-kpi--lookhere · .d1-kpi--portfolio
+   *   .d1-kpi--portfolio
    *   .d1-cta--primary · .d1-cta--primary:hover
    *   .d1-focus-ring · :focus-visible (composite ring composer)
    *   .d1-ai-byline · .d1-pill--active · .d1-segmented__btn--active
-   * Anywhere else binding `lime-signal` = architectural violation. */
+   * Anywhere else binding `lime-signal` = architectural violation.
+   *
+   * v5.5 (PO «ядовитый» 2026-05-02): look-here KPI fill (.d1-kpi--lime)
+   * demoted from lime-signal (L 91 C 0.21) to lime-mute (L 72 C 0.16).
+   * Mid-tone golden-green «look-here» without «glasses-pierced bright».
+   * Ink-deep text contrast holds at 8.49:1 (AAA-body). */
   --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
   --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
   --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
@@ -493,9 +498,11 @@
   font-size: clamp(48px, 4vw + 32px, 56px);
 }
 
-/* Lime-highlighted KPI — Press-grade firmness on lime substrate. */
+/* Look-here KPI — Press-grade firmness on lime-mute substrate (v5.5).
+ * Fill demoted from lime-signal L 91 → lime-mute L 72 per PO «ядовитый»
+ * 2026-05-02. AAA-body text contrast preserved (ink-deep on mute = 8.49:1). */
 [data-theme="lime-cabin"] .d1-kpi--lime {
-  background: var(--d1-accent-lime);
+  background: var(--d1-accent-lime-mute);
   box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
     1px 0 0 rgba(14, 15, 17, 0.4);
 }
