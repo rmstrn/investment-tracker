@@ -66,7 +66,7 @@ const PILLS: ReadonlyArray<PillRow> = [
   },
   {
     name: 'Premium chip — 24px tall, 9999px radius',
-    tokens: 'Sans 500 11px · text-primary on purple @ 18% opacity',
+    tokens: 'Mono 500 11px · ink-deep on amber-soft (gold) · Read-tier emboss',
     node: <span className="d1-chip-premium">Premium</span>,
   },
   {
