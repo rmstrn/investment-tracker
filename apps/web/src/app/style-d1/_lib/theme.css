@@ -511,8 +511,7 @@
   /* 1px lime-hairline border + Read-tier standard emboss (composed) so the
    * chip rises off card surfaces while the lime border carries the brand
    * signal. Reads as «raised premium» without lime-fill flatness. */
-  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline),
-    var(--d1-elev-read-standard-rest);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
   vertical-align: middle;
 }
 
