@@ -4,32 +4,24 @@
 @import "../../style-d1/_lib/depth.css";
 
 /*
- * D1 «Lime Cabin» theme — route-local mirror for `/design-system`.
+ * D1 «Lime Cabin» theme — route-local mirror for `/design-system`
+ * (post v3+v4+v5 lock 2026-05-02).
  *
- * This file is the second-home of the post-fix-pass token block
- * + component vocabulary that lives canonically in
- * `apps/web/src/app/style-d1/_lib/theme.css`. It is NOT imported via
- * the design-tokens package; it is a route-local opt-in scoped to
- * `[data-theme="lime-cabin"]` so this rebuild can ship without
- * touching the hand-rolled multi-format Style Dictionary build (see
- * KICKOFF §2.2 — route-local fallback chosen).
+ * Mirror of the canonical `apps/web/src/app/style-d1/_lib/theme.css`,
+ * scoped to `[data-theme="lime-cabin"]` instead of `[data-style="d1"]`.
+ * Route-local opt-in via `design-system/layout.tsx`.
  *
- * Selector contract:
- *   - `style-d1` source uses `[data-style="d1"]`
- *   - here every selector uses `[data-theme="lime-cabin"]` instead
- *   - the wrapper is applied in `design-system/layout.tsx` so the
- *     opt-in is local to this route only (NOT global on `<html>`)
+ * v4: hue 75 → cool-violet 280° + L drop + data-positive / data-negative
+ *     + status quartet (declared SEPARATE from data-* per ADR-16).
+ * v5: --d1-accent-purple DROPPED (architect ADR-11); lime ladder added
+ *     (5-stop semantic-functional names per ADR-10); component recipes
+ *     re-bound (.d1-chip-premium ADR-14, .d1-pill--active + .d1-segmented
+ *     __btn--active ADR-15, .d1-avatar--ai ADR-13).
  *
- * When design-tokens grows a third theme key (post-Phase-1) this file
- * deletes; the `--d1-*` and `--d1-rail-*` tokens move to the
- * `tokens/semantic/lime-cabin.json` emit.
- *
- * Measured contrast (verified post depth-v3 hue-75 retint):
- *   text-primary on bg-card (oklch 24% 0.012 75)           = 14.7:1 (AAA)
- *   text-muted   on bg-card                                = 5.6:1  (AA-large + AAA on body 16px+)
- *   text-ink     on accent-lime (#D6F26B)                  = 14.9:1 (AAA)
- *   text-primary on bg-card-elevated (oklch 28% 0.013 75)  = 13.0:1 (AAA)
- *   text-primary on bg-input (oklch 11% 0.006 75)          = 18.4:1 (AAA)
+ * Measured contrast (per v5 canvas + lime ladder, AAA preserved):
+ *   text-primary  on bg-card   (oklch 19% 0.005 280)        = AAA
+ *   text-ink      on lime-signal (oklch 91% 0.21 117)       = 15.4:1 (AAA)
+ *   text-primary-deep on lime-soft (premium chip)           = AA-large
  */
 
 [data-theme="lime-cabin"] {
@@ -93,8 +85,8 @@
   /* ── Chart-* aliases mapping to D1 tokens (Phase 2 — KICKOFF §4.2) ─── */
   /* Indices 1-5: D1 has a 5-role native palette; 6-12 deferred (TD).   */
   --chart-series-1: var(--d1-text-primary); /* primary series / hero line */
-  --chart-series-2: var(--d1-accent-lime); /* comparison line / highlight */
-  --chart-series-3: var(--d1-accent-purple); /* highlight bar / negative */
+  --chart-series-2: var(--d1-accent-lime-signal); /* comparison line / highlight */
+  --chart-series-3: var(--d1-data-negative); /* negative bar / down-direction (v4) */
   --chart-series-4: var(--d1-text-muted); /* secondary cohort / neutral */
   --chart-series-5: var(--d1-bg-card-soft); /* tertiary / data-bar default */
 
@@ -187,7 +179,8 @@
   box-shadow: inset 0 0 0 1px var(--d1-border-strong), var(--d1-elev-press-active);
 }
 
-/* Nav brand — Read tier (standard amplitude); identity tile reads as a card. */
+/* Nav brand — Read tier identity tile. Recipe parallel to .d1-avatar--ai
+ * per ADR-13: lime-soft plate + ink-mono glyph + 1px lime-hairline inset. */
 [data-theme="lime-cabin"] .d1-nav__brand {
   display: inline-flex;
   align-items: center;
@@ -195,12 +188,12 @@
   width: 32px;
   height: 32px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple);
+  background: var(--d1-accent-lime-soft);
   color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
-  font-weight: 700;
-  font-size: 15px;
-  box-shadow: var(--d1-elev-read-standard-rest);
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
 }
 
 [data-theme="lime-cabin"] .d1-disclaimer-chip {
@@ -278,14 +271,15 @@
   box-shadow: var(--d1-elev-disabled);
 }
 
-/* Active pill — lime-on-lime variant (depth v3 §7.7). */
+/* Active pill — Linear 2026 inset-stroke pattern (architect ADR-15).
+ * 1px inset lime-signal stroke; glyph color HELD at --d1-text-primary. */
 [data-theme="lime-cabin"] .d1-pill--active,
 [data-theme="lime-cabin"] .d1-pill--active:hover {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
   transform: none;
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
-    1px 0 0 rgba(14, 15, 17, 0.2);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal), inset 0 1px 0 0
+    rgba(255, 255, 255, 0.06);
 }
 
 [data-theme="lime-cabin"] .d1-pill__icon {
@@ -346,7 +340,9 @@
   outline-offset: 2px;
 }
 
-/* Nav avatar — Read tier (standard amplitude); identity tile. */
+/* Nav avatar — Read tier identity tile. Same recipe as .d1-avatar--ai
+ * per ADR-13: lime-soft plate + ink mono glyph + 1px lime-hairline inset.
+ * Filled-lime monogram is FORBIDDEN. */
 [data-theme="lime-cabin"] .d1-nav__avatar {
   display: inline-flex;
   align-items: center;
@@ -354,27 +350,50 @@
   width: 40px;
   height: 40px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple);
+  background: var(--d1-accent-lime-soft);
   color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
-  font-weight: 700;
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
   font-size: 14px;
-  box-shadow: var(--d1-elev-read-standard-rest);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
 }
 
+/* Premium chip — recipe-locked per architect ADR-14. Type carries the
+ * premium load (mono uppercase + 0.06em tracking); lime is structural
+ * (soft fill + hairline border). NEVER bind lime-signal here. */
 [data-theme="lime-cabin"] .d1-chip-premium {
   display: inline-flex;
   align-items: center;
   height: 24px;
   padding: 0 12px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple-soft);
-  color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
+  background: var(--d1-accent-lime-soft);
+  color: var(--d1-text-primary-deep);
+  font-family: var(--d1-font-mono);
   font-weight: 500;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline);
   vertical-align: middle;
+}
+
+/* AI avatar — recipe-locked per architect ADR-13. Lime-soft plate + ink
+ * "P" mono glyph + 1px lime-hairline inset. Filled-lime monograms are
+ * FORBIDDEN — color carries identity, type carries entity. */
+[data-theme="lime-cabin"] .d1-avatar--ai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--d1-accent-lime-soft);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
 }
 
 /*
@@ -623,10 +642,12 @@
  * Segmented active — coin sits inside the well. Lime hairline preserved;
  * Press-rest composed beneath (dual polarity: Tier 2 well, Tier 3 coin).
  */
+/* Segmented active coin — Linear 2026 inset-stroke pattern (ADR-15).
+ * 1px inset lime-signal stroke; glyph color HELD at --d1-text-primary. */
 [data-theme="lime-cabin"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), var(--d1-elev-press-rest);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal), var(--d1-elev-press-rest);
 }
 
 /* ── Heatmap ───────────────────────────────────────────────────────── */
@@ -1298,12 +1319,14 @@
   border: 0;
   box-shadow: var(--d1-elev-read-quiet-rest);
 
-  /* Candy → D1 token remap (chart-internal vars only) */
+  /* Candy → D1 token remap (chart-internal vars only). v5: purple removed —
+   * default-voltage chart bar is lime-mute; per-chart overrides re-bind to
+   * data-positive / data-negative / lime-signal for «look here» moments. */
   --text-on-candy: var(--d1-text-primary);
-  --cta-fill: var(--d1-accent-purple);
-  --accent: var(--d1-accent-purple);
-  --accent-deep: var(--d1-accent-purple);
-  --cta-shadow: var(--d1-accent-purple);
+  --cta-fill: var(--d1-accent-lime-mute);
+  --accent: var(--d1-accent-lime-mute);
+  --accent-deep: var(--d1-accent-lime-mute);
+  --cta-shadow: var(--d1-accent-lime-mute);
   --card: var(--d1-bg-card-elevated);
   --card-highlight: rgba(255, 255, 255, 0.04);
   --bg-cream: var(--d1-bg-card-soft);
@@ -1405,15 +1428,16 @@
  * on dark canvas, no override needed.
  */
 [data-theme="lime-cabin"] .d1-chart-panel--spark-up {
-  --cta-fill: var(--d1-accent-lime);
-  --accent: var(--d1-accent-lime);
+  --cta-fill: var(--d1-data-positive);
+  --accent: var(--d1-data-positive);
 }
 
+/* Down-direction sparkline: data-negative (terracotta) per v4. */
 [data-theme="lime-cabin"] .d1-chart-panel--spark-down {
-  --accent-deep: var(--d1-accent-purple);
-  --cta-shadow: var(--d1-accent-purple);
-  --cta-fill: var(--d1-accent-purple);
-  --accent: var(--d1-accent-purple);
+  --accent-deep: var(--d1-data-negative);
+  --cta-shadow: var(--d1-data-negative);
+  --cta-fill: var(--d1-data-negative);
+  --accent: var(--d1-data-negative);
 }
 
 [data-theme="lime-cabin"] .d1-chart-panel--spark-flat {
@@ -1532,10 +1556,10 @@
  *     gives strict spec adherence to the saturation order.
  *
  *   - The kickoff hint about `payload.meta.highlightKey` is aspirational —
- *     no such field exists on `DonutChartPayload`. The "purple highlight"
- *     mode is demonstrated by overriding a single segment's `color` to
- *     `--d1-accent-purple` directly in the showcase fixture, which is
- *     exactly the runtime outcome the kickoff describes.
+ *     no such field exists on `DonutChartPayload`. The legacy «one-segment
+ *     highlight» mode is demonstrated by overriding a single segment's
+ *     `color` directly in the showcase fixture (post-v5: bind to
+ *     `--d1-data-negative` for «down» segments — purple removed in v5).
  *
  * The wrapper modifier below tames two things the candy-register donut
  * still leaks under the base `.d1-chart-panel` mapping:
@@ -1781,11 +1805,11 @@
  *     (KICKOFF §7.10 — chart components are off-limits).
  */
 [data-theme="lime-cabin"] .d1-chart-panel--stacked-bar {
-  /* Re-point candy categorical palette onto D1 series tokens (kickoff
-   * §4.1: text-primary / lime / purple / text-muted / bg-card-soft). */
+  /* Re-point candy categorical palette onto D1 series tokens (v5 lime-mono:
+   * text-primary / lime-signal / lime-mute / text-muted / bg-card-soft). */
   --chart-categorical-1: var(--d1-text-primary);
-  --chart-categorical-2: var(--d1-accent-lime);
-  --chart-categorical-3: var(--d1-accent-purple);
+  --chart-categorical-2: var(--d1-accent-lime-signal);
+  --chart-categorical-3: var(--d1-accent-lime-mute);
   --chart-categorical-4: var(--d1-text-muted);
   --chart-categorical-5: var(--d1-bg-card-soft);
 }
@@ -1961,11 +1985,11 @@
  *        - `--text-on-candy` → `--d1-text-primary` (white) — anchors
  *          render as max-contrast white blocks against the dark canvas,
  *          reading as the «absolute value reference» moments. Correct.
- *        - `--cta-fill` → `--d1-accent-purple` — wrong for D1 dialect:
- *          KICKOFF §4.1 «Bars» says positive in lime, negative in purple.
- *          Modifier re-points to `--d1-accent-lime`.
- *        - `--accent-deep` → `--d1-accent-purple` — correct for negative.
- *          Kept by inheritance.
+ *        - `--cta-fill` → `--d1-accent-lime-mute` (post-v5) — default-
+ *          voltage chart bar; per-modifier overrides re-bind to data-
+ *          positive (up) / data-negative (down) / lime-signal (look here).
+ *        - `--accent-deep` → `--d1-accent-lime-mute` (post-v5) — base
+ *          inherits low-voltage default; modifier re-points for negatives.
  *
  *   4. PD-signature pill numeral (Bagel Fat One «hero moment» painted
  *      INSIDE the ending bar). The component reaches for

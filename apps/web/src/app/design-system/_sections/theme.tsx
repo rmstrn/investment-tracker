@@ -68,20 +68,64 @@ const RAIL_TOKENS: ReadonlyArray<TokenRow> = [
 ];
 
 const PALETTE_TOKENS: ReadonlyArray<TokenRow> = [
-  { token: '--d1-bg-page', value: '#141416', role: 'Outer canvas' },
-  { token: '--d1-bg-surface', value: '#1F2024', role: 'Lifted surface' },
-  { token: '--d1-bg-card', value: '#26272C', role: 'KPI / chart fill' },
-  { token: '--d1-bg-card-soft', value: '#2C2D33', role: 'Hover-lifted; tooltip' },
-  { token: '--d1-accent-lime', value: '#D6F26B', role: '«Look here» signal' },
-  { token: '--d1-accent-purple', value: '#7B5CFF', role: 'Brand mark; «something is happening»' },
+  { token: '--d1-bg-page', value: 'oklch(12% 0.004 280)', role: 'Outer canvas (cool-violet 280°)' },
+  { token: '--d1-bg-surface', value: 'oklch(16% 0.004 280)', role: 'Lifted surface' },
+  { token: '--d1-bg-card', value: 'oklch(19% 0.005 280)', role: 'KPI / chart fill' },
+  { token: '--d1-bg-card-soft', value: 'oklch(22% 0.005 280)', role: 'Press-tier well; tooltip' },
+  {
+    token: '--d1-bg-card-elevated',
+    value: 'oklch(23% 0.005 280)',
+    role: 'Read-tier KPI / panel fill',
+  },
+  { token: '--d1-bg-input', value: 'oklch(8% 0.004 280)', role: 'Sub-canvas form well' },
+  {
+    token: '--d1-accent-lime-canvas',
+    value: 'oklch(20% 0.012 117)',
+    role: 'Atmospheric tint, disclaimer wash',
+  },
+  {
+    token: '--d1-accent-lime-soft',
+    value: 'oklch(34% 0.045 117)',
+    role: 'Chip / avatar fill, premium bg',
+  },
+  {
+    token: '--d1-accent-lime-hairline',
+    value: 'oklch(68% 0.13 117)',
+    role: '1px strokes, borders, focus rings',
+  },
+  {
+    token: '--d1-accent-lime-signal',
+    value: 'oklch(91% 0.21 117)',
+    role: 'SIGNATURE — Record Rail / look-here / CTA',
+  },
+  {
+    token: '--d1-accent-lime-mute',
+    value: 'oklch(72% 0.16 117)',
+    role: 'AI byline / cohort / default chart bar',
+  },
+  {
+    token: '--d1-data-positive',
+    value: 'oklch(82% 0.13 145)',
+    role: 'Chart positives — pistachio',
+  },
+  {
+    token: '--d1-data-negative',
+    value: 'oklch(78% 0.14 25)',
+    role: 'Chart negatives — terracotta',
+  },
   {
     token: '--d1-notification-amber',
-    value: '#F4C257',
-    role: 'Sync-error chip ONLY (edge-cases §3)',
+    value: 'oklch(82% 0.135 87)',
+    role: 'Count badges (gouache anchor)',
   },
-  { token: '--d1-text-primary', value: '#FAFAFA', role: 'Display + body on dark' },
-  { token: '--d1-text-muted', value: '#9C9DA3', role: 'Secondary; eyebrows; axis' },
-  { token: '--d1-text-ink', value: '#0E0F11', role: 'Numerals on lime' },
+  { token: '--d1-text-primary', value: 'oklch(98% 0.001 280)', role: 'Display + body on dark' },
+  { token: '--d1-text-muted', value: 'oklch(64% 0.005 280)', role: 'Secondary; eyebrows; axis' },
+  {
+    token: '--d1-text-primary-deep',
+    value: 'oklch(20% 0.004 280)',
+    role: 'Premium chip ink-deep',
+  },
+  { token: '--d1-text-ink', value: 'oklch(11% 0.003 280)', role: 'Numerals on lime-signal' },
   { token: '--d1-border-hairline', value: 'rgba(255,255,255,0.06)', role: 'Inner divisions' },
   { token: '--d1-border-strong', value: 'rgba(255,255,255,0.12)', role: 'Stronger outlines' },
 ];

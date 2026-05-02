@@ -292,14 +292,12 @@ const DONUT_FIXTURE_D1: DonutChartPayload = {
 };
 
 /**
- * Purple-highlight variant. KICKOFF §4.1: «ONE optional highlighted
- * segment in `--d1-accent-purple` (when `payload.meta.highlightKey`
- * set)». The schema doesn't expose `highlightKey` (verified — the
- * `DonutChartPayload` `meta` is `ChartMeta + MetaFinancialAggregate`
- * only). The runtime outcome the kickoff describes is identical to a
- * direct colour override, so we demonstrate the highlighted-segment
- * dialect by overriding the heaviest segment's colour to purple — same
- * "look here" semantic, different signal colour.
+ * Highlight variant (post-v5 lime-mono). The legacy kickoff hint about
+ * `payload.meta.highlightKey` is aspirational — the field doesn't exist
+ * on `DonutChartPayload` (`meta` is `ChartMeta + MetaFinancialAggregate`).
+ * The "look here" semantic is preserved by overriding the heaviest
+ * segment's colour to `--d1-data-negative` (terracotta) — the v5
+ * direction-of-attention token (was purple pre-v5).
  */
 const DONUT_FIXTURE_D1_HIGHLIGHTED: DonutChartPayload = {
   ...DONUT_FIXTURE,
@@ -312,7 +310,7 @@ const DONUT_FIXTURE_D1_HIGHLIGHTED: DonutChartPayload = {
     ...s,
     color:
       i === 0
-        ? 'var(--d1-accent-purple)'
+        ? 'var(--d1-data-negative)'
         : (D1_DONUT_PALETTE[i] ?? D1_DONUT_PALETTE[D1_DONUT_PALETTE.length - 1]),
   })),
 };
@@ -594,12 +592,12 @@ export function ChartsSection() {
               centerEyebrow="Portfolio"
             />
             <p className="d1-chart-panel__caption">
-              Optional purple-highlight dialect (KICKOFF §4.1: «ONE optional highlighted segment in
-              `--d1-accent-purple` when `payload.meta.highlightKey` set»). The schema doesn't expose
-              `highlightKey` natively — the runtime outcome is identical to a per-segment colour
-              override, which is what we render here on the heaviest segment («Tech»). Used when a
-              single sector trips a re-balance threshold; the rest of the saturation order stays put
-              so the highlight reads against a neutral field, not a competing lime.
+              Optional highlight dialect (post-v5 lime-mono): one segment overrides to
+              `--d1-data-negative` (terracotta) — the v5 direction-of-attention token. The schema
+              doesn't expose `highlightKey` natively — the runtime outcome is identical to a
+              per-segment colour override, which is what we render here on the heaviest segment
+              («Tech»). Used when a single sector trips a re-balance threshold; the rest of the
+              saturation order stays put so the highlight reads against a neutral field.
             </p>
           </div>
         </article>
@@ -689,19 +687,20 @@ export function ChartsSection() {
               `inkForTreemapChange` helpers from `tokens.ts`, which mix CSS-vars with hardcoded
               hex), so the candy `--cta-fill` / `--accent-deep` / `--bg-cream` / `--text-on-candy`
               vars resolve cleanly to D1 tokens under the `.d1-chart-panel--treemap` modifier.
-              Positive tiles render `--d1-accent-lime`, negative tiles `--d1-accent-purple`, neutral
-              tiles `--d1-bg-card` for a crisp neutral against the panel surface. Tile labels render
-              dark ink (`--d1-text-ink`) — AAA on lime ≥0.5 opacity, AA-large on purple ≥0.5 opacity
-              (12-13px tabular). Neutral tile labels fade to near-invisible at the helper's 0.55
-              neutral-state opacity — accepted gap, reinforces «no signal here» semantic; the
-              screen-reader `&lt;ChartDataTable&gt;` always carries the full ticker list. The candy
-              «paper-pressed pile of tiles» hard ink-shadow drop on each tile's bottom + right edges
-              is suppressed via `path[fill-opacity='0.85']` (the shadow path is the only
-              `&lt;path&gt;` per tile carrying that exact attribute), retiring the candy treatment
-              per KICKOFF §4.1. Tile-fill flatness is an accepted gap: TreemapVisx scales label
-              opacity by magnitude, not tile-fill opacity. Tooltip surface, box-shadow, and border
-              are tamed via `!important` overrides — the cascade tradeoff for inline-styled DOM,
-              documented in lime-cabin.css.
+              Positive tiles render `--d1-data-positive`, negative tiles `--d1-data-negative`,
+              neutral tiles `--d1-bg-card` for a crisp neutral against the panel surface (post-v5
+              lime-mono palette). Tile labels render dark ink (`--d1-text-ink`) — AAA on positive
+              ≥0.5 opacity, AA-large on negative ≥0.5 opacity (12-13px tabular). Neutral tile labels
+              fade to near-invisible at the helper's 0.55 neutral-state opacity — accepted gap,
+              reinforces «no signal here» semantic; the screen-reader `&lt;ChartDataTable&gt;`
+              always carries the full ticker list. The candy «paper-pressed pile of tiles» hard
+              ink-shadow drop on each tile's bottom + right edges is suppressed via
+              `path[fill-opacity='0.85']` (the shadow path is the only `&lt;path&gt;` per tile
+              carrying that exact attribute), retiring the candy treatment per KICKOFF §4.1.
+              Tile-fill flatness is an accepted gap: TreemapVisx scales label opacity by magnitude,
+              not tile-fill opacity. Tooltip surface, box-shadow, and border are tamed via
+              `!important` overrides — the cascade tradeoff for inline-styled DOM, documented in
+              lime-cabin.css.
             </p>
           </div>
         </article>
