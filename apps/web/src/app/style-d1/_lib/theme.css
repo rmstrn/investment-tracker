@@ -53,10 +53,9 @@
   --d1-rail-tick-h: 2px;
 
   /* ── Type stacks (variables → fallback chain) ──────────────────────── */
-  --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont,
-    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --d1-font-mono: var(--font-d1-mono), ui-monospace, SFMono-Regular, "Menlo",
-    "Consolas", monospace;
+  --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --d1-font-mono: var(--font-d1-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
 
   /* ── Page surface ──────────────────────────────────────────────────── */
   background-color: var(--d1-bg-page);
@@ -229,8 +228,8 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d1"] .d1-pill:hover {
@@ -383,8 +382,8 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d1"] .d1-kpi:hover {
@@ -526,9 +525,8 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d1"] .d1-chip:hover {
@@ -644,9 +642,8 @@
   padding: 0 12px;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 [data-style="d1"] .d1-segmented__btn:focus-visible {

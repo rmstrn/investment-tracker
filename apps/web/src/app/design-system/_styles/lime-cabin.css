@@ -25,7 +25,7 @@
  *   text.ink     (#0E0F11) on accent.lime (#D6F26B)     = 15.4:1 (AAA)
  */
 
-[data-theme='lime-cabin'] {
+[data-theme="lime-cabin"] {
   /* ── Palette (8 roles + amber count badge) ─────────────────────────── */
   --d1-bg-page: #141416;
   --d1-bg-surface: #1f2024;
@@ -70,22 +70,21 @@
   --chart-cursor: var(--d1-text-muted);
 
   /* ── Type stacks ───────────────────────────────────────────────────── */
-  --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont,
-    'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  --d1-font-mono: var(--font-d1-mono), ui-monospace, SFMono-Regular, 'Menlo',
-    'Consolas', monospace;
+  --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --d1-font-mono: var(--font-d1-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
 
   /* ── Page surface ──────────────────────────────────────────────────── */
   background-color: var(--d1-bg-page);
   color: var(--d1-text-primary);
   font-family: var(--d1-font-sans);
-  font-feature-settings: 'tnum' 1, 'ss01' 1;
+  font-feature-settings: "tnum" 1, "ss01" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* ── CTA + nav primitives ──────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-cta {
+[data-theme="lime-cabin"] .d1-cta {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -103,29 +102,29 @@
   transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-cta:hover {
+[data-theme="lime-cabin"] .d1-cta:hover {
   transform: translateY(-1px);
 }
 
-[data-theme='lime-cabin'] .d1-cta:focus-visible {
+[data-theme="lime-cabin"] .d1-cta:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 3px;
 }
 
-[data-theme='lime-cabin'] .d1-cta:disabled {
+[data-theme="lime-cabin"] .d1-cta:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
 }
 
-[data-theme='lime-cabin'] .d1-cta--ghost {
+[data-theme="lime-cabin"] .d1-cta--ghost {
   background: transparent;
   color: var(--d1-text-primary);
   box-shadow: inset 0 0 0 1px var(--d1-border-strong);
 }
 
 /* ── Pill nav ──────────────────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-nav__brand {
+[data-theme="lime-cabin"] .d1-nav__brand {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -139,7 +138,7 @@
   font-size: 15px;
 }
 
-[data-theme='lime-cabin'] .d1-disclaimer-chip {
+[data-theme="lime-cabin"] .d1-disclaimer-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -155,7 +154,7 @@
   white-space: nowrap;
 }
 
-[data-theme='lime-cabin'] .d1-disclaimer-chip__icon {
+[data-theme="lime-cabin"] .d1-disclaimer-chip__icon {
   display: inline-flex;
   width: 14px;
   height: 14px;
@@ -163,7 +162,7 @@
   flex-shrink: 0;
 }
 
-[data-theme='lime-cabin'] .d1-pill {
+[data-theme="lime-cabin"] .d1-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -180,38 +179,38 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-pill:hover {
+[data-theme="lime-cabin"] .d1-pill:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .d1-pill:focus-visible {
+[data-theme="lime-cabin"] .d1-pill:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-pill:disabled {
+[data-theme="lime-cabin"] .d1-pill:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-[data-theme='lime-cabin'] .d1-pill--active,
-[data-theme='lime-cabin'] .d1-pill--active:hover {
+[data-theme="lime-cabin"] .d1-pill--active,
+[data-theme="lime-cabin"] .d1-pill--active:hover {
   background: var(--d1-accent-lime);
   color: var(--d1-text-ink);
 }
 
-[data-theme='lime-cabin'] .d1-pill__icon {
+[data-theme="lime-cabin"] .d1-pill__icon {
   display: inline-flex;
   width: 14px;
   height: 14px;
 }
 
-[data-theme='lime-cabin'] .d1-pill__count {
+[data-theme="lime-cabin"] .d1-pill__count {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -227,7 +226,7 @@
   margin-left: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-nav__icon-pill {
+[data-theme="lime-cabin"] .d1-nav__icon-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -241,16 +240,16 @@
   transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-nav__icon-pill:hover {
+[data-theme="lime-cabin"] .d1-nav__icon-pill:hover {
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .d1-nav__icon-pill:focus-visible {
+[data-theme="lime-cabin"] .d1-nav__icon-pill:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-nav__avatar {
+[data-theme="lime-cabin"] .d1-nav__avatar {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -264,7 +263,7 @@
   font-size: 14px;
 }
 
-[data-theme='lime-cabin'] .d1-chip-premium {
+[data-theme="lime-cabin"] .d1-chip-premium {
   display: inline-flex;
   align-items: center;
   height: 24px;
@@ -280,7 +279,7 @@
 }
 
 /* ── KPI cards ─────────────────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-kpi {
+[data-theme="lime-cabin"] .d1-kpi {
   position: relative;
   background: var(--d1-bg-card);
   border-radius: 24px;
@@ -289,23 +288,23 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-kpi:hover {
+[data-theme="lime-cabin"] .d1-kpi:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme='lime-cabin'] .d1-kpi__head {
+[data-theme="lime-cabin"] .d1-kpi__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-[data-theme='lime-cabin'] .d1-kpi__icon-chip {
+[data-theme="lime-cabin"] .d1-kpi__icon-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -317,7 +316,7 @@
   flex-shrink: 0;
 }
 
-[data-theme='lime-cabin'] .d1-kpi__label {
+[data-theme="lime-cabin"] .d1-kpi__label {
   font-family: var(--d1-font-sans);
   font-weight: 500;
   font-size: 14px;
@@ -327,7 +326,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .d1-kpi__num {
+[data-theme="lime-cabin"] .d1-kpi__num {
   font-family: var(--d1-font-mono);
   font-weight: 500;
   font-size: 32px;
@@ -336,10 +335,10 @@
   color: var(--d1-text-primary);
   margin: 0;
   font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
 
-[data-theme='lime-cabin'] .d1-kpi__delta {
+[data-theme="lime-cabin"] .d1-kpi__delta {
   font-family: var(--d1-font-mono);
   font-weight: 400;
   font-size: 13px;
@@ -349,50 +348,50 @@
   font-variant-numeric: tabular-nums lining-nums;
 }
 
-[data-theme='lime-cabin'] .d1-kpi--portfolio {
+[data-theme="lime-cabin"] .d1-kpi--portfolio {
   min-height: 160px;
 }
 
-[data-theme='lime-cabin'] .d1-kpi--portfolio .d1-kpi__num {
+[data-theme="lime-cabin"] .d1-kpi--portfolio .d1-kpi__num {
   font-size: clamp(48px, 4vw + 32px, 56px);
 }
 
-[data-theme='lime-cabin'] .d1-kpi--lime {
+[data-theme="lime-cabin"] .d1-kpi--lime {
   background: var(--d1-accent-lime);
 }
 
-[data-theme='lime-cabin'] .d1-kpi--lime .d1-kpi__label,
-[data-theme='lime-cabin'] .d1-kpi--lime .d1-kpi__num,
-[data-theme='lime-cabin'] .d1-kpi--lime .d1-kpi__ext {
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__label,
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__num,
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__ext {
   color: var(--d1-text-ink);
 }
 
-[data-theme='lime-cabin'] .d1-kpi--lime .d1-kpi__delta {
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__delta {
   color: var(--d1-text-ink);
   opacity: 0.85;
 }
 
-[data-theme='lime-cabin'] .d1-kpi--lime .d1-kpi__icon-chip {
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__icon-chip {
   background: rgba(14, 15, 17, 0.08);
   color: var(--d1-text-ink);
 }
 
 /* Error variant — amber hairline indicator on stale data */
-[data-theme='lime-cabin'] .d1-kpi--error {
+[data-theme="lime-cabin"] .d1-kpi--error {
   box-shadow: inset 0 0 0 1px var(--d1-notification-amber);
 }
 
 /* Empty variant — neutral, lime plus icon, no fill */
-[data-theme='lime-cabin'] .d1-kpi--empty .d1-kpi__icon-chip {
+[data-theme="lime-cabin"] .d1-kpi--empty .d1-kpi__icon-chip {
   color: var(--d1-accent-lime);
 }
 
-[data-theme='lime-cabin'] .d1-kpi--empty .d1-kpi__num {
+[data-theme="lime-cabin"] .d1-kpi--empty .d1-kpi__num {
   color: var(--d1-text-muted);
 }
 
 /* ── Filter chip ───────────────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-chip {
+[data-theme="lime-cabin"] .d1-chip {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -409,52 +408,51 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-chip:hover {
+[data-theme="lime-cabin"] .d1-chip:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .d1-chip:focus-visible {
+[data-theme="lime-cabin"] .d1-chip:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-chip:disabled {
+[data-theme="lime-cabin"] .d1-chip:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-[data-theme='lime-cabin'] .d1-chip--active {
+[data-theme="lime-cabin"] .d1-chip--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
   box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
 }
 
-[data-theme='lime-cabin'] .d1-chip--active:hover {
+[data-theme="lime-cabin"] .d1-chip--active:hover {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
   box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
 }
 
-[data-theme='lime-cabin'] .d1-chip--icon {
+[data-theme="lime-cabin"] .d1-chip--icon {
   width: 36px;
   padding: 0;
   background: var(--d1-bg-card);
   justify-content: center;
 }
 
-[data-theme='lime-cabin'] .d1-chip--export {
+[data-theme="lime-cabin"] .d1-chip--export {
   background: var(--d1-bg-card);
   color: var(--d1-text-primary);
 }
 
 /* ── Segmented toggle ──────────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-segmented {
+[data-theme="lime-cabin"] .d1-segmented {
   display: inline-flex;
   align-items: center;
   background: var(--d1-bg-page);
@@ -463,7 +461,7 @@
   gap: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-segmented__btn {
+[data-theme="lime-cabin"] .d1-segmented__btn {
   font-family: var(--d1-font-sans);
   font-weight: 500;
   font-size: 12px;
@@ -474,32 +472,31 @@
   padding: 0 12px;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .d1-segmented__btn:focus-visible {
+[data-theme="lime-cabin"] .d1-segmented__btn:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 2px;
 }
 
-[data-theme='lime-cabin'] .d1-segmented__btn--active {
+[data-theme="lime-cabin"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
   box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
 }
 
 /* ── Heatmap ───────────────────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-heatmap {
+[data-theme="lime-cabin"] .d1-heatmap {
   display: grid;
   grid-template-columns: auto repeat(7, 28px);
   gap: 4px;
   align-items: center;
 }
 
-[data-theme='lime-cabin'] .d1-heatmap__rowlabel,
-[data-theme='lime-cabin'] .d1-heatmap__collabel {
+[data-theme="lime-cabin"] .d1-heatmap__rowlabel,
+[data-theme="lime-cabin"] .d1-heatmap__collabel {
   font-family: var(--d1-font-mono);
   font-size: 10px;
   color: var(--d1-text-muted);
@@ -509,12 +506,12 @@
   font-variant-numeric: tabular-nums;
 }
 
-[data-theme='lime-cabin'] .d1-heatmap__rowlabel {
+[data-theme="lime-cabin"] .d1-heatmap__rowlabel {
   text-align: right;
   padding-right: 6px;
 }
 
-[data-theme='lime-cabin'] .d1-heatmap__cell {
+[data-theme="lime-cabin"] .d1-heatmap__cell {
   width: 28px;
   height: 28px;
   border-radius: 6px;
@@ -522,24 +519,24 @@
   position: relative;
 }
 
-[data-theme='lime-cabin'] .d1-heatmap__cell[data-level='0'] {
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="0"] {
   background: var(--d1-bg-page);
 }
-[data-theme='lime-cabin'] .d1-heatmap__cell[data-level='1'] {
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="1"] {
   background: rgba(214, 242, 107, 0.15);
 }
-[data-theme='lime-cabin'] .d1-heatmap__cell[data-level='2'] {
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="2"] {
   background: rgba(214, 242, 107, 0.4);
 }
-[data-theme='lime-cabin'] .d1-heatmap__cell[data-level='3'] {
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="3"] {
   background: rgba(214, 242, 107, 0.7);
 }
-[data-theme='lime-cabin'] .d1-heatmap__cell[data-level='4'] {
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="4"] {
   background: var(--d1-accent-lime);
 }
 
 /* ── Provedo Record Rail ───────────────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-rail {
+[data-theme="lime-cabin"] .d1-rail {
   display: flex;
   align-items: center;
   gap: var(--d1-rail-gap-tick);
@@ -548,11 +545,11 @@
   margin-bottom: var(--d1-rail-content-gap);
 }
 
-[data-theme='lime-cabin'] .d1-rail__tick {
+[data-theme="lime-cabin"] .d1-rail__tick {
   flex: 0 0 var(--d1-rail-tick-w);
 }
 
-[data-theme='lime-cabin'] .d1-rail__date {
+[data-theme="lime-cabin"] .d1-rail__date {
   font-family: var(--d1-font-mono);
   font-weight: 500;
   font-size: var(--d1-rail-date-size);
@@ -563,7 +560,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .d1-rail__line {
+[data-theme="lime-cabin"] .d1-rail__line {
   flex: 1;
   height: 1px;
   background: var(--d1-rail-line-color);
@@ -571,13 +568,13 @@
 }
 
 @container (max-width: 140px) {
-  [data-theme='lime-cabin'] .d1-rail__line {
+  [data-theme="lime-cabin"] .d1-rail__line {
     display: none;
   }
 }
 
 /* ── AI insights / record entries ──────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-insights {
+[data-theme="lime-cabin"] .d1-insights {
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -586,20 +583,20 @@
   list-style: none;
 }
 
-[data-theme='lime-cabin'] .d1-insight {
+[data-theme="lime-cabin"] .d1-insight {
   padding: 16px 4px;
   border-bottom: 1px solid var(--d1-border-hairline);
 }
 
-[data-theme='lime-cabin'] .d1-insight:last-child {
+[data-theme="lime-cabin"] .d1-insight:last-child {
   border-bottom: 0;
 }
 
-[data-theme='lime-cabin'] .d1-insight:first-child {
+[data-theme="lime-cabin"] .d1-insight:first-child {
   padding-top: 4px;
 }
 
-[data-theme='lime-cabin'] .d1-insight__body {
+[data-theme="lime-cabin"] .d1-insight__body {
   font-family: var(--d1-font-sans);
   font-weight: 400;
   font-size: 14px;
@@ -609,17 +606,17 @@
   text-wrap: pretty;
 }
 
-[data-theme='lime-cabin'] .d1-num {
+[data-theme="lime-cabin"] .d1-num {
   font-family: var(--d1-font-mono);
   font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  font-feature-settings: "tnum" 1, "lnum" 1;
   font-weight: 500;
   letter-spacing: -0.005em;
   color: var(--d1-text-primary);
 }
 
 /* Filter affordance above the entries (kept from style-d1) */
-[data-theme='lime-cabin'] .d1-chat__search {
+[data-theme="lime-cabin"] .d1-chat__search {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -634,7 +631,7 @@
 }
 
 /* ── Lane-A regulatory disclosure strip ────────────────────────────── */
-[data-theme='lime-cabin'] .d1-disclosure {
+[data-theme="lime-cabin"] .d1-disclosure {
   font-family: var(--d1-font-sans);
   font-weight: 400;
   font-size: 16px;
@@ -645,9 +642,9 @@
 }
 
 /* ── Form primitives (D1-native) ───────────────────────────────────── */
-[data-theme='lime-cabin'] .d1-input,
-[data-theme='lime-cabin'] .d1-select,
-[data-theme='lime-cabin'] .d1-textarea {
+[data-theme="lime-cabin"] .d1-input,
+[data-theme="lime-cabin"] .d1-select,
+[data-theme="lime-cabin"] .d1-textarea {
   width: 100%;
   font-family: var(--d1-font-sans);
   font-size: 14px;
@@ -656,48 +653,48 @@
   border: 1px solid var(--d1-border-hairline);
   border-radius: 12px;
   padding: 10px 14px;
-  transition: border-color 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: border-color 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
   outline: 0;
 }
 
-[data-theme='lime-cabin'] .d1-input::placeholder,
-[data-theme='lime-cabin'] .d1-textarea::placeholder {
+[data-theme="lime-cabin"] .d1-input::placeholder,
+[data-theme="lime-cabin"] .d1-textarea::placeholder {
   color: var(--d1-text-muted);
 }
 
-[data-theme='lime-cabin'] .d1-input:hover,
-[data-theme='lime-cabin'] .d1-select:hover,
-[data-theme='lime-cabin'] .d1-textarea:hover {
+[data-theme="lime-cabin"] .d1-input:hover,
+[data-theme="lime-cabin"] .d1-select:hover,
+[data-theme="lime-cabin"] .d1-textarea:hover {
   border-color: var(--d1-border-strong);
 }
 
-[data-theme='lime-cabin'] .d1-input:focus-visible,
-[data-theme='lime-cabin'] .d1-select:focus-visible,
-[data-theme='lime-cabin'] .d1-textarea:focus-visible {
+[data-theme="lime-cabin"] .d1-input:focus-visible,
+[data-theme="lime-cabin"] .d1-select:focus-visible,
+[data-theme="lime-cabin"] .d1-textarea:focus-visible {
   border-color: var(--d1-accent-lime);
   box-shadow: 0 0 0 3px rgba(214, 242, 107, 0.18);
 }
 
-[data-theme='lime-cabin'] .d1-input:disabled,
-[data-theme='lime-cabin'] .d1-select:disabled,
-[data-theme='lime-cabin'] .d1-textarea:disabled {
+[data-theme="lime-cabin"] .d1-input:disabled,
+[data-theme="lime-cabin"] .d1-select:disabled,
+[data-theme="lime-cabin"] .d1-textarea:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-[data-theme='lime-cabin'] .d1-textarea {
+[data-theme="lime-cabin"] .d1-textarea {
   min-height: 88px;
   resize: vertical;
 }
 
-[data-theme='lime-cabin'] .d1-field {
+[data-theme="lime-cabin"] .d1-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-[data-theme='lime-cabin'] .d1-field__label {
+[data-theme="lime-cabin"] .d1-field__label {
   font-family: var(--d1-font-sans);
   font-size: 12px;
   font-weight: 500;
@@ -707,15 +704,15 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .d1-field__hint {
+[data-theme="lime-cabin"] .d1-field__hint {
   font-family: var(--d1-font-sans);
   font-size: 12px;
   color: var(--d1-text-muted);
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .d1-check,
-[data-theme='lime-cabin'] .d1-radio {
+[data-theme="lime-cabin"] .d1-check,
+[data-theme="lime-cabin"] .d1-radio {
   appearance: none;
   width: 18px;
   height: 18px;
@@ -728,43 +725,43 @@
   transition: background 120ms, border-color 120ms;
 }
 
-[data-theme='lime-cabin'] .d1-check {
+[data-theme="lime-cabin"] .d1-check {
   border-radius: 4px;
 }
 
-[data-theme='lime-cabin'] .d1-radio {
+[data-theme="lime-cabin"] .d1-radio {
   border-radius: 9999px;
 }
 
-[data-theme='lime-cabin'] .d1-check:checked,
-[data-theme='lime-cabin'] .d1-radio:checked {
+[data-theme="lime-cabin"] .d1-check:checked,
+[data-theme="lime-cabin"] .d1-radio:checked {
   background: var(--d1-accent-lime);
   border-color: var(--d1-accent-lime);
 }
 
-[data-theme='lime-cabin'] .d1-check:checked::after {
-  content: '';
+[data-theme="lime-cabin"] .d1-check:checked::after {
+  content: "";
   width: 10px;
   height: 10px;
   background: var(--d1-text-ink);
   clip-path: polygon(14% 44%, 0 60%, 38% 100%, 100% 24%, 86% 8%, 38% 70%);
 }
 
-[data-theme='lime-cabin'] .d1-radio:checked::after {
-  content: '';
+[data-theme="lime-cabin"] .d1-radio:checked::after {
+  content: "";
   width: 8px;
   height: 8px;
   border-radius: 9999px;
   background: var(--d1-text-ink);
 }
 
-[data-theme='lime-cabin'] .d1-check:focus-visible,
-[data-theme='lime-cabin'] .d1-radio:focus-visible {
+[data-theme="lime-cabin"] .d1-check:focus-visible,
+[data-theme="lime-cabin"] .d1-radio:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 3px;
 }
 
-[data-theme='lime-cabin'] .d1-toggle {
+[data-theme="lime-cabin"] .d1-toggle {
   position: relative;
   width: 36px;
   height: 20px;
@@ -776,8 +773,8 @@
   appearance: none;
 }
 
-[data-theme='lime-cabin'] .d1-toggle::after {
-  content: '';
+[data-theme="lime-cabin"] .d1-toggle::after {
+  content: "";
   position: absolute;
   top: 2px;
   left: 2px;
@@ -788,23 +785,23 @@
   transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background 160ms;
 }
 
-[data-theme='lime-cabin'] .d1-toggle:checked {
+[data-theme="lime-cabin"] .d1-toggle:checked {
   background: var(--d1-accent-lime);
   border-color: var(--d1-accent-lime);
 }
 
-[data-theme='lime-cabin'] .d1-toggle:checked::after {
+[data-theme="lime-cabin"] .d1-toggle:checked::after {
   transform: translateX(16px);
   background: var(--d1-text-ink);
 }
 
-[data-theme='lime-cabin'] .d1-toggle:focus-visible {
+[data-theme="lime-cabin"] .d1-toggle:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 3px;
 }
 
 /* ── Showcase chrome (page-only — sticky side-nav, sections) ───────── */
-[data-theme='lime-cabin'] .ds-showcase {
+[data-theme="lime-cabin"] .ds-showcase {
   display: grid;
   grid-template-columns: 240px minmax(0, 1fr);
   gap: 32px;
@@ -814,14 +811,14 @@
 }
 
 @media (max-width: 1024px) {
-  [data-theme='lime-cabin'] .ds-showcase {
+  [data-theme="lime-cabin"] .ds-showcase {
     grid-template-columns: 1fr;
     gap: 24px;
     padding: 24px 16px 64px;
   }
 }
 
-[data-theme='lime-cabin'] .ds-sidenav {
+[data-theme="lime-cabin"] .ds-sidenav {
   position: sticky;
   top: 24px;
   align-self: start;
@@ -832,7 +829,7 @@
   font-family: var(--d1-font-sans);
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__brand {
+[data-theme="lime-cabin"] .ds-sidenav__brand {
   display: flex;
   align-items: baseline;
   gap: 8px;
@@ -840,7 +837,7 @@
   padding: 0 12px;
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__product {
+[data-theme="lime-cabin"] .ds-sidenav__product {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -848,14 +845,14 @@
   color: var(--d1-text-muted);
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__title {
+[data-theme="lime-cabin"] .ds-sidenav__title {
   font-size: 14px;
   font-weight: 600;
   color: var(--d1-text-primary);
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__link {
+[data-theme="lime-cabin"] .ds-sidenav__link {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -867,21 +864,21 @@
   font-weight: 500;
   letter-spacing: 0.005em;
   text-decoration: none;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1),
-    color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__link:hover {
+[data-theme="lime-cabin"] .ds-sidenav__link:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__link:focus-visible {
+[data-theme="lime-cabin"] .ds-sidenav__link:focus-visible {
   outline: 2px solid var(--d1-accent-lime);
   outline-offset: 2px;
 }
 
-[data-theme='lime-cabin'] .ds-sidenav__index {
+[data-theme="lime-cabin"] .ds-sidenav__index {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   color: inherit;
@@ -891,7 +888,7 @@
   text-align: right;
 }
 
-[data-theme='lime-cabin'] .ds-page-eyebrow {
+[data-theme="lime-cabin"] .ds-page-eyebrow {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -900,7 +897,7 @@
   margin: 0 0 8px;
 }
 
-[data-theme='lime-cabin'] .ds-page-title {
+[data-theme="lime-cabin"] .ds-page-title {
   font-family: var(--d1-font-sans);
   font-weight: 600;
   font-size: clamp(36px, 4vw, 48px);
@@ -911,7 +908,7 @@
   max-width: 22ch;
 }
 
-[data-theme='lime-cabin'] .ds-page-lede {
+[data-theme="lime-cabin"] .ds-page-lede {
   font-family: var(--d1-font-sans);
   font-size: 16px;
   line-height: 1.55;
@@ -920,7 +917,7 @@
   max-width: 60ch;
 }
 
-[data-theme='lime-cabin'] .ds-section {
+[data-theme="lime-cabin"] .ds-section {
   background: var(--d1-bg-surface);
   border-radius: 28px;
   padding: 28px;
@@ -932,13 +929,13 @@
 }
 
 @media (max-width: 768px) {
-  [data-theme='lime-cabin'] .ds-section {
+  [data-theme="lime-cabin"] .ds-section {
     padding: 20px;
     border-radius: 24px;
   }
 }
 
-[data-theme='lime-cabin'] .ds-section__title {
+[data-theme="lime-cabin"] .ds-section__title {
   font-family: var(--d1-font-sans);
   font-weight: 600;
   font-size: 24px;
@@ -947,7 +944,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .ds-section__lede {
+[data-theme="lime-cabin"] .ds-section__lede {
   font-family: var(--d1-font-sans);
   font-size: 14px;
   line-height: 1.55;
@@ -956,13 +953,13 @@
   max-width: 64ch;
 }
 
-[data-theme='lime-cabin'] .ds-row {
+[data-theme="lime-cabin"] .ds-row {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-[data-theme='lime-cabin'] .ds-row__label {
+[data-theme="lime-cabin"] .ds-row__label {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -971,7 +968,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .ds-callout {
+[data-theme="lime-cabin"] .ds-callout {
   background: var(--d1-bg-card);
   border-radius: 16px;
   padding: 16px 20px;
@@ -981,7 +978,7 @@
   border: 1px solid var(--d1-border-hairline);
 }
 
-[data-theme='lime-cabin'] .ds-callout__heading {
+[data-theme="lime-cabin"] .ds-callout__heading {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -990,7 +987,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .ds-callout__body {
+[data-theme="lime-cabin"] .ds-callout__body {
   font-family: var(--d1-font-sans);
   font-size: 13px;
   line-height: 1.55;
@@ -999,13 +996,13 @@
 }
 
 /* ── Token & swatch tables ─────────────────────────────────────────── */
-[data-theme='lime-cabin'] .ds-swatch-grid {
+[data-theme="lime-cabin"] .ds-swatch-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
 }
 
-[data-theme='lime-cabin'] .ds-swatch {
+[data-theme="lime-cabin"] .ds-swatch {
   background: var(--d1-bg-card);
   border-radius: 16px;
   padding: 12px;
@@ -1015,14 +1012,14 @@
   border: 1px solid var(--d1-border-hairline);
 }
 
-[data-theme='lime-cabin'] .ds-swatch__chip {
+[data-theme="lime-cabin"] .ds-swatch__chip {
   width: 100%;
   height: 64px;
   border-radius: 10px;
   border: 1px solid var(--d1-border-hairline);
 }
 
-[data-theme='lime-cabin'] .ds-swatch__name {
+[data-theme="lime-cabin"] .ds-swatch__name {
   font-family: var(--d1-font-sans);
   font-size: 13px;
   font-weight: 500;
@@ -1030,7 +1027,7 @@
   margin: 0;
 }
 
-[data-theme='lime-cabin'] .ds-swatch__meta {
+[data-theme="lime-cabin"] .ds-swatch__meta {
   display: grid;
   grid-template-columns: 64px 1fr;
   gap: 4px 8px;
@@ -1040,7 +1037,7 @@
   letter-spacing: 0.02em;
 }
 
-[data-theme='lime-cabin'] .ds-swatch__meta dt {
+[data-theme="lime-cabin"] .ds-swatch__meta dt {
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1048,12 +1045,12 @@
   opacity: 0.7;
 }
 
-[data-theme='lime-cabin'] .ds-swatch__meta dd {
+[data-theme="lime-cabin"] .ds-swatch__meta dd {
   margin: 0;
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .ds-table {
+[data-theme="lime-cabin"] .ds-table {
   width: 100%;
   border-collapse: collapse;
   font-family: var(--d1-font-sans);
@@ -1061,7 +1058,7 @@
   color: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .ds-table thead th {
+[data-theme="lime-cabin"] .ds-table thead th {
   text-align: left;
   font-family: var(--d1-font-mono);
   font-size: 11px;
@@ -1073,23 +1070,23 @@
   font-weight: 500;
 }
 
-[data-theme='lime-cabin'] .ds-table tbody td {
+[data-theme="lime-cabin"] .ds-table tbody td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--d1-border-hairline);
   vertical-align: middle;
 }
 
-[data-theme='lime-cabin'] .ds-table tbody tr:last-child td {
+[data-theme="lime-cabin"] .ds-table tbody tr:last-child td {
   border-bottom: 0;
 }
 
-[data-theme='lime-cabin'] .ds-table .mono {
+[data-theme="lime-cabin"] .ds-table .mono {
   font-family: var(--d1-font-mono);
   font-size: 12px;
   color: var(--d1-text-muted);
 }
 
-[data-theme='lime-cabin'] .ds-token-chip {
+[data-theme="lime-cabin"] .ds-token-chip {
   display: inline-block;
   width: 14px;
   height: 14px;
@@ -1100,22 +1097,22 @@
 }
 
 /* Showcase grids */
-[data-theme='lime-cabin'] .ds-grid-2,
-[data-theme='lime-cabin'] .ds-grid-3,
-[data-theme='lime-cabin'] .ds-grid-4 {
+[data-theme="lime-cabin"] .ds-grid-2,
+[data-theme="lime-cabin"] .ds-grid-3,
+[data-theme="lime-cabin"] .ds-grid-4 {
   display: grid;
   gap: 16px;
 }
 
-[data-theme='lime-cabin'] .ds-grid-2 {
+[data-theme="lime-cabin"] .ds-grid-2 {
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
 
-[data-theme='lime-cabin'] .ds-grid-3 {
+[data-theme="lime-cabin"] .ds-grid-3 {
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-[data-theme='lime-cabin'] .ds-grid-4 {
+[data-theme="lime-cabin"] .ds-grid-4 {
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
@@ -1135,7 +1132,7 @@
  *      Manrope / Bagel and use Geist Sans + Geist Mono instead. D1 has
  *      no display serif: Mono is the universal numeric face.
  */
-[data-theme='lime-cabin'] .d1-chart-panel {
+[data-theme="lime-cabin"] .d1-chart-panel {
   background: var(--d1-bg-card);
   border-radius: 24px;
   padding: 20px;
@@ -1164,26 +1161,26 @@
   --font-family-mono: var(--d1-font-mono);
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel__head {
+[data-theme="lime-cabin"] .d1-chart-panel__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel__head > .d1-rail {
+[data-theme="lime-cabin"] .d1-chart-panel__head > .d1-rail {
   flex: 1 1 auto;
   margin-bottom: 0;
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel__body {
+[data-theme="lime-cabin"] .d1-chart-panel__body {
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 220px;
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel__caption {
+[data-theme="lime-cabin"] .d1-chart-panel__caption {
   font-family: var(--d1-font-sans);
   font-size: 12px;
   line-height: 1.45;
@@ -1194,7 +1191,7 @@
 /* Hatched-bar legend swatch — paired with the inline SVG <pattern>
  * defined in `_sections/charts.tsx` (NOT CSS background-image — Safari
  * iOS perf trap, KICKOFF §4.1). */
-[data-theme='lime-cabin'] .d1-hatch-legend {
+[data-theme="lime-cabin"] .d1-hatch-legend {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1202,7 +1199,7 @@
   border-top: 1px solid var(--d1-border-hairline);
 }
 
-[data-theme='lime-cabin'] .d1-hatch-legend__label {
+[data-theme="lime-cabin"] .d1-hatch-legend__label {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   color: var(--d1-text-muted);
@@ -1211,7 +1208,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-[data-theme='lime-cabin'] .d1-hatch-legend__value {
+[data-theme="lime-cabin"] .d1-hatch-legend__value {
   margin-left: auto;
   font-family: var(--d1-font-mono);
   font-size: 14px;
@@ -1241,37 +1238,37 @@
  * + the 1.25px inner stroke ring around the endpoint dot — both readable
  * on dark canvas, no override needed.
  */
-[data-theme='lime-cabin'] .d1-chart-panel--spark-up {
+[data-theme="lime-cabin"] .d1-chart-panel--spark-up {
   --cta-fill: var(--d1-accent-lime);
   --accent: var(--d1-accent-lime);
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel--spark-down {
+[data-theme="lime-cabin"] .d1-chart-panel--spark-down {
   --accent-deep: var(--d1-accent-purple);
   --cta-shadow: var(--d1-accent-purple);
   --cta-fill: var(--d1-accent-purple);
   --accent: var(--d1-accent-purple);
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel--spark-flat {
+[data-theme="lime-cabin"] .d1-chart-panel--spark-flat {
   --cta-fill: var(--d1-text-muted);
   --accent: var(--d1-text-muted);
 }
 
 /* Multi-spark row — three sparklines side by side, equal columns. */
-[data-theme='lime-cabin'] .d1-spark-row {
+[data-theme="lime-cabin"] .d1-spark-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
 }
 
-[data-theme='lime-cabin'] .d1-spark-cell {
+[data-theme="lime-cabin"] .d1-spark-cell {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-[data-theme='lime-cabin'] .d1-spark-cell__label {
+[data-theme="lime-cabin"] .d1-spark-cell__label {
   font-family: var(--d1-font-mono);
   font-size: 11px;
   letter-spacing: 0.04em;
@@ -1281,7 +1278,7 @@
 }
 
 /* Sparkline panel uses a tighter min-height since the chart is small. */
-[data-theme='lime-cabin'] .d1-chart-panel__body--spark {
+[data-theme="lime-cabin"] .d1-chart-panel__body--spark {
   min-height: auto;
 }
 
@@ -1305,12 +1302,12 @@
  * component is off-limits per dispatch rules. The 2.5px reads as
  * deliberate-emphatic on D1's dark canvas — accepted as deviation.
  */
-[data-theme='lime-cabin'] .d1-chart-panel--line-default {
+[data-theme="lime-cabin"] .d1-chart-panel--line-default {
   --cta-fill: var(--d1-text-primary);
   --accent: var(--d1-text-primary);
 }
 
-[data-theme='lime-cabin'] .d1-chart-panel--line-highlighted {
+[data-theme="lime-cabin"] .d1-chart-panel--line-highlighted {
   --cta-fill: var(--d1-accent-lime);
   --accent: var(--d1-accent-lime);
 }
@@ -1343,7 +1340,7 @@
  * KICKOFF spec calls for 1.5px, but the component is off-limits.
  * Accepted deviation (matches LineVisx engineer's note).
  */
-[data-theme='lime-cabin'] .d1-chart-panel--area-default {
+[data-theme="lime-cabin"] .d1-chart-panel--area-default {
   --cta-fill: var(--d1-accent-lime);
   --accent: var(--d1-accent-lime);
 }
@@ -1415,7 +1412,7 @@
  *      legend text back to `--d1-text-primary` via the `ul` selector
  *      DonutVisx uses (no class hook, but the structure is stable).
  */
-[data-theme='lime-cabin'] .d1-chart-panel--donut {
+[data-theme="lime-cabin"] .d1-chart-panel--donut {
   /* Tame the hard ink-shadow drop — white halo → page-coloured sliver. */
   --text-on-candy: var(--d1-bg-page);
   --ink: var(--d1-bg-page);
@@ -1426,8 +1423,8 @@
  * the centre lockup inside `.pointer-events-none.absolute.inset-0` and
  * the legend as a `ul.flex.flex-wrap` sibling. We target both via
  * structure-stable selectors so no component edit is needed. */
-[data-theme='lime-cabin'] .d1-chart-panel--donut [data-testid='chart-donut-visx'] > ul,
-[data-theme='lime-cabin'] .d1-chart-panel--donut [data-testid='chart-donut-visx'] > div > div {
+[data-theme="lime-cabin"] .d1-chart-panel--donut [data-testid="chart-donut-visx"] > ul,
+[data-theme="lime-cabin"] .d1-chart-panel--donut [data-testid="chart-donut-visx"] > div > div {
   color: var(--d1-text-primary);
 }
 
@@ -1436,9 +1433,9 @@
  * Mono numeral lands consistently. Selector targets the first child
  * span of the centre lockup div — the headline node from
  * `DonutCenterLabel`. */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--donut
-  [data-testid='chart-donut-visx']
+  [data-testid="chart-donut-visx"]
   > div
   > div
   > span:first-child {
@@ -1449,13 +1446,13 @@
   letter-spacing: -0.01em;
   color: var(--d1-text-primary);
   font-variant-numeric: tabular-nums lining-nums;
-  font-feature-settings: 'tnum' 1, 'lnum' 1, 'ss01' 1;
+  font-feature-settings: "tnum" 1, "lnum" 1, "ss01" 1;
 }
 
 /* Centre eyebrow span — Geist Sans uppercase muted, looser tracking. */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--donut
-  [data-testid='chart-donut-visx']
+  [data-testid="chart-donut-visx"]
   > div
   > div
   > span:nth-child(2) {
@@ -1530,7 +1527,7 @@
  *   - Tooltip border is inline-styled `1.5px solid var(--text-on-candy,
  *     #1C1B26)` — a heavy candy outline. We soften to a 1px D1 hairline.
  */
-[data-theme='lime-cabin'] .d1-chart-panel--calendar {
+[data-theme="lime-cabin"] .d1-chart-panel--calendar {
   /* Received chip — lime saturation level 4 (solid). */
   --bg-mustard: var(--d1-accent-lime);
   /* Scheduled chip — lime saturation level 2 (~40% opacity).
@@ -1544,20 +1541,17 @@
 /* Suppress the candy hard ink-shadow drop on event-bearing cells.
  * The shadow rect is the only rect on a cell `<g>` carrying a
  * `fill-opacity` attribute (set to 0.85 via JSX `fillOpacity={0.85}`). */
-[data-theme='lime-cabin']
-  .d1-chart-panel--calendar
-  [data-cell-iso]
-  > rect[fill-opacity] {
+[data-theme="lime-cabin"] .d1-chart-panel--calendar [data-cell-iso] > rect[fill-opacity] {
   display: none;
 }
 
 /* Tame the candy tooltip drop-shadow + heavy border. Inline styles in
  * the component require `!important` to override; this is the documented
  * cascade tradeoff (KICKOFF §7.10 — chart components are off-limits). */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--calendar
-  [data-testid='chart-calendar-visx']
-  [role='tooltip'] {
+  [data-testid="chart-calendar-visx"]
+  [role="tooltip"] {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
   border: 1px solid var(--d1-border-hairline) !important;
   border-radius: 12px !important;
@@ -1620,7 +1614,7 @@
  *     `!important` overrides — cascade tradeoff for inline-styled DOM
  *     (KICKOFF §7.10 — chart components are off-limits).
  */
-[data-theme='lime-cabin'] .d1-chart-panel--stacked-bar {
+[data-theme="lime-cabin"] .d1-chart-panel--stacked-bar {
   /* Re-point candy categorical palette onto D1 series tokens (kickoff
    * §4.1: text-primary / lime / purple / text-muted / bg-card-soft). */
   --chart-categorical-1: var(--d1-text-primary);
@@ -1635,20 +1629,20 @@
  * `fill-opacity="0.85"` attribute (segment rects use 0.78 / 1 dynamic
  * values, never 0.85). Structure-stable selector — no component edit
  * needed. */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--stacked-bar
-  [data-testid='chart-stacked-bar-visx']
-  path[fill-opacity='0.85'] {
+  [data-testid="chart-stacked-bar-visx"]
+  path[fill-opacity="0.85"] {
   display: none;
 }
 
 /* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
  * box-shadow + 1.5px border. Inline-styled, requires `!important` to
  * override (cascade tradeoff documented in CalendarVisx wrapper). */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--stacked-bar
-  [data-testid='chart-stacked-bar-visx']
-  [role='tooltip'] {
+  [data-testid="chart-stacked-bar-visx"]
+  [role="tooltip"] {
   background: var(--d1-bg-card-soft) !important;
   color: var(--d1-text-primary) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
@@ -1733,7 +1727,7 @@
  *      Tooltip needs explicit `!important` overrides — same cascade
  *      tradeoff documented in CalendarVisx + StackedBarVisx wrappers.
  */
-[data-theme='lime-cabin'] .d1-chart-panel--treemap {
+[data-theme="lime-cabin"] .d1-chart-panel--treemap {
   /* Positive tiles → lime saturation (overrides base wrapper purple). */
   --cta-fill: var(--d1-accent-lime);
   --accent: var(--d1-accent-lime);
@@ -1753,10 +1747,10 @@
  * use no fill-opacity attribute, the hatched overlay is `<line>` inside
  * `<pattern>` (not `<path>`). Structure-stable selector — no component
  * edit needed. */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--treemap
-  [data-testid='chart-treemap-visx']
-  path[fill-opacity='0.85'] {
+  [data-testid="chart-treemap-visx"]
+  path[fill-opacity="0.85"] {
   display: none;
 }
 
@@ -1767,10 +1761,10 @@
  * dark canvas, both unreadable. Force D1 elevation language with
  * `!important` (cascade tradeoff documented in CalendarVisx + StackedBar
  * Visx wrappers — KICKOFF §7.10). */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--treemap
-  [data-testid='chart-treemap-visx']
-  [role='tooltip'] {
+  [data-testid="chart-treemap-visx"]
+  [role="tooltip"] {
   background: var(--d1-bg-card-soft) !important;
   color: var(--d1-text-primary) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
@@ -1850,7 +1844,7 @@
  *      Calendar / StackedBar / Treemap wrappers (KICKOFF §7.10 — chart
  *      components are off-limits).
  */
-[data-theme='lime-cabin'] .d1-chart-panel--waterfall {
+[data-theme="lime-cabin"] .d1-chart-panel--waterfall {
   /* Positive contributors → lime saturation (overrides base wrapper purple).
    * Negative contributors keep base wrapper's `--accent-deep` → purple.
    * Anchors keep base wrapper's `--text-on-candy` → white. */
@@ -1863,10 +1857,10 @@
  * WaterfallVisx carrying a `fill-opacity="0.85"` attribute (anchor +
  * bar paths use no `fill-opacity`, gridlines use `<line>`).
  * Structure-stable selector — no component edit needed. */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--waterfall
-  [data-testid='chart-waterfall-visx']
-  path[fill-opacity='0.85'] {
+  [data-testid="chart-waterfall-visx"]
+  path[fill-opacity="0.85"] {
   display: none;
 }
 
@@ -1874,10 +1868,10 @@
  * box-shadow + 1.5px border, all inline-styled. Force D1 elevation
  * language with `!important` (cascade tradeoff documented in Calendar /
  * StackedBar / Treemap wrappers — KICKOFF §7.10). */
-[data-theme='lime-cabin']
+[data-theme="lime-cabin"]
   .d1-chart-panel--waterfall
-  [data-testid='chart-waterfall-visx']
-  [role='tooltip'] {
+  [data-testid="chart-waterfall-visx"]
+  [role="tooltip"] {
   background: var(--d1-bg-card-soft) !important;
   color: var(--d1-text-primary) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
@@ -1887,7 +1881,7 @@
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  [data-theme='lime-cabin'] * {
+  [data-theme="lime-cabin"] * {
     animation: none !important;
     transition: none !important;
   }
