@@ -27,37 +27,59 @@
  */
 
 [data-style="d1"] {
-  /* ── Palette — re-tinted to editorial-warm hue 75° (depth v3 §3.1) ───
-   * Lightness held within ±1% of v2; chroma shifted from 0 (pure gray)
-   * to 0.008-0.014 (tinted-neutrals band). AAA contrast preserved.
-   * Brand register: NYT plate / Field Notes letterpress / ledger paper. */
-  --d1-bg-page: oklch(15% 0.008 75); /* page canvas — Tier 0 */
-  --d1-bg-surface: oklch(20% 0.01 75); /* section frame (.d1-surface) */
-  --d1-bg-card: oklch(24% 0.012 75); /* non-elevated containers */
-  --d1-bg-card-soft: oklch(27% 0.014 75); /* press-tier hover bg, segmented active bg */
-  --d1-bg-card-elevated: oklch(28% 0.013 75); /* NEW — Read-tier surface fill (KPI / panel) */
-  --d1-bg-input: oklch(11% 0.006 75); /* NEW — Write-tier sub-canvas well */
+  /* ── Palette — cool-violet hue 280°, L 12/16/19/23 (depth v4 §3.1) ───
+   * v4 redirect: hue 75° read as «brown» in live render. Pivot to cool-
+   * violet (graphite-leaning) hue 280° + L drop per PO directive (depth
+   * v4 architect ADR-10..17, lock memo 2026-05-02). Chroma stays low
+   * (0.004-0.005) — tinted-neutrals band, NOT decorative violet.
+   * AAA contrast preserved on all text pairings.
+   * Brand register: editorial dark canvas / cool-graphite paper. */
+  --d1-bg-page: oklch(12% 0.004 280); /* page canvas — Tier 0 */
+  --d1-bg-surface: oklch(16% 0.004 280); /* section frame (.d1-surface) */
+  --d1-bg-card: oklch(19% 0.005 280); /* non-elevated containers */
+  --d1-bg-card-soft: oklch(22% 0.005 280); /* press-tier hover bg, segmented active bg */
+  --d1-bg-card-elevated: oklch(23% 0.005 280); /* Read-tier surface fill (KPI / panel) */
+  --d1-bg-input: oklch(8% 0.004 280); /* Write-tier sub-canvas well */
 
-  --d1-accent-lime: #d6f26b; /* oklch(91% 0.18 122) — preserved */
-  --d1-accent-lime-soft: rgba(214, 242, 107, 0.35); /* hatched stripe */
-  --d1-accent-purple: #7b5cff; /* oklch(57% 0.24 285) — preserved */
-  --d1-accent-purple-soft: rgba(123, 92, 255, 0.18); /* premium chip bg */
+  /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
+   * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
+   *   .d1-rail · .d1-rail__line · .d1-rail__tick
+   *   .d1-kpi--lookhere · .d1-kpi--portfolio
+   *   .d1-cta--primary · .d1-cta--primary:hover
+   *   .d1-focus-ring · :focus-visible (composite ring composer)
+   *   .d1-ai-byline · .d1-pill--active · .d1-segmented__btn--active
+   * Anywhere else binding `lime-signal` = architectural violation. */
+  --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
+  --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
+  --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
+  --d1-accent-lime-signal: oklch(91% 0.21 117); /* SIGNATURE — Record Rail / look-here / CTA */
+  --d1-accent-lime-mute: oklch(72% 0.16 117); /* AI byline / cohort / default chart bar */
 
-  --d1-text-primary: oklch(98% 0.001 75); /* AAA 14.7:1 on bg-card; warm-tinted */
-  --d1-text-muted: oklch(64% 0.005 75); /* AA-large + AAA on 16px+ body */
-  --d1-text-ink: oklch(11% 0.003 75); /* AAA 14.9:1 on lime, warmer than pure black */
+  /* DEPRECATED — alias for v3 → v5 migration safety (architect ADR-10).
+   * Remove after grep returns zero direct consumers. */
+  --d1-accent-lime: var(--d1-accent-lime-signal);
+
+  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2) */
+  --d1-data-positive: oklch(82% 0.13 145); /* mature pistachio */
+  --d1-data-negative: oklch(78% 0.14 25); /* terracotta — L 78 to hold red, NOT salmon */
+  --d1-notification-amber: oklch(82% 0.135 87); /* count badges — anchor of gouache triad */
+
+  --d1-text-primary: oklch(98% 0.001 280); /* AAA on bg-card; cool-tinted */
+  --d1-text-muted: oklch(64% 0.005 280); /* AA-large + AAA on 16px+ body */
+  --d1-text-primary-deep: oklch(20% 0.004 280); /* ink-deep — premium chip text */
+  --d1-text-ink: oklch(11% 0.003 280); /* AAA on lime-signal; cool-toned ink */
 
   --d1-border-hairline: rgba(255, 255, 255, 0.06);
   --d1-border-strong: rgba(255, 255, 255, 0.12);
-  --d1-notification-amber: #f4c257; /* count badges only, never numerals */
 
-  /* ── Status quartet (Lane-A-calm — depth v3 §3.3) ────────────────────
-   * Soft, editorial-print attention — not loud advisor-app red.
-   * One variant level only; bright/soft pair deferred to post-alpha. */
-  --d1-status-success: oklch(72% 0.14 152); /* desaturated forest-leaf — connected, sync OK */
-  --d1-status-warning: oklch(76% 0.13 50); /* warm yellow-tan — stale data, drift breach */
-  --d1-status-error: oklch(64% 0.16 28); /* warm clay-brick — disconnected, validation */
-  --d1-status-info: oklch(70% 0.08 220); /* desaturated blue-grey — tooltip, observation */
+  /* ── Status quartet (architect ADR-16 — separate from data-* tokens) ──
+   * Hue-aligned to data-* TODAY but declared as INDEPENDENT tokens — the
+   * two axes (system messaging vs data-delta direction) MAY drift over
+   * time. Aliasing freezes them; separate values leave room. */
+  --d1-status-success: oklch(82% 0.13 145); /* matches data-positive hue, MAY drift */
+  --d1-status-error: oklch(78% 0.14 25); /* matches data-negative hue, MAY drift */
+  --d1-status-warning: oklch(82% 0.135 87); /* matches notification-amber hue, MAY drift */
+  --d1-status-info: oklch(72% 0.1 240); /* cool blue-grey — no data-side counterpart */
 
   /* ── Provedo Record Rail (signature element) ───────────────────────── */
   --d1-rail-height: 14px;

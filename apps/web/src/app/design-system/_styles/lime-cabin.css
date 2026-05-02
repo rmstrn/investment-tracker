@@ -33,32 +33,51 @@
  */
 
 [data-theme="lime-cabin"] {
-  /* ── Palette — re-tinted to editorial-warm hue 75° (depth v3 §3.1) ─── */
-  --d1-bg-page: oklch(15% 0.008 75);
-  --d1-bg-surface: oklch(20% 0.01 75);
-  --d1-bg-card: oklch(24% 0.012 75);
-  --d1-bg-card-soft: oklch(27% 0.014 75);
-  --d1-bg-card-elevated: oklch(28% 0.013 75); /* NEW — Read-tier surface fill */
-  --d1-bg-input: oklch(11% 0.006 75); /* NEW — Write-tier sub-canvas well */
+  /* ── Palette — cool-violet hue 280°, L 12/16/19/23 (depth v4 §3.1) ─── */
+  --d1-bg-page: oklch(12% 0.004 280);
+  --d1-bg-surface: oklch(16% 0.004 280);
+  --d1-bg-card: oklch(19% 0.005 280);
+  --d1-bg-card-soft: oklch(22% 0.005 280);
+  --d1-bg-card-elevated: oklch(23% 0.005 280); /* Read-tier surface fill */
+  --d1-bg-input: oklch(8% 0.004 280); /* Write-tier sub-canvas well */
 
-  --d1-accent-lime: #d6f26b;
-  --d1-accent-lime-soft: rgba(214, 242, 107, 0.35);
-  --d1-accent-purple: #7b5cff;
-  --d1-accent-purple-soft: rgba(123, 92, 255, 0.18);
+  /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
+   * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
+   *   .d1-rail · .d1-rail__line · .d1-rail__tick
+   *   .d1-kpi--lookhere · .d1-kpi--portfolio
+   *   .d1-cta--primary · .d1-cta--primary:hover
+   *   .d1-focus-ring · :focus-visible (composite ring composer)
+   *   .d1-ai-byline · .d1-pill--active · .d1-segmented__btn--active
+   * Anywhere else binding `lime-signal` = architectural violation. */
+  --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
+  --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
+  --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
+  --d1-accent-lime-signal: oklch(91% 0.21 117); /* SIGNATURE — Record Rail / look-here / CTA */
+  --d1-accent-lime-mute: oklch(72% 0.16 117); /* AI byline / cohort / default chart bar */
 
-  --d1-text-primary: oklch(98% 0.001 75);
-  --d1-text-muted: oklch(64% 0.005 75);
-  --d1-text-ink: oklch(11% 0.003 75);
+  /* DEPRECATED — alias for v3 → v5 migration safety (architect ADR-10).
+   * Remove after grep returns zero direct consumers. */
+  --d1-accent-lime: var(--d1-accent-lime-signal);
+
+  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2) */
+  --d1-data-positive: oklch(82% 0.13 145);
+  --d1-data-negative: oklch(78% 0.14 25);
+  --d1-notification-amber: oklch(82% 0.135 87);
+
+  --d1-text-primary: oklch(98% 0.001 280);
+  --d1-text-muted: oklch(64% 0.005 280);
+  --d1-text-primary-deep: oklch(20% 0.004 280); /* ink-deep — premium chip text */
+  --d1-text-ink: oklch(11% 0.003 280);
 
   --d1-border-hairline: rgba(255, 255, 255, 0.06);
   --d1-border-strong: rgba(255, 255, 255, 0.12);
-  --d1-notification-amber: #f4c257;
 
-  /* ── Status quartet (Lane-A-calm — depth v3 §3.3) ──────────────────── */
-  --d1-status-success: oklch(72% 0.14 152);
-  --d1-status-warning: oklch(76% 0.13 50);
-  --d1-status-error: oklch(64% 0.16 28);
-  --d1-status-info: oklch(70% 0.08 220);
+  /* ── Status quartet (architect ADR-16 — separate from data-* tokens) ──
+   * Hue-aligned to data-* TODAY; MAY drift over time. Do NOT alias. */
+  --d1-status-success: oklch(82% 0.13 145);
+  --d1-status-error: oklch(78% 0.14 25);
+  --d1-status-warning: oklch(82% 0.135 87);
+  --d1-status-info: oklch(72% 0.1 240);
 
   /* ── Provedo Record Rail ───────────────────────────────────────────── */
   --d1-rail-height: 14px;
