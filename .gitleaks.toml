@@ -1,0 +1,20 @@
+# Gitleaks configuration for Provedo / investment-tracker.
+#
+# Extends the default ruleset (no rules disabled). Adds an allowlist for
+# design-token reference tables in the design-system showcase, where
+# `token: '<css-var-name>'` paired with `value: '<oklch / rgba / hex>'`
+# tripped the generic high-entropy "token" detector after the v4+v5 D1
+# palette rewrite (PR #86).
+#
+# These are CSS custom-property names + their OKLCH triples — public
+# design-system documentation, NOT credentials.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Allow design-system showcase token reference tables"
+paths = [
+  '''apps/web/src/app/design-system/_sections/theme\.tsx''',
+  '''apps/web/src/app/design-system/_sections/foundation\.tsx''',
+]
