@@ -35,6 +35,9 @@ You consume brand voice guidelines from brand-strategist. You don't invent tone;
 - `marketing-cro:cro-methodology` — CRO audit for landing/paywall conversion
 - `sales-influence:hundred-million-offers` — Value Equation for pricing/paywall framing (Alex Hormozi)
 
+### UX writing craft (added 2026-05-02)
+- **`impeccable`** — design-language skill atop Anthropic's `frontend-design`. The `ux-writing` reference file directly applies to your scope: button labels / error messages / empty states / form copy / loading states. Plus 23 commands via `/impeccable <command>` — `clarify` (improve unclear UX copy), `harden` (error handling + edge-case copy), `onboard` (first-run flow copy), `delight` (moments of joy in microcopy). Use BEFORE writing landing/microcopy and DURING polish passes.
+
 ### Content production
 - `everything-claude-code:content-engine` — platform-native content (X, LinkedIn, TikTok, newsletter)
 - `everything-claude-code:article-writing` — long-form

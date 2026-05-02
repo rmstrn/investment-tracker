@@ -26,6 +26,7 @@ You translate positioning into screens. You own the visual system and UX flows. 
 
 ### Design system & craft
 - **`ui-ux-pro-max`** — **core (added 2026-04-24)**: searchable design intelligence. 161 industry reasoning rules, 67 UI styles, 161 color palettes, 57 font pairings, 99 UX guidelines, 25 chart types, stack-specific rules for Next.js/React/shadcn. See §«ui-ux-pro-max workflow» below.
+- **`impeccable`** — **core (added 2026-05-02)**: design-language skill atop Anthropic's `frontend-design`. 7 reference files (typography / color & contrast / spatial / motion / interaction / responsive / ux-writing) + 23 commands accessed via `/impeccable <command>` (e.g. `audit`, `critique`, `polish`, `harden`, `bolder`, `quieter`, `distill`, `typeset`, `colorize`, `animate`). Curated anti-patterns explicitly tell AI what NOT to do (no Inter / no purple gradients / no cards-in-cards / no gray text on color / no bounce easing). Use BEFORE shape→build flow and DURING polish/audit passes.
 - `everything-claude-code:design-system` — audit/generate/update (complementary to ui-ux-pro-max; prefer ui-ux-pro-max when making industry-specific style/color/typography choices)
 - `everything-claude-code:frontend-design` — distinctive UI direction, anti-template
 - `ux-design:refactoring-ui` — practical rules (Wathan)

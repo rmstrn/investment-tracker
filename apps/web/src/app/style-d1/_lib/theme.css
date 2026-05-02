@@ -146,16 +146,36 @@
   padding: 0 20px;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-tier2-rest);
+  transition: transform var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-cta:hover {
   transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-hover);
 }
 
+/*
+ * CTA :focus-visible — lime-on-lime makes outline:2px solid lime
+ * invisible. Compose a layered box-shadow that stacks the rest emboss
+ * + canvas-coloured spacer + lime ring outside (PD §6.3 / architect
+ * ADR-6 stacking order: focus-ring outermost = first in list).
+ */
 [data-style="d1"] .d1-cta:focus-visible {
-  outline: 2px solid var(--d1-accent-lime);
-  outline-offset: 3px;
+  outline: 0;
+  box-shadow: var(--d1-elev-focus-ring-on-lime), var(--d1-elev-tier2-rest);
+}
+
+[data-style="d1"] .d1-cta:hover:focus-visible {
+  box-shadow: var(--d1-elev-focus-ring-on-lime), var(--d1-elev-tier2-hover);
+}
+
+[data-style="d1"] .d1-cta:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-tier2-active);
+  transition: transform var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing);
 }
 
 /* ── Pill nav (top of dashboard) — 40px tall, 9999px radius ──────────── */
@@ -178,6 +198,8 @@
   font-weight: 700;
   font-size: 15px;
   margin-right: 8px;
+  /* «Coin & Plate» — identity tokens earn raised polarity at rest. */
+  box-shadow: var(--d1-elev-tier2-rest);
 }
 
 /*
@@ -201,6 +223,9 @@
   letter-spacing: 0.005em;
   margin-right: 8px;
   white-space: nowrap;
+  /* Lane-A regulatory cure — explicitly OUT of the depth system.
+   * Visual quietness IS the compliance signal. (PD §2.3) */
+  box-shadow: var(--d1-elev-flat);
 }
 
 [data-style="d1"] .d1-disclaimer-chip__icon {
@@ -228,13 +253,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  /* Rest = flat (chrome-quiet identity); hover earns tier-2; active sinks. */
+  transition: transform var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), background
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), color
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-pill:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-rest);
+}
+
+[data-style="d1"] .d1-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-tier2-active);
+  transition: transform var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-pill:focus-visible {
@@ -245,15 +282,14 @@
 /*
  * Nav active pill — keeps lime treatment per Fix 5 (sanctioned «look
  * here» surface — the dashboard's primary navigation signal).
+ * Lime-on-lime emboss (PD §2.2): white@25% + ink@18% read on lime.
  */
-[data-style="d1"] .d1-pill--active {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
-}
-
+[data-style="d1"] .d1-pill--active,
 [data-style="d1"] .d1-pill--active:hover {
   background: var(--d1-accent-lime);
   color: var(--d1-text-ink);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.2);
 }
 
 [data-style="d1"] .d1-pill__icon {
@@ -293,11 +329,22 @@
   color: var(--d1-text-muted);
   border: 0;
   cursor: pointer;
-  transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-tier2-rest);
+  transition: transform var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), color 120ms var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-nav__icon-pill:hover {
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-hover);
+}
+
+[data-style="d1"] .d1-nav__icon-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-tier2-active);
+  transition: transform var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-nav__icon-pill:focus-visible {
@@ -317,6 +364,8 @@
   font-family: var(--d1-font-sans);
   font-weight: 700;
   font-size: 14px;
+  /* «Coin & Plate» — identity tokens earn raised polarity at rest. */
+  box-shadow: var(--d1-elev-tier2-rest);
 }
 
 /*
@@ -364,6 +413,8 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   vertical-align: middle;
+  /* Premium chip is a label, not a control — out of the depth system. */
+  box-shadow: var(--d1-elev-flat);
 }
 
 /* ── KPI cards row (240×132 default; portfolio promoted to 160 min) ── */
@@ -382,13 +433,16 @@
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  /* Tier 1 — paper pressed slightly into canvas at rest. */
+  box-shadow: var(--d1-elev-tier1-rest);
+  transition: transform var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-kpi:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  /* Tier 1 hover — KPI is the PO anchor; preserve the lift moment. */
+  box-shadow: var(--d1-elev-tier1-hover);
 }
 
 /*
@@ -474,6 +528,14 @@
 /* ── Lime-highlighted KPI card (one per dashboard, by rule) ─────────── */
 [data-style="d1"] .d1-kpi--lime {
   background: var(--d1-accent-lime);
+  /* Lime-on-lime: white@20% + ink@18% read on the saturated lime fill. */
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18);
+}
+
+[data-style="d1"] .d1-kpi--lime:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 0 rgba(14, 15, 17, 0.24), 0
+    2px 0 0 rgba(14, 15, 17, 0.2), 0 8px 20px -4px rgba(0, 0, 0, 0.45);
 }
 
 [data-style="d1"] .d1-kpi--lime .d1-kpi__label,
@@ -525,13 +587,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Rest = flat (chrome-quiet); hover earns tier-2; active sinks. */
+  transition: transform var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), background
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing), color
+    var(--d1-elev-duration-rest-to-hover) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-chip:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-rest);
+}
+
+[data-style="d1"] .d1-chip:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-tier2-active);
+  transition: transform var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing), box-shadow
+    var(--d1-elev-duration-hover-to-active) var(--d1-elev-easing);
 }
 
 [data-style="d1"] .d1-chip:focus-visible {
@@ -543,32 +617,52 @@
  * Filter chip active state (Fix 5) — muted from solid-lime fill to
  * neutral light-on-card with a subtle lime hairline border. Restores
  * «lime = look here» semantic by removing it from a high-frequency
- * UI control.
+ * UI control. Lime hairline reads first; emboss reads as secondary
+ * tactility (PD §7.6 stacking).
  */
 [data-style="d1"] .d1-chip--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  /* 1px inset lime hairline — uses box-shadow so it doesn't shift
-   * layout vs the un-bordered default chip. */
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2), 0 1px 0 0 rgba(0, 0, 0, 0.3);
 }
 
 [data-style="d1"] .d1-chip--active:hover {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(214, 242, 107, 0.6),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2),
+    0 2px 0 0 rgba(0, 0, 0, 0.5),
+    0 4px 12px -2px rgba(0, 0, 0, 0.32);
 }
 
+/* Icon-only + export chips have an always-visible filled background;
+ * earn the tier-2 rest emboss to match other interactive surfaces. */
 [data-style="d1"] .d1-chip--icon {
   width: 36px;
   padding: 0;
   background: var(--d1-bg-card);
   justify-content: center;
+  box-shadow: var(--d1-elev-tier2-rest);
+}
+
+[data-style="d1"] .d1-chip--icon:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-hover);
 }
 
 [data-style="d1"] .d1-chip--export {
   background: var(--d1-bg-card);
   color: var(--d1-text-primary);
+  box-shadow: var(--d1-elev-tier2-rest);
+}
+
+[data-style="d1"] .d1-chip--export:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-tier2-hover);
 }
 
 /* ── 3-col data grid (chart | heatmap | AI feed) ────────────────────── */
@@ -586,6 +680,9 @@
   flex-direction: column;
   gap: 16px;
   min-height: 320px;
+  /* Tier 1 — paper pressed slightly into canvas. Static chart panel;
+   * no hover (internal segmented/chips carry the interaction). */
+  box-shadow: var(--d1-elev-tier1-rest);
   /* CSS-var override scope so the embedded BarVisx (its own
    * candy-themed defaults) borrows D1's lime/purple palette. */
   --text-on-candy: var(--d1-text-primary);
@@ -621,7 +718,7 @@
   margin-bottom: 0;
 }
 
-/* Segmented toggle (Monthly / Annually) */
+/* Segmented toggle (Monthly / Annually) — the well that holds the thumb. */
 [data-style="d1"] .d1-segmented {
   display: inline-flex;
   align-items: center;
@@ -629,6 +726,8 @@
   border-radius: 9999px;
   padding: 3px;
   gap: 2px;
+  /* Tier 1 — recessed track. Active __btn becomes the «coin in the well». */
+  box-shadow: var(--d1-elev-tier1-rest);
 }
 
 [data-style="d1"] .d1-segmented__btn {
@@ -655,11 +754,14 @@
  * Segmented active state (Fix 5) — same neutral treatment as filter
  * chips. Lime-on-card hairline marks the active state without
  * burning a saturated lime surface on a frequently-toggled control.
+ * The «coin in the well» — tier-2 emboss layered with lime hairline.
+ * Hairline reads first; emboss reads as secondary tactility.
  */
 [data-style="d1"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.2), 0 1px 0 0 rgba(0, 0, 0, 0.3);
 }
 
 [data-style="d1"] .d1-panel__body {
@@ -785,7 +887,10 @@
   color: var(--d1-text-muted);
   font-family: var(--d1-font-sans);
   font-size: 13px;
-  border: 1px solid var(--d1-border-hairline);
+  /* Tier 1 — recessed input well. Bevel replaces the previous 1px
+   * hairline border (PD §2.1 + supersedes list 4.1 line 777-789). */
+  border: 0;
+  box-shadow: var(--d1-elev-tier1-rest);
 }
 
 [data-style="d1"] .d1-chat__search-icon {
@@ -1011,10 +1116,47 @@
   }
 }
 
-/* ── Reduced motion ─────────────────────────────────────────────────── */
+/* ── Cards-in-cards reset (PD §7.1) ─────────────────────────────────── */
+/*
+ * Maximum nesting in the canonical structure is .d1-page → .d1-surface →
+ * .d1-panel/.d1-kpi → .d1-segmented/.d1-chip — one tier-bearing element
+ * per level. If a future surface needs T1-inside-T1 (sub-panel inside a
+ * panel), the inner element drops to tier 0 (hairline border only) so
+ * bevels never stack. Hard rule per the spec.
+ */
+[data-style="d1"] .d1-panel .d1-panel,
+[data-style="d1"] .d1-kpi .d1-kpi,
+[data-style="d1"] .d1-panel .d1-kpi {
+  box-shadow: none;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+/* ── Reduced motion (PD §5.1 + architect ADR-4) ─────────────────────── */
+/*
+ * Static box-shadow at rest is identical with and without reduced
+ * motion — depth is a static surface property, not a motion. The
+ * blanket rule collapses transitions; the explicit transform:none on
+ * hover/active selectors suppresses the layout-bound part of the
+ * depth-feedback so the rest emboss persists as the only signal.
+ */
 @media (prefers-reduced-motion: reduce) {
   [data-style="d1"] * {
     animation: none !important;
     transition: none !important;
+  }
+  [data-style="d1"] .d1-kpi:hover,
+  [data-style="d1"] .d1-kpi--lime:hover,
+  [data-style="d1"] .d1-cta:hover,
+  [data-style="d1"] .d1-cta:active,
+  [data-style="d1"] .d1-pill:hover,
+  [data-style="d1"] .d1-pill:active,
+  [data-style="d1"] .d1-chip:hover,
+  [data-style="d1"] .d1-chip:active,
+  [data-style="d1"] .d1-chip--active:hover,
+  [data-style="d1"] .d1-chip--icon:hover,
+  [data-style="d1"] .d1-chip--export:hover,
+  [data-style="d1"] .d1-nav__icon-pill:hover,
+  [data-style="d1"] .d1-nav__icon-pill:active {
+    transform: none !important;
   }
 }

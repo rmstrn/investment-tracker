@@ -359,6 +359,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 - ux-design:ux-heuristics
 - everything-claude-code:frontend-design
 - everything-claude-code:accessibility
+- impeccable
 ```
 
 **brand-strategist** (naming, positioning, archetype):
@@ -367,6 +368,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 - everything-claude-code:brand-voice
 - strategy-growth:obviously-awesome
 - marketing-cro:storybrand-messaging
+- impeccable
 ```
 
 **brand-voice-curator** (taste-reference log, voice profiling):
@@ -374,6 +376,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 - superpowers:brainstorming
 - everything-claude-code:brand-voice
 - everything-claude-code:content-engine
+- impeccable
 ```
 
 **content-lead** (landing copy, microcopy, paywall):
@@ -383,6 +386,7 @@ Use these as the default «Skills to activate up-front» list when the agent fil
 - everything-claude-code:article-writing
 - everything-claude-code:content-engine
 - marketing-cro:cro-methodology
+- impeccable
 ```
 
 **user-researcher** (ICP validation, JTBD, interviews):
