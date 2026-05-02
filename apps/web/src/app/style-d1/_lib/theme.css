@@ -61,10 +61,22 @@
    * Remove after grep returns zero direct consumers. */
   --d1-accent-lime: var(--d1-accent-lime-signal);
 
-  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2) */
-  --d1-data-positive: oklch(82% 0.13 145); /* mature pistachio */
-  --d1-data-negative: oklch(78% 0.14 25); /* terracotta — L 78 to hold red, NOT salmon */
-  --d1-notification-amber: oklch(82% 0.135 87); /* count badges — anchor of gouache triad */
+  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2)
+   * SPLIT-TOKEN MODEL (v5.1 — PO «poisonous on cards» feedback 2026-05-02):
+   * - Base tokens (saturated, C ~0.13-0.14) → TEXT / INK / line STROKE /
+   *   1px structural hairlines. Saturation needed for legibility as
+   *   labels, numerals, axis ink, line-chart strokes.
+   * - `-soft` variants (lower chroma, C ~0.08-0.09) → FILL / SURFACE /
+   *   chip backgrounds / KPI delta backgrounds / status fills / SVG
+   *   `fill` on data shapes. Reads «editorial soft» on cards, not
+   *   poisonous. AAA contrast preserved (slightly lower vs base; logged
+   *   as a documentation flag). */
+  --d1-data-positive: oklch(82% 0.13 145); /* mature pistachio — text/ink uses */
+  --d1-data-negative: oklch(78% 0.14 25); /* terracotta — text/ink uses, L 78 holds red NOT salmon */
+  --d1-notification-amber: oklch(82% 0.135 87); /* count-badge ink, status text — anchor of gouache triad */
+  --d1-data-positive-soft: oklch(82% 0.08 145); /* fill/surface — KPI delta bg, chip fill, chart-fill positives */
+  --d1-data-negative-soft: oklch(78% 0.09 25); /* fill/surface — KPI delta bg, chip fill, chart-fill negatives */
+  --d1-notification-amber-soft: oklch(82% 0.08 87); /* fill/surface — chip backgrounds, badge fills */
 
   --d1-text-primary: oklch(98% 0.001 280); /* AAA on bg-card; cool-tinted */
   --d1-text-muted: oklch(64% 0.005 280); /* AA-large + AAA on 16px+ body */
@@ -77,11 +89,18 @@
   /* ── Status quartet (architect ADR-16 — separate from data-* tokens) ──
    * Hue-aligned to data-* TODAY but declared as INDEPENDENT tokens — the
    * two axes (system messaging vs data-delta direction) MAY drift over
-   * time. Aliasing freezes them; separate values leave room. */
+   * time. Aliasing freezes them; separate values leave room.
+   * SPLIT-TOKEN MODEL (v5.1) — same logic as data-*: base for text/ink/
+   * 1px hairline, `-soft` for fill/surface (status badge fills, error
+   * sheen fills, info bg). */
   --d1-status-success: oklch(82% 0.13 145); /* matches data-positive hue, MAY drift */
   --d1-status-error: oklch(78% 0.14 25); /* matches data-negative hue, MAY drift */
   --d1-status-warning: oklch(82% 0.135 87); /* matches notification-amber hue, MAY drift */
   --d1-status-info: oklch(72% 0.1 240); /* cool blue-grey — no data-side counterpart */
+  --d1-status-success-soft: oklch(82% 0.08 145); /* fill/surface — success chip bg */
+  --d1-status-error-soft: oklch(78% 0.09 25); /* fill/surface — error chip bg */
+  --d1-status-warning-soft: oklch(82% 0.08 87); /* fill/surface — warning chip bg */
+  --d1-status-info-soft: oklch(72% 0.06 240); /* fill/surface — info chip bg */
 
   /* ── Provedo Record Rail (signature element) ───────────────────────── */
   --d1-rail-height: 14px;
@@ -352,7 +371,8 @@
   min-width: 18px;
   padding: 0 6px;
   border-radius: 9999px;
-  background: var(--d1-notification-amber);
+  /* fill/surface use → soft variant (v5.1 split-token, PO «poisonous on cards» fix) */
+  background: var(--d1-notification-amber-soft);
   color: var(--d1-text-ink);
   font-family: var(--d1-font-mono);
   font-weight: 500;

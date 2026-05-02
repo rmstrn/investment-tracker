@@ -51,10 +51,14 @@
    * Remove after grep returns zero direct consumers. */
   --d1-accent-lime: var(--d1-accent-lime-signal);
 
-  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2) */
+  /* Data delta — split-token model (v5.1 — PO «poisonous on cards» fix).
+   * Base = TEXT/INK/STROKE/HAIRLINE; -soft = FILL/SURFACE/CHIP-BG. */
   --d1-data-positive: oklch(82% 0.13 145);
   --d1-data-negative: oklch(78% 0.14 25);
   --d1-notification-amber: oklch(82% 0.135 87);
+  --d1-data-positive-soft: oklch(82% 0.08 145);
+  --d1-data-negative-soft: oklch(78% 0.09 25);
+  --d1-notification-amber-soft: oklch(82% 0.08 87);
 
   --d1-text-primary: oklch(98% 0.001 280);
   --d1-text-muted: oklch(64% 0.005 280);
@@ -65,11 +69,16 @@
   --d1-border-strong: rgba(255, 255, 255, 0.12);
 
   /* ── Status quartet (architect ADR-16 — separate from data-* tokens) ──
-   * Hue-aligned to data-* TODAY; MAY drift over time. Do NOT alias. */
+   * Hue-aligned to data-* TODAY; MAY drift over time. Do NOT alias.
+   * Split-token model v5.1: base for text/ink/hairline, `-soft` for fill. */
   --d1-status-success: oklch(82% 0.13 145);
   --d1-status-error: oklch(78% 0.14 25);
   --d1-status-warning: oklch(82% 0.135 87);
   --d1-status-info: oklch(72% 0.1 240);
+  --d1-status-success-soft: oklch(82% 0.08 145);
+  --d1-status-error-soft: oklch(78% 0.09 25);
+  --d1-status-warning-soft: oklch(82% 0.08 87);
+  --d1-status-info-soft: oklch(72% 0.06 240);
 
   /* ── Provedo Record Rail ───────────────────────────────────────────── */
   --d1-rail-height: 14px;
@@ -86,7 +95,7 @@
   /* Indices 1-5: D1 has a 5-role native palette; 6-12 deferred (TD).   */
   --chart-series-1: var(--d1-text-primary); /* primary series / hero line */
   --chart-series-2: var(--d1-accent-lime-signal); /* comparison line / highlight */
-  --chart-series-3: var(--d1-data-negative); /* negative bar / down-direction (v4) */
+  --chart-series-3: var(--d1-data-negative-soft); /* negative bar fill (v5.1 soft retune) */
   --chart-series-4: var(--d1-text-muted); /* secondary cohort / neutral */
   --chart-series-5: var(--d1-bg-card-soft); /* tertiary / data-bar default */
 
@@ -296,7 +305,8 @@
   min-width: 18px;
   padding: 0 6px;
   border-radius: 9999px;
-  background: var(--d1-notification-amber);
+  /* fill use → soft variant (v5.1 split-token) */
+  background: var(--d1-notification-amber-soft);
   color: var(--d1-text-ink);
   font-family: var(--d1-font-mono);
   font-weight: 500;
