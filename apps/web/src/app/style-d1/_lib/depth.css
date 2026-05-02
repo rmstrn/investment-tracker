@@ -41,15 +41,28 @@
 
   /* Engrave (tier 1 / recessed) — paper pressed slightly into canvas.
    * Calibrated against --d1-bg-card #26272C and --d1-bg-page #141416.
-   * Top-light at 4% reads as a hairline; bottom-dark at 32% reads as
-   * a 1px etch. >12% white = 90s skeumorphic bevel (failure mode).
-   * >40% black = halo on charcoal (failure mode). */
-  --d1-elev-atom-engrave-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
-  --d1-elev-atom-engrave-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.32);
+   * The 18-point luminance gap between card and page is small in the
+   * dark band, so values were bumped within PD's ±0.08 tolerance window
+   * (2026-05-02 PO feedback: cards read as flat at 4%/32%).
+   * Top-light at 7% reads as a clear hairline; bottom-dark at 38% reads
+   * as a 1px etch with enough contrast to survive the dark canvas.
+   * >12% white = 90s skeumorphic bevel (failure mode).
+   * >40% black = halo on charcoal (failure mode — stay below). */
+  --d1-elev-atom-engrave-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+  --d1-elev-atom-engrave-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.38);
 
-  /* Engrave hover — top-light fades, bottom-dark deepens. Used only on
-   * tier-1 surfaces that earn an intentional hover lift (KPI cards). */
-  --d1-elev-atom-engrave-top-hover: inset 0 1px 0 0 rgba(255, 255, 255, 0.02);
+  /* Edge hairline (Linear/Stripe precedent) — 1px outer ring at 5% white
+   * gives the card a perceptual edge against dark canvas without becoming
+   * a drop-shadow. Composed first in the recipe = paints last = sits
+   * outside the inset hairlines. Atom-level magnitude (5% ≈ existing
+   * 4-7% top atoms) keeps it inside PD's tolerance window. */
+  --d1-elev-atom-edge-hairline: 0 0 0 1px rgba(255, 255, 255, 0.05);
+
+  /* Engrave hover — top-light fades, bottom-dark deepens. Hover bottom
+   * raised proportionally so the rest→hover delta survives the new
+   * stronger rest baseline. Used only on tier-1 surfaces that earn an
+   * intentional hover lift (KPI cards). */
+  --d1-elev-atom-engrave-top-hover: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
   --d1-elev-atom-engrave-bottom-hover: inset 0 -1px 0 0 rgba(0, 0, 0, 0.4);
 
   /* Emboss (tier 2 / raised) — interactive surfaces lifted just above
@@ -76,8 +89,12 @@
 
   /* ── Recipe layer — what component selectors consume ───────────────── */
 
-  /* Tier 1 — RECESSED (debossed). Static surfaces at rest. */
-  --d1-elev-tier1-rest: var(--d1-elev-atom-engrave-top), var(--d1-elev-atom-engrave-bottom);
+  /* Tier 1 — RECESSED (debossed). Static surfaces at rest.
+   * Edge-hairline composes outside the inset atoms — it gives the card
+   * a visible perimeter against the dark canvas (Linear/Stripe pattern)
+   * without becoming a drop-shadow. NOT atmospheric multi-layer (banned). */
+  --d1-elev-tier1-rest: var(--d1-elev-atom-edge-hairline), var(--d1-elev-atom-engrave-top),
+    var(--d1-elev-atom-engrave-bottom);
 
   /* Tier 1 — RECESSED hover. Top-light fades, bottom-dark deepens,
    * outer ink-baseline shadow appears for the «lifted off the press»
@@ -141,5 +158,6 @@
     --d1-elev-atom-engrave-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.5);
     --d1-elev-atom-emboss-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.32);
     --d1-elev-atom-ink-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.5);
+    --d1-elev-atom-edge-hairline: 0 0 0 1px rgba(255, 255, 255, 0.09);
   }
 }
