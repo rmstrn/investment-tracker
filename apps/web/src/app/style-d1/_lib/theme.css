@@ -49,7 +49,11 @@
    *   .d1-kpi--lookhere · .d1-kpi--lime · .d1-kpi--portfolio
    *   .d1-cta--primary · .d1-cta--primary:hover
    *   .d1-focus-ring · :focus-visible (composite ring composer)
-   *   .d1-ai-byline · .d1-pill--active · .d1-segmented__btn--active
+   *   .d1-ai-byline
+   * v5.8 (PO «Option B trim» 2026-05-02): `.d1-pill--active` and
+   *   `.d1-segmented__btn--active` REMOVED from allowlist — active states
+   *   now bind `lime-hairline` (Linear-stroke pattern) per per-viewport
+   *   lime-signal cap (≤ 4 events on /style-d1 1440).
    * Anywhere else binding `lime-signal` = architectural violation.
    *
    * v5.7 (PO «верни цвет с Pinterest» 2026-05-02): look-here KPI fill
@@ -346,12 +350,16 @@
 }
 
 /* Active pill — Linear 2026 inset-stroke pattern (architect ADR-15).
- * 1px inset lime-signal stroke; glyph color HELD at --d1-text-primary
- * (no recolor on active). Background shifts to bg-card-soft well. */
+ * v5.8 (PO «Option B lime-creep trim» 2026-05-02): stroke retuned from
+ * lime-signal → lime-hairline. Trims one lime-signal event from the
+ * per-viewport count without losing the «active» read — hairline still
+ * carries identity vs the resting pill, just at lower amplitude.
+ * Glyph color HELD at --d1-text-primary; background shifts to bg-card-
+ * soft well. */
 [data-style="d1"] .d1-pill--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal), inset 0 1px 0 0
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), inset 0 1px 0 0
     rgba(255, 255, 255, 0.06);
 }
 
@@ -359,7 +367,7 @@
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
   transform: none;
-  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal), inset 0 1px 0 0
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), inset 0 1px 0 0
     rgba(255, 255, 255, 0.06);
 }
 
@@ -865,11 +873,12 @@
  * moment: Tier 2 well holding a Tier 3 coin (depth v3 §11.5).
  */
 /* Segmented active coin — Linear 2026 inset-stroke pattern (ADR-15).
- * 1px inset lime-signal stroke; glyph color HELD at --d1-text-primary. */
+ * v5.8 (PO «Option B lime-creep trim» 2026-05-02): stroke retuned from
+ * lime-signal → lime-hairline; same rationale as `.d1-pill--active`. */
 [data-style="d1"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-signal), var(--d1-elev-press-rest);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-press-rest);
 }
 
 [data-style="d1"] .d1-panel__body {
