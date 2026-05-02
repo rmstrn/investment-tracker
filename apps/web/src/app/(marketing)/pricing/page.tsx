@@ -4,7 +4,7 @@ import type { PlanTier } from './_components/PricingTable';
 import { PricingTable } from './_components/PricingTable';
 
 export const metadata: Metadata = {
-  title: 'Pricing — Investment Tracker',
+  title: 'Pricing — Provedo',
   description:
     'Simple pricing. Free forever for basic tracking. Paid tiers unlock deeper AI and tax reports.',
 };

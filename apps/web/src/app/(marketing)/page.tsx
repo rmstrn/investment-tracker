@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Investment Tracker — AI-native portfolio tracker',
+  title: 'Provedo — AI-native portfolio tracker',
   description:
     'AI-native portfolio tracker. Instead of charts and spreadsheets, have a conversation with your investments.',
 };
