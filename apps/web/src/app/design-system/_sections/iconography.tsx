@@ -144,7 +144,7 @@ export function IconographySection() {
           <IconCell Icon={ChartBar} bg="var(--d1-accent-lime)" color="var(--d1-text-ink)" />
           <IconCell
             Icon={TriangleAlert}
-            bg="var(--d1-notification-amber)"
+            bg="var(--d1-notification-amber-soft)"
             color="var(--d1-text-ink)"
           />
         </div>

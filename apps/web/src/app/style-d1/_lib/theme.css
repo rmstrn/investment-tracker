@@ -1,16 +1,20 @@
 /*
- * D1 — «Lime Cabin» theme.
+ * D1 — «Lime Cabin» theme (post v3+v4+v5 lock 2026-05-02).
  *
  * Faithful translation of the Pinterest reference onto Provedo, post
- * 7-fix-pass (2026-05-01) — see `style-d1/_lib/edge-cases.md` and
- * `.superpowers/brainstorm/2026-05-01-d1-fix-pass/KICKOFF.md` for the
- * fix history. Deep charcoal canvas, lime as «look here», purple as
- * «something is happening», fully-rounded pill nav, and the Provedo
- * Record Rail (the signature element) headering every persistent
- * data zone AND replacing the chat-row form factor for AI insights.
+ * 7-fix-pass (2026-05-01), then v3 depth grammar (variant B / 5 verb-
+ * tiers / hover-NO-OP / sub-canvas inputs / Record Rail :has() / atom +
+ * recipe two-layer composition) + v4 palette redirect (hue 75 → cool-
+ * violet 280° + L drop + green/red on data-* + status quartet) + v5
+ * lime-mono brand identity (purple DROPPED; lime carries 100% of brand-
+ * primary signal across 5 functional variants — canvas / soft / hairline
+ * / signal / mute). The Provedo Record Rail (signature element) heads
+ * every persistent data zone.
  *
- * Spec: D1-faithful.md (palette §3 / typography §4 / components §5)
- * + PD-signature-element.md (Provedo Record Rail).
+ * Spec sources:
+ *   - `docs/design/D1_DEPTH_SYSTEM_v3.md` — PD canonical value spec
+ *   - `docs/design/D1_DEPTH_ARCHITECTURE_v3.md` — architect ADR 1-17
+ *   - `docs/design/v4_*.md`, `docs/design/v5_*.md` — proposal sources
  *
  * Scope: every selector lives under `[data-style="d1"]`. NO bare :root,
  * NO bare body, NO bare element selectors. Tokens prefixed `--d1-*` so
@@ -18,28 +22,95 @@
  *
  * Wired by `./layout.tsx` via the route-local `<div data-style="d1">`.
  *
- * Measured contrast (verified post-fix-pass):
- *   text.primary (#FAFAFA) on bg.card (#26272C)         = 15.9:1 (AAA)
- *   text.muted   (#9C9DA3) on bg.card (#26272C)         = 5.9:1  (AA-large + AAA on body 16px+)
- *   text.ink     (#0E0F11) on accent.lime (#D6F26B)     = 15.4:1 (AAA)
+ * Measured contrast (per v5 canvas + lime ladder, AAA preserved):
+ *   text-primary  on bg-card   (oklch 19% 0.005 280)        = AAA
+ *   text-ink      on lime-signal (oklch 91% 0.21 117)       = 15.4:1 (AAA)
+ *   text-primary-deep on lime-soft (premium chip)           = AA-large
  */
 
 [data-style="d1"] {
-  /* ── Palette (8 roles + amber count badge) ─────────────────────────── */
-  --d1-bg-page: #141416;
-  --d1-bg-surface: #1f2024;
-  --d1-bg-card: #26272c;
-  --d1-bg-card-soft: #2c2d33; /* hover-lifted surface */
-  --d1-accent-lime: #d6f26b;
-  --d1-accent-lime-soft: rgba(214, 242, 107, 0.35); /* hatched stripe */
-  --d1-accent-purple: #7b5cff;
-  --d1-accent-purple-soft: rgba(123, 92, 255, 0.18); /* premium chip bg */
-  --d1-text-primary: #fafafa; /* AAA 15.9:1 on bg-card */
-  --d1-text-muted: #9c9da3; /* AA-large + AAA on 16px+ body — 5.9:1 */
-  --d1-text-ink: #0e0f11; /* AAA 15.4:1 on lime, warmer than pure black */
+  /* ── Palette — cool-violet hue 280°, L 12/16/19/23 (depth v4 §3.1) ───
+   * v4 redirect: hue 75° read as «brown» in live render. Pivot to cool-
+   * violet (graphite-leaning) hue 280° + L drop per PO directive (depth
+   * v4 architect ADR-10..17, lock memo 2026-05-02). Chroma stays low
+   * (0.004-0.005) — tinted-neutrals band, NOT decorative violet.
+   * AAA contrast preserved on all text pairings.
+   * Brand register: editorial dark canvas / cool-graphite paper. */
+  --d1-bg-page: oklch(12% 0.004 280); /* page canvas — Tier 0 */
+  --d1-bg-surface: oklch(16% 0.004 280); /* section frame (.d1-surface) */
+  --d1-bg-card: oklch(19% 0.005 280); /* non-elevated containers */
+  --d1-bg-card-soft: oklch(22% 0.005 280); /* press-tier hover bg, segmented active bg */
+  --d1-bg-card-elevated: oklch(23% 0.005 280); /* Read-tier surface fill (KPI / panel) */
+  --d1-bg-input: oklch(10% 0.004 280); /* Write-tier sub-canvas well — softer deboss (v5.2 retune from 8% per PO «черные инпуты» 2026-05-02) */
+
+  /* ── Lime ladder — 5-stop semantic-functional (depth v5 ADR-10) ──────
+   * LIME-SIGNAL ALLOWLIST (architect ADR-12 — Option D selector allowlist):
+   *   .d1-rail · .d1-rail__line · .d1-rail__tick
+   *   .d1-kpi--lookhere · .d1-kpi--lime · .d1-kpi--portfolio
+   *   .d1-cta--primary · .d1-cta--primary:hover
+   *   .d1-focus-ring · :focus-visible (composite ring composer)
+   *   .d1-ai-byline
+   * v5.8 (PO «Option B trim» 2026-05-02): `.d1-pill--active` and
+   *   `.d1-segmented__btn--active` REMOVED from allowlist — active states
+   *   now bind `lime-hairline` (Linear-stroke pattern) per per-viewport
+   *   lime-signal cap (≤ 4 events on /style-d1 1440).
+   * Anywhere else binding `lime-signal` = architectural violation.
+   *
+   * v5.7 (PO «верни цвет с Pinterest» 2026-05-02): look-here KPI fill
+   * (.d1-kpi--lime) RESTORED to lime-signal — v5.6 retuned the token to
+   * oklch(94% 0.20 119) ≈ #DAFF7D matching the Pinterest eyedropper.
+   * v5.5 lime-mute swap reverted; the «ядовитый» complaint was driven by
+   * the previous saturated-yellow value, not by the signal slot itself. */
+  --d1-accent-lime-canvas: oklch(20% 0.012 117); /* atmospheric tint, disclaimer wash */
+  --d1-accent-lime-soft: oklch(34% 0.045 117); /* chip / avatar fill, premium bg */
+  --d1-accent-lime-hairline: oklch(68% 0.13 117); /* 1px strokes, borders, focus rings */
+  --d1-accent-lime-signal: oklch(94% 0.2 119); /* SIGNATURE — Record Rail / look-here / CTA — matches Pinterest reference eyedropper #DAFF7D — locked 2026-05-02 */
+  --d1-accent-lime-mute: oklch(72% 0.16 117); /* AI byline / cohort / default chart bar */
+
+  /* DEPRECATED — alias for v3 → v5 migration safety (architect ADR-10).
+   * Remove after grep returns zero direct consumers. */
+  --d1-accent-lime: var(--d1-accent-lime-signal);
+
+  /* Data delta — chart positives/negatives, gain/loss columns (depth v4 §3.2)
+   * SPLIT-TOKEN MODEL (v5.1 — PO «poisonous on cards» feedback 2026-05-02):
+   * - Base tokens (saturated, C ~0.13-0.14) → TEXT / INK / line STROKE /
+   *   1px structural hairlines. Saturation needed for legibility as
+   *   labels, numerals, axis ink, line-chart strokes.
+   * - `-soft` variants (lower chroma, C ~0.08-0.09) → FILL / SURFACE /
+   *   chip backgrounds / KPI delta backgrounds / status fills / SVG
+   *   `fill` on data shapes. Reads «editorial soft» on cards, not
+   *   poisonous. AAA contrast preserved (slightly lower vs base; logged
+   *   as a documentation flag). */
+  --d1-data-positive: oklch(82% 0.13 145); /* mature pistachio — text/ink uses */
+  --d1-data-negative: oklch(78% 0.14 25); /* terracotta — text/ink uses, L 78 holds red NOT salmon */
+  --d1-notification-amber: oklch(82% 0.135 87); /* count-badge ink, status text — anchor of gouache triad */
+  --d1-data-positive-soft: oklch(70% 0.05 145); /* v5.3 PO 2026-05-02: L 82→70 + chroma 0.08→0.05 — mid-tone fill, no «pop bright» on dark canvas */
+  --d1-data-negative-soft: oklch(65% 0.06 25); /* v5.3 PO 2026-05-02: L 78→65 + chroma 0.09→0.06 — red hue 25 reads warmer at higher L, drop further */
+  --d1-notification-amber-soft: oklch(70% 0.05 87); /* v5.3 PO 2026-05-02: L 82→70 + chroma 0.08→0.05 — softens card amber pop on dark canvas */
+
+  --d1-text-primary: oklch(98% 0.001 280); /* AAA on bg-card; cool-tinted */
+  --d1-text-muted: oklch(64% 0.005 280); /* AA-large + AAA on 16px+ body */
+  --d1-text-primary-deep: oklch(20% 0.004 280); /* ink-deep — premium chip text */
+  --d1-text-ink: oklch(11% 0.003 280); /* AAA on lime-signal; cool-toned ink */
+
   --d1-border-hairline: rgba(255, 255, 255, 0.06);
   --d1-border-strong: rgba(255, 255, 255, 0.12);
-  --d1-notification-amber: #f4c257; /* count badges only, never numerals */
+
+  /* ── Status quartet (architect ADR-16 — separate from data-* tokens) ──
+   * Hue-aligned to data-* TODAY but declared as INDEPENDENT tokens — the
+   * two axes (system messaging vs data-delta direction) MAY drift over
+   * time. Aliasing freezes them; separate values leave room.
+   * SPLIT-TOKEN MODEL (v5.1) — same logic as data-*: base for text/ink/
+   * 1px hairline, `-soft` for fill/surface (status badge fills, error
+   * sheen fills, info bg). */
+  --d1-status-success: oklch(82% 0.13 145); /* matches data-positive hue, MAY drift */
+  --d1-status-error: oklch(78% 0.14 25); /* matches data-negative hue, MAY drift */
+  --d1-status-warning: oklch(82% 0.135 87); /* matches notification-amber hue, MAY drift */
+  --d1-status-info: oklch(72% 0.1 240); /* cool blue-grey — no data-side counterpart */
+  --d1-status-success-soft: oklch(70% 0.05 145); /* v5.3 — aligned with data-positive-soft retune */
+  --d1-status-error-soft: oklch(65% 0.06 25); /* v5.3 — aligned with data-negative-soft retune */
+  --d1-status-warning-soft: oklch(70% 0.05 87); /* v5.3 — aligned with notification-amber-soft retune */
+  --d1-status-info-soft: oklch(60% 0.05 240); /* v5.3 — info also drops L proportionally (was 72/0.06) */
 
   /* ── Provedo Record Rail (signature element) ───────────────────────── */
   --d1-rail-height: 14px;
@@ -131,6 +202,7 @@
   max-width: 56ch;
 }
 
+/* CTA — Press tier (lime-on-lime variant); full state arc rest/hover/active. */
 [data-style="d1"] .d1-cta {
   display: inline-flex;
   align-items: center;
@@ -146,16 +218,32 @@
   padding: 0 20px;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  /* Lime-on-lime emboss (atom rebind §7.7) — std white-light invisible on lime fill. */
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.4);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-style="d1"] .d1-cta:hover {
   transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.32), inset 0 -1px 0 0 rgba(14, 15, 17, 0.16), 0
+    2px 0 0 rgba(14, 15, 17, 0.5), 0 4px 12px -2px rgba(0, 0, 0, 0.32);
+}
+
+[data-style="d1"] .d1-cta:active {
+  transform: translateY(0);
+  box-shadow: inset 0 2px 3px -1px rgba(14, 15, 17, 0.32), inset 0 -1px 0 0
+    rgba(255, 255, 255, 0.05);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-style="d1"] .d1-cta:focus-visible {
-  outline: 2px solid var(--d1-accent-lime);
-  outline-offset: 3px;
+  outline: 0;
+  /* Lime-on-lime composer + rest emboss (canvas spacer + lime ring). */
+  box-shadow: var(--d1-elev-focus-ring-on-lime), inset 0 1px 0 0 rgba(255, 255, 255, 0.25), inset 0
+    -1px 0 0 rgba(14, 15, 17, 0.18), 0 1px 0 0 rgba(14, 15, 17, 0.4);
 }
 
 /* ── Pill nav (top of dashboard) — 40px tall, 9999px radius ──────────── */
@@ -165,6 +253,10 @@
   gap: 8px;
 }
 
+/* Nav brand — Read tier (standard amplitude); identity tile reads as a card.
+ * Brand mark recipe (parallel to .d1-avatar--ai per ADR-13): lime-soft
+ * plate + ink-mono glyph + 1px lime-hairline inset border. Type carries
+ * identity; lime is structural, not a glyph fill. */
 [data-style="d1"] .d1-nav__brand {
   display: inline-flex;
   align-items: center;
@@ -172,12 +264,14 @@
   width: 32px;
   height: 32px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple);
+  background: var(--d1-accent-lime-soft);
   color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
-  font-weight: 700;
-  font-size: 15px;
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
+  font-size: 14px;
   margin-right: 8px;
+  /* 1px lime-hairline inset + Read-tier emboss composed atop. */
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
 }
 
 /*
@@ -211,6 +305,7 @@
   flex-shrink: 0;
 }
 
+/* Pill nav — Press tier; rest emboss visible against transparent bg. */
 [data-style="d1"] .d1-pill {
   display: inline-flex;
   align-items: center;
@@ -228,13 +323,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), background
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-style="d1"] .d1-pill:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-style="d1"] .d1-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-style="d1"] .d1-pill:focus-visible {
@@ -242,18 +349,26 @@
   outline-offset: 2px;
 }
 
-/*
- * Nav active pill — keeps lime treatment per Fix 5 (sanctioned «look
- * here» surface — the dashboard's primary navigation signal).
- */
+/* Active pill — Linear 2026 inset-stroke pattern (architect ADR-15).
+ * v5.8 (PO «Option B lime-creep trim» 2026-05-02): stroke retuned from
+ * lime-signal → lime-hairline. Trims one lime-signal event from the
+ * per-viewport count without losing the «active» read — hairline still
+ * carries identity vs the resting pill, just at lower amplitude.
+ * Glyph color HELD at --d1-text-primary; background shifts to bg-card-
+ * soft well. */
 [data-style="d1"] .d1-pill--active {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), inset 0 1px 0 0
+    rgba(255, 255, 255, 0.06);
 }
 
 [data-style="d1"] .d1-pill--active:hover {
-  background: var(--d1-accent-lime);
-  color: var(--d1-text-ink);
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  transform: none;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), inset 0 1px 0 0
+    rgba(255, 255, 255, 0.06);
 }
 
 [data-style="d1"] .d1-pill__icon {
@@ -270,7 +385,8 @@
   min-width: 18px;
   padding: 0 6px;
   border-radius: 9999px;
-  background: var(--d1-notification-amber);
+  /* fill/surface use → soft variant (v5.1 split-token, PO «poisonous on cards» fix) */
+  background: var(--d1-notification-amber-soft);
   color: var(--d1-text-ink);
   font-family: var(--d1-font-mono);
   font-weight: 500;
@@ -282,6 +398,7 @@
   flex: 1 1 auto;
 }
 
+/* Nav icon pill — Press tier; full state arc. */
 [data-style="d1"] .d1-nav__icon-pill {
   display: inline-flex;
   align-items: center;
@@ -293,11 +410,23 @@
   color: var(--d1-text-muted);
   border: 0;
   cursor: pointer;
-  transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-style="d1"] .d1-nav__icon-pill:hover {
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-style="d1"] .d1-nav__icon-pill:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-style="d1"] .d1-nav__icon-pill:focus-visible {
@@ -305,6 +434,10 @@
   outline-offset: 2px;
 }
 
+/* Nav avatar — Read tier identity tile. Same recipe as .d1-avatar--ai
+ * per ADR-13: lime-soft plate + ink mono glyph + 1px lime-hairline inset.
+ * Filled-lime monogram is FORBIDDEN — type carries entity, color carries
+ * identity. */
 [data-style="d1"] .d1-nav__avatar {
   display: inline-flex;
   align-items: center;
@@ -312,11 +445,30 @@
   width: 40px;
   height: 40px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple);
+  background: var(--d1-accent-lime-soft);
   color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
-  font-weight: 700;
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
   font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
+}
+
+/* AI avatar — recipe-locked per architect ADR-13. Lime-soft plate + ink
+ * "P" mono glyph + 1px lime-hairline inset. Filled-lime monograms are
+ * FORBIDDEN. */
+[data-style="d1"] .d1-avatar--ai {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--d1-accent-lime-soft);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-read-standard-rest);
 }
 
 /*
@@ -351,18 +503,33 @@
   margin: 0;
 }
 
+/* Premium chip — v5.4 amber-soft fill per PO 2026-05-02 («вот такой
+ * жёлтый, отлично подойдёт для премиум лейблы»). v5.2 depth-only and
+ * v5.3 lime-hairline both lacked premium register. v5.4 carries premium
+ * through GOLD FILL (mid-tone amber-soft L70) + DEPTH (Read-tier emboss
+ * at rest) + INK (ink-deep mono on gold) + TYPE (mono uppercase + 0.06em
+ * tracking). Frees one lime-signal slot (chip no longer uses lime).
+ * Border judgment: NO border — amber-soft L70 on bg-card L19 has 50%+
+ * lightness pop, edges define themselves cleanly without a hairline.
+ * Text token: text-primary-deep (ink L20) on amber-soft L70 → 6.77:1
+ * (AA pass, AAA-large pass, AAA-normal narrow miss at 7:1 threshold).
+ * text-primary (white) measured 2.52:1 — FAIL AA, rejected. */
 [data-style="d1"] .d1-chip-premium {
   display: inline-flex;
   align-items: center;
   height: 24px;
   padding: 0 12px;
   border-radius: 9999px;
-  background: var(--d1-accent-purple-soft);
-  color: var(--d1-text-primary);
-  font-family: var(--d1-font-sans);
+  background: var(--d1-notification-amber-soft);
+  color: var(--d1-text-primary-deep);
+  font-family: var(--d1-font-mono);
   font-weight: 500;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  /* Read-tier standard emboss (no border): amber-soft pop carries edge
+   * definition; emboss carries the «raised premium» depth signal. */
+  box-shadow: var(--d1-elev-read-standard-rest);
   vertical-align: middle;
 }
 
@@ -373,31 +540,23 @@
   gap: 16px;
 }
 
+/*
+ * KPI cards — Read tier (standard amplitude). Hover-NO-OP: KPI cards
+ * are PASSIVE; no `:hover` rule by design (depth v3 ADR-6 + PD §11.4).
+ * KPI cards are non-interactive containers (no tabIndex per
+ * a11y/noNoninteractiveTabindex); focus lands on interactive descendants.
+ */
 [data-style="d1"] .d1-kpi {
   position: relative;
-  background: var(--d1-bg-card);
+  background: var(--d1-bg-card-elevated);
   border-radius: 24px;
   padding: 20px;
   min-height: 132px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
-    cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-read-standard-rest);
 }
-
-[data-style="d1"] .d1-kpi:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-/*
- * KPI cards are non-interactive containers — no tabIndex per
- * a11y/noNoninteractiveTabindex. Focus ring lands on the actual
- * interactive descendants (none in canonical preview) when those
- * arrive. The .d1-kpi:focus-visible rule is intentionally omitted to
- * avoid dead CSS.
- */
 
 [data-style="d1"] .d1-kpi__head {
   display: flex;
@@ -465,15 +624,25 @@
  */
 [data-style="d1"] .d1-kpi--portfolio {
   min-height: 160px;
+  /* Pronounced amplitude — the headline KPI rises more than supporting KPIs. */
+  box-shadow: var(--d1-elev-read-pronounced-rest);
 }
 
 [data-style="d1"] .d1-kpi--portfolio .d1-kpi__num {
   font-size: clamp(48px, 4vw + 32px, 56px);
 }
 
-/* ── Lime-highlighted KPI card (one per dashboard, by rule) ─────────── */
+/* Look-here KPI — Press-grade firmness on lime-signal substrate.
+ * v5.7 (PO 2026-05-02): restored to lime-signal — v5.6 retuned the token
+ * to oklch(94% 0.20 119) ≈ #DAFF7D per Pinterest eyedropper, which is
+ * the bright pure-yellow PO wants for the Drift KPI. AAA-large preserved
+ * (ink-deep on lime-signal ≈ 17:1). */
 [data-style="d1"] .d1-kpi--lime {
-  background: var(--d1-accent-lime);
+  background: var(--d1-accent-lime-signal);
+  /* Custom emboss — std white-light invisible on lime; ramp to 22% white,
+   * 18% ink-bottom, 40% ink-baseline (depth v3 §7.7). */
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.22), inset 0 -1px 0 0 rgba(14, 15, 17, 0.18), 0
+    1px 0 0 rgba(14, 15, 17, 0.4);
 }
 
 [data-style="d1"] .d1-kpi--lime .d1-kpi__label,
@@ -491,9 +660,11 @@
   opacity: 0.85;
 }
 
+/* Icon-chip on lime fill — inverted emboss per PD §11.8. */
 [data-style="d1"] .d1-kpi--lime .d1-kpi__icon-chip {
   background: rgba(14, 15, 17, 0.08);
   color: var(--d1-text-ink);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 0 rgba(14, 15, 17, 0.15);
 }
 
 /* ── Filter chip row ─────────────────────────────────────────────────── */
@@ -508,6 +679,7 @@
   flex: 1 1 auto;
 }
 
+/* Filter chip — Press tier; rest emboss visible against transparent bg. */
 [data-style="d1"] .d1-chip {
   display: inline-flex;
   align-items: center;
@@ -525,13 +697,25 @@
   border: 0;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: var(--d1-elev-press-rest);
+  transition: transform var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), background
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
 }
 
 [data-style="d1"] .d1-chip:hover {
   background: rgba(255, 255, 255, 0.04);
   color: var(--d1-text-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-style="d1"] .d1-chip:active {
+  transform: translateY(0);
+  box-shadow: var(--d1-elev-press-active);
+  transition: transform var(--d1-elev-duration-press-active) var(--d1-elev-easing-in), box-shadow
+    var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-style="d1"] .d1-chip:focus-visible {
@@ -540,23 +724,21 @@
 }
 
 /*
- * Filter chip active state (Fix 5) — muted from solid-lime fill to
- * neutral light-on-card with a subtle lime hairline border. Restores
- * «lime = look here» semantic by removing it from a high-frequency
- * UI control.
+ * Filter chip active state — lime hairline preserved as primary signal;
+ * Press-rest emboss composed beneath (lime hairline reads first, emboss
+ * reads as secondary tactility per depth v3 §11.5).
  */
 [data-style="d1"] .d1-chip--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  /* 1px inset lime hairline — uses box-shadow so it doesn't shift
-   * layout vs the un-bordered default chip. */
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4), var(--d1-elev-press-rest);
 }
 
 [data-style="d1"] .d1-chip--active:hover {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6), var(--d1-elev-press-hover);
 }
 
 [data-style="d1"] .d1-chip--icon {
@@ -578,22 +760,34 @@
   gap: 16px;
 }
 
+/*
+ * Panel — Read tier (quiet amplitude); chart container.
+ * Hover-NO-OP: panels are passive containers (depth v3 ADR-6).
+ * Rail-mitigation: rule below uses :has(.d1-rail) to drop top-highlight
+ * when a Record Rail is present (depth v3 ADR-5).
+ */
 [data-style="d1"] .d1-panel {
-  background: var(--d1-bg-card);
+  background: var(--d1-bg-card-elevated);
   border-radius: 24px;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 16px;
   min-height: 320px;
-  /* CSS-var override scope so the embedded BarVisx (its own
-   * candy-themed defaults) borrows D1's lime/purple palette. */
+  box-shadow: var(--d1-elev-read-quiet-rest);
+  /* CSS-var override scope so the embedded BarVisx (its own candy-themed
+   * defaults) borrows D1's lime-mono palette. v5.2 PO 2026-05-02:
+   * pos/neg bar fills use the data-* `-soft` variants for green-up /
+   * red-down legibility on dark canvas WITHOUT the lime-mute «poisonous
+   * yellow» reading. Per-chart overrides re-bind to lime-signal for
+   * «look here» moments (waterfall, treemap, area) — those modifiers
+   * supersede the base. */
   --text-on-candy: var(--d1-text-primary);
-  --cta-fill: var(--d1-accent-purple);
-  --accent: var(--d1-accent-purple);
-  --accent-deep: var(--d1-accent-purple);
-  --cta-shadow: var(--d1-accent-purple);
-  --card: var(--d1-bg-card);
+  --cta-fill: var(--d1-data-positive-soft);
+  --accent: var(--d1-data-positive-soft);
+  --accent-deep: var(--d1-data-negative-soft);
+  --cta-shadow: var(--d1-data-negative-soft);
+  --card: var(--d1-bg-card-elevated);
   --card-highlight: rgba(255, 255, 255, 0.04);
   --bg-cream: var(--d1-bg-card-soft);
   --ink: var(--d1-text-primary);
@@ -601,6 +795,15 @@
   --font-family-display: var(--d1-font-mono);
   --font-family-body: var(--d1-font-sans);
   --font-family-mono: var(--d1-font-mono);
+}
+
+/*
+ * Rail-headed panel — Record Rail's lime tick must remain the loudest
+ * hairline at top edge. :has() drops the top-highlight atom; baseline
+ * carries the depth signal alone (depth v3 ADR-5 / PD §9).
+ */
+[data-style="d1"] .d1-panel:has(.d1-rail) {
+  box-shadow: var(--d1-elev-read-quiet-rest--rail-headed);
 }
 
 [data-style="d1"] .d1-panel__head {
@@ -621,16 +824,18 @@
   margin-bottom: 0;
 }
 
-/* Segmented toggle (Monthly / Annually) */
+/* Segmented toggle (Monthly / Annually) — Write tier sub-canvas track. */
 [data-style="d1"] .d1-segmented {
   display: inline-flex;
   align-items: center;
-  background: var(--d1-bg-page);
+  background: var(--d1-bg-input);
   border-radius: 9999px;
   padding: 3px;
   gap: 2px;
+  box-shadow: var(--d1-elev-write-rest);
 }
 
+/* Segmented btn — flat at rest (sits inside a Tier 2 well); Press hover/active. */
 [data-style="d1"] .d1-segmented__btn {
   font-family: var(--d1-font-sans);
   font-weight: 500;
@@ -642,8 +847,19 @@
   padding: 0 12px;
   border-radius: 9999px;
   cursor: pointer;
-  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
-    cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), color
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out), box-shadow
+    var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
+}
+
+[data-style="d1"] .d1-segmented__btn:hover {
+  color: var(--d1-text-primary);
+  box-shadow: var(--d1-elev-press-hover);
+}
+
+[data-style="d1"] .d1-segmented__btn:active {
+  box-shadow: var(--d1-elev-press-active);
+  transition: box-shadow var(--d1-elev-duration-press-active) var(--d1-elev-easing-in);
 }
 
 [data-style="d1"] .d1-segmented__btn:focus-visible {
@@ -652,14 +868,17 @@
 }
 
 /*
- * Segmented active state (Fix 5) — same neutral treatment as filter
- * chips. Lime-on-card hairline marks the active state without
- * burning a saturated lime surface on a frequently-toggled control.
+ * Segmented active — coin sits inside the well. Lime hairline preserved
+ * as primary signal; Press-rest emboss composed beneath. Dual polarity
+ * moment: Tier 2 well holding a Tier 3 coin (depth v3 §11.5).
  */
+/* Segmented active coin — Linear 2026 inset-stroke pattern (ADR-15).
+ * v5.8 (PO «Option B lime-creep trim» 2026-05-02): stroke retuned from
+ * lime-signal → lime-hairline; same rationale as `.d1-pill--active`. */
 [data-style="d1"] .d1-segmented__btn--active {
   background: var(--d1-bg-card-soft);
   color: var(--d1-text-primary);
-  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+  box-shadow: inset 0 0 0 1px var(--d1-accent-lime-hairline), var(--d1-elev-press-rest);
 }
 
 [data-style="d1"] .d1-panel__body {
@@ -773,7 +992,7 @@
   background: var(--d1-accent-lime);
 }
 
-/* ── Chat search filter (kept — the filter affordance above the rail)  */
+/* Chat search — Write tier sub-canvas; hairline border replaced by recipe. */
 [data-style="d1"] .d1-chat__search {
   display: flex;
   align-items: center;
@@ -781,11 +1000,19 @@
   height: 36px;
   padding: 0 14px;
   border-radius: 9999px;
-  background: var(--d1-bg-page);
+  background: var(--d1-bg-input);
   color: var(--d1-text-muted);
   font-family: var(--d1-font-sans);
   font-size: 13px;
-  border: 1px solid var(--d1-border-hairline);
+  border: 0;
+  box-shadow: var(--d1-elev-write-rest);
+  transition: box-shadow var(--d1-elev-duration-press-hover) var(--d1-elev-easing-out);
+}
+
+[data-style="d1"] .d1-chat__search:focus-within {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+  box-shadow: var(--d1-elev-write-focus);
 }
 
 [data-style="d1"] .d1-chat__search-icon {

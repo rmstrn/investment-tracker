@@ -7,7 +7,7 @@ export function MarketingHeader() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 md:h-16 md:px-8">
         <Link
           href="/"
-          aria-label="Investment Tracker — home"
+          aria-label="Provedo — home"
           className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 focus-visible:ring-offset-background-primary rounded-sm"
         >
           <Logo variant="full" size={28} />

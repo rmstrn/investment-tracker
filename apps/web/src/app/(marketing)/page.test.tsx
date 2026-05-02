@@ -1,33 +1,19 @@
 import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type React from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
-const auth = vi.hoisted(() => vi.fn());
-const redirect = vi.hoisted(() =>
-  vi.fn((path: string) => {
-    throw new Error(`NEXT_REDIRECT:${path}`);
-  }),
-);
-
-vi.mock('@clerk/nextjs/server', () => ({ auth }));
-vi.mock('next/navigation', () => ({ redirect }));
+// `<RedirectIfAuthed/>` mounts a Clerk `useUser` hook + `useRouter` —
+// both client-only. Mocking the component to a no-op keeps the static
+// page test from pulling in Clerk + Next router runtime.
+vi.mock('./_components/RedirectIfAuthed', () => ({
+  RedirectIfAuthed: () => null,
+}));
 
 import LandingPage from './page';
 
-describe('LandingPage', () => {
-  beforeEach(() => {
-    auth.mockReset();
-    redirect.mockClear();
-  });
-
-  it('redirects authenticated users to /dashboard', async () => {
-    auth.mockResolvedValue({ userId: 'user_abc' });
-    await expect(LandingPage()).rejects.toThrow('NEXT_REDIRECT:/dashboard');
-    expect(redirect).toHaveBeenCalledWith('/dashboard');
-  });
-
-  it('renders hero + CTAs for anonymous users', async () => {
-    auth.mockResolvedValue({ userId: null });
-    const element = await LandingPage();
+describe('LandingPage (static)', () => {
+  it('renders hero + CTAs without an auth probe', () => {
+    const element = LandingPage();
     render(element as React.ReactElement);
 
     expect(
@@ -42,6 +28,5 @@ describe('LandingPage', () => {
       '/sign-up',
     );
     expect(screen.getByRole('link', { name: /see pricing/i })).toHaveAttribute('href', '/pricing');
-    expect(redirect).not.toHaveBeenCalled();
   });
 });

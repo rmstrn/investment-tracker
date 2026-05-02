@@ -1,5 +1,7 @@
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { geistD1, geistMonoD1 } from './_lib/fonts';
+import './_lib/depth.css';
 import './_lib/theme.css';
 
 /**
@@ -19,9 +21,11 @@ import './_lib/theme.css';
  * with tabular figures + ink-on-lime AAA contrast on the highlighted
  * KPI card and primary-text-on-card AAA contrast everywhere else.
  */
-export const metadata = {
+export const metadata: Metadata = {
   title: 'Style D1 · Lime Cabin',
   description: 'Faithful pinterest-ref dashboard direction for Provedo (POC).',
+  // Internal preview surface — not for SEO indexing (used as landing v1
+  // live-preview source + canonical dashboard reference for /design-system).
   robots: { index: false, follow: false },
 };
 

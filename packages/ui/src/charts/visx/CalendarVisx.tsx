@@ -1,37 +1,26 @@
 'use client';
 
 /**
- * CalendarVisx — visx-powered candy-themed dividend calendar (POC).
+ * CalendarVisx — visx-powered dividend calendar (D1 dialect).
  *
- * Phase B of the visx-candy migration (PD spec
- * `CHARTS_VISX_CANDY_SPEC.md` §7). Sits next to `Calendar.tsx`
- * (CSS-grid renderer) so PO can compare side-by-side at
- * `/design-system#charts-visx`.
+ * v5.1 cleanup: candy ink-shadow drop on event-bearing cells removed,
+ * hover-lift on data cells removed (hover-NO-OP on display per PO),
+ * tooltip dropped its candy box-shadow.
  *
  * Library boundary:
  *   - `scaleBand` from `@visx/scale` for the 7-column weekday axis +
- *     row band axis. Cells are plain `<rect>`. visx is overkill for a
- *     month grid but keeps the «visx-candy» tag honest in dispatch
- *     reviews — same package register as the rest of Phase B.
+ *     row band axis. Cells are plain `<rect>`.
  *
- * Visual signatures (PD §7):
- *   - 7×N grid of cream cells with 6px corner radius.
- *   - Today cell wears a 1.5px candy-pink ink-bordered ring — the
- *     «you are here» pattern from Monthly P&L. Pulses once on first
+ * Visual signatures:
+ *   - 7×N grid of cells with 6px corner radius.
+ *   - Today cell wears a 1.5px candy-pink ring — pulses once on first
  *     paint then settles.
- *   - Event chips inside cells: `received` mustard, `scheduled`
- *     signal-orange (per PD spec), `corp_action` ink-deep diamond.
- *     Stacked vertically when multiple events share a day.
- *   - Day numerals Manrope mono-uppercase tabular-num 11px.
- *   - Weekday header row Manrope mono-uppercase 10px ls 0.08em.
- *   - Hover-lift `(-2,-2)` with shadow stays anchored. Tooltip shows
- *     date + events.
- *   - Entrance: row-by-row fade-in + scale 0.92→1, 280ms per row,
- *     40ms inter-row stagger, 800ms total ceiling.
+ *   - Event chips inside cells: `received` / `scheduled` rectangles,
+ *     `corp_action` diamond.
+ *   - Entrance: row-by-row fade-in + scale 0.92→1.
  *
  * a11y: `role="img"` + ChartDataTable shadow with all events listed.
- * Today cell carries `aria-current="date"` data attribute for QA.
- * Reduced motion → instant paint, no entrance, no lift.
+ * Reduced motion → instant paint, no entrance.
  */
 
 import type {
@@ -76,11 +65,6 @@ const WEEKDAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 const HEADER_HEIGHT = 24;
 const CELL_RADIUS = 6;
 const CELL_GAP = 6;
-const SHADOW_OFFSET_PX = 2;
-const HOVER_LIFT_PX = 2;
-
-const HOVER_TRANSITION =
-  'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
 
 const ENTRANCE_PER_ROW_MS = 280;
 const ENTRANCE_ROW_STAGGER_MS = 40;
@@ -126,9 +110,9 @@ const EVENT_LABEL_STYLE: CSSProperties = {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
   color: INK,
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -136,7 +120,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -385,9 +368,9 @@ export function CalendarVisx({ payload, today, className }: CalendarVisxProps) {
           const cx = x + cellW / 2;
           const cy = y + cellH / 2;
 
-          const liftX = isHover && !prefersReducedMotion ? -HOVER_LIFT_PX : 0;
-          const liftY = isHover && !prefersReducedMotion ? -HOVER_LIFT_PX : 0;
-          const groupTransform = `translate(${liftX} ${liftY}) translate(${cx} ${cy}) scale(${scale}) translate(${-cx} ${-cy})`;
+          // v5.1: hover-NO-OP on display data — entrance scale only,
+          // no hover lift transform.
+          const groupTransform = `translate(${cx} ${cy}) scale(${scale}) translate(${-cx} ${-cy})`;
 
           // Today ring pulse — first 600ms fade-in to 1.4×, then settle.
           const ringPulse =
@@ -407,25 +390,11 @@ export function CalendarVisx({ payload, today, className }: CalendarVisxProps) {
                 transform: groupTransform,
                 transformBox: 'view-box',
                 transformOrigin: '0 0',
-                transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
                 opacity,
                 cursor: hasEvents ? 'pointer' : 'default',
               }}
             >
-              {/* Hard ink-shadow drop on event-bearing cells only. Empty
-                  cells stay flat so filled cells visually pop. (PD §7) */}
-              {hasEvents ? (
-                <rect
-                  x={x + SHADOW_OFFSET_PX}
-                  y={y + SHADOW_OFFSET_PX}
-                  width={cellW}
-                  height={cellH}
-                  rx={CELL_RADIUS}
-                  fill="var(--text-on-candy, #1C1B26)"
-                  fillOpacity={0.85}
-                />
-              ) : null}
-              {/* Cell body */}
+              {/* Cell body (v5.1: shadow rect removed) */}
               <rect
                 x={x}
                 y={y}

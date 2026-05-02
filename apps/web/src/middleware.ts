@@ -4,8 +4,11 @@ const isPublic = createRouteMatcher([
   '/',
   '/pricing',
   '/design(.*)',
-  // Visual-direction comparison routes (`/style-a`, `/style-b`, `/style-c`).
-  // PO-internal mini-landings; not indexed (route metadata sets robots:noindex).
+  // Internal preview surface (`/style-d1`) — D1 «Lime Cabin» canonical
+  // dashboard reference / landing live-preview source. Not indexed (route
+  // metadata sets robots:noindex). Other `/style-*` exploration routes
+  // were deleted 2026-05-02; the matcher stays open so future internal
+  // previews can land without a middleware change.
   '/style-(.*)',
   '/sign-in(.*)',
   '/sign-up(.*)',

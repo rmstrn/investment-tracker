@@ -1,0 +1,205 @@
+/*
+ * D1 «Lime Cabin» — Depth System v3 (atoms + recipes)
+ * ───────────────────────────────────────────────────
+ * Single source of truth for the verb-tier depth grammar. Dual-scoped to
+ * `[data-style="d1"]` (route `/style-d1`) AND `[data-theme="lime-cabin"]`
+ * (route `/design-system`).
+ *
+ * Imported by:
+ *   - apps/web/src/app/style-d1/layout.tsx
+ *   - apps/web/src/app/design-system/_styles/lime-cabin.css (top-of-file @import)
+ *
+ * Specs:
+ *   - docs/design/D1_DEPTH_SYSTEM_v3.md     (PD value spec — atom values, recipe composition, selector mapping)
+ *   - docs/design/D1_DEPTH_ARCHITECTURE_v3.md (architect brief — naming taxonomy, ADR-1..ADR-9)
+ *
+ *
+ * READ-TIER HOVER CONTRACT (ADR-6 — DO NOT VIOLATE)
+ * ─────────────────────────────────────────────────
+ * Read-tier surfaces (.d1-kpi, .d1-panel, .d1-chart-panel, .d1-insight)
+ * are PASSIVE. They have NO `:hover` state by design — this answers
+ * PO directive 2026-05-02 «зачем hover на пассивной карточке».
+ *
+ * Reopening hover-on-Read requires reopening the design pass. Do NOT
+ * add `:hover` rules to .d1-kpi, .d1-panel, .d1-chart-panel, or
+ * .d1-insight. Interactivity on cards is opt-in via the post-alpha
+ * `--actionable` modifier (ADR-9), which inherits Press-tier semantics.
+ *
+ *
+ * VERB-TIER VOCABULARY (ADR-1)
+ * ────────────────────────────
+ *   Tier 0  Canvas  flat                     — page, surface, layout containers, rails, disclaimer
+ *   Tier 1  Read    emboss-up at rest        — KPI cards, chart panels (3 amplitude levels)
+ *   Tier 2  Write   engrave-down at rest     — form fields, segmented track, search filters
+ *   Tier 3  Press   emboss-up + state-arc    — CTA, pills, chips, segmented thumb
+ *   Tier 4  Float   single drop-shadow blur  — popovers, tooltips, dialogs (post-alpha)
+ *
+ * Token shape: --d1-elev-{tier-verb}[-{amplitude}]-{state}[--{variant}]
+ *   tier-verb : canvas | read | write | press | float
+ *   amplitude : pronounced | standard | quiet     (Read tier only)
+ *   state     : rest | hover | focus | active | disabled
+ *   variant   : rail-headed | on-lime              (sparse, opt-in)
+ *
+ *
+ * RECIPE STACKING ORDER (ADR-7 — canonical)
+ *   1. Edge hairline (outer 1px ring) — if present
+ *   2. Top-light inset (highlight)
+ *   3. Bottom-shadow inset (anchor)
+ *   4. Outer ink-baseline (1px drop, no blur)
+ *   5. Outer drop-shadow (Float only)
+ */
+
+[data-style="d1"],
+[data-theme="lime-cabin"] {
+  /* ════════════════════════════════════════════════════════════════════
+   * ATOM LAYER — primitives, never read directly by component selectors
+   * ════════════════════════════════════════════════════════════════════ */
+
+  /* ── READ atoms (Tier 1) ─────────────────────────────────────────────
+   * Single 1px inner top-highlight + outer 1px ink-baseline. NO bottom.
+   * Three amplitude levels carry hierarchy (look/supporting/panel). */
+
+  /* Pronounced (look-here) — strongest emboss. Used by .d1-kpi--portfolio. */
+  --d1-elev-atom-read-pronounced-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.09);
+  --d1-elev-atom-read-pronounced-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.5);
+
+  /* Standard (supporting) — mid emboss. Used by default .d1-kpi, nav identity tiles. */
+  --d1-elev-atom-read-standard-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.07);
+  --d1-elev-atom-read-standard-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.42);
+
+  /* Quiet (chart-panel) — quietest emboss. Used by .d1-panel, .d1-chart-panel. */
+  --d1-elev-atom-read-quiet-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
+  --d1-elev-atom-read-quiet-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.36);
+
+  /* ── WRITE atoms (Tier 2) ────────────────────────────────────────────
+   * Real 2px inner top-shadow with negative spread — disambiguates
+   * «well» from «card top-edge hairline». Bottom 1px inner light closes
+   * the well from below. NO outer baseline (wells don't cast shadows). */
+  --d1-elev-atom-write-top: inset 0 2px 3px -1px rgba(0, 0, 0, 0.45);
+  --d1-elev-atom-write-bottom: inset 0 -1px 0 0 rgba(255, 255, 255, 0.05);
+
+  /* Write focus — top-shadow deepens; lime halo composes outside. */
+  --d1-elev-atom-write-top-focus: inset 0 2px 3px -1px rgba(0, 0, 0, 0.5);
+
+  /* Write error — bottom inner replaced by 2px error-color hairline. */
+  --d1-elev-atom-write-bottom-error: inset 0 -2px 0 0 var(--d1-status-error);
+
+  /* ── PRESS atoms (Tier 3) ────────────────────────────────────────────
+   * Firmer than Read — coin vocabulary. Rest = top-light + bottom-light
+   * + outer ink-baseline. Hover intensifies. Active steals Write
+   * vocabulary (sinks). */
+  --d1-elev-atom-press-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  --d1-elev-atom-press-bottom: inset 0 -1px 0 0 rgba(0, 0, 0, 0.22);
+  --d1-elev-atom-press-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.42);
+
+  --d1-elev-atom-press-top-hover: inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+  --d1-elev-atom-press-bottom-hover: inset 0 -1px 0 0 rgba(0, 0, 0, 0.2);
+  --d1-elev-atom-press-baseline-hover: 0 2px 0 0 rgba(0, 0, 0, 0.5);
+  --d1-elev-atom-press-soft-hover: 0 4px 12px -2px rgba(0, 0, 0, 0.32);
+
+  /* Press active — sinks. Top-light vanishes, real 2px inner top-shadow
+   * appears (steals Write vocabulary for the press moment). */
+  --d1-elev-atom-press-active-top: inset 0 2px 3px -1px rgba(0, 0, 0, 0.42);
+  --d1-elev-atom-press-active-bottom: inset 0 -1px 0 0 rgba(255, 255, 255, 0.02);
+
+  /* ── FLOAT atom (Tier 4 — overlays only, post-alpha) ──────────────── */
+  --d1-elev-atom-float-edge: 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --d1-elev-atom-float-lift: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
+
+  /* ── Composers ──────────────────────────────────────────────────────
+   * Lime focus ring on lime fill (outline doesn't render on lime-on-lime).
+   * Composer = canvas spacer + lime ring via box-shadow. */
+  --d1-elev-focus-ring-on-lime: 0 0 0 4px var(--d1-bg-page), 0 0 0 6px var(--d1-accent-lime);
+
+  /* Flat opt-out + disabled. */
+  --d1-elev-canvas: none;
+  --d1-elev-flat: none;
+  --d1-elev-disabled: none;
+
+  /* ════════════════════════════════════════════════════════════════════
+   * RECIPE LAYER — composes atoms; component selectors read recipes
+   * ════════════════════════════════════════════════════════════════════ */
+
+  /* ── Tier 1 RECIPES — Read amplitude split ──────────────────────────
+   * (HOVER-NO-OP: no read-* hover recipes exist by design — see banner) */
+
+  /* Pronounced — used by .d1-kpi--portfolio (the headline KPI). */
+  --d1-elev-read-pronounced-rest: var(--d1-elev-atom-read-pronounced-top),
+    var(--d1-elev-atom-read-pronounced-baseline);
+
+  /* Standard — used by default .d1-kpi (non-portfolio) and nav identity tiles. */
+  --d1-elev-read-standard-rest: var(--d1-elev-atom-read-standard-top),
+    var(--d1-elev-atom-read-standard-baseline);
+
+  /* Quiet — used by .d1-panel and .d1-chart-panel (chart containers). */
+  --d1-elev-read-quiet-rest: var(--d1-elev-atom-read-quiet-top),
+    var(--d1-elev-atom-read-quiet-baseline);
+
+  /* Rail-headed variants (ADR-5) — top-highlight dropped, baseline-only.
+   * Lime tick of Record Rail wins as the loudest hairline at top edge.
+   * Applied via :has(.d1-rail) structural selector (see component rules). */
+  --d1-elev-read-pronounced-rest--rail-headed: var(--d1-elev-atom-read-pronounced-baseline);
+  --d1-elev-read-standard-rest--rail-headed: var(--d1-elev-atom-read-standard-baseline);
+  --d1-elev-read-quiet-rest--rail-headed: var(--d1-elev-atom-read-quiet-baseline);
+
+  /* ── Tier 2 RECIPES — Write ─────────────────────────────────────────
+   * Engrave-down. Top inner shadow is the dominant signal. */
+  --d1-elev-write-rest: var(--d1-elev-atom-write-top), var(--d1-elev-atom-write-bottom);
+
+  --d1-elev-write-focus: var(--d1-elev-atom-write-top-focus), var(--d1-elev-atom-write-bottom);
+
+  --d1-elev-write-error: var(--d1-elev-atom-write-top), var(--d1-elev-atom-write-bottom-error);
+
+  /* ── Tier 3 RECIPES — Press ─────────────────────────────────────────
+   * Coin vocabulary, full state arc. Active steals Write top-shadow. */
+  --d1-elev-press-rest: var(--d1-elev-atom-press-top), var(--d1-elev-atom-press-bottom),
+    var(--d1-elev-atom-press-baseline);
+
+  --d1-elev-press-hover: var(--d1-elev-atom-press-top-hover), var(--d1-elev-atom-press-bottom-hover),
+    var(--d1-elev-atom-press-baseline-hover), var(--d1-elev-atom-press-soft-hover);
+
+  --d1-elev-press-active: var(--d1-elev-atom-press-active-top),
+    var(--d1-elev-atom-press-active-bottom);
+
+  /* ── Tier 4 RECIPE — Float (post-alpha) ─────────────────────────── */
+  --d1-elev-float-rest: var(--d1-elev-atom-float-edge), var(--d1-elev-atom-float-lift);
+
+  /* ── Motion tokens ───────────────────────────────────────────────────
+   * Read tier does NOT animate (no hover, no transition).
+   * Press hover 200ms expo-out; press active 80ms expo-in (sub-perceptual). */
+  --d1-elev-duration-press-hover: 200ms;
+  --d1-elev-duration-press-active: 80ms;
+  --d1-elev-duration-press-release: 220ms;
+  --d1-elev-easing-out: cubic-bezier(0.16, 1, 0.3, 1); /* expo-out, hover entrance */
+  --d1-elev-easing-in: cubic-bezier(0.7, 0, 0.84, 0); /* expo-in, press exit */
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * Reduced-motion (per PD §7.7) — collapse transitions; box-shadow state
+ * changes still happen, just instantly. Vestibular users keep the depth
+ * vocabulary without the motion.
+ * ══════════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="d1"] [class*="d1-"],
+  [data-theme="lime-cabin"] [class*="d1-"] {
+    transition-duration: 0ms !important;
+    animation-duration: 0ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════
+ * High-contrast — re-bind atom magnitudes per PD §7.7. A11y users with
+ * `prefers-contrast: more` get firmer baselines + brighter top-lights.
+ * ══════════════════════════════════════════════════════════════════════ */
+@media (prefers-contrast: more) {
+  [data-style="d1"],
+  [data-theme="lime-cabin"] {
+    --d1-elev-atom-read-pronounced-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.62);
+    --d1-elev-atom-read-standard-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.55);
+    --d1-elev-atom-read-quiet-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.48);
+    --d1-elev-atom-read-pronounced-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.13);
+    --d1-elev-atom-read-standard-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+    --d1-elev-atom-read-quiet-top: inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    --d1-elev-atom-press-baseline: 0 1px 0 0 rgba(0, 0, 0, 0.55);
+  }
+}

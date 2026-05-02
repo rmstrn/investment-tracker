@@ -1,33 +1,25 @@
 'use client';
 
 /**
- * StackedBarVisx — visx-powered candy-themed stacked bar chart.
+ * StackedBarVisx — visx-powered stacked bar chart (D1 dialect).
  *
- * Phase C of the visx-candy migration. Sibling to `BarVisx`. Each x-position
- * is a vertical pile of category segments. The stack reads as ONE chunky
- * paper-press object, not a tower of independent tiles — so the hard
- * ink-shadow drop is painted ONCE per whole-stack outline and 1px ink
- * hairlines separate segments inside.
+ * v5.1 cleanup: candy ink-shadow drop on whole-stack outline removed,
+ * hover-lift on data stacks removed (hover-NO-OP on display per PO),
+ * candy tooltip box-shadow removed. Each x-position is a vertical pile
+ * of category segments separated by 1px hairlines.
  *
  * Library boundary:
  *   - `scaleBand` / `scaleLinear` from `@visx/scale`
  *   - `<Group>` from `@visx/group` for translation
- *   - Stacking math is done locally (cumulative running offset) because we
- *     need fine-grained control over per-segment paths to apply top-only
- *     corner rounding to the highest segment and square corners elsewhere.
- *     `BarStack` from `@visx/shape` would render uniform-corner rects.
+ *   - Stacking math is done locally (cumulative running offset).
  *
- * Visual signature (CHARTS_VISX_CANDY_SPEC §9 «Stacked Bar»):
- *   - One ink-shadow drop per whole stack.
+ * Visual signature:
  *   - 1px ink hairline between segments at 0.45 alpha.
  *   - Top segment carries 8px top-only corner radius; intermediate +
  *     bottom segments are square.
  *   - Segment fills from `--chart-series-1..5` token palette.
- *   - Whole stack lifts on hover; per-segment tooltip on hover within a
- *     stack.
- *   - Entrance: stacks rise from baseline 720ms spring-soft, staggered
- *     80ms per stack.
- *   - Reduced motion: hover lift + entrance disabled.
+ *   - Per-segment tooltip on hover.
+ *   - Entrance: stacks rise from baseline 720ms spring-soft.
  */
 
 import type { StackedBarChartPayload } from '@investment-tracker/shared-types/charts';
@@ -59,11 +51,6 @@ interface HoverTarget {
 /* Constants                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-const SHADOW_OFFSET_X = 2;
-const SHADOW_OFFSET_Y = 4;
-const HOVER_LIFT_PX = 2;
-const HOVER_TRANSITION =
-  'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
 const STACK_TOP_RADIUS = 8;
 
 /** Entrance: each stack rises full-height in 720ms, 80ms per-stack stagger. */
@@ -81,9 +68,9 @@ function easeSpringSoft(t: number): number {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
-  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
+  color: 'var(--ink, var(--text-on-candy, #1C1B26))',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -91,7 +78,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -318,10 +304,7 @@ export function StackedBarVisx({
             );
 
             const isStackHover = hover?.stackIndex === stackIndex;
-            const lift =
-              isStackHover && !prefersReducedMotion
-                ? `translate(${-HOVER_LIFT_PX}px, ${-HOVER_LIFT_PX}px)`
-                : 'translate(0, 0)';
+            // v5.1: hover-NO-OP on display data (no lift on stack).
 
             // Compute per-segment rects from bottom up. Use the *full*
             // stack scale (not animated height) for segment proportions,
@@ -372,22 +355,11 @@ export function StackedBarVisx({
                 data-segment-index={stackIndex}
                 data-active={isStackHover || undefined}
                 onMouseLeave={() => setHover(null)}
-                style={{
-                  transform: lift,
-                  transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
-                  cursor: 'pointer',
-                }}
               >
-                {/* Hard ink-shadow drop — once per whole stack. */}
-                <path
-                  d={stackOutlinePath}
-                  fill="var(--text-on-candy, #1C1B26)"
-                  fillOpacity={0.85}
-                  transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                />
                 {/* Clip segments + hairlines to the stack outline so the
                     top-only corner radius applies to the assembled stack
-                    (not to each segment rect individually). */}
+                    (not to each segment rect individually).
+                    v5.1: shadow drop removed. */}
                 <defs>
                   <clipPath id={stackClipId}>
                     <path d={stackOutlinePath} />

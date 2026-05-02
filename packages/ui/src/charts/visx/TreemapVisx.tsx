@@ -1,40 +1,23 @@
 'use client';
 
 /**
- * TreemapVisx — visx-powered candy-themed concentration treemap (POC).
+ * TreemapVisx — visx-powered concentration treemap (D1 dialect).
  *
- * Phase B of the visx-candy migration (PD spec
- * `CHARTS_VISX_CANDY_SPEC.md` §8). Sits next to `Treemap.tsx` (Recharts)
- * so PO can compare side-by-side at `/design-system#charts-visx`.
+ * v5.1 cleanup: candy edge-ink «pile of tiles» shadow path removed,
+ * hover-lift on tiles removed (hover-NO-OP on display per PO).
  *
  * Library boundary:
- *   - `treemap` + `hierarchy` from `d3-hierarchy` (already a UI dep,
- *     used elsewhere via `primitives/math/treemap.ts`). We re-use the
- *     squarify algorithm directly here in synchronous form because the
- *     visx component is itself imported by the showcase as a leaf.
- *   - No `@visx/hierarchy` — d3-hierarchy is sufficient and already
- *     installed; adding another package for the same algorithm is dead
- *     weight (Rule 6 — no extra dependencies).
+ *   - `treemap` + `hierarchy` from `d3-hierarchy` (existing UI dep).
  *
- * Visual signatures (PD §8):
+ * Visual signatures:
  *   - Tile sizes proportional to weight; tile colour indicates today's
- *     change (signal-orange ↑, accent-deep ↓, cream neutral ≤1%).
- *   - 2px hard ink shadow on the *bottom + right edges only* of each
- *     tile — creates the «paper-pressed pile of tiles» feel rather than
- *     a flat heatmap. Rendered as two stroked `<path>` elements per
- *     tile (right edge + bottom edge), NOT four-sided drop-shadow.
- *   - Largest tile carries Bagel ticker + Manrope mono-uppercase weight.
- *     Smaller tiles get progressively shorter labels.
- *   - Hover-lift `(-2,-2)` with shadow staying anchored — same pattern
- *     as `DonutVisx` / `BarVisx`.
- *   - Entrance: tiles fade-in + scale 0.96→1.0 staggered by size
- *     (largest first), 720ms total via spring-soft easing. Reduced
- *     motion → instant paint.
+ *     change (signal ↑, deep ↓, neutral ≤1%).
+ *   - 1px ink hairlines around each tile.
+ *   - Largest tile carries Bagel ticker + mono-uppercase weight.
+ *   - Entrance: tiles fade-in + scale 0.96→1.0.
  *
- * a11y: ChartFrame-equivalent `role="img"` + ChartDataTable shadow.
- * Each tile is `role="button"` with full ticker + weight + Δ in its
- * label; size is also encoded in the label so colour-blind users still
- * get the full picture.
+ * a11y: `role="img"` + ChartDataTable shadow. Each tile carries a
+ * `<title>` with ticker + weight + Δ.
  */
 
 import type { TreemapPayload } from '@investment-tracker/shared-types/charts';
@@ -74,12 +57,6 @@ interface ResolvedTile {
 /* ────────────────────────────────────────────────────────────────────── */
 /* Constants                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
-
-const SHADOW_OFFSET_PX = 2;
-const HOVER_LIFT_PX = 2;
-
-const HOVER_TRANSITION =
-  'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
 
 const ENTRANCE_DURATION_MS = 720;
 const ENTRANCE_STAGGER_MS = 40;
@@ -315,13 +292,12 @@ export function TreemapVisx({ payload, width = 360, height = 280, className }: T
           const cy = t.y + t.h / 2;
 
           const isHover = hoverKey === t.key;
-          const liftX = isHover && !prefersReducedMotion ? -HOVER_LIFT_PX : 0;
-          const liftY = isHover && !prefersReducedMotion ? -HOVER_LIFT_PX : 0;
+          // v5.1: hover-NO-OP on display (no lift on tile).
 
           const fill = colorForDelta(t.dailyChangePct);
           const ink = labelInkForDelta(t.dailyChangePct);
 
-          // Label decisions by tile size (PD §8 progressive disclosure).
+          // Label decisions by tile size (progressive disclosure).
           // Largest tile gets Bagel ticker (chunky); medium gets Manrope
           // ticker; small/tiny gets nothing (tooltip-only).
           const minLabelDim = Math.min(t.w, t.h);
@@ -329,13 +305,7 @@ export function TreemapVisx({ payload, width = 360, height = 280, className }: T
           const showTicker = !showBagel && minLabelDim >= 44;
           const showWeight = minLabelDim >= 60 && !t.isOther;
 
-          // Bottom + right edge ink — the «pile of tiles» signature.
-          // Single path: M (right-top) → V (right-bottom + offset) →
-          // H (left-bottom + offset). Two stroked lines, joined at the
-          // corner so the ink reads continuous (PD §8).
-          const edgePath = `M ${t.x + t.w} ${t.y} L ${t.x + t.w + SHADOW_OFFSET_PX} ${t.y + SHADOW_OFFSET_PX} L ${t.x + t.w + SHADOW_OFFSET_PX} ${t.y + t.h + SHADOW_OFFSET_PX} L ${t.x + SHADOW_OFFSET_PX} ${t.y + t.h + SHADOW_OFFSET_PX} L ${t.x} ${t.y + t.h}`;
-
-          const transform = `translate(${liftX} ${liftY}) translate(${cx} ${cy}) scale(${scale}) translate(${-cx} ${-cy})`;
+          const transform = `translate(${cx} ${cy}) scale(${scale}) translate(${-cx} ${-cy})`;
 
           const deltaLabel =
             typeof t.dailyChangePct === 'number'
@@ -353,14 +323,11 @@ export function TreemapVisx({ payload, width = 360, height = 280, className }: T
                 transform,
                 transformBox: 'view-box',
                 transformOrigin: '0 0',
-                transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
                 opacity,
                 cursor: 'pointer',
               }}
             >
-              {/* Bottom + right edge ink — paper-pressed pile signature */}
-              <path d={edgePath} fill="var(--text-on-candy, #1C1B26)" fillOpacity={0.85} />
-              {/* Tile fill */}
+              {/* Tile fill (v5.1: edge-ink shadow path removed) */}
               <rect
                 x={t.x}
                 y={t.y}

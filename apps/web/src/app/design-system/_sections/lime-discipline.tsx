@@ -90,7 +90,7 @@ function LimeTable({ rows }: { rows: ReadonlyArray<LimeRow> }) {
         {rows.map((r) => (
           <tr key={r.surface}>
             <td>
-              <span className="ds-token-chip" style={{ background: '#D6F26B' }} />
+              <span className="ds-token-chip" style={{ background: '#DAFF7D' }} />
               {r.surface}
             </td>
             <td className="mono">{r.opacity}</td>

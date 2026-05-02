@@ -10,6 +10,10 @@ import { Providers } from './providers';
 import './globals.css';
 
 export const metadata: Metadata = {
+  // Canonical production origin. Per-page metadata.alternates.canonical
+  // resolves against this base, and Open Graph image URLs default to it.
+  // Vercel domain config is managed in the dashboard separately.
+  metadataBase: new URL('https://provedo.app'),
   title: brand.productName,
   description: brand.tagline,
 };

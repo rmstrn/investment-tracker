@@ -1,12 +1,12 @@
 'use client';
 
 /**
- * SparklineVisx — visx-powered candy-themed micro-line (POC).
+ * SparklineVisx — visx-powered micro-line (D1 dialect).
  *
- * Inline-sized small-multiple sibling to `LineVisx`. No axes, no
- * gridlines, no hover tooltip — just a 2px ink-shadow stroke + end-dot
- * + chunky Bagel end-numeral. Designed to live inline next to KPI text
- * in dashboards (`<Sparkline />`-replacement candidate during Phase B).
+ * v5.1 cleanup: candy-era ink-shadow drop (translated path + opaque fill
+ * end-dot stack) removed. D1 register is single coloured stroke + end-dot.
+ * No axes, no gridlines, no hover tooltip. Designed to live inline next
+ * to KPI text in dashboards.
  *
  * Library boundary:
  *   - `scaleTime` / `scaleLinear` from `@visx/scale`
@@ -16,9 +16,8 @@
  * Entrance: stroke-dashoffset draw-in over 800ms, deliberate easing.
  * Reduced motion locks at full draw.
  *
- * a11y: still wrapped in `ChartFrame`-style aria-label + ChartDataTable
- * shadow. Visual is decorative; the table is the source of truth for
- * screen readers.
+ * a11y: ChartFrame-style aria-label + ChartDataTable shadow. Visual is
+ * decorative; table is source of truth for screen readers.
  */
 
 import type { SparklinePayload } from '@investment-tracker/shared-types/charts';
@@ -54,8 +53,6 @@ interface ResolvedPoint {
 /* ────────────────────────────────────────────────────────────────────── */
 
 const STROKE_WIDTH = 2;
-const SHADOW_OFFSET_X = 1.5;
-const SHADOW_OFFSET_Y = 2;
 const ENTRANCE_DURATION_MS = 800;
 const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
@@ -209,23 +206,7 @@ export function SparklineVisx({
         style={{ overflow: 'visible', maxWidth: '100%', height: 'auto' }}
       >
         <Group top={margin.top} left={margin.left}>
-          {/* Hard ink-shadow drop */}
-          {pathD ? (
-            <path
-              d={pathD}
-              stroke="var(--text-on-candy, #1C1B26)"
-              strokeOpacity={0.6}
-              strokeWidth={STROKE_WIDTH}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-            />
-          ) : null}
-
-          {/* Coloured stroke */}
+          {/* Coloured stroke (v5.1: shadow path removed) */}
           {pathD ? (
             <path
               ref={pathRef}
@@ -240,16 +221,11 @@ export function SparklineVisx({
             />
           ) : null}
 
-          {/* End-dot + numeral (after the stroke completes) */}
+          {/* End-dot + numeral (after the stroke completes).
+           * v5.1: shadow circle removed. End-dot is a flat coloured fill
+           * with a 1.25px ink ring against the canvas. */}
           {lastPoint && drawProgress >= 1 ? (
             <g>
-              <circle
-                cx={(xScale(lastPoint.x) ?? 0) + SHADOW_OFFSET_X}
-                cy={(yScale(lastPoint.y) ?? 0) + SHADOW_OFFSET_Y}
-                r={3.5}
-                fill="var(--text-on-candy, #1C1B26)"
-                fillOpacity={0.85}
-              />
               <circle
                 cx={xScale(lastPoint.x) ?? 0}
                 cy={yScale(lastPoint.y) ?? 0}

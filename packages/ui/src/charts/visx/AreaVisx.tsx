@@ -1,12 +1,11 @@
 'use client';
 
 /**
- * AreaVisx — visx-powered candy-themed area chart (POC).
+ * AreaVisx — visx-powered area chart (D1 dialect).
  *
- * Sibling to `LineVisx`. Adds a filled gradient region beneath the same
- * monotonic-cubic stroke + ink-shadow drop signature. The gradient runs
- * from `--cta-fill` at 0.30 alpha at the top → transparent at the
- * baseline (matches CHARTS_SPEC §5.3 area treatment).
+ * v5.1 cleanup: candy ink-shadow drop on the stroke removed. D1 register
+ * is gradient fill + flat coloured stroke. Tooltip dropped its candy
+ * box-shadow.
  *
  * Library boundary:
  *   - `scaleTime` / `scaleLinear` from `@visx/scale`
@@ -14,9 +13,7 @@
  *   - `area()` + `line()` from `d3-shape` with `curveMonotoneX`
  *
  * Entrance: `clip-path: inset(0 0 100% 0)` → `inset(0 0 0% 0)` from
- * bottom over 1100ms, deliberate easing. The fill + stroke + shadow all
- * share the same clip so the reveal reads as «paper-tape unrolling
- * upward». Reduced motion locks at full.
+ * bottom over 1100ms. Reduced motion locks at full.
  */
 
 import type { AreaChartPayload } from '@investment-tracker/shared-types/charts';
@@ -59,8 +56,6 @@ interface ResolvedPoint {
 /* ────────────────────────────────────────────────────────────────────── */
 
 const STROKE_WIDTH = 2.5;
-const SHADOW_OFFSET_X = 2;
-const SHADOW_OFFSET_Y = 3;
 const ENTRANCE_DURATION_MS = 1100;
 const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
@@ -77,9 +72,9 @@ const AXIS_LABEL_STYLE: CSSProperties = {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
-  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
+  color: 'var(--ink, var(--text-on-candy, #1C1B26))',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -87,7 +82,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -364,21 +358,7 @@ export function AreaVisx({ payload, width = 360, height = 200, className }: Area
               </>
             ) : null}
 
-            {/* Hard ink-shadow drop on stroke */}
-            {linePathD ? (
-              <path
-                d={linePathD}
-                stroke="var(--text-on-candy, #1C1B26)"
-                strokeOpacity={0.55}
-                strokeWidth={STROKE_WIDTH}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-                transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-              />
-            ) : null}
-
-            {/* Coloured stroke */}
+            {/* Coloured stroke (v5.1: shadow path removed) */}
             {linePathD ? (
               <path
                 d={linePathD}
