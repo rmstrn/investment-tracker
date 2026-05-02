@@ -1,99 +1,132 @@
-import { Button, Card, CardDescription, CardTitle } from '@investment-tracker/ui';
 import type { Metadata } from 'next';
-import Link from 'next/link';
-import { RedirectIfAuthed } from './_components/RedirectIfAuthed';
+import { LandingShell } from './_components/LandingShell';
+import { FAQ_ITEMS } from './_lib/landing-copy';
+import { AISampleRow } from './_sections/AISampleRow';
+import { DisclaimerStrip } from './_sections/DisclaimerStrip';
+import { FAQ } from './_sections/FAQ';
+import { ForWhom } from './_sections/ForWhom';
+import { Hero } from './_sections/Hero';
+import { LivePreview } from './_sections/LivePreview';
+import { PreAlphaTruth } from './_sections/PreAlphaTruth';
+import { PricingTeaser } from './_sections/PricingTeaser';
+import { RealityStrip } from './_sections/RealityStrip';
+import { ThreeModes } from './_sections/ThreeModes';
+import { TrustLedger } from './_sections/TrustLedger';
+import './_lib/landing.css';
+import {
+  buildBreadcrumbListSchema,
+  buildFAQPageSchema,
+  buildOrganizationSchema,
+  buildSoftwareApplicationSchema,
+  buildWebSiteSchema,
+} from '../../lib/seo/json-ld';
+
+/**
+ * Provedo landing v1 — `/`.
+ *
+ * Per synthesis-lock (D1_LANDING_SYNTHESIS_LOCK.md), this is a single
+ * page with 11 sections rendered from a locked design system (D1 lime-
+ * cabin v3+v4+v5+v5.1-v5.8). All section copy is sourced from
+ * `_lib/landing-copy.ts` (single source of truth across visible UI +
+ * FAQPage JSON-LD).
+ *
+ * Architecture:
+ *   - Server component, NO `await auth()` (architect ADR-3).
+ *   - `force-static` enforces compile-time guarantee that this route
+ *     stays statically prerendered (eligible for Vercel edge cache).
+ *   - Auth state is consumed only inside <HeroCTA /> (client island,
+ *     ~3kb gz Clerk SDK additional cost).
+ *   - 5 schema.org JSON-LD scripts injected at the end of the body.
+ *
+ * Section order (synthesis-lock §1):
+ *   1. Sticky shell (existing MarketingHeader from layout)
+ *   2. Hero (asymmetric 8/12 + 4/12)
+ *   3. Reality strip (anti-positioning)
+ *   4. Live preview (D1 dashboard embed)
+ *   5. Three modes (do/refuse pairs)
+ *   6. AI sample row (3 chat exchanges)
+ *   7. Trust ledger (structural trust signals)
+ *   8. For whom (ICP A + ICP B)
+ *   9. Pricing teaser
+ *   10. FAQ (10 Q+A — drives FAQPage schema)
+ *   11. Pre-alpha truth + closing CTA
+ *   12. Lane-A disclaimer strip
+ *   (footer chrome from existing MarketingFooter in layout)
+ */
 
 export const metadata: Metadata = {
-  title: 'Provedo — AI-native portfolio tracker',
+  title: 'Provedo — Track investments across every brokerage',
   description:
-    'AI-native portfolio tracker. Instead of charts and spreadsheets, have a conversation with your investments.',
+    'Read-only multi-broker portfolio aggregator with chat-first AI insights. Observations, not instructions. Pre-alpha — free.',
   alternates: { canonical: '/' },
+  openGraph: {
+    title: 'Provedo — Track investments across every brokerage',
+    description:
+      'Read-only multi-broker portfolio aggregator with chat-first AI insights. Observations, not instructions.',
+    type: 'website',
+    url: '/',
+  },
 };
 
-// Static generation — the landing renders identical HTML for every
-// visitor; authed users get a client-side redirect via <RedirectIfAuthed/>.
-// Trades a brief flash for sub-100ms FCP + SEO on the dominant anonymous
-// audience.
+/**
+ * Static generation invariant — landing must be statically prerendered.
+ * Removing this directive allows server-side data fetches to silently
+ * convert the route to dynamic. Per architect ADR-3, that is a
+ * regression for LCP and CDN cacheability.
+ */
 export const dynamic = 'force-static';
 
 export default function LandingPage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
-      <RedirectIfAuthed />
-      <div className="space-y-20 md:space-y-28">
-        <Hero />
-        <ThreePillars />
-        <TrustStrip />
-      </div>
-    </div>
-  );
-}
+  const organizationSchema = buildOrganizationSchema();
+  const websiteSchema = buildWebSiteSchema();
+  const softwareApplicationSchema = buildSoftwareApplicationSchema();
+  const breadcrumbSchema = buildBreadcrumbListSchema([{ name: 'Home', path: '/' }]);
+  const faqSchema = buildFAQPageSchema(FAQ_ITEMS);
 
-function Hero() {
   return (
-    <section className="flex flex-col items-center text-center">
-      <h1 className="max-w-3xl text-3xl font-semibold tracking-tight text-text-primary md:text-5xl md:leading-tight">
-        What you actually own. Why it moved. What to do next.
-      </h1>
-      <p className="mt-6 max-w-2xl text-base text-text-secondary md:text-lg">
-        AI-native portfolio tracker. Instead of charts and spreadsheets, have a conversation with
-        your investments.
-      </p>
-      <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row">
-        <Link href="/sign-up">
-          <Button size="lg">Get started — free</Button>
-        </Link>
-        <Link
-          href="/pricing"
-          className="text-sm font-medium text-text-secondary hover:text-text-primary"
-        >
-          See pricing →
-        </Link>
-      </div>
-    </section>
-  );
-}
+    <LandingShell>
+      <Hero />
+      <RealityStrip />
+      <LivePreview />
+      <ThreeModes />
+      <AISampleRow />
+      <TrustLedger />
+      <ForWhom />
+      <PricingTeaser />
+      <FAQ />
+      <PreAlphaTruth />
+      <DisclaimerStrip />
 
-const PILLARS: ReadonlyArray<{ title: string; body: string }> = [
-  {
-    title: 'Connect any broker',
-    body: 'Link your brokerage and crypto exchange accounts in read-only mode. One view across currencies, asset classes, and providers.',
-  },
-  {
-    title: 'AI-explained moves',
-    body: 'Ask why your portfolio moved, what changed this week, or what-if scenarios — in plain language, with the data behind the answer.',
-  },
-  {
-    title: 'Honest insights, no churn',
-    body: 'Proactive notices when something matters. No gamification, no fake urgency, no hidden upsells — just signal.',
-  },
-];
-
-function ThreePillars() {
-  return (
-    <section aria-labelledby="pillars-heading">
-      <h2 id="pillars-heading" className="sr-only">
-        Product pillars
-      </h2>
-      <div className="grid gap-6 md:grid-cols-3">
-        {PILLARS.map((p) => (
-          <Card key={p.title} variant="default" className="h-full">
-            <CardTitle className="text-xl">{p.title}</CardTitle>
-            <CardDescription className="mt-2">{p.body}</CardDescription>
-          </Card>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function TrustStrip() {
-  return (
-    <section className="rounded-lg border border-border-subtle bg-background-secondary px-6 py-8 text-center">
-      <p className="text-sm text-text-secondary md:text-base">
-        <span className="font-medium text-text-primary">Read-only by design.</span> We never place
-        trades or move funds — our access is physically limited to reading your positions.
-      </p>
-    </section>
+      {/* JSON-LD structured data — injected as static script tags so
+       * search bots see them on first crawl without JS execution.
+       * Per architect ADR-5: dangerouslySetInnerHTML is required because
+       * Next.js's metadata API does not support JSON-LD natively at v15. */}
+      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON */}
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareApplicationSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: server-side static JSON
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+    </LandingShell>
   );
 }
