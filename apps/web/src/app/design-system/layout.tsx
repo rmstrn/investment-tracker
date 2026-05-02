@@ -1,7 +1,15 @@
 import { ToastProvider } from '@investment-tracker/ui';
+import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import { geistD1, geistMonoD1 } from './_fonts';
 import './_styles/lime-cabin.css';
+
+export const metadata: Metadata = {
+  title: 'Design system · Provedo',
+  description: 'Internal primitives showcase for the Provedo design system.',
+  // Internal showcase route — not for SEO indexing.
+  robots: { index: false, follow: false },
+};
 
 /**
  * `/design-system` layout — wraps the route in `data-theme="lime-cabin"`
