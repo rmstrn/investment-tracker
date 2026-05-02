@@ -755,15 +755,17 @@
   min-height: 320px;
   box-shadow: var(--d1-elev-read-quiet-rest);
   /* CSS-var override scope so the embedded BarVisx (its own candy-themed
-   * defaults) borrows D1's lime-mono palette. v5: purple removed —
-   * default-voltage chart bar is lime-mute (low-saturation lime); per-
-   * chart overrides re-bind to data-positive / data-negative / lime-signal
-   * for «look here» moments. */
+   * defaults) borrows D1's lime-mono palette. v5.2 PO 2026-05-02:
+   * pos/neg bar fills use the data-* `-soft` variants for green-up /
+   * red-down legibility on dark canvas WITHOUT the lime-mute «poisonous
+   * yellow» reading. Per-chart overrides re-bind to lime-signal for
+   * «look here» moments (waterfall, treemap, area) — those modifiers
+   * supersede the base. */
   --text-on-candy: var(--d1-text-primary);
-  --cta-fill: var(--d1-accent-lime-mute);
-  --accent: var(--d1-accent-lime-mute);
-  --accent-deep: var(--d1-accent-lime-mute);
-  --cta-shadow: var(--d1-accent-lime-mute);
+  --cta-fill: var(--d1-data-positive-soft);
+  --accent: var(--d1-data-positive-soft);
+  --accent-deep: var(--d1-data-negative-soft);
+  --cta-shadow: var(--d1-data-negative-soft);
   --card: var(--d1-bg-card-elevated);
   --card-highlight: rgba(255, 255, 255, 0.04);
   --bg-cream: var(--d1-bg-card-soft);

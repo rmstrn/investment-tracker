@@ -1336,14 +1336,18 @@
   border: 0;
   box-shadow: var(--d1-elev-read-quiet-rest);
 
-  /* Candy → D1 token remap (chart-internal vars only). v5: purple removed —
-   * default-voltage chart bar is lime-mute; per-chart overrides re-bind to
-   * data-positive / data-negative / lime-signal for «look here» moments. */
+  /* Candy → D1 token remap (chart-internal vars only). v5.2 PO 2026-05-02:
+   * pos/neg bar fills use the data-* `-soft` variants for green-up /
+   * red-down legibility on dark canvas WITHOUT the lime-mute «poisonous
+   * yellow» reading. Per-chart modifiers (.d1-chart-panel--{spark,line,
+   * area,donut,calendar,stacked-bar,treemap,waterfall}) override these
+   * for dialect-specific bindings (lime-signal for «look here» moments,
+   * lime gradient for area cumulative trend, etc.). */
   --text-on-candy: var(--d1-text-primary);
-  --cta-fill: var(--d1-accent-lime-mute);
-  --accent: var(--d1-accent-lime-mute);
-  --accent-deep: var(--d1-accent-lime-mute);
-  --cta-shadow: var(--d1-accent-lime-mute);
+  --cta-fill: var(--d1-data-positive-soft);
+  --accent: var(--d1-data-positive-soft);
+  --accent-deep: var(--d1-data-negative-soft);
+  --cta-shadow: var(--d1-data-negative-soft);
   --card: var(--d1-bg-card-elevated);
   --card-highlight: rgba(255, 255, 255, 0.04);
   --bg-cream: var(--d1-bg-card-soft);
@@ -1935,15 +1939,19 @@
  *      tradeoff documented in CalendarVisx + StackedBarVisx wrappers.
  */
 [data-theme="lime-cabin"] .d1-chart-panel--treemap {
-  /* Positive tiles → lime saturation (overrides base wrapper purple). */
-  --cta-fill: var(--d1-accent-lime);
-  --accent: var(--d1-accent-lime);
+  /* v5.2 PO 2026-05-02: positive tiles → data-positive-soft (green) for
+   * the «green-up» reading PO asked for. Was lime — read as «yellow-on-
+   * dark». Negatives inherit base `-accent-deep` → data-negative-soft
+   * (red). Both fills sit at the soft-chroma level to avoid «poisonous»
+   * saturation on cards. */
+  --cta-fill: var(--d1-data-positive-soft);
+  --accent: var(--d1-data-positive-soft);
   /* Neutral tiles → bg-card (overrides base wrapper bg-card-soft for a
    * crisper neutral that sits one elevation below the panel surface). */
   --bg-cream: var(--d1-bg-card);
-  /* Tile-label ink → dark for AAA on lime / AA-large on purple
-   * (overrides base wrapper white). Negative tile labels stay
-   * acceptably legible; neutral tile labels fade per accepted gap. */
+  /* Tile-label ink → dark for AAA on data-positive-soft / data-negative-
+   * soft (both have L 78-82, AAA with --d1-text-ink #0E0F11). Neutral
+   * tile labels fade per accepted gap on the bg-card surface. */
   --text-on-candy: var(--d1-text-ink);
 }
 
@@ -2052,11 +2060,13 @@
  *      components are off-limits).
  */
 [data-theme="lime-cabin"] .d1-chart-panel--waterfall {
-  /* Positive contributors → lime saturation (overrides base wrapper purple).
-   * Negative contributors keep base wrapper's `--accent-deep` → purple.
-   * Anchors keep base wrapper's `--text-on-candy` → white. */
-  --cta-fill: var(--d1-accent-lime);
-  --accent: var(--d1-accent-lime);
+  /* v5.2 PO 2026-05-02: positive contributors → data-positive-soft
+   * (green) for «green-up» reading. Was lime — read as «yellow-on-
+   * dark». Negatives inherit base `--accent-deep` → data-negative-soft
+   * (red). Anchors keep base wrapper's `--text-on-candy` → white as the
+   * absolute-value reference moments. */
+  --cta-fill: var(--d1-data-positive-soft);
+  --accent: var(--d1-data-positive-soft);
 }
 
 /* Suppress the candy hard ink-shadow drop on every bar — KICKOFF §4.1
