@@ -1,36 +1,21 @@
 'use client';
 
 /**
- * LineVisx — visx-powered candy-themed line chart (POC).
+ * LineVisx — visx-powered line chart (D1 dialect).
  *
- * Sibling to `DonutVisx` + `BarVisx`. Renders a single time-series line
- * with the locked candy-chart language: hard ink-shadow drop under the
- * stroke, chunky Bagel end-numeral hovering near the last data point,
- * Manrope mono-uppercase axis ticks, hover-driven vertical guide-line
- * with a focus-circle and ink-on-cream tooltip.
+ * v5.1 cleanup: candy ink-shadow drop (translated path) + end-point shadow
+ * circle removed per PO directive «много артефактов». D1 register is a
+ * single coloured stroke + flat end-dot. Tooltip dropped its candy
+ * box-shadow.
  *
  * Library boundary:
  *   - `scaleTime` / `scaleLinear` from `@visx/scale`
  *   - `<Group>` from `@visx/group` for translation
- *   - Path geometry via `d3-shape`'s `line()` with `curveMonotoneX`
- *     (matches the `LINE_FIXTURE`'s `interpolation: 'monotone'` hint).
- *     `@visx/curve` is *not* installed at the workspace level — the
- *     d3-shape direct path keeps the dependency surface thin and the
- *     output identical because visx wraps the same primitive.
+ *   - Path geometry via `d3-shape`'s `line()` with `curveMonotoneX`.
  *
- * Hard ink-shadow signature (matches Donut/Bar):
- *   1. shadow path translated `(2px, 3px)`, `--text-on-candy` 0.55 alpha
- *   2. coloured stroke on top — 2.5px signal-orange, round caps + joins
- *
- * Entrance: stroke-dashoffset draw-in over 1100ms, deliberate easing
- * (`var(--motion-duration-deliberate)` 720ms is too quick for a long
- * trace; the spec calls 1100ms explicitly). Reduced-motion locks at full.
- *
- * Hover: pointer x → nearest-x bisector → guide-line + focus-circle on
- * the line + ink-on-cream tooltip with date + value.
- *
- * Reduced motion: no draw-in, no guide-line transition, no tooltip
- * animation. The end-numeral renders statically.
+ * Entrance: stroke-dashoffset draw-in over 1100ms; reduced-motion locks
+ * at full. Hover: pointer x → nearest-x bisector → guide-line +
+ * focus-circle + tooltip (date + value).
  */
 
 import type { LineChartPayload } from '@investment-tracker/shared-types/charts';
@@ -73,8 +58,6 @@ interface ResolvedPoint {
 /* ────────────────────────────────────────────────────────────────────── */
 
 const STROKE_WIDTH = 2.5;
-const SHADOW_OFFSET_X = 2;
-const SHADOW_OFFSET_Y = 3;
 const ENTRANCE_DURATION_MS = 1100;
 const easeOutCubic = (t: number): number => 1 - (1 - t) ** 3;
 
@@ -109,9 +92,9 @@ const END_DELTA_STYLE: CSSProperties = {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
-  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
+  color: 'var(--ink, var(--text-on-candy, #1C1B26))',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -119,7 +102,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -398,23 +380,7 @@ export function LineVisx({ payload, width = 360, height = 200, className }: Line
             </>
           ) : null}
 
-          {/* Hard ink-shadow drop */}
-          {pathD ? (
-            <path
-              d={pathD}
-              stroke="var(--text-on-candy, #1C1B26)"
-              strokeOpacity={0.55}
-              strokeWidth={STROKE_WIDTH}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
-              transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-              strokeDasharray={strokeDasharray}
-              strokeDashoffset={strokeDashoffset}
-            />
-          ) : null}
-
-          {/* Coloured stroke */}
+          {/* Coloured stroke (v5.1: shadow path removed) */}
           {pathD ? (
             <path
               ref={pathRef}
@@ -429,16 +395,10 @@ export function LineVisx({ payload, width = 360, height = 200, className }: Line
             />
           ) : null}
 
-          {/* End-point — hard ink-shadow circle + chunky numeral. */}
+          {/* End-point — flat coloured circle + chunky numeral
+           * (v5.1: shadow circle removed). */}
           {lastPoint && drawProgress >= 1 ? (
             <g>
-              <circle
-                cx={xScale(lastPoint.x) + SHADOW_OFFSET_X}
-                cy={yScale(lastPoint.y) + SHADOW_OFFSET_Y}
-                r={5}
-                fill="var(--text-on-candy, #1C1B26)"
-                fillOpacity={0.85}
-              />
               <circle
                 cx={xScale(lastPoint.x)}
                 cy={yScale(lastPoint.y)}

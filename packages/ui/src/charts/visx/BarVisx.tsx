@@ -1,30 +1,24 @@
 'use client';
 
 /**
- * BarVisx — visx-powered candy-themed bar chart (POC).
+ * BarVisx — visx-powered bar chart (D1 dialect).
  *
- * Pre-migration POC. Does not replace `BarChartV2`. Lives next to the v2
- * primitives so PO can compare side-by-side at `/design-system#charts`
- * vs `/design-system#charts-visx`.
- *
- * Visual register: candy. Hard 5px ink-shadow drop on each bar (offset
- * `2px, 4px`, ink-deep at 0.85 opacity), top-only 8px corner radius via
- * a hand-rolled SVG path (visx `<Bar>` doesn't expose per-corner radii),
- * Manrope mono-uppercase axis labels, embossed-groove reference line for
- * the rebalance band.
+ * v5.1 cleanup: candy-era artifacts (hard 5px ink-shadow drop, hover-lift
+ * depth change, candy tooltip box-shadow) removed per PO directive «много
+ * артефактов от предыдущих». D1 register is flat-fill bars with hover
+ * NO-OP on data display (tooltip triggers stay; visual depth change does
+ * not). Top-only 8px corner radius via hand-rolled SVG path preserved
+ * (visx `<Bar>` doesn't expose per-corner radii).
  *
  * Library boundary:
  *   - `scaleBand` / `scaleLinear` from `@visx/scale`
  *   - `<Group>` from `@visx/group` for translation
  *   - Bars rendered as inline `<path>` because top-only corner radius is
- *     not in `@visx/shape`'s `<Bar>` API. We keep the data + scale
- *     plumbing on the visx side and only the path-d construction local.
+ *     not in `@visx/shape`'s `<Bar>` API.
  *
  * Drift fixture pattern: bars within the rebalance band get neutral
- * ink-on-candy at 0.55 alpha, out-of-band bars get the full signal-orange
- * candy treatment. Threshold = ±2pp (CHARTS_SPEC §5.4 «drift band»).
- *
- * Reduced motion: hover lift disabled.
+ * ink-on-canvas at 0.55 alpha, out-of-band bars get the full signal
+ * treatment. Threshold = ±2pp (CHARTS_SPEC §5.4 «drift band»).
  */
 
 import type { BarChartPayload } from '@investment-tracker/shared-types/charts';
@@ -61,18 +55,7 @@ export interface BarVisxProps {
 /** Drift threshold (percentage points). Matches CHARTS_SPEC §5.4. */
 const DRIFT_BAND_PP = 2;
 
-/** Hard ink shadow offset — signature paper-press feel. */
-const SHADOW_OFFSET_X = 2;
-const SHADOW_OFFSET_Y = 4;
-
-/** Hover lift translation. */
-const HOVER_LIFT_PX = 2;
-
-/** Spring-soft easing — playful overshoot per design-system §5. */
-const HOVER_TRANSITION =
-  'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
-
-/** Top-corner radius (chunky candy). */
+/** Top-corner radius. */
 const BAR_RADIUS = 8;
 
 /** Entrance — bars rise from baseline, deliberate easing (720ms). */
@@ -94,9 +77,9 @@ function easeSpringSoft(t: number): number {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
-  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
+  color: 'var(--ink, var(--text-on-candy, #1C1B26))',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -104,7 +87,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -386,16 +368,14 @@ export function BarVisx({
             );
 
             const isHover = hoverIndex === i;
-            const lift =
-              isHover && !prefersReducedMotion
-                ? `translate(${-HOVER_LIFT_PX}px, ${-HOVER_LIFT_PX}px)`
-                : 'translate(0, 0)';
 
             // Optional value label above the bar (positive bars only —
             // negative bars get their label below in the same offset
             // direction).
             const labelY = isPositive ? barTop - 6 : barTop + barH + 14;
 
+            // v5.1: hover-NO-OP on data — handlers trigger tooltip but
+            // visual depth/lift is gone. Cursor stays default.
             return (
               <g
                 key={`bar-${xValue}`}
@@ -403,20 +383,8 @@ export function BarVisx({
                 data-active={isHover || undefined}
                 onMouseEnter={() => setHoverIndex(i)}
                 onMouseLeave={() => setHoverIndex(null)}
-                style={{
-                  transform: lift,
-                  transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
-                  cursor: 'pointer',
-                }}
               >
-                {/* Hard ink-shadow drop */}
-                <path
-                  d={finalPath}
-                  fill="var(--text-on-candy, #1C1B26)"
-                  fillOpacity={isInBand ? 0.4 : 0.85}
-                  transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                />
-                {/* Coloured bar on top */}
+                {/* Coloured bar (v5.1: shadow path removed). */}
                 <path d={finalPath} fill={fill} fillOpacity={fillOpacity} />
                 {showValueLabels && progress >= 1 ? (
                   <text

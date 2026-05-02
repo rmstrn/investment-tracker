@@ -1,36 +1,24 @@
 'use client';
 
 /**
- * WaterfallVisx — visx-powered candy-themed waterfall chart.
+ * WaterfallVisx — visx-powered waterfall chart (D1 dialect).
  *
- * Phase C of the visx-candy migration. PD-flagged showcase chart: the
- * ending-balance bar is a chunky pill container with a Bagel Fat One
- * numeral painted INSIDE it. This is, per PD, «the chunkiest visual
- * moment in the product».
+ * v5.1 cleanup: candy ink-shadow drop on every bar removed, hover-lift
+ * on bars removed (hover-NO-OP on display per PO), candy tooltip
+ * box-shadow removed. Ending-balance bar still carries Bagel hero
+ * numeral painted inside.
  *
  * Library boundary:
  *   - `scaleBand` / `scaleLinear` from `@visx/scale`
  *   - `<Group>` from `@visx/group` for translation
- *   - Bars rendered as inline SVG rects/paths (not `<Bar>` from
- *     `@visx/shape`) because we need per-corner radius control + the
- *     pill-container treatment for the ending bar.
+ *   - Bars rendered as inline SVG paths.
  *
- * Visual signature (CHARTS_VISX_CANDY_SPEC §10 «Waterfall»):
- *   - Start anchor + End anchor: full-height ink-on-cream paper-press
- *     blocks. Ending block carries the Bagel hero numeral inside.
- *   - Positive contributors: signal-orange floating bars rising from the
- *     previous running total.
- *   - Negative contributors: accent-deep floating bars dropping from the
- *     previous running total.
- *   - Connector bridges: embossed-groove pattern (2 stacked 1px lines,
- *     ink-shadow then card-highlight, 1px offset) — same pattern as the
- *     V2 ReferenceLine.
- *   - Hard ink-shadow drop on every bar.
- *   - Hover each bar lifts independently with tooltip (delta + running
- *     cumulative total).
- *   - Entrance: bars draw left-to-right with spring-soft 640ms, 100ms
- *     stagger. Pill numeral fades in after the ending bar lands.
- *   - Reduced motion: hover lift + entrance disabled.
+ * Visual signature:
+ *   - Start anchor + End anchor: full-height ink-on-canvas blocks.
+ *   - Positive contributors: signal floating bars.
+ *   - Negative contributors: deep floating bars.
+ *   - Connector bridges: embossed-groove pattern.
+ *   - Entrance: bars draw left-to-right.
  */
 
 import type { WaterfallPayload, WaterfallStep } from '@investment-tracker/shared-types/charts';
@@ -74,11 +62,6 @@ interface BarLayout {
 /* Constants                                                               */
 /* ────────────────────────────────────────────────────────────────────── */
 
-const SHADOW_OFFSET_X = 2;
-const SHADOW_OFFSET_Y = 4;
-const HOVER_LIFT_PX = 2;
-const HOVER_TRANSITION =
-  'transform 220ms var(--motion-easing-spring-soft, cubic-bezier(0.34, 1.56, 0.64, 1))';
 const BAR_RADIUS = 8;
 
 /** Entrance timing (640ms per bar, 100ms stagger, +200ms overshoot for end). */
@@ -97,9 +80,9 @@ function easeSpringSoft(t: number): number {
 const TOOLTIP_STYLE: CSSProperties = {
   position: 'absolute',
   pointerEvents: 'none',
-  background: 'var(--bg-cream, var(--card, #FFF8E7))',
-  color: 'var(--text-on-candy, var(--ink, #1C1B26))',
-  border: '1.5px solid var(--text-on-candy, #1C1B26)',
+  background: 'var(--card, var(--bg-cream, #FFF8E7))',
+  color: 'var(--ink, var(--text-on-candy, #1C1B26))',
+  border: '1px solid var(--chart-tooltip-border, rgba(255,255,255,0.06))',
   borderRadius: 8,
   padding: '6px 10px',
   fontFamily: "var(--font-family-body, 'Manrope', system-ui, sans-serif)",
@@ -107,7 +90,6 @@ const TOOLTIP_STYLE: CSSProperties = {
   fontWeight: 600,
   lineHeight: 1.3,
   whiteSpace: 'nowrap',
-  boxShadow: '5px 5px 0 0 var(--text-on-candy, #1C1B26)',
   transform: 'translate(-50%, -100%)',
   zIndex: 2,
 };
@@ -409,10 +391,7 @@ export function WaterfallVisx({
                   : 'var(--accent-deep, var(--cta-shadow, #C9601E))';
 
             const isHover = hoverIndex === l.index;
-            const lift =
-              isHover && !prefersReducedMotion
-                ? `translate(${-HOVER_LIFT_PX}px, ${-HOVER_LIFT_PX}px)`
-                : 'translate(0, 0)';
+            // v5.1: hover-NO-OP on display data (no lift on bar).
 
             const path = roundedRectPath(bandX, animatedY, bandW, animatedH, BAR_RADIUS);
 
@@ -425,20 +404,8 @@ export function WaterfallVisx({
                 data-active={isHover || undefined}
                 onMouseEnter={() => setHoverIndex(l.index)}
                 onMouseLeave={() => setHoverIndex(null)}
-                style={{
-                  transform: lift,
-                  transition: prefersReducedMotion ? undefined : HOVER_TRANSITION,
-                  cursor: 'pointer',
-                }}
               >
-                {/* Hard ink-shadow drop */}
-                <path
-                  d={path}
-                  fill="var(--text-on-candy, #1C1B26)"
-                  fillOpacity={0.85}
-                  transform={`translate(${SHADOW_OFFSET_X} ${SHADOW_OFFSET_Y})`}
-                />
-                {/* Coloured bar on top */}
+                {/* Coloured bar (v5.1: shadow path removed). */}
                 <path d={path} fill={fill} />
                 {/* PD signature: ending-balance bar = pill container with
                     Bagel Fat One numeral inside. Cream-on-orange. Fades in
