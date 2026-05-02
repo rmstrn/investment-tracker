@@ -2,6 +2,13 @@
 export { Logo, type LogoProps, type LogoVariant } from './brand/Logo';
 export { ThemeToggle } from './brand/ThemeToggle';
 
+// Dividers — section transitions (marketing register)
+export {
+  PaintDrip,
+  type PaintDripProps,
+  type PaintDripVariant,
+} from './dividers/PaintDrip';
+
 // Primitives — generic
 export { AskAiButton, type AskAiButtonProps } from './primitives/AskAiButton';
 export { Avatar, type AvatarProps } from './primitives/Avatar';
@@ -127,6 +134,22 @@ export {
   type TransactionRowProps,
   type TransactionKind,
 } from './domain/TransactionRow';
+
+// Components — page-level surfaces
+export {
+  COMPACT_COPY as REGULATORY_DISCLAIMER_COMPACT_COPY,
+  FULL_DISCLAIMER_PATH as REGULATORY_DISCLAIMER_FULL_PATH,
+  RegulatoryDisclaimer,
+  type RegulatoryDisclaimerLang,
+  type RegulatoryDisclaimerProps,
+  type RegulatoryDisclaimerVariant,
+  VERBOSE_COPY as REGULATORY_DISCLAIMER_VERBOSE_COPY,
+} from './components/regulatory-disclaimer';
+
+// Mascots — candy-register hero illustrations (variant comparison)
+export { MascotMachine, type MascotMachineProps } from './mascots/MascotMachine';
+export { MascotOrb, type MascotOrbProps } from './mascots/MascotOrb';
+export { MascotConsole, type MascotConsoleProps } from './mascots/MascotConsole';
 
 // Utilities
 export { cn } from './lib/cn';

@@ -1,11 +1,10 @@
 'use client';
 
 import { Card, SegmentedControl, Skeleton } from '@investment-tracker/ui';
-import { AreaChart } from '@investment-tracker/ui/charts';
+import { type AreaChartPayload, AreaVisx } from '@investment-tracker/ui/charts';
 import { useState } from 'react';
 import { useMarketHistory } from '../../hooks/useMarketHistory';
 import type { MarketHistoryResponse, Position } from '../../lib/api/positions';
-import { formatAxisDate, formatCurrency } from '../../lib/format';
 import { type PeriodUi, mapPeriodUiToApi } from '../../lib/period';
 
 const PERIOD_OPTIONS: ReadonlyArray<{ value: PeriodUi; label: string }> = [
@@ -65,10 +64,31 @@ export function PositionPriceChartView({
   isLoading,
   isError,
 }: PositionPriceChartViewProps) {
-  const chartData = (data?.points ?? []).map((p) => ({
+  const points = (data?.points ?? []).map((p) => ({
     x: p.time,
     y: Number(p.close),
   }));
+
+  const chartPayload: AreaChartPayload | null = data
+    ? {
+        kind: 'area',
+        meta: {
+          title: `${symbol} price`,
+          subtitle: `Close prices · ${period}`,
+          alt: `${symbol} price chart for ${period}`,
+        },
+        xAxis: { format: 'date-day', label: 'Date' },
+        yAxis: { format: 'currency-compact', currency: data.currency, label: 'Close' },
+        series: [{ key: 'y', label: 'Close' }],
+        // MultiSeriesPoint uses `.catchall(z.number())` so its inferred type
+        // tightens `[k: string]: number` and rejects literal `x: string`.
+        // Runtime shape is correct; the cast is the established workaround
+        // (matching `_shared/fixtures.ts` `asMultiSeries` helper in @ui/charts).
+        data: points as unknown as AreaChartPayload['data'],
+        stacked: false,
+        interpolation: 'monotone',
+      }
+    : null;
 
   return (
     <Card variant="elevated">
@@ -93,20 +113,12 @@ export function PositionPriceChartView({
         <output aria-busy="true" aria-label="Loading price history" className="block">
           <Skeleton className="h-60 w-full" />
         </output>
-      ) : chartData.length === 0 ? (
+      ) : !chartPayload || points.length === 0 ? (
         <div className="py-8 text-center text-sm text-text-tertiary">
           No price data available for this range.
         </div>
       ) : (
-        <AreaChart
-          data={chartData}
-          height={240}
-          showXAxis
-          showYAxis
-          formatValue={(n) => formatCurrency(String(n), data.currency)}
-          formatTick={(v) => formatAxisDate(v)}
-          aria-label={`${symbol} price chart for ${period}`}
-        />
+        <AreaVisx payload={chartPayload} height={240} />
       )}
     </Card>
   );

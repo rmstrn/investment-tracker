@@ -1,0 +1,1888 @@
+/*
+ * D1 «Lime Cabin» theme — route-local mirror for `/design-system`.
+ *
+ * This file is the second-home of the post-fix-pass token block
+ * + component vocabulary that lives canonically in
+ * `apps/web/src/app/style-d1/_lib/theme.css`. It is NOT imported via
+ * the design-tokens package; it is a route-local opt-in scoped to
+ * `[data-theme="lime-cabin"]` so this rebuild can ship without
+ * touching the hand-rolled multi-format Style Dictionary build (see
+ * KICKOFF §2.2 — route-local fallback chosen).
+ *
+ * Selector contract:
+ *   - `style-d1` source uses `[data-style="d1"]`
+ *   - here every selector uses `[data-theme="lime-cabin"]` instead
+ *   - the wrapper is applied in `design-system/layout.tsx` so the
+ *     opt-in is local to this route only (NOT global on `<html>`)
+ *
+ * When design-tokens grows a third theme key (post-Phase-1) this file
+ * deletes; the `--d1-*` and `--d1-rail-*` tokens move to the
+ * `tokens/semantic/lime-cabin.json` emit.
+ *
+ * Measured contrast (verified against post-fix theme.css):
+ *   text.primary (#FAFAFA) on bg.card (#26272C)         = 15.9:1 (AAA)
+ *   text.muted   (#9C9DA3) on bg.card (#26272C)         = 5.9:1  (AA-large + AAA on body 16px+)
+ *   text.ink     (#0E0F11) on accent.lime (#D6F26B)     = 15.4:1 (AAA)
+ */
+
+[data-theme="lime-cabin"] {
+  /* ── Palette (8 roles + amber count badge) ─────────────────────────── */
+  --d1-bg-page: #141416;
+  --d1-bg-surface: #1f2024;
+  --d1-bg-card: #26272c;
+  --d1-bg-card-soft: #2c2d33;
+  --d1-accent-lime: #d6f26b;
+  --d1-accent-lime-soft: rgba(214, 242, 107, 0.35);
+  --d1-accent-purple: #7b5cff;
+  --d1-accent-purple-soft: rgba(123, 92, 255, 0.18);
+  --d1-text-primary: #fafafa;
+  --d1-text-muted: #9c9da3;
+  --d1-text-ink: #0e0f11;
+  --d1-border-hairline: rgba(255, 255, 255, 0.06);
+  --d1-border-strong: rgba(255, 255, 255, 0.12);
+  --d1-notification-amber: #f4c257;
+
+  /* ── Provedo Record Rail ───────────────────────────────────────────── */
+  --d1-rail-height: 14px;
+  --d1-rail-gap-tick: 4px;
+  --d1-rail-gap-line: 8px;
+  --d1-rail-content-gap: 12px;
+  --d1-rail-date-size: 11px;
+  --d1-rail-date-tracking: 0.04em;
+  --d1-rail-line-color: rgba(214, 242, 107, 0.3);
+  --d1-rail-tick-w: 6px;
+  --d1-rail-tick-h: 2px;
+
+  /* ── Chart-* aliases mapping to D1 tokens (Phase 2 — KICKOFF §4.2) ─── */
+  /* Indices 1-5: D1 has a 5-role native palette; 6-12 deferred (TD).   */
+  --chart-series-1: var(--d1-text-primary); /* primary series / hero line */
+  --chart-series-2: var(--d1-accent-lime); /* comparison line / highlight */
+  --chart-series-3: var(--d1-accent-purple); /* highlight bar / negative */
+  --chart-series-4: var(--d1-text-muted); /* secondary cohort / neutral */
+  --chart-series-5: var(--d1-bg-card-soft); /* tertiary / data-bar default */
+
+  --chart-grid: var(--d1-border-hairline);
+  --chart-grid-strong: var(--d1-border-strong);
+  --chart-axis-label: var(--d1-text-muted);
+  --chart-tooltip-bg: var(--d1-bg-card-soft);
+  --chart-tooltip-border: var(--d1-border-hairline);
+  --chart-tooltip-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --chart-cursor: var(--d1-text-muted);
+
+  /* ── Type stacks ───────────────────────────────────────────────────── */
+  --d1-font-sans: var(--font-d1-sans), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --d1-font-mono: var(--font-d1-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
+
+  /* ── Page surface ──────────────────────────────────────────────────── */
+  background-color: var(--d1-bg-page);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── CTA + nav primitives ──────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--d1-font-sans);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--d1-text-ink);
+  background: var(--d1-accent-lime);
+  border: 0;
+  border-radius: 9999px;
+  height: 40px;
+  padding: 0 20px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-cta:hover {
+  transform: translateY(-1px);
+}
+
+[data-theme="lime-cabin"] .d1-cta:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 3px;
+}
+
+[data-theme="lime-cabin"] .d1-cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+[data-theme="lime-cabin"] .d1-cta--ghost {
+  background: transparent;
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px var(--d1-border-strong);
+}
+
+/* ── Pill nav ──────────────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-nav__brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: var(--d1-accent-purple);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-weight: 700;
+  font-size: 15px;
+}
+
+[data-theme="lime-cabin"] .d1-disclaimer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: rgba(214, 242, 107, 0.12);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.005em;
+  white-space: nowrap;
+}
+
+[data-theme="lime-cabin"] .d1-disclaimer-chip__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  color: var(--d1-accent-lime);
+  flex-shrink: 0;
+}
+
+[data-theme="lime-cabin"] .d1-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--d1-text-muted);
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-pill:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .d1-pill:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-pill:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-theme="lime-cabin"] .d1-pill--active,
+[data-theme="lime-cabin"] .d1-pill--active:hover {
+  background: var(--d1-accent-lime);
+  color: var(--d1-text-ink);
+}
+
+[data-theme="lime-cabin"] .d1-pill__icon {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+}
+
+[data-theme="lime-cabin"] .d1-pill__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: 9999px;
+  background: var(--d1-notification-amber);
+  color: var(--d1-text-ink);
+  font-family: var(--d1-font-mono);
+  font-weight: 500;
+  font-size: 11px;
+  margin-left: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-nav__icon-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--d1-bg-card);
+  color: var(--d1-text-muted);
+  border: 0;
+  cursor: pointer;
+  transition: color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-nav__icon-pill:hover {
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .d1-nav__icon-pill:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-nav__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 9999px;
+  background: var(--d1-accent-purple);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+[data-theme="lime-cabin"] .d1-chip-premium {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  background: var(--d1-accent-purple-soft);
+  color: var(--d1-text-primary);
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+/* ── KPI cards ─────────────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-kpi {
+  position: relative;
+  background: var(--d1-bg-card);
+  border-radius: 24px;
+  padding: 20px;
+  min-height: 132px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 200ms
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="lime-cabin"] .d1-kpi__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-theme="lime-cabin"] .d1-kpi__icon-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--d1-text-muted);
+  flex-shrink: 0;
+}
+
+[data-theme="lime-cabin"] .d1-kpi__label {
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--d1-text-muted);
+  flex: 1;
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .d1-kpi__num {
+  font-family: var(--d1-font-mono);
+  font-weight: 500;
+  font-size: 32px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--d1-text-primary);
+  margin: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+[data-theme="lime-cabin"] .d1-kpi__delta {
+  font-family: var(--d1-font-mono);
+  font-weight: 400;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--d1-text-muted);
+  margin: 0;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+[data-theme="lime-cabin"] .d1-kpi--portfolio {
+  min-height: 160px;
+}
+
+[data-theme="lime-cabin"] .d1-kpi--portfolio .d1-kpi__num {
+  font-size: clamp(48px, 4vw + 32px, 56px);
+}
+
+[data-theme="lime-cabin"] .d1-kpi--lime {
+  background: var(--d1-accent-lime);
+}
+
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__label,
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__num,
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__ext {
+  color: var(--d1-text-ink);
+}
+
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__delta {
+  color: var(--d1-text-ink);
+  opacity: 0.85;
+}
+
+[data-theme="lime-cabin"] .d1-kpi--lime .d1-kpi__icon-chip {
+  background: rgba(14, 15, 17, 0.08);
+  color: var(--d1-text-ink);
+}
+
+/* Error variant — amber hairline indicator on stale data */
+[data-theme="lime-cabin"] .d1-kpi--error {
+  box-shadow: inset 0 0 0 1px var(--d1-notification-amber);
+}
+
+/* Empty variant — neutral, lime plus icon, no fill */
+[data-theme="lime-cabin"] .d1-kpi--empty .d1-kpi__icon-chip {
+  color: var(--d1-accent-lime);
+}
+
+[data-theme="lime-cabin"] .d1-kpi--empty .d1-kpi__num {
+  color: var(--d1-text-muted);
+}
+
+/* ── Filter chip ───────────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--d1-text-muted);
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.005em;
+  cursor: pointer;
+  border: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), border-color 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-chip:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .d1-chip:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+[data-theme="lime-cabin"] .d1-chip--active {
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+}
+
+[data-theme="lime-cabin"] .d1-chip--active:hover {
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.6);
+}
+
+[data-theme="lime-cabin"] .d1-chip--icon {
+  width: 36px;
+  padding: 0;
+  background: var(--d1-bg-card);
+  justify-content: center;
+}
+
+[data-theme="lime-cabin"] .d1-chip--export {
+  background: var(--d1-bg-card);
+  color: var(--d1-text-primary);
+}
+
+/* ── Segmented toggle ──────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-segmented {
+  display: inline-flex;
+  align-items: center;
+  background: var(--d1-bg-page);
+  border-radius: 9999px;
+  padding: 3px;
+  gap: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-segmented__btn {
+  font-family: var(--d1-font-sans);
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--d1-text-muted);
+  background: transparent;
+  border: 0;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .d1-segmented__btn:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+[data-theme="lime-cabin"] .d1-segmented__btn--active {
+  background: var(--d1-bg-card-soft);
+  color: var(--d1-text-primary);
+  box-shadow: inset 0 0 0 1px rgba(214, 242, 107, 0.4);
+}
+
+/* ── Heatmap ───────────────────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-heatmap {
+  display: grid;
+  grid-template-columns: auto repeat(7, 28px);
+  gap: 4px;
+  align-items: center;
+}
+
+[data-theme="lime-cabin"] .d1-heatmap__rowlabel,
+[data-theme="lime-cabin"] .d1-heatmap__collabel {
+  font-family: var(--d1-font-mono);
+  font-size: 10px;
+  color: var(--d1-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme="lime-cabin"] .d1-heatmap__rowlabel {
+  text-align: right;
+  padding-right: 6px;
+}
+
+[data-theme="lime-cabin"] .d1-heatmap__cell {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--d1-bg-page);
+  position: relative;
+}
+
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="0"] {
+  background: var(--d1-bg-page);
+}
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="1"] {
+  background: rgba(214, 242, 107, 0.15);
+}
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="2"] {
+  background: rgba(214, 242, 107, 0.4);
+}
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="3"] {
+  background: rgba(214, 242, 107, 0.7);
+}
+[data-theme="lime-cabin"] .d1-heatmap__cell[data-level="4"] {
+  background: var(--d1-accent-lime);
+}
+
+/* ── Provedo Record Rail ───────────────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-rail {
+  display: flex;
+  align-items: center;
+  gap: var(--d1-rail-gap-tick);
+  height: var(--d1-rail-height);
+  color: var(--d1-accent-lime);
+  margin-bottom: var(--d1-rail-content-gap);
+}
+
+[data-theme="lime-cabin"] .d1-rail__tick {
+  flex: 0 0 var(--d1-rail-tick-w);
+}
+
+[data-theme="lime-cabin"] .d1-rail__date {
+  font-family: var(--d1-font-mono);
+  font-weight: 500;
+  font-size: var(--d1-rail-date-size);
+  line-height: 1;
+  letter-spacing: var(--d1-rail-date-tracking);
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .d1-rail__line {
+  flex: 1;
+  height: 1px;
+  background: var(--d1-rail-line-color);
+  margin-left: var(--d1-rail-gap-line);
+}
+
+@container (max-width: 140px) {
+  [data-theme="lime-cabin"] .d1-rail__line {
+    display: none;
+  }
+}
+
+/* ── AI insights / record entries ──────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+[data-theme="lime-cabin"] .d1-insight {
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme="lime-cabin"] .d1-insight:last-child {
+  border-bottom: 0;
+}
+
+[data-theme="lime-cabin"] .d1-insight:first-child {
+  padding-top: 4px;
+}
+
+[data-theme="lime-cabin"] .d1-insight__body {
+  font-family: var(--d1-font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--d1-text-primary);
+  margin: 0;
+  text-wrap: pretty;
+}
+
+[data-theme="lime-cabin"] .d1-num {
+  font-family: var(--d1-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--d1-text-primary);
+}
+
+/* Filter affordance above the entries (kept from style-d1) */
+[data-theme="lime-cabin"] .d1-chat__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 9999px;
+  background: var(--d1-bg-page);
+  color: var(--d1-text-muted);
+  font-family: var(--d1-font-sans);
+  font-size: 13px;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+/* ── Lane-A regulatory disclosure strip ────────────────────────────── */
+[data-theme="lime-cabin"] .d1-disclosure {
+  font-family: var(--d1-font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--d1-text-muted);
+  margin: 0;
+  padding: 8px 8px 0;
+}
+
+/* ── Form primitives (D1-native) ───────────────────────────────────── */
+[data-theme="lime-cabin"] .d1-input,
+[data-theme="lime-cabin"] .d1-select,
+[data-theme="lime-cabin"] .d1-textarea {
+  width: 100%;
+  font-family: var(--d1-font-sans);
+  font-size: 14px;
+  color: var(--d1-text-primary);
+  background: var(--d1-bg-surface);
+  border: 1px solid var(--d1-border-hairline);
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: border-color 120ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
+  outline: 0;
+}
+
+[data-theme="lime-cabin"] .d1-input::placeholder,
+[data-theme="lime-cabin"] .d1-textarea::placeholder {
+  color: var(--d1-text-muted);
+}
+
+[data-theme="lime-cabin"] .d1-input:hover,
+[data-theme="lime-cabin"] .d1-select:hover,
+[data-theme="lime-cabin"] .d1-textarea:hover {
+  border-color: var(--d1-border-strong);
+}
+
+[data-theme="lime-cabin"] .d1-input:focus-visible,
+[data-theme="lime-cabin"] .d1-select:focus-visible,
+[data-theme="lime-cabin"] .d1-textarea:focus-visible {
+  border-color: var(--d1-accent-lime);
+  box-shadow: 0 0 0 3px rgba(214, 242, 107, 0.18);
+}
+
+[data-theme="lime-cabin"] .d1-input:disabled,
+[data-theme="lime-cabin"] .d1-select:disabled,
+[data-theme="lime-cabin"] .d1-textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="lime-cabin"] .d1-textarea {
+  min-height: 88px;
+  resize: vertical;
+}
+
+[data-theme="lime-cabin"] .d1-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+[data-theme="lime-cabin"] .d1-field__label {
+  font-family: var(--d1-font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .d1-field__hint {
+  font-family: var(--d1-font-sans);
+  font-size: 12px;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .d1-check,
+[data-theme="lime-cabin"] .d1-radio {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  background: var(--d1-bg-surface);
+  border: 1px solid var(--d1-border-strong);
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  flex-shrink: 0;
+  transition: background 120ms, border-color 120ms;
+}
+
+[data-theme="lime-cabin"] .d1-check {
+  border-radius: 4px;
+}
+
+[data-theme="lime-cabin"] .d1-radio {
+  border-radius: 9999px;
+}
+
+[data-theme="lime-cabin"] .d1-check:checked,
+[data-theme="lime-cabin"] .d1-radio:checked {
+  background: var(--d1-accent-lime);
+  border-color: var(--d1-accent-lime);
+}
+
+[data-theme="lime-cabin"] .d1-check:checked::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: var(--d1-text-ink);
+  clip-path: polygon(14% 44%, 0 60%, 38% 100%, 100% 24%, 86% 8%, 38% 70%);
+}
+
+[data-theme="lime-cabin"] .d1-radio:checked::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--d1-text-ink);
+}
+
+[data-theme="lime-cabin"] .d1-check:focus-visible,
+[data-theme="lime-cabin"] .d1-radio:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 3px;
+}
+
+[data-theme="lime-cabin"] .d1-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--d1-bg-surface);
+  border: 1px solid var(--d1-border-strong);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: background 160ms;
+  appearance: none;
+}
+
+[data-theme="lime-cabin"] .d1-toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 9999px;
+  background: var(--d1-text-muted);
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1), background 160ms;
+}
+
+[data-theme="lime-cabin"] .d1-toggle:checked {
+  background: var(--d1-accent-lime);
+  border-color: var(--d1-accent-lime);
+}
+
+[data-theme="lime-cabin"] .d1-toggle:checked::after {
+  transform: translateX(16px);
+  background: var(--d1-text-ink);
+}
+
+[data-theme="lime-cabin"] .d1-toggle:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 3px;
+}
+
+/* ── Showcase chrome (page-only — sticky side-nav, sections) ───────── */
+[data-theme="lime-cabin"] .ds-showcase {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 32px;
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 32px 24px 96px;
+}
+
+@media (max-width: 1024px) {
+  [data-theme="lime-cabin"] .ds-showcase {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 24px 16px 64px;
+  }
+}
+
+[data-theme="lime-cabin"] .ds-sidenav {
+  position: sticky;
+  top: 24px;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+  font-family: var(--d1-font-sans);
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__brand {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0 12px;
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__product {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--d1-text-primary);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: 9999px;
+  color: var(--d1-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  text-decoration: none;
+  transition: background 120ms cubic-bezier(0.16, 1, 0.3, 1), color 120ms
+    cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__link:focus-visible {
+  outline: 2px solid var(--d1-accent-lime);
+  outline-offset: 2px;
+}
+
+[data-theme="lime-cabin"] .ds-sidenav__index {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  color: inherit;
+  opacity: 0.7;
+  width: 18px;
+  display: inline-block;
+  text-align: right;
+}
+
+[data-theme="lime-cabin"] .ds-page-eyebrow {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0 0 8px;
+}
+
+[data-theme="lime-cabin"] .ds-page-title {
+  font-family: var(--d1-font-sans);
+  font-weight: 600;
+  font-size: clamp(36px, 4vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: var(--d1-text-primary);
+  margin: 0 0 16px;
+  max-width: 22ch;
+}
+
+[data-theme="lime-cabin"] .ds-page-lede {
+  font-family: var(--d1-font-sans);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--d1-text-muted);
+  margin: 0;
+  max-width: 60ch;
+}
+
+[data-theme="lime-cabin"] .ds-section {
+  background: var(--d1-bg-surface);
+  border-radius: 28px;
+  padding: 28px;
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scroll-margin-top: 24px;
+}
+
+@media (max-width: 768px) {
+  [data-theme="lime-cabin"] .ds-section {
+    padding: 20px;
+    border-radius: 24px;
+  }
+}
+
+[data-theme="lime-cabin"] .ds-section__title {
+  font-family: var(--d1-font-sans);
+  font-weight: 600;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--d1-text-primary);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .ds-section__lede {
+  font-family: var(--d1-font-sans);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--d1-text-muted);
+  margin: -8px 0 0;
+  max-width: 64ch;
+}
+
+[data-theme="lime-cabin"] .ds-row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+[data-theme="lime-cabin"] .ds-row__label {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .ds-callout {
+  background: var(--d1-bg-card);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme="lime-cabin"] .ds-callout__heading {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--d1-accent-lime);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .ds-callout__body {
+  font-family: var(--d1-font-sans);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--d1-text-primary);
+  margin: 0;
+}
+
+/* ── Token & swatch tables ─────────────────────────────────────────── */
+[data-theme="lime-cabin"] .ds-swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+[data-theme="lime-cabin"] .ds-swatch {
+  background: var(--d1-bg-card);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme="lime-cabin"] .ds-swatch__chip {
+  width: 100%;
+  height: 64px;
+  border-radius: 10px;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme="lime-cabin"] .ds-swatch__name {
+  font-family: var(--d1-font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--d1-text-primary);
+  margin: 0;
+}
+
+[data-theme="lime-cabin"] .ds-swatch__meta {
+  display: grid;
+  grid-template-columns: 64px 1fr;
+  gap: 4px 8px;
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  color: var(--d1-text-muted);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="lime-cabin"] .ds-swatch__meta dt {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--d1-text-muted);
+  opacity: 0.7;
+}
+
+[data-theme="lime-cabin"] .ds-swatch__meta dd {
+  margin: 0;
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .ds-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--d1-font-sans);
+  font-size: 13px;
+  color: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .ds-table thead th {
+  text-align: left;
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  border-bottom: 1px solid var(--d1-border-hairline);
+  padding: 8px 12px;
+  font-weight: 500;
+}
+
+[data-theme="lime-cabin"] .ds-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--d1-border-hairline);
+  vertical-align: middle;
+}
+
+[data-theme="lime-cabin"] .ds-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+[data-theme="lime-cabin"] .ds-table .mono {
+  font-family: var(--d1-font-mono);
+  font-size: 12px;
+  color: var(--d1-text-muted);
+}
+
+[data-theme="lime-cabin"] .ds-token-chip {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  vertical-align: middle;
+  margin-right: 8px;
+  border: 1px solid var(--d1-border-hairline);
+}
+
+/* Showcase grids */
+[data-theme="lime-cabin"] .ds-grid-2,
+[data-theme="lime-cabin"] .ds-grid-3,
+[data-theme="lime-cabin"] .ds-grid-4 {
+  display: grid;
+  gap: 16px;
+}
+
+[data-theme="lime-cabin"] .ds-grid-2 {
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+[data-theme="lime-cabin"] .ds-grid-3 {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+[data-theme="lime-cabin"] .ds-grid-4 {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+/* ── Chart panel (rail-headed) ─────────────────────────────────────────
+ *
+ * `.d1-chart-panel` is the wrapper for every chart specimen on the
+ * design-system page (Phase 2). It supplies:
+ *
+ *   1. The visual chrome (background card, radius, padding).
+ *   2. A CSS-var override scope so the embedded `*Visx` components —
+ *      which were authored against the candy register's tokens
+ *      (`--cta-fill`, `--text-on-candy`, `--bg-cream`, `--card-highlight`,
+ *      `--accent-deep`, `--cta-shadow`) — borrow D1's lime/purple palette
+ *      without editing the chart components themselves. Mirrors the
+ *      `.d1-panel` override pattern in `style-d1/_lib/theme.css` §583.
+ *   3. Font-family overrides so the candy components stop reaching for
+ *      Manrope / Bagel and use Geist Sans + Geist Mono instead. D1 has
+ *      no display serif: Mono is the universal numeric face.
+ */
+[data-theme="lime-cabin"] .d1-chart-panel {
+  background: var(--d1-bg-card);
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid var(--d1-border-hairline);
+
+  /* Candy → D1 token remap (chart-internal vars only) */
+  --text-on-candy: var(--d1-text-primary);
+  --cta-fill: var(--d1-accent-purple);
+  --accent: var(--d1-accent-purple);
+  --accent-deep: var(--d1-accent-purple);
+  --cta-shadow: var(--d1-accent-purple);
+  --card: var(--d1-bg-card);
+  --card-highlight: rgba(255, 255, 255, 0.04);
+  --bg-cream: var(--d1-bg-card-soft);
+  --ink: var(--d1-text-primary);
+  --color-text-secondary: var(--d1-text-muted);
+  --color-text-primary: var(--d1-text-primary);
+  --color-text-tertiary: var(--d1-text-muted);
+  --text-3: var(--d1-text-muted);
+  /* D1 has no display serif — Mono is the universal numeric face. */
+  --font-family-display: var(--d1-font-mono);
+  --font-family-body: var(--d1-font-sans);
+  --font-family-mono: var(--d1-font-mono);
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel__head > .d1-rail {
+  flex: 1 1 auto;
+  margin-bottom: 0;
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel__caption {
+  font-family: var(--d1-font-sans);
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+/* Hatched-bar legend swatch — paired with the inline SVG <pattern>
+ * defined in `_sections/charts.tsx` (NOT CSS background-image — Safari
+ * iOS perf trap, KICKOFF §4.1). */
+[data-theme="lime-cabin"] .d1-hatch-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--d1-border-hairline);
+}
+
+[data-theme="lime-cabin"] .d1-hatch-legend__label {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  color: var(--d1-text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+[data-theme="lime-cabin"] .d1-hatch-legend__value {
+  margin-left: auto;
+  font-family: var(--d1-font-mono);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--d1-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* ── Sparkline panel — per-trend lime/purple/muted endpoint semantics ──
+ *
+ * SparklineVisx is authored with a single `strokeVar` that drives BOTH
+ * the line stroke AND the endpoint dot fill, branching on `payload.trend`
+ * between `--cta-fill` (up/flat) and `--accent-deep`/`--cta-shadow`
+ * (down). The base `.d1-chart-panel` remaps these to purple, which is
+ * fine for bars but wrong for sparkline trend semantics (KICKOFF §4.1
+ * spec: lime up / purple down / muted flat).
+ *
+ * `.d1-chart-panel--spark-{trend}` modifiers re-remap the candy vars per
+ * trend so a single sparkline reads its trend through colour without
+ * editing SparklineVisx itself. The line + endpoint dot share colour by
+ * implementation; this is a deliberate D1 simplification of the spec
+ * («line is data, endpoint is semantic») — the trend colour IS the data
+ * treatment for a sparkline at this size, and at 200×64 the endpoint
+ * dot is tightly coupled to the line.
+ *
+ * `--text-on-candy` (white via base wrapper) drives the end-numeral fill
+ * + the 1.25px inner stroke ring around the endpoint dot — both readable
+ * on dark canvas, no override needed.
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--spark-up {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel--spark-down {
+  --accent-deep: var(--d1-accent-purple);
+  --cta-shadow: var(--d1-accent-purple);
+  --cta-fill: var(--d1-accent-purple);
+  --accent: var(--d1-accent-purple);
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel--spark-flat {
+  --cta-fill: var(--d1-text-muted);
+  --accent: var(--d1-text-muted);
+}
+
+/* Multi-spark row — three sparklines side by side, equal columns. */
+[data-theme="lime-cabin"] .d1-spark-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+[data-theme="lime-cabin"] .d1-spark-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-theme="lime-cabin"] .d1-spark-cell__label {
+  font-family: var(--d1-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--d1-text-muted);
+  margin: 0;
+}
+
+/* Sparkline panel uses a tighter min-height since the chart is small. */
+[data-theme="lime-cabin"] .d1-chart-panel__body--spark {
+  min-height: auto;
+}
+
+/* ── Line panel — default-vs-highlighted dialect states ────────────────
+ *
+ * LineVisx is authored against the candy register and points its line
+ * stroke + endpoint dot fill at `--cta-fill` (with `--accent` as the
+ * fallback). The base `.d1-chart-panel` wrapper remaps `--cta-fill` to
+ * purple, which is the right default for bar charts but wrong for line
+ * dialect semantics (KICKOFF §4.1 spec: default line = white
+ * `--d1-text-primary`, highlighted line = lime `--d1-accent-lime`,
+ * only ONE «look here» line per chart).
+ *
+ * Two narrow modifiers re-remap the candy stroke vars per state. They
+ * also drive the focus-circle on hover (same var) and the end-numeral
+ * accent dot — the line, dot, and accent share colour by implementation,
+ * which IS the D1 simplification: the line IS the data.
+ *
+ * NOTE on stroke width: LineVisx hard-codes `STROKE_WIDTH = 2.5`. The
+ * KICKOFF spec calls for 1.5px (default) / 2px (highlighted), but the
+ * component is off-limits per dispatch rules. The 2.5px reads as
+ * deliberate-emphatic on D1's dark canvas — accepted as deviation.
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--line-default {
+  --cta-fill: var(--d1-text-primary);
+  --accent: var(--d1-text-primary);
+}
+
+[data-theme="lime-cabin"] .d1-chart-panel--line-highlighted {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+/* ── Area panel — lime-saturation gradient dialect ─────────────────────
+ *
+ * AreaVisx is authored against the candy register and binds BOTH the
+ * `<linearGradient>` stops AND the line stroke to `var(--cta-fill, ...)`.
+ * The base `.d1-chart-panel` wrapper points `--cta-fill` at purple, which
+ * is the right default for highlighted bars but wrong for the area
+ * dialect (KICKOFF §4.1 spec: area fill renders as a lime-saturation
+ * gradient — `--d1-accent-lime` at 18% opacity → 0% at axis — mirroring
+ * the heatmap's lime-saturation pattern as the D1 chart vocabulary for
+ * the «cumulative trend» story).
+ *
+ * `.d1-chart-panel--area-default` re-remaps the candy stroke + accent
+ * vars onto lime so the gradient stops, the line stroke, and the hover
+ * focus dot all resolve to lime by implementation. The line, gradient,
+ * and dot share colour by design — this is the D1 simplification («the
+ * area IS the data treatment»). On the dark canvas a lime-saturation
+ * gradient reads as the «look here» surface for cumulative trends.
+ *
+ * NOTE on gradient opacity: the AreaVisx component hard-codes
+ * `stopOpacity={0.3}` at the top stop (the spec calls for 18%); since
+ * the component is off-limits per dispatch rules and the 30% lime on
+ * D1's #141416 page surface still reads as a visible-but-restrained
+ * gradient (not a flood), this is accepted as a deviation.
+ *
+ * NOTE on stroke width: AreaVisx hard-codes `STROKE_WIDTH = 2.5`. The
+ * KICKOFF spec calls for 1.5px, but the component is off-limits.
+ * Accepted deviation (matches LineVisx engineer's note).
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--area-default {
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+/* ── Donut panel — per-segment colour through fixture, plus shadow tame ──
+ *
+ * DonutVisx (KICKOFF §4.1 spec: 5 segments in lime-saturation order
+ * `bg-card-soft → text-muted → border-strong → lime@40% → lime solid`,
+ * mirroring the heatmap saturation gradient; ONE optional purple
+ * highlight; centre numeral in Geist Mono 32px).
+ *
+ * Per-segment colour resolution path (engineer's investigation):
+ *
+ *   - DonutVisx falls back to `CANDY_PALETTE = var(--chart-categorical-1..5)`
+ *     when `segment.color` is unset. The candy `--chart-categorical-*`
+ *     family is NOT aliased in this stylesheet (only `--chart-series-*`
+ *     is), so unset segments would resolve to whatever the global token
+ *     pipeline emits — not the D1 saturation order.
+ *
+ *   - The schema (`DonutChartPayload.segments[*].color`) DOES allow a
+ *     per-segment colour string. Path B (per-segment colour in the
+ *     fixture, supplying D1 vars directly) is the cleanest fit and
+ *     gives strict spec adherence to the saturation order.
+ *
+ *   - The kickoff hint about `payload.meta.highlightKey` is aspirational —
+ *     no such field exists on `DonutChartPayload`. The "purple highlight"
+ *     mode is demonstrated by overriding a single segment's `color` to
+ *     `--d1-accent-purple` directly in the showcase fixture, which is
+ *     exactly the runtime outcome the kickoff describes.
+ *
+ * The wrapper modifier below tames two things the candy-register donut
+ * still leaks under the base `.d1-chart-panel` mapping:
+ *
+ *   1. Hard ink-shadow drop. DonutVisx renders each slice path TWICE — a
+ *      shadow path translated `(2px, 2px)` filled with `--text-on-candy`
+ *      at 0.85 opacity, plus the colored slice on top. The base wrapper
+ *      points `--text-on-candy` at `--d1-text-primary` (white) which
+ *      gives a glowing white halo around every dark segment — wrong for
+ *      D1's «paper-press is candy, ink-on-card is D1» reading. We
+ *      re-remap the shadow surface onto the page colour so the 2px
+ *      sliver disappears into the canvas behind the panel — segments
+ *      read as crisp ink shapes instead of paper-press cards.
+ *
+ *   2. Legend swatch boxShadow + legend text colour both bind to
+ *      `--text-on-candy`. Re-remapping that to `--d1-bg-page` would
+ *      make legend text invisible (dark on dark). We keep legend text
+ *      readable by NOT routing it through the tamed shadow — the
+ *      DonutVisx legend uses inline `color: var(--text-on-candy, ...)`
+ *      which we leave as the base wrapper's white. The legend swatch
+ *      boxShadow does inherit the dark page colour and disappears
+ *      against the panel — acceptable, the swatch is a coloured chip
+ *      and reads on its own.
+ *
+ *   3. Centre headline + eyebrow also bind to `--text-on-candy`. The
+ *      base wrapper's white-on-dark mapping is correct here, so the
+ *      donut wrapper deliberately KEEPS that and only narrows the
+ *      shadow override via a child selector chain that the legend +
+ *      centre lockup don't traverse… except DonutVisx uses `<path fill>`
+ *      attributes, not CSS, so a child selector can't help. The least-
+ *      bad solution: lower the shadow's visibility via `--text-on-candy`
+ *      narrow override AND restore legend / centre text via a separate
+ *      property. Done by setting the centre + legend colours to
+ *      `--d1-text-primary` directly through scoped overrides on the
+ *      `[style]` attribute is not possible without editing the component;
+ *      instead we accept the tradeoff: the shadow goes dark (good) and
+ *      the legend boxShadow goes dark (good) but the legend TEXT also
+ *      goes dark (bad). Mitigation: the legend `<li>` text has `font-medium`
+ *      — we add a scoped override below the donut wrapper to force
+ *      legend text back to `--d1-text-primary` via the `ul` selector
+ *      DonutVisx uses (no class hook, but the structure is stable).
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--donut {
+  /* Tame the hard ink-shadow drop — white halo → page-coloured sliver. */
+  --text-on-candy: var(--d1-bg-page);
+  --ink: var(--d1-bg-page);
+}
+
+/* Restore legend + centre-lockup text to white — the shadow override
+ * above pulls them dark too, which kills readability. DonutVisx renders
+ * the centre lockup inside `.pointer-events-none.absolute.inset-0` and
+ * the legend as a `ul.flex.flex-wrap` sibling. We target both via
+ * structure-stable selectors so no component edit is needed. */
+[data-theme="lime-cabin"] .d1-chart-panel--donut [data-testid="chart-donut-visx"] > ul,
+[data-theme="lime-cabin"] .d1-chart-panel--donut [data-testid="chart-donut-visx"] > div > div {
+  color: var(--d1-text-primary);
+}
+
+/* Centre headline span (Geist Mono 32px tabular). Override the
+ * component's clamp() via a more-specific rule so the D1 spec's 32px
+ * Mono numeral lands consistently. Selector targets the first child
+ * span of the centre lockup div — the headline node from
+ * `DonutCenterLabel`. */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--donut
+  [data-testid="chart-donut-visx"]
+  > div
+  > div
+  > span:first-child {
+  font-family: var(--d1-font-mono);
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: var(--d1-text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1, "ss01" 1;
+}
+
+/* Centre eyebrow span — Geist Sans uppercase muted, looser tracking. */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--donut
+  [data-testid="chart-donut-visx"]
+  > div
+  > div
+  > span:nth-child(2) {
+  font-family: var(--d1-font-sans);
+  color: var(--d1-text-muted);
+  letter-spacing: 0.08em;
+  opacity: 1;
+}
+
+/* ── Calendar panel — status-driven chip semantics + lime today ring ───
+ *
+ * CalendarVisx (KICKOFF §4.1 spec — heatmap section): repurposes status
+ * semantics — received → lime saturation level 4 (high), scheduled →
+ * lime saturation level 2 (mid), announced → text-muted, corp_action →
+ * purple. The 5-level lime-saturation ramp DOES NOT apply per-cell here;
+ * that's the `.d1-heatmap__cell` ramp from `style-d1` (already shipped
+ * in this stylesheet for non-chart use). CalendarVisx is an event
+ * calendar with status-driven chips, not a contribution heatmap — so
+ * the lime saturation lands on the chip fills, not the cell tints.
+ *
+ * Per-event colour resolution path (engineer's investigation):
+ *
+ *   - `eventChipColor()` in CalendarVisx hardcodes status → CSS var:
+ *       received  → `var(--bg-mustard, #F4CC4A)`
+ *       scheduled → `var(--cta-fill, #F08A3C)`
+ *       corp_action → `var(--text-on-candy, #1C1B26)` (diamond)
+ *
+ *   - The schemas (`DividendEvent`, `CorpActionEvent`) are `.strict()` and
+ *     do NOT permit a per-event `color` field — Path B (per-event colour
+ *     in fixture) is closed. Path A (alias remap via wrapper modifier)
+ *     is the only viable strategy.
+ *
+ *   - Base `.d1-chart-panel` already remaps `--cta-fill` → purple. That
+ *     would land scheduled chips on purple — wrong. We need lime @40%
+ *     for scheduled (per spec), so the calendar modifier re-points
+ *     `--cta-fill` back to a lime tint.
+ *
+ *   - `--bg-mustard` is NOT in the base wrapper's remap list — it would
+ *     resolve to its hardcoded `#F4CC4A` mustard fallback (a candy leak).
+ *     We add it here for received-chip lime solid.
+ *
+ *   - `--candy-pink` / `--bg-pink` (today ring) are also unmapped — they
+ *     would render as the candy hot-pink (#F7A1C9) on the today cell.
+ *     Lime is the D1 «look here» / «you are here» signal, so we remap
+ *     both fallback names so the ring picks up lime regardless of which
+ *     CSS-var alias the renderer reaches for.
+ *
+ * Candy halo taming (mirrors DonutVisx engineer's pattern):
+ *
+ *   - CalendarVisx renders a 2px-offset shadow `<rect>` on every event-
+ *     bearing cell, filled with `var(--text-on-candy, #1C1B26)` at 0.85
+ *     opacity (the candy hard ink-shadow drop). Under the base wrapper's
+ *     `--text-on-candy: --d1-text-primary` mapping that becomes a 2px
+ *     white sliver halo on the dark canvas — a candy treatment that the
+ *     KICKOFF §4.1 explicitly retires («REMOVE the candy hard ink-shadow
+ *     drop»). DonutVisx tamed this by re-pointing `--text-on-candy` at
+ *     the page colour, but CalendarVisx threads the same var through the
+ *     day numerals, weekday labels, chip ink, cell stroke, and tooltip
+ *     border — re-pointing it would kill all the readable text. So we
+ *     instead suppress the shadow `<rect>` directly via a structure-
+ *     stable selector: it is the ONLY child rect on a cell `<g>` that
+ *     carries a `fill-opacity` attribute (cell body + today ring set
+ *     `fill-opacity` only via inline style or as 1, not as attribute).
+ *
+ *   - Tooltip box-shadow is inline-styled `5px 5px 0 0 var(--text-on-
+ *     candy, #1C1B26)` — a candy hard drop that under the base wrapper
+ *     becomes a 5px white block. We override with the D1 elevation
+ *     shadow via `!important` (inline style cascade requires it) so
+ *     tooltips land in the same elevation language as the rest of the
+ *     panel.
+ *
+ *   - Tooltip border is inline-styled `1.5px solid var(--text-on-candy,
+ *     #1C1B26)` — a heavy candy outline. We soften to a 1px D1 hairline.
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--calendar {
+  /* Received chip — lime saturation level 4 (solid). */
+  --bg-mustard: var(--d1-accent-lime);
+  /* Scheduled chip — lime saturation level 2 (~40% opacity).
+   * Re-points the base wrapper's purple back to a lime tint per spec. */
+  --cta-fill: rgba(214, 242, 107, 0.4);
+  /* Today ring — D1 «look here» / «you are here» = lime, not candy pink. */
+  --candy-pink: var(--d1-accent-lime);
+  --bg-pink: var(--d1-accent-lime);
+}
+
+/* Suppress the candy hard ink-shadow drop on event-bearing cells.
+ * The shadow rect is the only rect on a cell `<g>` carrying a
+ * `fill-opacity` attribute (set to 0.85 via JSX `fillOpacity={0.85}`). */
+[data-theme="lime-cabin"] .d1-chart-panel--calendar [data-cell-iso] > rect[fill-opacity] {
+  display: none;
+}
+
+/* Tame the candy tooltip drop-shadow + heavy border. Inline styles in
+ * the component require `!important` to override; this is the documented
+ * cascade tradeoff (KICKOFF §7.10 — chart components are off-limits). */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--calendar
+  [data-testid="chart-calendar-visx"]
+  [role="tooltip"] {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Stacked-bar panel — chart-categorical alias remap + halo tame ─────
+ *
+ * StackedBarVisx (KICKOFF §4.1 spec — Bars section: «Default stack fill:
+ * D1 series colors (the existing `--chart-series-1..5` aliases…)»).
+ *
+ * Per-segment colour resolution path (engineer's investigation):
+ *
+ *   - StackedBarVisx hardcodes `SERIES_FILL_TOKENS = var(--chart-
+ *     categorical-1..5, var(--chart-series-1..5, #fallback))`. The
+ *     candy `--chart-categorical-*` family IS aliased in the global
+ *     light/dark theme files at `:root[data-theme="light|dark"]` —
+ *     since `data-theme="lime-cabin"` lives on a route-local div
+ *     (NOT on `<html>`), the `--chart-categorical-*` values cascade
+ *     through from the parent theme and the fallback to
+ *     `--chart-series-*` does NOT fire. Without this remap, stacks
+ *     would render in the candy categorical palette, leaking outside
+ *     D1 dialect.
+ *
+ *   - The schema (`Series.color`) DOES allow per-series colour, but
+ *     the component does NOT read `series[i].color` — it indexes into
+ *     `SERIES_FILL_TOKENS` by position. Path B (per-series colour in
+ *     fixture) is closed by the component, not the schema.
+ *
+ *   - Path A (alias remap via wrapper modifier) is the only viable
+ *     strategy. We re-point `--chart-categorical-1..5` onto the same
+ *     D1 token sequence the kickoff specifies for `--chart-series-1..5`
+ *     (text-primary / lime / purple / text-muted / bg-card-soft).
+ *
+ * Candy halo taming (mirrors CalendarVisx engineer's pattern):
+ *
+ *   - StackedBarVisx renders ONE hard ink-shadow drop per whole stack:
+ *     a `<path>` filled with `var(--text-on-candy, #1C1B26)` at
+ *     `fill-opacity="0.85"`, translated `(2px, 4px)`. Under the base
+ *     wrapper's `--text-on-candy: --d1-text-primary` mapping that
+ *     becomes a hard WHITE halo behind each stack — wrong for D1's
+ *     «paper-press is candy» reading, and KICKOFF §4.1 explicitly
+ *     retires the candy hard ink-shadow drop on bars («REMOVE the
+ *     candy hard ink-shadow drop»).
+ *
+ *   - The `--text-on-candy` var is ALSO used for: gridline strokes
+ *     (0.08 opacity — fine), the zero baseline ink (0.45 opacity —
+ *     fine on dark), inter-segment hairlines (0.45 opacity — needed
+ *     to delineate segments inside the stack), axis labels, and
+ *     tooltip ink. We CANNOT blanket-remap it to page colour without
+ *     killing readability of all these surfaces.
+ *
+ *   - Solution: structure-stable selector that suppresses ONLY the
+ *     shadow `<path>`. The shadow path is the only DOM node carrying
+ *     `fill-opacity="0.85"` as an attribute (segment rects use a
+ *     dynamic 0.78/1 fill-opacity, never 0.85). We select via
+ *     `[fill-opacity='0.85']` and hide it.
+ *
+ *   - Tooltip box-shadow (`5px 5px 0 0 var(--text-on-candy, ...)`) +
+ *     heavy 1.5px border + cream background are inline-styled and need
+ *     `!important` overrides — cascade tradeoff for inline-styled DOM
+ *     (KICKOFF §7.10 — chart components are off-limits).
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--stacked-bar {
+  /* Re-point candy categorical palette onto D1 series tokens (kickoff
+   * §4.1: text-primary / lime / purple / text-muted / bg-card-soft). */
+  --chart-categorical-1: var(--d1-text-primary);
+  --chart-categorical-2: var(--d1-accent-lime);
+  --chart-categorical-3: var(--d1-accent-purple);
+  --chart-categorical-4: var(--d1-text-muted);
+  --chart-categorical-5: var(--d1-bg-card-soft);
+}
+
+/* Suppress the candy hard ink-shadow drop on each stack outline. The
+ * shadow path is the ONLY node in StackedBarVisx carrying a
+ * `fill-opacity="0.85"` attribute (segment rects use 0.78 / 1 dynamic
+ * values, never 0.85). Structure-stable selector — no component edit
+ * needed. */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--stacked-bar
+  [data-testid="chart-stacked-bar-visx"]
+  path[fill-opacity="0.85"] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border. Inline-styled, requires `!important` to
+ * override (cascade tradeoff documented in CalendarVisx wrapper). */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--stacked-bar
+  [data-testid="chart-stacked-bar-visx"]
+  [role="tooltip"] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Treemap panel modifier (KICKOFF §4.1 — chart 8 of 9) ─────────────
+ *
+ * TreemapVisx component path: `packages/ui/src/charts/visx/TreemapVisx.tsx`.
+ *
+ * Per-tile colour resolution path: **Path A (alias remap via wrapper
+ * modifier)** with a hybrid acceptance for tile-label ink. Investigation
+ * findings:
+ *
+ *   1. TreemapVisx does NOT use the `colorForTreemapChange()` /
+ *      `inkForTreemapChange()` helpers from `packages/ui/src/charts/
+ *      tokens.ts` (those return mixed CSS-vars + hardcoded hex). Instead
+ *      it defines its own `colorForDelta()` + `labelInkForDelta()` inline
+ *      that resolve everything via candy CSS vars (`--bg-cream`,
+ *      `--cta-fill`, `--accent-deep`, `--text-on-candy`). This means
+ *      Path A is fully open — the wrapper can remap candy vars onto D1
+ *      tokens without touching the chart component.
+ *
+ *   2. The base `.d1-chart-panel` wrapper already maps
+ *      `--cta-fill` → purple, `--accent-deep` → purple, `--bg-cream` →
+ *      bg-card-soft, `--text-on-candy` → text-primary (white). For the
+ *      Treemap KICKOFF spec we need:
+ *        - Positive tiles → lime saturation (NOT purple) → re-point
+ *          `--cta-fill` to `--d1-accent-lime`.
+ *        - Negative tiles → purple saturation → base wrapper's
+ *          `--accent-deep` mapping is already correct.
+ *        - Neutral tiles → bg-card (NOT bg-card-soft, which is too
+ *          close to a hover-state surface) → re-point `--bg-cream` to
+ *          `--d1-bg-card`.
+ *        - Tile labels → AAA on saturated tiles. Single var
+ *          (`--text-on-candy`) drives label ink for ALL three states
+ *          (positive / negative / neutral) — there is no per-tile
+ *          discriminator in the DOM. Choosing `--d1-text-ink`
+ *          (`#0E0F11`) gives AAA on lime ≥0.5 op (~15.4:1) and
+ *          AA-large on purple ≥0.5 op (~5:1 at 12-13px tabular). On
+ *          neutral bg-card tiles the dark ink fades to near-invisible
+ *          at the helper's 0.55 opacity for neutral state — this is
+ *          the accepted gap, and reinforces the «no signal here»
+ *          semantic for in-band tiles. The screen-reader
+ *          `<ChartDataTable>` always carries the full ticker list.
+ *
+ *   3. `fillOpacityForTreemapChange()` magnitude bins (0.32 / 0.50 /
+ *      0.65 / 0.85) are NOT used by TreemapVisx — the component scales
+ *      label ink opacity, not tile fill opacity. The fill is solid at
+ *      the colour returned by `colorForDelta()`. KICKOFF §4.1's
+ *      «magnitude bins preserved (0.32 / 0.50 / 0.65 / 0.85
+ *      fill-opacity)» language refers to the helper that the component
+ *      doesn't call — the saturation gradient is achieved by colour
+ *      choice (cream → cta → deep), not opacity. Documented as a
+ *      tile-fill flatness gap; remediation requires component edit
+ *      which is off-limits per dispatch rules.
+ *
+ *   4. Tile rect stroke binds to `var(--text-on-candy, #1C1B26)` at
+ *      strokeOpacity 0.85 — KICKOFF spec wants `1px var(--d1-bg-page)`
+ *      gap-effect between tiles. Our remap makes the stroke
+ *      `--d1-text-ink` (#0E0F11) at 0.85 op on the bg-page canvas
+ *      (#141416) — visually close enough that the 1px stroke reads as
+ *      a hairline gap. Acceptable approximation.
+ *
+ *   5. The candy hard ink-shadow drop on the bottom + right edges
+ *      (the «paper-pressed pile of tiles» signature, PD §8) is
+ *      suppressed via a structure-stable selector: the ONLY `<path>`
+ *      inside each tile `<g>` is the edge-shadow path with
+ *      `fillOpacity={0.85}`. The OTHER tile's hatched overlay uses
+ *      `<line>` strokes inside `<pattern>` (NOT a `<path>`) so the
+ *      selector is precise and won't collide.
+ *
+ *   6. Tooltip is inline-styled (background `--bg-cream`, color
+ *      `--text-on-candy`, border `1.5px solid --text-on-candy`,
+ *      box-shadow `5px 5px 0 0 --text-on-candy`). Under our remap
+ *      `--text-on-candy` is dark ink → tooltip border + shadow become
+ *      dark-on-dark and the `color` rule paints dark text on the
+ *      bg-card-soft surface (`--bg-cream` resolves to bg-card-soft via
+ *      base wrapper, NOT our modifier override — modifier only changes
+ *      `--bg-cream` for tile fills via the chart-internal tokens).
+ *      Tooltip needs explicit `!important` overrides — same cascade
+ *      tradeoff documented in CalendarVisx + StackedBarVisx wrappers.
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--treemap {
+  /* Positive tiles → lime saturation (overrides base wrapper purple). */
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+  /* Neutral tiles → bg-card (overrides base wrapper bg-card-soft for a
+   * crisper neutral that sits one elevation below the panel surface). */
+  --bg-cream: var(--d1-bg-card);
+  /* Tile-label ink → dark for AAA on lime / AA-large on purple
+   * (overrides base wrapper white). Negative tile labels stay
+   * acceptably legible; neutral tile labels fade per accepted gap. */
+  --text-on-candy: var(--d1-text-ink);
+}
+
+/* Suppress the candy hard ink-shadow drop on each tile's bottom + right
+ * edges — KICKOFF §4.1 retires the candy treatment in favour of the
+ * 1px gap-effect via tile stroke. The shadow path is the only `<path>`
+ * inside each tile `<g>` carrying `fill-opacity="0.85"` — segment rects
+ * use no fill-opacity attribute, the hatched overlay is `<line>` inside
+ * `<pattern>` (not `<path>`). Structure-stable selector — no component
+ * edit needed. */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--treemap
+  [data-testid="chart-treemap-visx"]
+  path[fill-opacity="0.85"] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border, all inline-styled. Under our `--text-on-
+ * candy: --d1-text-ink` modifier the dark ink would render dark text on
+ * the `--bg-cream` (= bg-card-soft) surface and dark borders on the
+ * dark canvas, both unreadable. Force D1 elevation language with
+ * `!important` (cascade tradeoff documented in CalendarVisx + StackedBar
+ * Visx wrappers — KICKOFF §7.10). */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--treemap
+  [data-testid="chart-treemap-visx"]
+  [role="tooltip"] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
+/* ── Waterfall panel — lime positive / purple negative + halo tame ────
+ *
+ * WaterfallVisx component path: `packages/ui/src/charts/visx/WaterfallVisx.tsx`.
+ *
+ * Per-bar colour resolution path: **Path A (alias remap via wrapper
+ * modifier)**. Investigation findings:
+ *
+ *   1. WaterfallVisx is fully candy-CSS-var driven (no `tokens.ts`
+ *      helper imports). Bar fills branch on `kind`:
+ *        - anchor-start / anchor-end → `var(--text-on-candy, #1C1B26)`
+ *        - positive → `var(--cta-fill, var(--accent, #F08A3C))`
+ *        - negative → `var(--accent-deep, var(--cta-shadow, #C9601E))`
+ *      Path A is wide open — wrapper can remap candy vars onto D1
+ *      tokens without touching the chart component.
+ *
+ *   2. The schema (`WaterfallStep` is `.strict()` and forbids `color`).
+ *      Path B (per-step colour in fixture) is closed by the schema —
+ *      Path A is the only viable strategy.
+ *
+ *   3. Base `.d1-chart-panel` wrapper already maps:
+ *        - `--text-on-candy` → `--d1-text-primary` (white) — anchors
+ *          render as max-contrast white blocks against the dark canvas,
+ *          reading as the «absolute value reference» moments. Correct.
+ *        - `--cta-fill` → `--d1-accent-purple` — wrong for D1 dialect:
+ *          KICKOFF §4.1 «Bars» says positive in lime, negative in purple.
+ *          Modifier re-points to `--d1-accent-lime`.
+ *        - `--accent-deep` → `--d1-accent-purple` — correct for negative.
+ *          Kept by inheritance.
+ *
+ *   4. PD-signature pill numeral (Bagel Fat One «hero moment» painted
+ *      INSIDE the ending bar). The component reaches for
+ *      `var(--font-family-display, 'Bagel Fat One', sans-serif)`. The
+ *      base wrapper remaps `--font-family-display` → `var(--d1-font-mono)`
+ *      so Bagel Fat One never resolves — Geist Mono lands as the D1
+ *      universal numeric face. The numeral fill is `var(--bg-cream, ...)`
+ *      → base wrapper maps to `--d1-bg-card-soft` (dark surface) which
+ *      reads as dark ink on the white anchor bar. AAA contrast secured.
+ *
+ *   5. Bridge connectors (drawn between consecutive bars at the previous
+ *      bar's top edge) bind to `var(--text-on-candy, ...)` (1px line at
+ *      0.45 stroke-opacity) + `var(--card-highlight, ...)` (1px embossed
+ *      highlight at 1px Y-offset). Under base wrapper:
+ *        - `--text-on-candy` → white at 0.45 op = subtle white-on-dark
+ *          dashed hairline — acceptable substitute for the spec's
+ *          `--d1-border-hairline` 1px hairline. Reads as the «previous
+ *          running total» reference between bars.
+ *        - `--card-highlight` → `rgba(255,255,255,0.04)` = barely visible
+ *          embossed-groove highlight on the dark canvas. The double-line
+ *          embossed-groove pattern (cardinal candy treatment) collapses
+ *          visually into a single faint dashed hairline — the «embossed»
+ *          treatment can't survive on dark canvas without an inverted
+ *          surface, but the spec's hairline semantic is preserved.
+ *      Accepted as deviation — the bridge IS subtle.
+ *
+ *   6. Candy hard ink-shadow drop on every bar (`<path>` filled with
+ *      `var(--text-on-candy, #1C1B26)` at `fillOpacity={0.85}`,
+ *      translated `(2px, 4px)`). KICKOFF §4.1 retires the candy hard
+ *      ink-shadow drop on bars («REMOVE the candy hard ink-shadow drop
+ *      (5px offset). Replace with subtle 1px shadow…»). Under the base
+ *      wrapper's `--text-on-candy: --d1-text-primary` mapping the
+ *      shadow becomes a hard WHITE halo behind every bar — wrong for D1.
+ *      Suppressed via the same structure-stable selector as Donut /
+ *      Stacked / Treemap: `path[fill-opacity='0.85']` is the only DOM
+ *      node carrying that exact attribute (anchor + bar paths use no
+ *      `fill-opacity`, the gridlines use `<line>` not `<path>`).
+ *
+ *   7. Tooltip surface, box-shadow, and border are inline-styled (cream
+ *      bg, ink color, 1.5px ink border, 5px hard ink box-shadow) and
+ *      need `!important` overrides. Same cascade tradeoff documented in
+ *      Calendar / StackedBar / Treemap wrappers (KICKOFF §7.10 — chart
+ *      components are off-limits).
+ */
+[data-theme="lime-cabin"] .d1-chart-panel--waterfall {
+  /* Positive contributors → lime saturation (overrides base wrapper purple).
+   * Negative contributors keep base wrapper's `--accent-deep` → purple.
+   * Anchors keep base wrapper's `--text-on-candy` → white. */
+  --cta-fill: var(--d1-accent-lime);
+  --accent: var(--d1-accent-lime);
+}
+
+/* Suppress the candy hard ink-shadow drop on every bar — KICKOFF §4.1
+ * retires the candy treatment. The shadow path is the only `<path>` in
+ * WaterfallVisx carrying a `fill-opacity="0.85"` attribute (anchor +
+ * bar paths use no `fill-opacity`, gridlines use `<line>`).
+ * Structure-stable selector — no component edit needed. */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--waterfall
+  [data-testid="chart-waterfall-visx"]
+  path[fill-opacity="0.85"] {
+  display: none;
+}
+
+/* Tame the candy tooltip — cream-on-white surface with a 5px hard ink
+ * box-shadow + 1.5px border, all inline-styled. Force D1 elevation
+ * language with `!important` (cascade tradeoff documented in Calendar /
+ * StackedBar / Treemap wrappers — KICKOFF §7.10). */
+[data-theme="lime-cabin"]
+  .d1-chart-panel--waterfall
+  [data-testid="chart-waterfall-visx"]
+  [role="tooltip"] {
+  background: var(--d1-bg-card-soft) !important;
+  color: var(--d1-text-primary) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+  border: 1px solid var(--d1-border-hairline) !important;
+  border-radius: 12px !important;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="lime-cabin"] * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

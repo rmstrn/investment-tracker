@@ -1,0 +1,386 @@
+/*
+ * Style E — Pasted Ledger / Cut-Paste.
+ *
+ * Xerox-zine direction. Bone-aged paper, near-black warm-toner ink,
+ * Sniffin' Red as the single loud accent, highlighter yellow as
+ * user-applied marking only. Three display fonts clash on purpose
+ * (Anton + Old Standard TT + Special Elite); body is Plex Mono;
+ * Permanent Marker is the Sharpie callout.
+ *
+ * Trust guardrails:
+ *   1. Clash + rotation NEVER touch money numerals (Plex Mono tabular only)
+ *   2. AI sticky-note bylined + datestamped (Special Elite, signed «— me»)
+ *   3. Forbidden-verb discipline — observed-fact register only
+ *
+ * Scope: route-local under `[data-style="e"]`.
+ */
+
+[data-style="e"] {
+  --e-bone: #f2ebdc;
+  --e-bone-faded: #e8dfc9;
+  --e-ink: #1a1612;
+  --e-toner-1: #9a968c;
+  --e-toner-2: #5c594f;
+  --e-red: #c8302b;
+  --e-yellow: #f2d14e;
+  --e-stamp-blue: #3a4f66;
+
+  --e-font-anton: var(--font-e-anton), "Arial Narrow", sans-serif;
+  --e-font-old: var(--font-e-old), Georgia, "Times New Roman", serif;
+  --e-font-elite: var(--font-e-elite), "Courier New", monospace;
+  --e-font-mono: var(--font-e-mono), ui-monospace, "Cascadia Mono", monospace;
+  --e-font-marker: var(--font-e-marker), "Comic Sans MS", cursive;
+
+  /* ── Chart override surface ───────────────────────────────────────── */
+  --cta-fill: var(--e-red);
+  --cta-shadow: var(--e-ink);
+  --accent-deep: var(--e-red);
+  --text-on-candy: var(--e-ink);
+  --bg-cream: var(--e-bone);
+  --card-highlight: rgba(242, 235, 220, 0.5);
+
+  background-color: var(--e-bone);
+  color: var(--e-ink);
+  font-family: var(--e-font-mono);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+
+  /* xerox-flecks: subtle multi-density grain to feel like uneven toner */
+  background-image: radial-gradient(rgba(26, 22, 18, 0.045) 1px, transparent 1.4px),
+    radial-gradient(rgba(26, 22, 18, 0.025) 1px, transparent 1px);
+  background-size: 5px 5px, 13px 13px;
+  background-position: 0 0, 2px 2px;
+}
+
+/* ── Per-span font swap classes (mid-word headline collage) ─────────── */
+[data-style="e"] .f-anton {
+  font-family: var(--e-font-anton);
+}
+[data-style="e"] .f-old {
+  font-family: var(--e-font-old);
+}
+[data-style="e"] .f-elite {
+  font-family: var(--e-font-elite);
+}
+[data-style="e"] .f-marker {
+  font-family: var(--e-font-marker);
+}
+
+/* ── Hero collage headline ──────────────────────────────────────────── */
+[data-style="e"] .e-headline {
+  margin: 0;
+  line-height: 0.92;
+  letter-spacing: -0.005em;
+  color: var(--e-ink);
+}
+
+[data-style="e"] .e-headline > span {
+  display: inline-block;
+}
+
+/* ── Faux-staple (top corners of cards) ─────────────────────────────── */
+[data-style="e"] .e-staple {
+  position: absolute;
+  width: 14px;
+  height: 8px;
+  background: var(--e-ink);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18), 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+[data-style="e"] .e-staple--tl {
+  top: -3px;
+  left: 16px;
+  transform: rotate(-8deg);
+}
+[data-style="e"] .e-staple--tr {
+  top: -3px;
+  right: 16px;
+  transform: rotate(6deg);
+}
+
+/* ── Faux-binder-clip (top-center anchor) ───────────────────────────── */
+[data-style="e"] .e-clip {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 56px;
+  height: 28px;
+  background: var(--e-ink);
+  border-radius: 2px 2px 6px 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.18);
+}
+
+[data-style="e"] .e-clip::before,
+[data-style="e"] .e-clip::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  width: 4px;
+  height: 18px;
+  background: var(--e-bone);
+  border: 1px solid var(--e-ink);
+}
+
+[data-style="e"] .e-clip::before {
+  left: 14px;
+}
+[data-style="e"] .e-clip::after {
+  right: 14px;
+}
+
+/* ── Hand-stamped page number ───────────────────────────────────────── */
+[data-style="e"] .e-stamp-page {
+  font-family: var(--e-font-marker);
+  color: var(--e-stamp-blue);
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  transform: rotate(-4deg);
+  display: inline-block;
+  opacity: 0.86;
+}
+
+/* ── Date-stamp (faded-blue ink, rotated) ───────────────────────────── */
+[data-style="e"] .e-date-stamp {
+  font-family: var(--e-font-elite);
+  color: var(--e-stamp-blue);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: 1.5px solid var(--e-stamp-blue);
+  padding: 4px 10px;
+  display: inline-block;
+  transform: rotate(8deg);
+  opacity: 0.7;
+}
+
+/* ── Highlighter strikethrough (only on body text) ──────────────────── */
+[data-style="e"] .e-highlight {
+  position: relative;
+  display: inline;
+  background: linear-gradient(
+    transparent 25%,
+    color-mix(in srgb, var(--e-yellow) 80%, transparent) 25%,
+    color-mix(in srgb, var(--e-yellow) 80%, transparent) 78%,
+    transparent 78%
+  );
+  padding: 0 2px;
+  mix-blend-mode: multiply;
+}
+
+/* ── Sticky-note (AI voice) ─────────────────────────────────────────── */
+[data-style="e"] .e-sticky {
+  position: relative;
+  background: #f3d754;
+  color: var(--e-ink);
+  padding: 18px 22px 24px;
+  font-family: var(--e-font-elite);
+  font-size: 16px;
+  line-height: 1.4;
+  max-width: 360px;
+  transform: rotate(2.4deg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 18px rgba(0, 0, 0, 0.18);
+  /* tiny corner curl via clip-path */
+  clip-path: polygon(0 0, 100% 0, 100% 92%, 92% 100%, 0 100%);
+}
+
+[data-style="e"] .e-sticky::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 30px;
+  height: 30px;
+  background: linear-gradient(
+    135deg,
+    transparent 50%,
+    rgba(0, 0, 0, 0.18) 50%,
+    rgba(0, 0, 0, 0.05) 100%
+  );
+}
+
+[data-style="e"] .e-sticky__signoff {
+  display: block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--e-toner-2);
+  font-style: italic;
+}
+
+/* ── Tape-edges (washi-tape on chart corners) ───────────────────────── */
+[data-style="e"] .e-tape {
+  position: absolute;
+  width: 80px;
+  height: 22px;
+  background: rgba(232, 223, 201, 0.78);
+  border: 1px solid rgba(26, 22, 18, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+[data-style="e"] .e-tape--tl {
+  top: -10px;
+  left: 24px;
+  transform: rotate(-5deg);
+}
+
+[data-style="e"] .e-tape--tr {
+  top: -10px;
+  right: 24px;
+  transform: rotate(4deg);
+}
+
+/* ── Cut-paper edge frame (around chart) ────────────────────────────── */
+[data-style="e"] .e-cut-frame {
+  position: relative;
+  background: var(--e-bone-faded);
+  border: 1px solid var(--e-ink);
+  padding: 28px clamp(16px, 2.4vw, 28px) 24px;
+}
+
+/* torn-edge SVG faux pseudo (cheap variant: jagged box-shadow + clip-path mask) */
+[data-style="e"] .e-cut-frame::before {
+  content: "";
+  position: absolute;
+  inset: -3px -2px -2px -3px;
+  background: var(--e-ink);
+  z-index: -1;
+  clip-path: polygon(
+    0% 4%,
+    3% 0%,
+    8% 3%,
+    12% 0%,
+    18% 4%,
+    23% 1%,
+    30% 4%,
+    37% 0%,
+    45% 3%,
+    52% 0%,
+    60% 4%,
+    68% 0%,
+    76% 3%,
+    84% 0%,
+    92% 4%,
+    100% 0%,
+    100% 96%,
+    96% 100%,
+    88% 97%,
+    80% 100%,
+    72% 96%,
+    64% 100%,
+    56% 97%,
+    48% 100%,
+    40% 96%,
+    32% 100%,
+    24% 97%,
+    16% 100%,
+    8% 96%,
+    0% 100%
+  );
+  opacity: 0.85;
+}
+
+/* ── Hand-stamp CTA (Sniffin' red rectangle) ────────────────────────── */
+[data-style="e"] .e-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--e-red);
+  color: var(--e-bone);
+  border: 0;
+  padding: 14px 22px;
+  font-family: var(--e-font-anton);
+  font-size: 18px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform: rotate(-1deg);
+  box-shadow: 4px 4px 0 var(--e-ink);
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+[data-style="e"] .e-cta:hover {
+  transform: rotate(-1.4deg) translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--e-ink);
+}
+
+/* ── Sharpie callout ────────────────────────────────────────────────── */
+[data-style="e"] .e-sharpie {
+  font-family: var(--e-font-marker);
+  color: var(--e-red);
+  font-size: 22px;
+  transform: rotate(-3deg);
+  display: inline-block;
+  letter-spacing: 0.02em;
+}
+
+/* ── Body / typewriter ──────────────────────────────────────────────── */
+[data-style="e"] .e-body {
+  font-family: var(--e-font-mono);
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--e-toner-2);
+}
+
+[data-style="e"] .e-num {
+  font-family: var(--e-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: 0;
+  color: var(--e-ink);
+  font-weight: 500;
+}
+
+/* ── Pull-quote with cut-paper edge + tape corners ──────────────────── */
+[data-style="e"] .e-pullquote-wrap {
+  position: relative;
+  background: var(--e-bone-faded);
+  padding: 28px clamp(20px, 3vw, 36px);
+  margin: 0;
+  border: 1px solid var(--e-ink);
+}
+
+[data-style="e"] .e-pullquote {
+  font-family: var(--e-font-old);
+  font-style: italic;
+  font-size: clamp(20px, 2.4vw, 30px);
+  line-height: 1.25;
+  color: var(--e-ink);
+  margin: 0;
+}
+
+/* ── Sticky-note entrance animation ─────────────────────────────────── */
+@keyframes e-sticky-drop {
+  from {
+    transform: translateY(-12px) rotate(0deg);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) rotate(2.4deg);
+    opacity: 1;
+  }
+}
+
+[data-style="e"] .e-sticky {
+  animation: e-sticky-drop 360ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style="e"] .e-sticky {
+    animation: none;
+  }
+}
+
+/* ── Mast-head meta strip ───────────────────────────────────────────── */
+[data-style="e"] .e-mast {
+  border-bottom: 2px solid var(--e-ink);
+  padding: 10px clamp(20px, 4vw, 48px);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-family: var(--e-font-elite);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--e-ink);
+}

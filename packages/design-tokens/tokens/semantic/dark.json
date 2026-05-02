@@ -1,94 +1,427 @@
 {
   "semantic": {
+    "bg": {
+      "$value": "{color.cocoa.bg}",
+      "$type": "color",
+      "$description": "App page background — neutral cool dark. Showcase --bg."
+    },
+    "card": {
+      "$value": "{color.cocoa.card}",
+      "$type": "color",
+      "$description": "Card / elevated surface — luma-bumped for clear lift over bg. Showcase --card."
+    },
+    "inset": {
+      "$value": "{color.cocoa.inset}",
+      "$type": "color",
+      "$description": "Depressed surface — darker than card, reads as recessed. Showcase --inset."
+    },
+    "ink": {
+      "$value": "{color.parchment}",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on dark — cream-on-dark flip. Showcase --ink."
+    },
+    "text-2": {
+      "$value": "{color.neutral.text-secondary-dark}",
+      "$type": "color",
+      "$description": "Secondary text — dark theme. Showcase --text-2."
+    },
+    "text-3": {
+      "$value": "{color.neutral.text-tertiary-dark}",
+      "$type": "color",
+      "$description": "Tertiary text — dark theme. Showcase --text-3."
+    },
+    "accent": {
+      "$value": "#F8A85C",
+      "$type": "color",
+      "$description": "v2 — Lifted signal-orange for cocoa bg (8.9:1 AAA). Re-pointed from jade-bright in DS v2 Phase 3b. Per spec §2.4."
+    },
+    "accent-shadow": {
+      "$value": "rgba(248, 168, 92, 0.30)",
+      "$type": "color",
+      "$description": "v2 — Drop-shadow tint for filled-accent (dark, lifted-orange @ 30%)."
+    },
+    "accent-glow": {
+      "$value": "rgba(248, 168, 92, 0.22)",
+      "$type": "color",
+      "$description": "v2 — Pulse halo + focus glow (dark, lifted-orange @ 22%)."
+    },
+    "terra": {
+      "$value": "{color.signal.orange-deep}",
+      "$type": "color",
+      "$description": "v2 — Signal-orange-deep retained on dark for danger semantic. Re-pointed from terra-bright in DS v2 Phase 3b."
+    },
+    "terra-shadow": {
+      "$value": "rgba(199, 106, 34, 0.30)",
+      "$type": "color"
+    },
+    "modal-overlay": {
+      "$value": "rgba(0, 0, 0, 0.65)",
+      "$type": "color",
+      "$description": "Modal backdrop — dark theme."
+    },
+
     "background": {
-      "primary": { "$value": "{color.neutral.950}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.900}", "$type": "color" },
-      "tertiary": { "$value": "{color.neutral.800}", "$type": "color" },
-      "elevated": {
-        "$value": "{color.neutral.900}",
-        "$type": "color",
-        "$description": "Elevated in dark uses border rather than shadow"
-      },
-      "inverse": { "$value": "{color.neutral.50}", "$type": "color" },
-      "overlay": { "$value": "rgba(0, 0, 0, 0.7)", "$type": "color" }
+      "primary": { "$value": "{color.cocoa.bg}", "$type": "color" },
+      "secondary": { "$value": "{color.cocoa.inset}", "$type": "color" },
+      "tertiary": { "$value": "{color.cocoa.inset}", "$type": "color" },
+      "elevated": { "$value": "{color.cocoa.card}", "$type": "color" },
+      "inverse": { "$value": "{color.parchment}", "$type": "color" },
+      "overlay": { "$value": "rgba(0, 0, 0, 0.65)", "$type": "color" }
     },
 
     "text": {
-      "primary": { "$value": "{color.neutral.50}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.300}", "$type": "color" },
-      "tertiary": { "$value": "{color.neutral.400}", "$type": "color" },
-      "muted": {
-        "$value": "{color.neutral.400}",
-        "$type": "color",
-        "$description": "#94A3B8 — WCAG AA on dark bg; raised from neutral-500 (borderline 4.1:1)"
-      },
+      "primary": { "$value": "{color.parchment}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.text-secondary-dark}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
+      "muted": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
       "brand": {
-        "$value": "{color.brand.400}",
+        "$value": "{color.parchment}",
         "$type": "color",
-        "$description": "Lift brand toward 400 for dark — preserves readability"
+        "$description": "Brand-text = parchment in dark — primary signal is cream-CTA."
       },
-      "inverse": { "$value": "{color.neutral.900}", "$type": "color" },
-      "onBrand": { "$value": "{color.static.white}", "$type": "color" }
+      "inverse": { "$value": "{color.cocoa.bg}", "$type": "color" },
+      "onBrand": {
+        "$value": "{color.cocoa.bg}",
+        "$type": "color",
+        "$description": "Text on cream-CTA flips to dark bg."
+      },
+      "onAccent": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Text on jade — cream for AAA pair."
+      }
     },
 
     "border": {
       "subtle": {
-        "$value": "{color.neutral.700}",
+        "$value": "rgba(255, 255, 255, 0.18)",
         "$type": "color",
-        "$description": "#334155 — raised from neutral-800 (1.4:1 vs bg-primary, nearly invisible)"
+        "$description": "Card edges, input borders. Showcase --border (dark)."
       },
-      "default": { "$value": "{color.neutral.700}", "$type": "color" },
-      "strong": { "$value": "{color.neutral.600}", "$type": "color" },
-      "focus": { "$value": "{color.brand.400}", "$type": "color" }
+      "default": { "$value": "rgba(255, 255, 255, 0.18)", "$type": "color" },
+      "strong": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
+      "divider": { "$value": "rgba(255, 255, 255, 0.26)", "$type": "color" },
+      "focus": { "$value": "#F8A85C", "$type": "color" }
     },
 
     "state": {
       "positive": {
-        "default": { "$value": "{color.green.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(16, 185, 129, 0.15)", "$type": "color" }
+        "default": {
+          "$value": "#F8A85C",
+          "$type": "color",
+          "$description": "v2 — re-pointed from jade-bright (lifted signal-orange for cocoa bg)."
+        },
+        "subtle": { "$value": "rgba(248, 168, 92, 0.16)", "$type": "color" }
       },
       "negative": {
-        "default": { "$value": "{color.red.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(239, 68, 68, 0.15)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra-bright in DS v2 Phase 3b."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.15)", "$type": "color" }
       },
       "warning": {
-        "default": { "$value": "{color.amber.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(245, 158, 11, 0.15)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — warning collapsed to signal-orange-deep."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.15)", "$type": "color" }
       },
       "info": {
-        "default": { "$value": "{color.cyan.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(6, 182, 212, 0.15)", "$type": "color" }
+        "default": { "$value": "{color.neutral.text-secondary-dark}", "$type": "color" },
+        "subtle": { "$value": "rgba(255, 255, 255, 0.06)", "$type": "color" }
       }
     },
 
     "portfolio": {
       "gain": {
         "default": {
-          "$value": "{color.green.400}",
+          "$value": "#F8A85C",
           "$type": "color",
-          "$description": "Muted emerald for dark — readable, not neon"
+          "$description": "v2 — re-pointed from jade-bright (lifted signal-orange for cocoa bg)."
         },
-        "subtle": { "$value": "rgba(16, 185, 129, 0.12)", "$type": "color" }
+        "subtle": { "$value": "rgba(248, 168, 92, 0.14)", "$type": "color" }
       },
       "loss": {
-        "default": { "$value": "{color.red.400}", "$type": "color" },
-        "subtle": { "$value": "rgba(239, 68, 68, 0.12)", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra-bright in DS v2 Phase 3b."
+        },
+        "subtle": { "$value": "rgba(199, 106, 34, 0.12)", "$type": "color" }
       },
       "neutral": {
-        "default": { "$value": "{color.neutral.400}", "$type": "color" },
-        "subtle": { "$value": "{color.neutral.800}", "$type": "color" }
+        "default": { "$value": "{color.neutral.text-tertiary-dark}", "$type": "color" },
+        "subtle": { "$value": "{color.cocoa.inset}", "$type": "color" }
       }
     },
 
     "interactive": {
-      "primary": { "$value": "{color.brand.500}", "$type": "color" },
-      "primaryHover": { "$value": "{color.brand.400}", "$type": "color" },
-      "primaryActive": { "$value": "{color.brand.300}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.800}", "$type": "color" },
-      "secondaryHover": { "$value": "{color.neutral.700}", "$type": "color" },
-      "secondaryActive": { "$value": "{color.neutral.600}", "$type": "color" },
-      "ghostHover": { "$value": "{color.neutral.800}", "$type": "color" },
-      "ghostActive": { "$value": "{color.neutral.700}", "$type": "color" }
+      "primary": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Primary CTA fill on dark — cream extruded."
+      },
+      "primaryHover": { "$value": "{color.parchment}", "$type": "color" },
+      "primaryActive": { "$value": "{color.parchment}", "$type": "color" },
+      "secondary": { "$value": "{color.cocoa.card}", "$type": "color" },
+      "secondaryHover": { "$value": "rgba(255, 255, 255, 0.04)", "$type": "color" },
+      "secondaryActive": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" },
+      "ghostHover": { "$value": "rgba(255, 255, 255, 0.05)", "$type": "color" },
+      "ghostActive": { "$value": "rgba(255, 255, 255, 0.08)", "$type": "color" }
+    },
+
+    "shadow": {
+      "soft": {
+        "$value": "0 1px 3px rgba(0, 0, 0, 0.45)",
+        "$type": "shadow",
+        "$description": "Dark-theme soft lift — clean depth, no glow."
+      },
+      "card": {
+        "$value": "0 4px 16px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.07)",
+        "$type": "shadow",
+        "$description": "Dark-theme card lift — top-edge highlight bumped to 0.07 for visible rim."
+      },
+      "lift": {
+        "$value": "0 12px 36px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.09)",
+        "$type": "shadow",
+        "$description": "Dark-theme stronger lift — signature / topbar."
+      },
+      "toast": {
+        "$value": "0 10px 28px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      },
+      "modal": {
+        "$value": "0 14px 36px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      },
+      "input-inset": {
+        "$value": "inset 0 2px 0 rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.3)",
+        "$type": "shadow",
+        "$description": "Dark-theme input depressed — deeper top-edge alpha for OLED black."
+      },
+      "inset-light": {
+        "$value": "inset 0 1px 0 rgba(0, 0, 0, 0.3)",
+        "$type": "shadow",
+        "$description": "Dark-theme light inset for chips, tabs-track, etc."
+      },
+      "primary-extrude": {
+        "$value": "0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow",
+        "$description": "Dark-theme primary CTA — restrained, no glow."
+      },
+      "terra-extrude": {
+        "$value": "0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)",
+        "$type": "shadow"
+      },
+      "chart-card": {
+        "$value": "0 6px 20px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.35)",
+        "$type": "shadow",
+        "$description": "ChartCard — dark-theme paper-pressed neumorphism. Top-rim highlight + bottom-rim inset for tactile «sits on table» feel; no warm tint."
+      },
+      "chart-bar-emboss": {
+        "$value": "drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.45))",
+        "$type": "shadow",
+        "$description": "Dark-theme SVG drop-shadow filter for chart bars."
+      },
+      "chart-line-emboss": {
+        "$value": "drop-shadow(0 1px 1px rgba(0, 0, 0, 0.4))",
+        "$type": "shadow",
+        "$description": "Dark-theme SVG drop-shadow filter for chart line strokes."
+      },
+      "chart-slice-hover": {
+        "$value": "drop-shadow(0 1.5px 2px rgba(241, 241, 241, 0.10)) drop-shadow(0 0 4px rgba(92, 154, 133, 0.22))",
+        "$type": "shadow",
+        "$description": "DonutChart V2 hover slice shadow — paper-press neumorphism (layer 1, lightened for cocoa bg) + accent glow (layer 2 = --accent-glow). Source: DECISIONS.md «DonutChart anatomy + interaction» call 4."
+      }
+    },
+
+    "chart-series": {
+      "1": {
+        "$value": "{color.museum.slate.dark}",
+        "$type": "color",
+        "$description": "Chart series 1 — museum-slate (dark). Re-pointed 2026-04-29 for V1 palette swap."
+      },
+      "2": {
+        "$value": "{color.museum.ochre.dark}",
+        "$type": "color",
+        "$description": "Chart series 2 — museum-ochre (dark)."
+      },
+      "3": {
+        "$value": "{color.museum.fog-blue.dark}",
+        "$type": "color",
+        "$description": "Chart series 3 — museum-fog-blue (dark)."
+      },
+      "4": {
+        "$value": "{color.museum.plum.dark}",
+        "$type": "color",
+        "$description": "Chart series 4 — museum-plum (dark)."
+      },
+      "5": {
+        "$value": "{color.museum.stone.dark}",
+        "$type": "color",
+        "$description": "Chart series 5 — museum-stone (dark)."
+      },
+      "6": { "$value": "{color.chart.dark-6}", "$type": "color" },
+      "7": { "$value": "{color.chart.dark-7}", "$type": "color" },
+      "8": { "$value": "{color.chart.dark-8}", "$type": "color" },
+      "9": { "$value": "{color.chart.dark-9}", "$type": "color" },
+      "10": { "$value": "{color.chart.dark-10}", "$type": "color" },
+      "11": { "$value": "{color.chart.dark-11}", "$type": "color" },
+      "12": { "$value": "{color.chart.dark-12}", "$type": "color" }
+    },
+
+    "chart-categorical": {
+      "1": {
+        "base": {
+          "$value": "#B5876D",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa base (dark). WCAG 6.4:1 vs #0E0E12. Inlined from former editorial-mh3 primitive (deleted in DS v2 Phase 3b)."
+        },
+        "top": {
+          "$value": "#C99B82",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa top stop (dark, ΔL +0.05 vs base)."
+        },
+        "bottom": {
+          "$value": "#A07358",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa bottom stop (dark, ΔL −0.05 vs base)."
+        }
+      },
+      "2": {
+        "base": {
+          "$value": "#E0BC6E",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold base (dark). WCAG 8.1:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#EBCB85",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#D5AD57",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold bottom stop (dark)."
+        }
+      },
+      "3": {
+        "base": {
+          "$value": "#9C7DA0",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine base (dark). WCAG 6.1:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#B093B4",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#88688C",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine bottom stop (dark)."
+        }
+      },
+      "4": {
+        "base": {
+          "$value": "#C88AA0",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine base (dark). WCAG 6.5:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#D6A1B4",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#BA738C",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine bottom stop (dark)."
+        }
+      },
+      "5": {
+        "base": {
+          "$value": "#9CB0C8",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue base (dark). WCAG 6.6:1 vs #0E0E12."
+        },
+        "top": {
+          "$value": "#B0C2D6",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue top stop (dark)."
+        },
+        "bottom": {
+          "$value": "#88A0BB",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue bottom stop (dark)."
+        }
+      }
+    },
+
+    "chart-sequential": {
+      "1": {
+        "$value": "{color.ink-ramp.dark.1}",
+        "$type": "color",
+        "$description": "Sequential ramp 1/7 — top magnitude (dark)."
+      },
+      "2": {
+        "$value": "{color.ink-ramp.dark.2}",
+        "$type": "color",
+        "$description": "Sequential ramp 2/7 (dark)."
+      },
+      "3": {
+        "$value": "{color.ink-ramp.dark.3}",
+        "$type": "color",
+        "$description": "Sequential ramp 3/7 (dark)."
+      },
+      "4": {
+        "$value": "{color.ink-ramp.dark.4}",
+        "$type": "color",
+        "$description": "Sequential ramp 4/7 — median (dark)."
+      },
+      "5": {
+        "$value": "{color.ink-ramp.dark.5}",
+        "$type": "color",
+        "$description": "Sequential ramp 5/7 (dark)."
+      },
+      "6": {
+        "$value": "{color.ink-ramp.dark.6}",
+        "$type": "color",
+        "$description": "Sequential ramp 6/7 (dark)."
+      },
+      "7": {
+        "$value": "{color.ink-ramp.dark.7}",
+        "$type": "color",
+        "$description": "Sequential ramp 7/7 — bottom magnitude (dark)."
+      }
+    },
+
+    "chart-grid": {
+      "$value": "rgba(255, 255, 255, 0.10)",
+      "$type": "color"
+    },
+    "chart-grid-strong": {
+      "$value": "rgba(255, 255, 255, 0.18)",
+      "$type": "color"
+    },
+    "chart-axis-label": {
+      "$value": "{color.neutral.text-tertiary-dark}",
+      "$type": "color"
+    },
+    "chart-tooltip-bg": {
+      "$value": "{color.cocoa.card}",
+      "$type": "color"
+    },
+    "chart-tooltip-border": {
+      "$value": "rgba(255, 255, 255, 0.18)",
+      "$type": "color"
+    },
+    "chart-cursor": {
+      "$value": "rgba(255, 255, 255, 0.24)",
+      "$type": "color"
     }
   }
 }

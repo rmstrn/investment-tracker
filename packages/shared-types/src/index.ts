@@ -20,3 +20,24 @@ export type ErrorEnvelope = components['schemas']['ErrorEnvelope'];
 export type PaginationMeta = components['schemas']['PaginationMeta'];
 export type User = components['schemas']['User'];
 export type Subscription = components['schemas']['Subscription'];
+
+// Chart payload schemas (Zod source-of-truth for AI-emitted charts).
+// See `./charts` subpath export for the canonical import path.
+//
+// TS H-2: type-only re-export. Runtime Zod schema VALUES (e.g. `ChartEnvelope`,
+// `ChartPayload`, `FORBIDDEN_OVERLAY_TYPES`) MUST be imported from the
+// `'@investment-tracker/shared-types/charts'` subpath. This preserves the
+// single-parser invariant (architect ADR Δ4) — only `parseChartEnvelope` in
+// `@investment-tracker/api-client` is allowed to call `ChartEnvelope.safeParse`
+// at runtime, and the barrel must not silently expose the schema value.
+export type * from './charts.js';
+
+// Lane-A vocabulary gate constants + types (TD-099). See
+// `./lane-a-vocabulary` subpath export for the canonical runtime import.
+//
+// TS H-2 mirror: type-only re-export. The `scanForbiddenVocabulary` runtime
+// fn and the constant arrays (`FORBIDDEN_VERBS_*`, `FORBIDDEN_PATTERNS`, …)
+// are wired into `parseChartEnvelope` in `@investment-tracker/api-client`
+// via the subpath. The barrel exposes only types so callers cannot bypass
+// the trust boundary.
+export type * from './lane-a-vocabulary.js';

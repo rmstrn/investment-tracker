@@ -798,3 +798,163 @@ PO confirms Free tier stays free forever. Content-lead built landing + paywall c
 - Free cap: measure actual Free burn at 1K / 10K / 100K users; adjust cap if unit economics break.
 - Coach UX: A/B test contextual vs dedicated route post-alpha if engagement weak.
 - Free-forever: anchor commitment — do NOT revisit under normal product-market pressure; only reconsider if company existential risk.
+
+## 2026-04-29 — Theme mechanism: `data-theme` attribute on `<html>` (chart subsystem + production app)
+
+**Decision.** Production app and chart subsystem use `data-theme="light"` / `data-theme="dark"` attribute on `<html>` for theme switching. The `.light` / `.dark` class selectors in the static showcase (`apps/web/public/design-system.html`) and the legacy `.dark` references in `apps/web/src/app/globals.css` are tolerated short-term but are NOT the production mechanism — they remain for the frozen showcase only.
+
+**Why.**
+
+1. **Spec alignment.** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §11.4 (locked v1.1) explicitly prescribes `data-theme` on `<html>` as production mechanism («mechanism: data-attribute on `<html>` toggled by user preference, falls back to `prefers-color-scheme`»). Migration kickoff `docs/engineering/kickoffs/2026-04-27-design-system-migration.md` §4.3 mandates the same. Chart blueprint `docs/reviews/2026-04-27-chart-implementation-blueprint.md` flagged this as Open Question 3 — picking `data-theme` resolves it without contradicting either spec.
+2. **Zero token-rebuild cost.** `packages/design-tokens/build.js:162` already emits dual selectors: `.dark, [data-theme="dark"] { … }`. Both work today out of the box. No tokens regeneration needed; charts using `var(--chart-series-N)` flip live regardless of which selector wins.
+3. **Industry-standard pattern.** Mercury / Linear / Vercel all use `data-theme` on `<html>`. The `next-themes` package (~2kb, MIT) is the de-facto reference implementation and composes cleanly with App Router SSR.
+4. **HTML semantics.** A theme is metadata about the document, not a class on it. `data-theme` attribute reads correctly to assistive tech that exposes `aria-*` and `data-*` attributes and aligns with `<meta name="color-scheme">` elsewhere in `<head>`.
+5. **Per-subtree theming optionality (future).** If a future surface needs a forced light theme inside a dark page (e.g. an embed preview), `[data-theme="light"]` wins under specificity at any subtree level without class-collision risk against Tailwind's `dark:` variant utilities.
+
+**Implications.**
+
+- `apps/web/src/app/layout.tsx`: add SSR no-flicker inline `<script>` in `<head>` that resolves `localStorage.theme → prefers-color-scheme → 'light'` and writes `data-theme` on `<html>` BEFORE React hydrates. `next-themes` does this out of the box; if `next-themes` conflicts with `providers.tsx` (Clerk + TanStack Query), fall back to a hand-rolled 12-line script.
+- `packages/design-tokens/build.js`: keep dual emit `.dark, [data-theme="dark"]` for one transition cycle. Once production app is on `data-theme` and showcase is fully retired (per blueprint Phase 8 redirect), drop the `.dark` half via a follow-on TD.
+- `packages/ui/src/charts/tokens.ts`: chart series tokens are referenced as `var(--chart-series-N)` strings — these are theme-agnostic by definition. No chart code needs to know which selector triggers the theme. Live theme switching via `var()` resolution works automatically per chart blueprint architectural decision 3.
+- Static showcase (`apps/web/public/design-system.html`): stays on class-toggle; flagged for retirement per migration kickoff §4.3. No tactical change in this decision.
+- Tailwind v4 `@custom-variant dark` (currently emitted as `&:where(.dark, .dark *)` per `build.js:322`): this needs widening to also recognise `[data-theme="dark"]`. Tracked as P2 follow-on for the design-system migration slice (already in scope of SLICE-DSM-V1).
+
+**Owner.** Right-Hand (this ADR) + frontend-engineer (implementation in SLICE-DSM-V1 + chart slices SLICE-CHARTS-FE/BACKEND/QA-V1).
+**Revisit.** Only if a hydration-mismatch warning surfaces that cannot be resolved by the standard `next-themes` pattern; or if assistive-tech testing surfaces an unexpected interaction between `data-theme` and `aria-` semantics. Neither is anticipated.
+
+**Cross-references.** `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §11.4; `docs/engineering/kickoffs/2026-04-27-design-system-migration.md` §4.3; `docs/reviews/2026-04-27-chart-implementation-blueprint.md` Open Question 3 (resolved); `docs/engineering/kickoffs/2026-04-29-charts-fe.md`; `docs/engineering/kickoffs/2026-04-29-charts-backend.md`; `docs/engineering/kickoffs/2026-04-29-charts-qa.md`.
+
+## 2026-04-29 — Charts palette: museum-palette extension + ink tonal default (NOT forest-jade ramp)
+
+**Decision.** Adopt **Hybrid (Option C)** with brand-strategist's «museum-palette extension» as the categorical layer. Default chart hue family is **ink/cream tonal**, NOT forest-jade. Forest-jade and bronze remain reserved for their semantic roles (gain / loss / verified) per the existing brand-floor lock. When categorical encoding is unavoidable (≥4 unordered series — asset class, sector, broker), draw from a **5-hue museum-vitrine extension family** (deep slate, paper-stone, fog-blue, dusty plum, muted ochre — exact OKLCH/hex deferred to follow-on product-designer dispatch). All P&L sign encoding replaces green/red with the locked jade/bronze pair, redundantly encoded with sign glyph + zero-axis position.
+
+**Per-chart-kind palette mode** (consensus-synthesised across product-designer, finance-advisor, brand-strategist):
+
+| Chart kind | Default mode | Rationale |
+|---|---|---|
+| Line | ink for single series; museum-categorical for ≤4 multi-series | Tonal default; categorical only when truly multi-series |
+| Area | jade above 0 / bronze below 0 (semantic) | Sign-bearing |
+| Bar (drift) | diverging jade ↔ neutral grey ↔ bronze | Sign-bearing |
+| Donut | museum-categorical for unordered (asset class, broker); ink tonal ramp for ordinal-by-magnitude | Type-of-data → type-of-palette match |
+| Sparkline | ink default; jade/bronze tint at endpoint | Single trend |
+| Calendar | per CHARTS_SPEC §2.6 status-categorical | Non-semantic, already locked |
+| Treemap | hybrid (ink-tone size + diverging jade↔bronze delta) | Two-channel encoding |
+| Stacked bar | museum-categorical ≤7 + locked semantic when sign | Multi-series |
+| Scatter | museum-categorical ≤3 groups | Group membership |
+| Waterfall | jade=add, bronze=subtract, ink=start/end | Sign-bearing |
+| Candlestick | jade up / bronze down (semantic, already locked) | Per-bar sign |
+
+**Why this over forest-jade ramp** (PO's initial intuition):
+
+1. **Brand §13.2 cap is binding.** Forest-jade carries a hard 13-surface cap in the brand system. Ramping it through chart series alone could exceed the cap. Brand-strategist surfaced this constraint; it overrides product-designer's «just ramp the jade» direction.
+2. **Data-viz canon.** Sequential palette on **unordered** nominal data (asset class, sector) implies false ranking. Industry canon — Morningstar (the wealth-data benchmark, uses multi-hue categorical for asset class), Atlassian, ColorArchive, CleanChart — treats this as categorical encoding. Finance-advisor concurred: «mono ramp WARN — only ordinal/sequential».
+3. **Editorial register.** Bloomberg, FT, Datawrapper, Wealthfront — the «calm-analytical caretaker» reference set Provedo aligns with — lead with ink/cream/grey tonal charts and use color rarely. Reserving jade for its semantic role (verified / accent / gain) is what makes it earn attention.
+4. **2-of-3 specialist consensus.** Brand-strategist + finance-advisor explicitly rejected forest-jade-as-default-chart-hue. Product-designer was the lone supporter and did not address the §13.2 cap.
+5. **PO directive — quality over speed.** The brand-strategist override is the more conservative move; given «спешить некуда, нужно качество», the smaller-blast-radius decision wins.
+
+**P&L green/red replacement (3-of-3 consensus).** All three specialists supported replacing green/red with locked jade/bronze, redundantly encoded with sign glyph + zero-axis position. Industry deuteranopia-safe pattern (Cleveland-Robbins blue/orange, Bloomberg orange/blue) — Provedo's jade/bronze fills the same role in brand voice.
+
+**Implications.**
+
+- **`docs/design/CHARTS_SPEC.md` §2** — palette taxonomy update needed. Replace ad-hoc 7-hue assignments with the per-chart-kind mode mapping above.
+- **`packages/ui/src/charts/DonutChart.tsx`** — switch from per-slice categorical to museum-palette categorical default; expose a `palette: 'categorical' | 'sequential' | 'monochromatic'` prop for explicit caller override (e.g. when caller knows data is ordinal-by-magnitude).
+- **`packages/design-tokens/tokens/`** — add 5-hue museum extension family + sequential ink ramp tokens. Keep forest-jade and bronze unchanged.
+- **AI-agent prompts** — chart-emission defaults must match new palette taxonomy. Eliminates per-slice random colors; backend chooses mode (categorical/sequential/diverging) by data shape, palette family pinned by mode.
+- **Visual regression tests** — TD-112 covers the showcase regression caused by the donut palette change. Refresh chart-tests checkpoint β.1.4 (commit 109e4de) baselines after the new palette lands.
+- **Showcase** (`/design-system#charts`) — DonutChart visible diff; update is part of the same PR as the palette change.
+
+**Owner.** Right-Hand (this ADR + decision) + product-designer (museum-palette hex draft, in flight) + frontend-engineer (DonutChart palette swap + AI-agent prompt update, follow-on slice).
+**Revisit.** After 5 V2 charts adopt the new palette in production AND user research surfaces a clarity issue. Otherwise, locked.
+
+**Cross-references.** `docs/reviews/2026-04-29-charts-palette-aggregate.md` (full per-specialist transcripts + agreement matrix); `docs/design/PROVEDO_DESIGN_SYSTEM_v1.md` §13.2 (forest-jade 13-surface cap that drove the override); `docs/design/CHARTS_SPEC.md` §2.2 (palette taxonomy section to be updated).
+
+## 2026-04-29 — PR split deferred; today's changes commit as logical groups on existing branch
+
+**Decision.** Defer the physical PR split recommended by tech-lead H6 («design-system hygiene PR-1» + «chart infra PR-2»). Today's 3 slices (A dark-stage removal, B theme-aware fix, C console-errors fix) + Bundle 1 fixes commit as **5–6 logical commits on the existing `chore/plugin-architecture-2026-04-29` branch** in this order: docs/ADRs first, then visual-hygiene group (Slice A + B + Bundle H4/H5 + tests), then favicon + middleware group, then chart infra group (Slice C + Bundle H1/H2/H3 + tests + env). Branch is NOT pushed and no PRs are opened by Right-Hand — that is PO's decision.
+
+**Why deferred (despite tech-lead H6 recommendation).** The branch carries **80+ commits ahead of main** — months of charts α + β + design-system migration + agent-persona consolidation work pre-dating this session. Tech-lead's split recommendation was scoped to today's 3 slices and did NOT account for this historical depth. A physical split into «PR-1 hygiene + PR-2 chart-infra» would require:
+
+1. **PR-0 (historical)** — α + β charts foundation (~75 commits, ~40K LOC) since today's Slice C dispatcher imports from `packages/ui/src/charts/index.ts` whose V1/V2 chart components were built across those 75 commits. Slice C cannot land without them.
+2. **PR-1 (visual hygiene)** — depends on PR-0 (StagedSections/StageFrame are part of the design-system migration also in PR-0).
+3. **PR-2 (chart infra)** — depends on PR-0 and is independent of PR-1.
+
+That's a 3-PR sequence, not a 2-PR split. Building it correctly is a multi-hour cherry-pick / rebase exercise on a Windows host where Rule 8.3 dispatch hygiene rules already flag NTFS reliability concerns. The cost / value ratio at this stage (pre-alpha, single contributor) does not justify it; a single-PR-on-branch with section-by-section commit history is honest and reviewable.
+
+**What we keep instead.** Logical commits in dependency order, so a future cherry-pick-into-2-PRs (if PO wants) is a small operation rather than re-discovering the partitioning. Each commit message tags its slice (`[slice-A]`, `[slice-B]`, `[slice-C]`, `[bundle-1]`) and group (`hygiene` or `chart-infra`) so a `git log --grep` query selects the partition.
+
+**When to revisit.** If PO opens this branch as a PR and reviewer-overload is reported (CI noise, comment fatigue, unclear scope) — split via cherry-pick-rebase from main into 2 (or 3) sequential PRs at that point, with a clear cost.
+
+**Owner.** Right-Hand (today's commit work) + PO (push + PR open decision).
+**Revisit.** Trigger = PO opens PR and asks for split, OR Phase 2 builder dispatch needs Slice C alone landed and Slice C is blocked behind unrelated review traffic.
+
+**Cross-references.** `docs/reviews/2026-04-29-design-system-fixes-aggregate.md` H6 (the original split recommendation); CONSTRAINTS.md Rule 8.3 (Windows dispatch hygiene); branch `chore/plugin-architecture-2026-04-29` git log for the historical depth.
+
+## 2026-04-29 — DonutChart anatomy + interaction: 5 PO-delegated design calls
+
+**Decision.** Five design calls flagged as open in `docs/design/DONUT_ANATOMY_v2_draft.md` resolved by Right-Hand under PO directive «по дизайну подумай сам плз, я не знаю как лучше»:
+
+1. **Default arcMode = `'full'` (360°).** 270° is an opt-in variant for editorial / hero use cases where the missing 90° wedge hosts a callout text or KPI value. Dashboard tile DonutChart instances default to 360° because the primary read is «portfolio allocation» and a missing wedge is decoratively expensive there.
+
+2. **Entrance sequence = by-magnitude descending.** Largest slice animates in first, smallest last. Matches the cognitive query in finance data viz («what's the biggest position?»). Trade-off accepted: clockwise would have been simpler to implement but is data-agnostic; magnitude-ordered animation is data-aware and aligns animation flow with attention flow. Reduced-motion fallback per the existing `<html data-reduced-motion>` plumbing — instant render, no stagger.
+
+3. **Legend click-to-filter — out of scope** for the DonutChart V2 slice. Reasons: (a) YAGNI at pre-alpha — the dashboard surface that would benefit from this is not yet shipped; (b) Lane A discipline — interactive filtering trends toward «trader analysis tool» semantics, drifting from Provedo's «information / education» register. If a future dashboard slice needs it, open a follow-on TD scoped specifically to the dashboard-level interactivity, not as a chart-component primitive.
+
+4. **Hover-shadow token = NEW `--shadow-chart-slice-hover`** added to `packages/design-tokens/tokens/`. Two reasons: (a) hover treatment will re-use across other chart kinds in CHARTS_SPEC §1 (BarChart hover lift, treemap tile hover, scatter point hover, etc.) — a named token earns its weight at the design-system level; (b) explicit > inline for design-system hygiene. The token references a layered shadow stack (paper-press neumorphism + slight accent rim glow) consistent with Provedo's tactile-depth language.
+
+5. **V1 Recharts stagger animation — NOT implemented; accept V1↔V2 visual delta.** V1 (Recharts) renders all slices instantly; V2 (primitives) renders with the 600 ms / 180 ms / 105 ms stagger from the anatomy draft. Reasons: (a) V1 is the bridge backend; sunset criterion in TD-115 already commits to its removal once Phase 2 stabilises; (b) `makeBackendDispatch` pattern explicitly contracts that V1/V2 may differ visually — that is the dispatcher's design intent, not a bug; (c) workaround via multiple `<Pie>` mounts in Recharts is invasive and would create test-time flakiness; (d) the visual delta only matters during the dispatcher window (`NEXT_PUBLIC_PROVEDO_CHART_BACKEND=primitives`) — once V2 is the only path, the delta disappears. Document the delta in CHARTS_SPEC §3 «backend swap» subsection (TD-118) as deliberate, not a regression.
+
+**Why Right-Hand resolved these alone.** PO directive 2026-04-29 «по дизайну подумай сам плз, я не знаю как лучше» — explicit delegation of these tactical design calls. Per CONSTRAINTS Rule 3, these are NOT strategic decisions (no positioning / pricing / regulatory implication; no naming or brand-archetype shift); they sit at the design-system implementation layer where right-hand has standing authority to lock when PO requests delegation.
+
+**Implications for downstream work.**
+
+- **Frontend-engineer slice (Task #13):** receives a coherent brief combining (a) museum-palette token application, (b) gradient direction per `DONUT_GRADIENT_v2_draft.md`, (c) anatomy + interaction per `DONUT_ANATOMY_v2_draft.md`, (d) the 5 design calls above as binding inputs. Single slice, single PR.
+- **Tech-lead kickoff (preferred):** before the FE dispatch, tech-lead writes a kickoff doc consolidating the three drafts + the 5 design calls + acceptance criteria. Avoids FE re-discovering the partition. ~30 min wall-clock.
+- **TD entries:** open a TD for legend click-to-filter (deferred per call 3) — to capture the deferral so it doesn't get lost, even though we won't act on it now.
+- **Showcase regression:** `/design-system#charts` DonutChart visible diff lands as part of the same FE slice. Snapshot baselines for chart-tests checkpoint β.1.4 (commit 109e4de) need refresh.
+
+**Owner.** Right-Hand (this ADR) + tech-lead (kickoff) + frontend-engineer (implementation slice) + qa-engineer (β.1.4 snapshot refresh).
+**Revisit.** After 2 weeks of V2 in production OR after first user research session that surfaces a clarity issue with any of the 5 calls. Otherwise locked.
+
+**Cross-references.** `docs/design/DONUT_ANATOMY_v2_draft.md` (the source of the 5 questions); `docs/design/DONUT_GRADIENT_v2_draft.md` (sibling spec); `docs/design/CHART_PALETTE_v2_draft.md` (museum-palette base); CONSTRAINTS.md Rule 3 (delegation rationale).
+
+## 2026-05-01 — Design System v2 supersedes v1; editorial-mh3 + jade + terra tokens removed
+
+Phase 3b of the DS v2 migration is destructive. The `editorial-mh3` primitive
+file (5-hue × 2-theme × 3-stop chart palette) has been deleted; its hex values
+are inlined directly into the `chart-categorical.{1..5}.{base,top,bottom}`
+semantic aliases (chart visual identity unchanged per spec §9). The `jade.*`
+and `terra.*` primitive blocks have been removed from `color.json`; consumer
+semantic entries (`accent`, `terra`, `state.positive/negative/warning`,
+`portfolio.gain/loss`, `border.focus`) re-point to `signal.orange` /
+`signal.orange-deep` per spec §11.1. `PROVEDO_DESIGN_SYSTEM_v1.md` carries a
+deprecation banner pointing at `PROVEDO_DESIGN_SYSTEM_v2.md`.
+
+CSS var names (`--accent`, `--terra`, `--accent-glow`, `--chart-categorical-N-{base,top,bottom}`)
+are preserved — only their underlying values flip. No consumer code touched
+except the obsolete `contrast.test.ts` (deleted; its premise was tied to the
+removed primitive file).
+
+Reason: complete the visual migration to the candy/paper dual register and
+shed dead token families before α cutover.
+
+Owner: frontend-engineer (Phase 3b).
+
+## 2026-05-01 — Chart subsystem rendering shifts from V2 custom-SVG primitives to visx + candy register
+
+PO directive: charts adopt the same playful candy register as marketing surfaces. visx (Airbnb, MIT, scoped imports) replaces V2 DonutChartV2/BarChartV2 + Cartesian framework + makeBackendDispatch + Recharts V1. See `docs/design/CHARTS_VISX_CANDY_SPEC.md` for the chart-by-chart visual language. Migration is phased; final cleanup deletes V1/V2 + Recharts dep.
+
+## 2026-05-01 — V1 Recharts wrappers + Candlestick + recharts dep removed
+
+Phase E (E1 + E2 combined) of the visx-candy migration.
+- E1: V2 custom-SVG chart subsystem deleted (BarChartV2, DonutChartV2,
+  SparklineV2, EditorialBevelFilter, Cartesian primitives, useHoverScale,
+  buildChartTheme, makeBackendDispatch); d3-scale dropped.
+- E2: V1 Recharts wrappers deleted (LineChart, AreaChart, BarChart,
+  DonutChart, Sparkline, Calendar, Treemap, StackedBar, Waterfall,
+  Candlestick); LazyCandlestick removed (no production consumer);
+  recharts dep dropped; Recharts CSS selectors removed from globals.css;
+  NEXT_PUBLIC_PROVEDO_CHART_BACKEND env removed from next.config.ts.
+- Production AreaChart consumer (`position-price-chart.tsx`) ported to
+  AreaVisx.
+- Charts subsystem now exclusively visx-candy. See
+  `docs/design/CHARTS_VISX_CANDY_SPEC.md`.

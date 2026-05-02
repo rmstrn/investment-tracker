@@ -1,0 +1,62 @@
+{
+  "showcase": {
+    "eyebrow": {
+      "tracking": {
+        "$value": "0.22em",
+        "$type": "dimension",
+        "$description": "Eyebrow letter-spacing for showcase mono labels (PROVEDO · DESIGN SYSTEM v2 · …)."
+      },
+      "size": {
+        "$value": "10px",
+        "$type": "dimension",
+        "$description": "Eyebrow font-size — Geist Mono uppercase."
+      },
+      "weight": {
+        "$value": 500,
+        "$type": "fontWeight",
+        "$description": "Eyebrow font-weight — Geist Mono medium."
+      }
+    },
+    "stage-headline": {
+      "size": {
+        "$value": "48px",
+        "$type": "dimension",
+        "$description": "Stage <h2> headline size — paper-statement scale inside StageFrame."
+      },
+      "tracking": {
+        "$value": "-0.025em",
+        "$type": "dimension",
+        "$description": "Stage <h2> letter-spacing — tightened for display-feel."
+      },
+      "weight": {
+        "$value": 600,
+        "$type": "fontWeight",
+        "$description": "Stage <h2> weight — Geist semibold."
+      }
+    },
+    "page-title": {
+      "size": {
+        "$value": "56px",
+        "$type": "dimension",
+        "$description": "Outer <h1> page title — bumped from 28px to 56px so document outline matches visual hierarchy. Stage h2 stays 48px; outer h1 sits +1 step higher (Round-2 a11y F-4 fix)."
+      },
+      "weight": {
+        "$value": 600,
+        "$type": "fontWeight",
+        "$description": "Outer <h1> weight."
+      },
+      "tracking": {
+        "$value": "-0.03em",
+        "$type": "dimension",
+        "$description": "Outer <h1> letter-spacing — tighter than stage h2 to honor display scale."
+      }
+    },
+    "accent-word": {
+      "weight": {
+        "$value": 700,
+        "$type": "fontWeight",
+        "$description": "Accent-word weight inside headline — bold-only (no color shift). Patagonia / Stripe Press canon."
+      }
+    }
+  }
+}

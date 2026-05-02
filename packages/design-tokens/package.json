@@ -30,10 +30,11 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "typecheck": "node build.js",
-    "test": "echo 'no tests yet' && exit 0",
+    "test": "vitest run",
     "clean": "node -e \"import('node:fs/promises').then(f => f.rm('build', {recursive: true, force: true}))\""
   },
   "devDependencies": {
-    "style-dictionary": "^4.3.0"
+    "style-dictionary": "^4.3.0",
+    "vitest": "^2.1.8"
   }
 }

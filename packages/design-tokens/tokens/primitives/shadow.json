@@ -1,38 +1,80 @@
 {
   "shadow": {
     "xs": {
-      "$value": "0 1px 2px rgba(0, 0, 0, 0.04)",
+      "$value": "0 1px 2px rgba(20, 20, 20, 0.04)",
       "$type": "shadow",
-      "$description": "Subtle card elevation — default cards"
+      "$description": "Tailwind-compat — minimal lift. v1.1 named shadows live in semantic.shadow.*"
     },
     "sm": {
-      "$value": "0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04)",
+      "$value": "0 2px 4px rgba(20, 20, 20, 0.06), 0 1px 2px rgba(20, 20, 20, 0.04)",
       "$type": "shadow",
-      "$description": "Hoverable card lifted"
+      "$description": "Tailwind-compat — hoverable card lifted."
     },
     "md": {
-      "$value": "0 4px 12px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.04)",
+      "$value": "0 4px 12px rgba(20, 20, 20, 0.08), 0 2px 4px rgba(20, 20, 20, 0.04)",
       "$type": "shadow",
-      "$description": "Dropdown, popover"
+      "$description": "Tailwind-compat — dropdown, popover."
     },
     "lg": {
-      "$value": "0 12px 24px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.06)",
+      "$value": "0 12px 24px rgba(20, 20, 20, 0.12), 0 4px 8px rgba(20, 20, 20, 0.06)",
       "$type": "shadow",
-      "$description": "Modal, floating chat bubble"
+      "$description": "Tailwind-compat — modal, floating chat bubble."
     },
     "xl": {
-      "$value": "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)",
-      "$type": "shadow"
-    },
-    "ai": {
-      "$value": "0 0 24px rgba(124, 58, 237, 0.25)",
+      "$value": "0 20px 25px -5px rgba(20, 20, 20, 0.08), 0 8px 10px -6px rgba(20, 20, 20, 0.04)",
       "$type": "shadow",
-      "$description": "AI-accent violet glow — FAB, Ask AI button, chat bubble"
+      "$description": "Tailwind-compat — large hero / paywall lift."
     },
     "focusRing": {
-      "$value": "0 0 0 3px rgba(109, 40, 217, 0.4)",
+      "$value": "0 0 0 3px rgba(45, 95, 78, 0.22)",
       "$type": "shadow",
-      "$description": "Accessible focus ring — 3px @ brand.700 @ 40% alpha"
+      "$description": "Accessible focus ring — 3px @ jade.deep @ 22% alpha (matches --accent-glow light)."
+    },
+
+    "cta-rest": {
+      "$value": "5px 5px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Signal-orange CTA default. Hard ink offset, no blur. Signature gesture of candy register."
+    },
+    "cta-hover": {
+      "$value": "7px 7px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — CTA hover (lift). translate(-2px,-2px) accompanies the shadow growth."
+    },
+    "cta-active": {
+      "$value": "2px 2px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — CTA pressed (depress). translate(3px,3px) accompanies the shadow shrink — net effect: button visibly stamps."
+    },
+    "card-candy": {
+      "$value": "4px 4px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Marketing cards / panels with ink border on candy fields."
+    },
+    "card-candy-hover": {
+      "$value": "6px 6px 0 0 #1C1B26",
+      "$type": "shadow",
+      "$description": "v2 — Marketing card hover lift."
+    },
+    "card-paper": {
+      "$value": "0 2px 6px rgba(140,100,55,0.10), 0 12px 28px rgba(140,100,55,0.08)",
+      "$type": "shadow",
+      "$description": "v2 — Default app card on paper-cream substrate. Warm-tinted soft shadow."
+    },
+    "lift-paper": {
+      "$value": "0 4px 10px rgba(140,100,55,0.14), 0 18px 40px rgba(140,100,55,0.10)",
+      "$type": "shadow",
+      "$description": "v2 — Hovered card / hero panel on paper-cream."
+    },
+    "soft-paper": {
+      "$value": "0 1px 3px rgba(28,27,38,0.06), 0 6px 18px rgba(28,27,38,0.05)",
+      "$type": "shadow",
+      "$description": "v2 — Subtle hover, dropdowns on paper register."
+    },
+    "input-inset-paper": {
+      "$value": "inset 2px 2px 4px rgba(140,100,55,0.10), inset -1px -1px 2px rgba(255,250,240,0.85)",
+      "$type": "shadow",
+      "$description": "v2 — Input wells on paper register. Warm inset to read as depressed."
     }
   }
 }

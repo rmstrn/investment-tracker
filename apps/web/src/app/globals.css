@@ -37,3 +37,170 @@ body {
   --font-mono: var(--font-geist-mono, "Geist Mono"), ui-monospace, "SF Mono", "JetBrains Mono",
     Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
+
+/*
+ * Showcase shorthand aliases — Provedo design-system v1.1 (DSM-V1 α).
+ *
+ * The static showcase at /design-system.html uses short-form CSS variables
+ * (`--border`, `--border-default`) that don't map 1:1 to our Style-Dictionary
+ * generated names. These aliases bridge the showcase → production gap so
+ * Phase-β primitives can consume either form.
+ *
+ * The build emits `--border-subtle`/`--border-default`/`--border-strong`/
+ * `--border-divider`/`--border-focus` from semantic.border.{...}; the alias
+ * `--border` (showcase) resolves to `--border-subtle` (canonical card edge).
+ */
+:root,
+.dark,
+[data-theme="dark"] {
+  --border: var(--border-subtle);
+}
+
+/*
+ * Chart palette tokens (`--chart-series-1..12`, `--chart-grid*`,
+ * `--chart-tooltip-*`, `--chart-cursor`, `--chart-axis-label`) are now
+ * sourced from `@investment-tracker/design-tokens` (semantic.chart-series.*
+ * + semantic.chart-* + semantic.shadow.chart-*). The hand-authored block
+ * that previously lived here closed TD-095 on 2026-04-29 (chart-palette
+ * extension dispatch). Keep this comment as a paper trail for future
+ * grep-spelunkers; do NOT re-add overrides — extend the JSON tokens.
+ *
+ * Tooltip box-shadow (`--chart-tooltip-shadow`) is the only chart custom-
+ * prop still derived in CSS — it's a SHORTHAND alias the chart components
+ * read; it falls back to `--shadow-lift` inside `buildTooltipProps` so
+ * we don't need a dedicated token for it.
+ */
+:root {
+  --chart-tooltip-shadow: var(--shadow-lift);
+}
+
+/*
+ * Phase E (2026-05-01) — Recharts class-selector neumorphism block was
+ * deleted alongside the V1 chart wrappers. The visx-candy chart subsystem
+ * paints its own ink-shadow drop on each chart variant directly in SVG, so
+ * no global descendant selectors are required.
+ */
+
+/*
+ * ─── Library-bridge utilities for design-system comparison routes ──────
+ *
+ * `/design-system-retro` and `/design-system-ekmas` install components from
+ * RetroUI and ekmas/neobrutalism-components via shadcn CLI. Both libraries
+ * expect Tailwind utility classes whose namespaces (`bg-primary`, `bg-main`,
+ * `bg-background`, `border-border`, `shadow-shadow`, `font-head`,
+ * `rounded-base`, `translate-x-boxShadowX`) are NOT registered by the Provedo
+ * design tokens.
+ *
+ * This block registers those utilities ONCE, mapping each to a CSS custom
+ * property. The actual VALUES of those properties are scoped per route in
+ * `_lib/theme.css` — RetroUI defaults under `[data-ds-variant="retro"]`,
+ * ekmas defaults under `[data-ds-variant="ekmas"]`. So `bg-primary` paints
+ * yellow `#ffdb33` inside `/design-system-retro`, and the route-scoped `--main`
+ * gives `bg-main` its blue `oklch(67% 0.17 259)` inside `/design-system-ekmas`.
+ *
+ * Outside those routes the variables fall back to whatever Provedo has set
+ * (`--card`, `--accent`) or remain unset (`--main`, `--primary` — never used
+ * in canonical surfaces).
+ *
+ * NEVER consume these utilities from Provedo product surfaces; they exist
+ * solely to let imported library components render with their own AS-IS
+ * default theming.
+ */
+@theme inline {
+  /* RetroUI utility tokens */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-popover: var(--popover);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* ekmas utility tokens */
+  --color-main: var(--main);
+  --color-main-foreground: var(--main-foreground);
+  --color-secondary-background: var(--secondary-background);
+  --color-overlay: var(--overlay);
+  --color-ring: var(--ring);
+
+  /* Chart palette utilities used by both libraries' chart wrappers */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* ekmas spacing helpers (used by hover translate utilities) */
+  --spacing-boxShadowX: var(--box-shadow-x);
+  --spacing-boxShadowY: var(--box-shadow-y);
+  --spacing-reverseBoxShadowX: var(--reverse-box-shadow-x);
+  --spacing-reverseBoxShadowY: var(--reverse-box-shadow-y);
+
+  /* Shared rounded + brutalist shadow tokens */
+  --radius-base: var(--radius-base);
+  --shadow-shadow: var(--shadow);
+}
+
+/*
+ * RetroUI / ekmas chunky-shadow + font utilities scoped per route.
+ *
+ * Provedo's design-tokens already export `--shadow-md` etc. as neumorphic
+ * tokens; we deliberately do NOT override those utility values globally.
+ * Inside the comparison routes we override the CLASS-level rules so the
+ * library components paint their AS-IS chunky offset shadow without
+ * disturbing canonical product surfaces.
+ */
+[data-ds-variant="retro"] .shadow-xs {
+  box-shadow: 1px 1px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .shadow-sm {
+  box-shadow: 2px 2px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .shadow {
+  box-shadow: 3px 3px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .shadow-md {
+  box-shadow: 4px 4px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .shadow-lg {
+  box-shadow: 6px 6px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .shadow-xl {
+  box-shadow: 10px 10px 0 1px var(--border);
+}
+[data-ds-variant="retro"] .shadow-2xl {
+  box-shadow: 16px 16px 0 1px var(--border);
+}
+[data-ds-variant="retro"] .shadow-none {
+  box-shadow: none;
+}
+[data-ds-variant="retro"] .hover\:shadow:hover {
+  box-shadow: 3px 3px 0 0 var(--border);
+}
+[data-ds-variant="retro"] .hover\:shadow-none:hover {
+  box-shadow: none;
+}
+
+[data-ds-variant="retro"] .font-head {
+  font-family: var(--font-head);
+}
+[data-ds-variant="retro"] .font-sans {
+  font-family: var(--font-sans);
+}
+
+[data-ds-variant="ekmas"] .font-base {
+  font-family: var(--font-base);
+  font-weight: var(--font-weight-base, 500);
+}
+[data-ds-variant="ekmas"] .font-heading {
+  font-family: var(--font-heading);
+  font-weight: var(--font-weight-heading, 700);
+}

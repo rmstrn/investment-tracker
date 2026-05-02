@@ -7,6 +7,14 @@ export interface AppShellProps extends HTMLAttributes<HTMLDivElement> {
   fab?: ReactNode;
   mobileTabBar?: ReactNode;
   banner?: ReactNode;
+  /**
+   * Persistent surface rendered as the last grid-row of the content column,
+   * below `<main>` and above the mobile tab bar. Used for the Lane-A
+   * regulatory disclaimer (TD-100) — NOT `position: fixed`; participates in
+   * normal flow so the disclaimer is reachable by scroll and visible in
+   * print.
+   */
+  footer?: ReactNode;
   children: ReactNode;
   /** Max width of the inner content column. Brief §3.3 grid: 1280px. */
   maxWidth?: 'none' | 'sm' | 'lg' | 'xl';
@@ -29,6 +37,7 @@ export function AppShell({
   fab,
   mobileTabBar,
   banner,
+  footer,
   children,
   maxWidth = 'xl',
   className,
@@ -44,6 +53,7 @@ export function AppShell({
           <main className={cn('min-w-0 flex-1 pb-20 pt-6 md:pb-8', 'px-4 sm:px-6 md:px-8')}>
             <div className={cn('mx-auto w-full', maxWidthClass[maxWidth])}>{children}</div>
           </main>
+          {footer}
         </div>
       </div>
       {fab}

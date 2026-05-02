@@ -1,0 +1,256 @@
+/*
+ * Style D — Salmon Quarterly.
+ *
+ * The Financial Times edition of Provedo. Salmon paper, Source Serif 4
+ * display+body, IBM Plex Mono tabular numerals, single Pelican Red accent.
+ *
+ * Discipline: NO halo. NO clash. NO script. NO confetti. The character of
+ * the page comes entirely from typography + grid + paper-stock — every
+ * data surface stays clinically clean.
+ *
+ * Trust guardrails (per kickoff):
+ *   1. No misregister halo / no font-clash on money numerals (no halo at all here)
+ *   2. AI marginalia bylined + datestamped
+ *   3. Forbidden-verb discipline — observed-fact register only
+ *
+ * Scope: route-local under `[data-style="d"]`.
+ */
+
+[data-style="d"] {
+  --d-paper: #f5ddd0;
+  --d-paper-deep: #edd0bf;
+  --d-ink: #1a1410;
+  --d-ink-muted: #4d4239;
+  --d-rule: #a8927f;
+  --d-accent: #b8323c; /* Pelican Red — single spot accent */
+  --d-chart-pos: #3f5f4a;
+  --d-chart-neg: #7c2a2e;
+  --d-chart-neutral: #5a4d3f;
+  --d-chart-highlight: #8c6a1f;
+
+  --d-font-serif: var(--font-d-serif), Georgia, "Times New Roman", serif;
+  --d-font-mono: var(--font-d-mono), ui-monospace, "Cascadia Mono", "SF Mono", monospace;
+
+  /* ── Chart override surface (consumed by BarVisx via inline vars) ──── */
+  --cta-fill: var(--d-accent);
+  --cta-shadow: var(--d-ink);
+  --accent-deep: var(--d-accent);
+  --text-on-candy: var(--d-ink);
+  --bg-cream: var(--d-paper-deep);
+  --card-highlight: rgba(245, 221, 208, 0.5);
+
+  background-color: var(--d-paper);
+  color: var(--d-ink);
+  font-family: var(--d-font-serif);
+  font-feature-settings: "tnum" 1, "lnum" 1, "kern" 1;
+}
+
+/* ── Mast-head strip — classical broadsheet ─────────────────────────── */
+[data-style="d"] .d-mast {
+  border-bottom: 1px solid var(--d-ink);
+  padding: 14px clamp(20px, 4vw, 48px);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+[data-style="d"] .d-mast__brand {
+  font-family: var(--d-font-serif);
+  font-style: italic;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+}
+
+[data-style="d"] .d-mast__meta {
+  font-family: var(--d-font-mono);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--d-ink-muted);
+}
+
+/* ── Typographic primitives ─────────────────────────────────────────── */
+[data-style="d"] .d-display {
+  font-family: var(--d-font-serif);
+  font-weight: 700;
+  letter-spacing: -0.012em;
+  color: var(--d-ink);
+  line-height: 1.02;
+}
+
+[data-style="d"] .d-flag {
+  font-family: var(--d-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--d-accent);
+  font-weight: 500;
+}
+
+[data-style="d"] .d-byline {
+  font-family: var(--d-font-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--d-ink-muted);
+  font-weight: 400;
+}
+
+[data-style="d"] .d-standfirst {
+  font-family: var(--d-font-serif);
+  font-style: italic;
+  font-size: clamp(18px, 1.6vw, 22px);
+  line-height: 1.45;
+  color: var(--d-ink-muted);
+  margin: 0;
+  max-width: 56ch;
+}
+
+[data-style="d"] .d-body {
+  font-family: var(--d-font-serif);
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--d-ink);
+}
+
+/* Drop-cap on first body paragraph (FT/Economist convention) */
+[data-style="d"] .d-body--dropcap::first-letter {
+  font-family: var(--d-font-serif);
+  font-weight: 700;
+  font-size: 4.4em;
+  float: left;
+  line-height: 0.86;
+  margin: 6px 10px 0 0;
+  color: var(--d-ink);
+}
+
+[data-style="d"] .d-pull-quote {
+  font-family: var(--d-font-serif);
+  font-style: italic;
+  font-size: clamp(24px, 2.6vw, 34px);
+  line-height: 1.22;
+  color: var(--d-ink);
+  margin: 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--d-accent);
+  border-bottom: 1px solid var(--d-accent);
+}
+
+/* ── Tabular figures (Plex Mono — clinically clean) ─────────────────── */
+[data-style="d"] .d-num {
+  font-family: var(--d-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  letter-spacing: 0;
+}
+
+/* ── Hairline + bullet section divider ──────────────────────────────── */
+[data-style="d"] .d-rule {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 24px 0;
+}
+
+[data-style="d"] .d-rule::before,
+[data-style="d"] .d-rule::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--d-rule);
+}
+
+[data-style="d"] .d-rule__bullet {
+  width: 6px;
+  height: 6px;
+  background: var(--d-ink);
+  flex: none;
+}
+
+/* ── Card surface (clipping pasted onto page) ───────────────────────── */
+[data-style="d"] .d-card {
+  background: var(--d-paper-deep);
+  border: 1px solid var(--d-rule);
+  padding: clamp(20px, 2.4vw, 32px);
+  position: relative;
+}
+
+[data-style="d"] .d-card::after {
+  content: "";
+  position: absolute;
+  inset: 4px -4px -4px 4px;
+  background: var(--d-paper-deep);
+  z-index: -1;
+  filter: brightness(0.95);
+}
+
+/* ── Stamp CTA ─────────────────────────────────────────────────────── */
+[data-style="d"] .d-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--d-ink);
+  color: var(--d-paper);
+  border: 0;
+  padding: 14px 22px;
+  border-radius: 0;
+  font-family: var(--d-font-mono);
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 200ms ease;
+}
+
+[data-style="d"] .d-cta:hover {
+  background: var(--d-accent);
+}
+
+[data-style="d"] .d-cta--ghost {
+  background: transparent;
+  color: var(--d-ink);
+  border: 1px solid var(--d-ink);
+}
+
+[data-style="d"] .d-cta--ghost:hover {
+  background: var(--d-ink);
+  color: var(--d-paper);
+}
+
+/* ── Figure credit ─────────────────────────────────────────────────── */
+[data-style="d"] .d-figure-credit {
+  font-family: var(--d-font-serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--d-ink-muted);
+  margin-top: 10px;
+  border-top: 1px solid var(--d-rule);
+  padding-top: 8px;
+}
+
+/* ── Type-set settle (subtle entrance) ──────────────────────────────── */
+@keyframes d-typeset-settle {
+  from {
+    transform: translateY(6px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+[data-style="d"] .d-typeset {
+  animation: d-typeset-settle 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-style="d"] .d-typeset {
+    animation: none;
+  }
+}

@@ -1,12 +1,12 @@
 {
   "brand": {
     "productName": {
-      "$value": "Portfolio",
+      "$value": "Provedo",
       "$type": "string",
-      "$description": "MVP placeholder. Single source of truth. Replace here → rebuild → all outputs (Tailwind, Swift, TS) update. Never hardcode in components."
+      "$description": "Locked product name (2026-04-25). Single source of truth. Replace here → rebuild → all outputs (Tailwind, Swift, TS) update. Never hardcode in components."
     },
     "productNameShort": {
-      "$value": "Portfolio",
+      "$value": "Provedo",
       "$type": "string",
       "$description": "Used in tight spaces (mobile header, tab label). Currently same as full."
     },

@@ -14,6 +14,379 @@ Newest entries at the top. When an item is resolved, move it to the "Resolved" s
 
 ## Active
 
+### TD-120 — AI prompt chart-emission palette taxonomy update
+
+**Added:** 2026-04-29 (DONUT-V2 kickoff §«Risks/open items» #6 + D5 acceptance closeout).
+**Priority:** P3 — feature gating, not blocker. Triggers when AI service starts emitting `ChartEnvelope` payloads (today the AI agent does not — `donut` is referenced only inside `allocation_drift` insight prose in `apps/ai/src/ai_service/llm/prompts.py`).
+**Source:** DONUT-V2 D1 introduced museum-vitrine palette taxonomy (`--chart-categorical-1..5` + `--chart-sequential-1..7`) + new V2 prop semantics (`palette: 'categorical' | 'sequential' | 'monochromatic'`, `arcMode: 'full' | '270'`, default `cornerRadius: 3`). The AI agent's prompt template (`apps/ai/src/ai_service/llm/prompts.py`) needs to be updated to emit these props correctly when ChartEnvelope emission is wired up — including the «top-4 + Other» grouping rule for >5 categorical slices (per `CHART_PALETTE_v2_draft.md` §5.3) and desc-by-value sort for `'sequential'` payloads.
+**Recommendation:** when AI ChartEnvelope emission lands, add a prompt section that documents:
+  - Palette mode selection rule (categorical for unordered allocation, sequential for ordinal-by-magnitude — e.g. asset weight, broker contribution; monochromatic for single-dimension emphasis).
+  - The 5-slice cap rule for categorical (group rest into «Other» using `--chart-series-5` neutral grey or new museum «stone» depending on context).
+  - `arcMode='270'` use case: whenever a strong center label competes for visual weight (e.g. portfolio total) — leaves 90° at bottom for legend.
+  - Default `cornerRadius=3` is the V2 anatomy norm; emit `0` only for explicit «micro-fixture» / inline contexts.
+  - Companion update: `apps/ai/` Pydantic ChartEnvelope mirror (TD-091) when activated.
+**Scope:** ≤ 2 hours prompt edit + Pydantic mirror + Vitest fixtures verifying payload shape.
+**Owner:** ai-engineer + product-designer review.
+**Trigger:** first AI chat answer that needs to emit a `ChartEnvelope` payload (i.e., AI starts producing structured charts vs prose-only insights).
+
+---
+
+### TD-119 — Legend click-to-filter (DonutChart + dashboard interactivity)
+
+**Added:** 2026-04-29 (DonutChart anatomy ADR — design call #3 deferred).
+**Priority:** P3 — feature, not bug. YAGNI pre-alpha; opens once dashboard surface needs interactive filtering.
+**Source:** PD-2 anatomy draft surfaced legend click-to-filter as a feature option on the chart-component layer. Right-Hand deferred (design call 3): Lane A discipline — interactive filtering drifts the chart toward «trader analysis tool» semantics, away from Provedo's «information / education» register at the chart-primitive layer. The legitimate use case (dashboard-level filtering) belongs at a higher composition tier, not inside the chart component.
+**Recommendation:** when a dashboard surface needs filtering by allocation slice / sector / asset class, design the interactivity at the **dashboard composition layer** — host the filter state outside the chart, pass `selectedKeys: string[]` as a prop, and have the chart visualise the selection (e.g. fade non-selected slices to 0.3 opacity) but NOT own the click handling. This keeps the chart component a presentation primitive, dashboard owns the trader-analysis semantics.
+**Scope:** when triggered — ~1 day combined (chart prop API + dashboard host + visual fade + tests).
+**Owner:** product-designer (interaction spec) + frontend-engineer (impl) + user-researcher (validate the dashboard need before scoping).
+**Trigger:** first dashboard slice that legitimately needs allocation-by-slice filtering as a user task. NOT before — pre-alpha YAGNI.
+
+---
+
+### TD-118 — Document V1→V2 chart-backend two-frame flicker + visual delta in CHARTS_SPEC §3
+
+**Added:** 2026-04-29 (review-aggregate `2026-04-29-design-system-fixes-aggregate.md` M13).
+**Updated:** 2026-04-29 (DONUT-V2 D5) — backend-swap subsection partially landed in CHARTS_SPEC §3.13.1 + V1↔V2 visual-delta table. V1 `cornerRadius=0` is also explicitly documented as a deliberate delta (NOT regression) — both V1 (mitered, Recharts default) and V2 (`cornerRadius=3` with cap rule) are intentional; V1's flat geometry signals «bridge backend active» until TD-115 sunset gate fires.
+**Priority:** P3 — documentation, not behaviour.
+**Source:** `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` renders V1 on SSR + first paint, then `useEffect` swaps to V2 if env flag is `'primitives'`. Visible flicker on every chart instance — minor for DonutChart (different arc generators), more pronounced for Phase 2 LineChart/AreaChart with gradient fills.
+**Recommendation:** ✓ DONE in D5 — `CHARTS_SPEC.md` §3.13.1 documents the trade-off, the V1↔V2 visual-delta table (cornerRadius / fill / entrance / hover), and the higher-level escape hatch (consumers in `apps/web` source can import `DonutChartV2` directly to bypass the dispatcher because Next.js inlines `NEXT_PUBLIC_*` at build there). Full closure of this TD when TD-115 sunset gate fires + V1 + dispatcher are removed.
+**Scope:** ✓ doc edit complete; full close-out happens when TD-115 sunset fires (≤ 30 min final cleanup).
+**Owner:** doc-updater + frontend-engineer review.
+**Trigger:** before Phase 2 LineChart/AreaChart V2 dispatch lands ✓; final close = TD-115 sunset gate.
+
+---
+
+### TD-116 — CSP missing app-wide for `apps/web`
+
+**Added:** 2026-04-29 (review-aggregate M9; pre-existing — not introduced by recent slices).
+**Priority:** P2 — α-cutover blocker. Defence-in-depth XSS mitigation absent.
+**Source:** `apps/web/next.config.ts` `headers()` block sets `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy` — but no `Content-Security-Policy`. Any future XSS vector (third-party script, user-content rendering) lacks the CSP backstop. `ImageResponse` (`/icon`) renders SVG+PNG server-side; CSP isn't strictly required for that route but absence weakens app-wide.
+**Recommendation:** add nonce-based CSP in `headers()` per `~/.claude/rules/web/security.md` template — `default-src 'self'; script-src 'self' 'nonce-{random}' …; style-src 'self' 'unsafe-inline' …; img-src 'self' data: …; connect-src 'self' …; frame-src 'none'; object-src 'none'; base-uri 'self';`. Adjust origins for Clerk + Polygon + PostHog + Sentry once known.
+**Scope:** medium — requires inventorying all third-party origins + nonce middleware integration. ≤ 1 day.
+**Owner:** devops-engineer (header config) + frontend-engineer (nonce middleware).
+**Trigger:** α-cutover date — must land before public launch.
+
+---
+
+### TD-115 — Dispatcher sunset gate criteria
+
+**Added:** 2026-04-29 (review-aggregate Architect M10/M2).
+**Priority:** P2 — without an explicit gate, `chart-backend-dispatch.tsx` becomes permanent infrastructure when its purpose was migration-only.
+**Source:** `makeBackendDispatch` exists to cover V1→V2 chart migration during the recharts → primitives port. Each new chart kind in Phase 2 wraps a (V1, V2) pair. Without a sunset criterion the dispatcher becomes load-bearing forever; dual-maintenance cost compounds.
+**Recommendation:** add to `docs/ADR-2026-04-29-plugin-architecture.md` (or a new chart-subsystem ADR) explicit gate: «when ≥3 V2 charts ship in production AND 2 weeks pass with zero hydration regressions reported, V1 + dispatcher are removed; V2 is promoted to the bare `Sparkline` / `DonutChart` / etc. exports.» Right-Hand schedules a follow-up agent to perform the removal once the gate fires.
+**Scope:** doc + scheduled cleanup agent. ≤ 30 min initial, ~2 hours when gate fires.
+**Owner:** tech-lead + frontend-engineer (when gate triggers).
+**Trigger:** ≥3 V2 charts in production + 2 weeks zero regressions.
+
+---
+
+### TD-114 — Lift showcase theme to project-wide ThemeProvider before Phase 2
+
+**Added:** 2026-04-29 (review-aggregate Architect M3 / a11y M4).
+**Priority:** P2 — needed before Phase 2 LineChart/AreaChart V2 ship.
+**Source:** `apps/web/src/app/design-system/_hooks/useShowcaseTheme.ts` subscribes to `<html data-theme>` mutations via `MutationObserver`. Acceptable for the showcase. But every V2 chart that needs theme will subscribe independently — N observers for N charts on one page, and the observer fires on every `class` mutation (Tailwind `dark:` toggle, Clerk theme injection) not just the showcase toggle.
+**Recommendation:** lift to a single `ThemeContext` provider mounted at the showcase root (or app root). Provider owns the observer once (or, better, subscribes to a custom event from `ShowcaseHeader`) and broadcasts via context. Hook becomes `useContext(ThemeContext)`. Optionally migrate to `useSyncExternalStore` for React 18+ concurrent-rendering safety.
+**Scope:** ~80 LOC, ≤ 4 hours.
+**Owner:** frontend-engineer.
+**Trigger:** before Phase 2 LineChart V2 dispatch lands.
+
+---
+
+### TD-113 — `app/icon.tsx` `ImageResponse` pulls satori (~200KB) for static favicon
+
+**Added:** 2026-04-29 (review-aggregate M17).
+**Priority:** P3 — bundle-budget polish, not behaviour.
+**Source:** `apps/web/src/app/icon.tsx` uses Next 15 `ImageResponse` (powered by `satori`) to render the favicon. Satori adds ~200KB to the runtime bundle for what is effectively a static asset.
+**Recommendation:** replace dynamic `app/icon.tsx` with a pre-rendered `apps/web/public/favicon.ico` (or `apps/web/src/app/favicon.ico`) + standard `<link rel="icon">`. Drop the satori dependency.
+**Scope:** ≤ 30 min — generate the PNG once from current design, drop the dynamic route.
+**Owner:** frontend-engineer.
+**Trigger:** bundle-size audit pass; or when satori is found in bundle analyzer output as a top-N dep.
+
+---
+
+### TD-112 — Visual regression test for `/design-system` (light + dark)
+
+**Added:** 2026-04-29 (review-aggregate M16).
+**Updated:** 2026-04-29 (DONUT-V2 D5) — scope tightened: V2 DonutChart now ships with per-slice radial gradient «свет изнутри» + 1px hairline outline + 2px bisector hover translation + by-magnitude descending entrance stagger. None of these are covered by Vitest unit tests (jsdom doesn't render SVG gradients meaningfully) — they CAN regress silently. Visual regression baseline at `/design-system#charts` (donut card) is now needed before Phase 2 builder dispatch begins, so the museum-vitrine palette + gradient direction can be locked in pixels.
+**Priority:** P2 — tracking the actual cause of the «light island on dark page» bug that shipped silently 2026-04-29 + the silent-regression risk on V2 visuals.
+**Source:** `/design-system` showcase has no Playwright snapshot or visual regression coverage. The recent dark-stage removal + theme-aware fix was caught in code review only because right-hand explicitly inspected — no automated gate would have flagged the «light island» issue. With β.1.4 / D5 the surface area has expanded — DonutChart V2 visual quality (gradient direction, slice cornerRadius, hairline outline, hover bisector, entrance stagger order) all live behind pixels-only assertions.
+**Recommendation:** add Playwright visual regression test gating the showcase route in both themes. Test plan:
+  - Navigate `/design-system#charts`, snapshot light → click theme toggle → snapshot dark.
+  - Hover-state snapshots: hover the largest donut slice, snapshot light + dark (verifies bisector translation + shadow token + sister-slice no-dim).
+  - Reduced-motion snapshot: emulate `prefers-reduced-motion: reduce`, snapshot — verifies instant render path.
+  - Compare against baseline in `apps/web/playwright-tests/charts/charts.visual.spec.ts` (existing harness — extend, don't duplicate).
+**Scope:** ~120 LOC + baseline snapshots. ≤ 5 hours (extended from initial 80 / 4h to cover hover + reduced-motion variants).
+**Owner:** qa-engineer.
+**Trigger:** before Phase 2 builder dispatch (so each new chart kind lands with a baseline) ✓ ALSO needed before V1 retires per TD-115, to lock V2-only baselines.
+
+---
+
+### TD-111 — Chart dispatcher double-render cost on dense dashboards
+
+**Added:** 2026-04-29 (review-aggregate M14).
+**Priority:** P2 — measure-then-decide.
+**Source:** `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` does `useState(false)` + `useEffect → setUsePrimitives(true)` per chart instance when env = `'primitives'`. On the dashboard page rendering 6+ charts, this multiplies into 6+ extra re-renders + 6+ observer registrations per page load.
+**Recommendation:** measure INP (Interaction-to-Next-Paint) on Phase 2 dashboard with N≥6 charts. If degradation visible, hoist the flag read to a top-level Provider (single read, single broadcast). Otherwise document the known cost in CHARTS_SPEC §3 and leave.
+**Scope:** measurement first (≤ 1 hour). Mitigation if needed (~80 LOC, ≤ 3 hours) — overlaps with TD-114 ThemeProvider lift.
+**Owner:** qa-engineer (measurement) + frontend-engineer (mitigation if triggered).
+**Trigger:** Phase 2 dashboard route renders ≥6 charts on one page; or INP measurement >200ms on Lighthouse.
+
+---
+
+### TD-110 — LLM observability (Langfuse or analog) for AI service
+
+**Added:** 2026-04-29 (PO directive).
+**Priority:** P2 — pre-prod-AI-launch.
+**Source:** AI service (`apps/ai/`, FastAPI + Pydantic v2) currently has no LLM observability layer. No prompt/completion tracking, no token-cost tracking, no latency telemetry, no model-version drift detection, no per-conversation tracing across the ChartEnvelope emission path. As AI traffic grows pre-launch and especially post-launch, debugging prompt regressions / runaway costs / Lane-A vocabulary drift becomes blind without instrumentation.
+**Recommendation:** evaluate and adopt one of:
+- **Langfuse** (OSS self-host, free; or hosted ~$29/mo small tier) — primary candidate. Native Anthropic SDK + LangChain integrations; trace tree per request; cost per model + per session; prompt version A/B; eval framework.
+- **Helicone** (proxy-style, OSS or hosted) — simpler integration via base URL swap; less granular per-step tracing.
+- **Arize Phoenix** (OSS) — strong on eval + bias detection; less production-monitoring focused.
+- **LangSmith** (hosted only, paid after free tier) — tight LangChain ecosystem fit; vendor lock concern.
+
+Per R1 (no spend without PO approval), default = **Langfuse self-host on Fly.io alongside `apps/ai`** (Postgres + Redis container, ~$0-5/mo on Hobby plan). Hosted tier requires per-transaction PO approval.
+
+**Scope when triggered:**
+- Add Langfuse SDK dep to `apps/ai/pyproject.toml`
+- Wrap LLM calls with Langfuse traces (decorator-based — minimal code intrusion)
+- Capture: prompt template, model, input tokens, output tokens, cost, latency, ChartEnvelope payload size, parser-rejection reason if any
+- TD-099 vocabulary-gate failures land as Langfuse trace tags (advisory-tone leakage signal)
+- Right-Hand + PO get weekly cost summary
+- Document data-residency + GDPR considerations (Langfuse self-host keeps user prompts in-region)
+
+**Owner:** backend-engineer (AI service integration) + devops-engineer (Fly deploy if self-host) + legal-advisor (GDPR review pre-launch).
+
+**Trigger to revisit:**
+- Before AI service production deploy (`apps/ai` prod app — currently staging-only per `RUNBOOK_ai_flip.md`)
+- OR when prompt-tuning becomes a routine activity (≥3 prompt revisions/week)
+- OR when monthly LLM cost exceeds $50 (visibility threshold)
+
+**Links:** `apps/ai/` (current AI service); `RUNBOOK_ai_flip.md` (prod flip pending); TD-099 (vocab gate, traces would land here); langfuse.com docs.
+
+---
+
+### TD-109 — Windows `.next/trace` lock collision on parallel dev servers
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3.
+**Source:** Right-Hand was running `pnpm --filter @investment-tracker/web dev --port 3000` while QA dispatched a parallel Playwright suite that needed to spawn `next start` on the same Windows host. Two Next.js processes contend on `apps/web/.next/trace` (Windows file-lock semantics) → second process EPERMs on launch. CI Linux runners do not exhibit this (POSIX file locks differ). QA agent worked around with `NEXT_DIST_DIR` env override in `apps/web/next.config.ts` (additive, env-gated; default behaviour unchanged when env not set).
+**Recommendation:** keep the env-gated workaround. If multi-port dev becomes a routine pattern, formalise with a `pnpm dev:multi` script that sets the env automatically. Otherwise informational TD only.
+**Owner:** devops + frontend.
+**Trigger to revisit:** if a third concurrent dev process needs to run, OR if Windows tooling becomes a routine team pattern (currently single-developer host).
+**Links:** `apps/web/next.config.ts` (env-gated dist-dir override); QA dispatch return.
+
+---
+
+### TD-108 — Candlestick visual baseline gap (18/20 instead of 20)
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3 — gated.
+**Source:** QA Layer B captured 18 Playwright visual baselines (9 chart kinds × 2 themes). Original kickoff target was 20 (10 kinds × 2 themes). Gap = Candlestick × 2 themes; Candlestick is intentionally NOT demoed in showcase per FE kickoff §scope (T3 gated behind PO greenlight + legal-advisor sign-off — CHARTS_SPEC §4.8). `LazyCandlestick` smoke covered in `charts.test.tsx`. Tally guard tests assert the 9-kind set + Scatter exclusion; the missing 2 baselines are documented absences, not regressions.
+**Recommendation:** when T3 PO greenlight + legal sign-off lands, wire showcase Candlestick demo block + capture +2 baselines (light + dark) → restore 20-baseline target.
+**Owner:** PO (gate), then frontend-engineer + qa-engineer.
+**Trigger to revisit:** Candlestick T3 PO greenlight + legal-advisor sign-off.
+**Links:** FE kickoff §scope (Candlestick lazy-no-demo); QA `playwright-tests/charts/__screenshots__/` (current 18); CHARTS_SPEC §4.8.
+
+---
+
+### TD-107 — `STACKED_BAR_FIXTURE.meta.subtitle` trips TD-099 vocabulary gate
+
+**Added:** 2026-04-29 (SLICE-CHARTS-QA-V1 closure).
+**Priority:** P3.
+**Source:** Test fixture `STACKED_BAR_FIXTURE.meta.subtitle = "Asset class breakdown by broker"` includes the word «breakdown», which is a TD-099 TA-tier forbidden token (advice-tone tripwire from finance angle). Showcase rendering bypasses the gate (typed payload imported directly, no `parseChartEnvelope` call). Round-trip fixture → `parseChartEnvelope` → typed `ChartEnvelope` fails because the gate rejects the descriptive «breakdown». QA worked around in contract tests by stripping `meta.subtitle` before parser invocation.
+**Recommendation:** two paths, pick one:
+1. **Edit fixture:** change `subtitle` to «Asset class composition by broker» (or similar non-TA descriptive verb). Lower-risk; preserves strict gate.
+2. **Whitelist «breakdown» as descriptive noun:** add to `lane-a-vocabulary.ts` whitelist when used in noun-phrase context («asset breakdown», «portfolio breakdown») — distinct from imperative verb («breakdown imminent»). Higher-effort regex; broader applicability.
+**Owner:** frontend-engineer (fixture edit) OR backend-engineer (whitelist refinement).
+**Trigger to revisit:** AI agent first attempts to emit a stacked-bar `ChartEnvelope` payload OR next time fixtures are edited.
+**Links:** `packages/ui/src/charts/_shared/fixtures.ts` (STACKED_BAR_FIXTURE); `packages/shared-types/src/lane-a-vocabulary.ts` (whitelist precedent: BRAND_NAME_WHITELIST); QA `parser.contract.test.ts` (workaround).
+
+---
+
+### TD-106 — Disclaimer copy needs licensed attorney sign-off pre-alpha
+
+**Added:** 2026-04-29 (TD-100 implementation closure).
+**Priority:** P1 — pre-alpha launch blocker.
+**Source:** `docs/reviews/2026-04-29-td100-disclaimer-legal.md` caveat — internal product-validation, NOT a substitute for licensed counsel review. The compact + verbose disclaimer text shipped via TD-100 is internally synthesised across legal-advisor + content-lead + finance-advisor. Before any user-facing route exposes chart content to real users, the copy must be reviewed by licensed counsel in PO's chosen jurisdiction(s).
+**Recommendation:** route current `packages/ui/src/components/regulatory-disclaimer/copy.ts` strings (compact EN + RU + verbose EN + RU) through licensed counsel. PO's call on which firm. Capture redlines in the TD before re-deploying. Mark with `[ATTORNEY REVIEW]` placeholder in commit until cleared.
+**Owner:** PO (firm selection) → legal-advisor (handoff package) → content-lead (apply redlines).
+**Trigger to revisit:** alpha launch scheduling.
+**Links:** `packages/ui/src/components/regulatory-disclaimer/copy.ts`; `docs/reviews/2026-04-29-td100-disclaimer-{legal,copy,placement,synthesis}.md`.
+
+---
+
+### TD-105 — Scoped phrase-whitelist for AI agent quoting disclaimer text
+
+**Added:** 2026-04-29 (TD-100 cross-cut with TD-099).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-td100-disclaimer-copy.md` content-lead concern + `docs/reviews/2026-04-29-td100-disclaimer-synthesis.md` §«Out-of-scope». Russian regulatory term-of-art «инвестиционные рекомендации» contains forbidden TD-099 stem `рекоменд-`; «инвестиционные советы» (the disclaimer chose this form) avoids the stem but still contains TD-099-blocked tokens (`совет-` family). Static UI copy in `RegulatoryDisclaimer` component is fine (does NOT route through `parseChartEnvelope`). Concern arises only if the AI agent quotes or paraphrases the disclaimer in `meta.title` / `meta.subtitle` / `meta.alt` — currently TD-099 vocabulary gate would reject those AI-emitted strings.
+**Recommendation:** add scoped phrase-whitelist in `packages/shared-types/src/lane-a-vocabulary.ts` (analogous to `BRAND_NAME_WHITELIST` precedent) for the regulatory term-of-art phrases:
+- «инвестиционные рекомендации» (and case forms: рекомендаций / рекомендациям)
+- «инвестиционные советы» (and case forms)
+- «инвестиционный советник» (legal RU translation of «investment adviser»)
+- English equivalents if AI agent emits English disclaimer-quotes: «investment advice», «investment adviser», «personalized recommendation»
+Whitelist matches BEFORE blocklist scan. Add tests confirming AI-emitted disclaimer-quote strings parse cleanly in both languages.
+**Owner:** backend-engineer.
+**Trigger to revisit:** SLICE-AI-CHARTS-V1 OR first observed AI-emitted string referencing disclaimer wording (whichever comes first).
+**Links:** `packages/shared-types/src/lane-a-vocabulary.ts` (current whitelist precedent: `BRAND_NAME_WHITELIST`); TD-099 specialist files; TD-100 synthesis.
+
+---
+
+### TD-104 — Embed `## Default skill stack` section in remaining agent .md files
+
+**Added:** 2026-04-29 (chore(agents) consolidation).
+**Priority:** P3.
+**Source:** Per `.claude/agents/CONSTRAINTS.md` Rule 7 «Default skill stack per agent», each agent file should carry a `## Default skill stack` section listing its canonical plugin skills. The CONSTRAINTS «Common skill recipes» appendix currently serves as fallback for all 17 agent files; per-agent sections are not yet embedded (rolled-out gradually to keep the migration commit reviewable).
+**Recommendation:** as each agent file is opened for any reason (scope change, skill discovery, persona refresh), add a `## Default skill stack` section using the matching CONSTRAINTS appendix recipe as starting point. When all 17 agents have explicit sections, simplify CONSTRAINTS Rule 7 wording (drop the «where missing, fallback» clause).
+**Owner:** Right-Hand (drafts) + per-agent persona owners (review).
+**Trigger to revisit:** any time an agent file is touched.
+**Links:** `.claude/agents/CONSTRAINTS.md` (Rule 7 + appendix); `.claude/agents/README.md` (editing convention).
+
+---
+
+### TD-103 — ADR addendum: Δ1 placement + renderer-baked caption clarification
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` LOW-2. Implementation correctly placed `MetaFinancialAggregate` mixin on `meta` for Donut/Treemap and as a payload-level `rowAggregates` array for StackedBar (the `MultiSeriesPoint.catchall(z.number())` shape makes per-row `meta` structurally impossible). Cross-field refinement runs at `ChartEnvelope.superRefine` because Zod `discriminatedUnion` rejects `ZodEffects` members. All correct, all documented inline at `packages/shared-types/src/charts.ts:679-694`, but the architect ADR itself does not yet reflect the realization. Same gap for renderer-baked captions (Waterfall §C6, Drift §B8, Treemap T-8) — correct call but not stated as a policy in the ADR.
+**Recommendation:** back-port a one-paragraph clarification to `docs/reviews/2026-04-29-architect-chart-data-shape-adr.md` Δ1 section + add a small «Theme + locale + units» note that mandatory regulatory captions are renderer-baked, not payload-driven, when wording must remain regulatorily stable.
+**Owner:** architect (project agent) — drafts addendum.
+**Trigger to revisit:** any time the architect ADR is touched OR before consolidated PR opens (so PR description doesn't reference an ADR that doesn't match the implementation).
+**Links:** architect ADR; `packages/shared-types/src/charts.ts:679-694`; `Waterfall.tsx`, `Treemap.tsx`, `BarChart.tsx` for caption-bake pattern.
+
+---
+
+### TD-102 — Compile-time `Expect<Equal<>>` assertion for `CHART_KINDS` ↔ `ChartPayload['kind']`
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` LOW-1. `packages/ui/src/charts/types.ts` exports a hand-maintained `CHART_KINDS` tuple whose 10 literals match the Zod discriminated union exactly today, but there is no compile-time check. Adding chart kind 11 (e.g. when Scatter re-enters the union post-V2-greenlight) could silently diverge if the tuple isn't bumped.
+**Recommendation:** add a type-level test using `Expect<Equal<(typeof CHART_KINDS)[number], ChartPayload['kind']>>` (or equivalent helper) in `packages/ui/src/charts/types.ts` or a sibling `*.type-test.ts` file. Forces a noisy compile failure on drift.
+**Owner:** FE.
+**Trigger to revisit:** when any new chart kind is added (Scatter V2 re-entry, or net-new kind).
+**Links:** `packages/ui/src/charts/types.ts` (CHART_KINDS); `packages/shared-types/src/charts.ts` (ChartPayload union).
+
+---
+
+### TD-101 — `validateCrossFieldInvariants` cognitive complexity refactor
+
+**Added:** 2026-04-29 (charts pre-QA TypeScript review).
+**Priority:** P3.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-typescript-review.md` M-1. The cross-field `superRefine` callback at `packages/shared-types/src/charts.ts` (around line 695) has cognitive complexity 26 — Biome limit is 15. This is the most critical correctness gate in the codebase (Donut/Treemap sum-to-total Δ1 + Waterfall conservation Δ2) and is hard to audit as a single function.
+**Recommendation:** extract per-invariant helpers (`donutSumToTotal`, `treemapSumToTotal`, `stackedBarRowSums`, `waterfallConservation`) each returning `ZodIssue[]`. Main `superRefine` orchestrates by running each helper with the right payload narrowing and pushing issues. Tests cover each helper in isolation.
+**Owner:** backend (Zod schemas).
+**Trigger to revisit:** next time a new cross-field invariant lands (likely SLICE-AI-CHARTS-V1 or scatter V2 re-introduction).
+**Links:** `packages/shared-types/src/charts.ts:695+` (current monolith).
+
+---
+
+### TD-100 — Page-level «information only, not advice» disclaimer pre-launch
+
+**Added:** 2026-04-29 (charts pre-QA legal review).
+**Priority:** P1 — pre-launch blocker.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-legal-review.md` M-1. No persistent disclaimer on user-facing routes. Acceptable for `/design` (showcase only), mandatory before any production surface that renders charts to real users. Required by SEC publisher-exclusion «general» prong + MiFID II information-vs-advice line + FCA + 39-ФЗ analogues.
+**Recommendation:** add persistent footer (or sub-hero) disclaimer to every public route that renders chart content, in both languages. Bilingual EN + RU. Specific wording owned by content-lead with legal-advisor sign-off.
+**Owner:** legal-advisor (boundary) + content-lead (copy) + product-designer (placement).
+**Trigger to revisit:** before public alpha launch.
+**Links:** `docs/product/02_POSITIONING.md` (Lane A locked); legal review report.
+
+---
+
+### TD-099 — AI-prose vocabulary regex at api-client trust boundary
+
+**Added:** 2026-04-29 (charts pre-QA legal + finance reviews).
+**Priority:** P1 — Lane-A enforcement gate before AI-emitted production charts.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-legal-review.md` M-3 + `2026-04-29-charts-pre-qa-finance-revalidation.md` N1. Architect Δ4 explicitly shifts cross-field math + structural enforcement to Zod / Pydantic; prose drift (advice-tone leakage in `meta.title` / `meta.subtitle` / `meta.alt` / `CalendarEvent.description`) is the SOLE remaining channel for Lane-A breach. Currently no automated check.
+**Recommendation:** at `packages/api-client/src/index.ts` `parseChartEnvelope`, add post-parse vocabulary check on every string field in the envelope. Forbidden-verb list (recommend, suggest, advise, should, must, expect, predict, target) maintained in a constant; check produces a Zod-issue-shaped failure if any forbidden token appears. Vocabulary list owned by legal + content-lead jointly.
+**Owner:** backend (api-client wiring) + legal-advisor + content-lead (vocabulary).
+**Trigger to revisit:** SLICE-AI-CHARTS-V1 — when the AI agent first emits `ChartEnvelope` payloads via a real prompt template (not test fixtures).
+**Links:** architect ADR §Δ4; `docs/AI_CONTENT_VALIDATION_TEMPLATES.md` if referenced; `packages/api-client/src/index.ts` (parser).
+
+---
+
+### TD-098 — `?debug=1` payload-reveal hostname/PII guard
+
+**Added:** 2026-04-29 (charts pre-QA security + legal reviews).
+**Priority:** P2.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-security-review.md` M3 + `2026-04-29-charts-pre-qa-legal-review.md` M-2. `ChartError.tsx:42-50` reveals raw payload JSON when URL has `?debug=1`. Today the showcase route `/design` is staff-only so the leak surface is bounded. When chart errors render in user-facing routes (chat, dashboard), this becomes (a) a PII leak vector — `brokerSource`, position values, account identifiers in plain text — and (b) iframe-parent attack — embedding context could force-enable debug.
+**Recommendation:** before any user-facing route renders `ChartError`, gate the payload reveal by hostname allowlist (`localhost` + staging only) AND/OR move behind staff-auth (`isAdmin` claim from Clerk) AND/OR field-redaction (mask broker / amount / account-id). Document choice in JSDoc on the gate.
+**Owner:** FE (gate edit) + security-auditor (validation) + legal-advisor (PII boundary).
+**Trigger to revisit:** before any user-facing route renders `ChartError` (currently bounded to `/design`).
+**Links:** `packages/ui/src/charts/_shared/ChartError.tsx` (gate); security review §M3; legal review §M-2.
+
+---
+
+### TD-097 — CI grep gate for single-parser invariant
+
+**Added:** 2026-04-29 (charts pre-QA architect-project review).
+**Priority:** P2.
+**Source:** `docs/reviews/2026-04-29-charts-pre-qa-architect-conformance-project.md` MEDIUM. The single-parser invariant («`ChartEnvelope.safeParse` is callable from exactly one production-code site, `packages/api-client/src/index.ts:132`») is currently enforced by social contract + a JSDoc comment + manual grep verification — no automated CI gate. Production count = 1 today, but the invariant decays silently as the codebase grows.
+**Recommendation:** add a CI step (in `.github/workflows/ci.yml` Node job) that runs the production-code grep and fails if matches !== 1. Suggested matcher: `grep -rn "ChartEnvelope\.\(safeParse\|parse\)" --include="*.ts" --include="*.tsx" --exclude="*.test.ts" --exclude-dir=node_modules .` then assert exit-code = 0 AND `wc -l` = 1. JSDoc comments mentioning the symbol need an exclusion convention (e.g. only count lines that are not commented).
+**Owner:** devops (CI step) + backend (grep tuning).
+**Trigger to revisit:** before MVP launch OR next time CI workflow is touched.
+**Links:** `packages/api-client/src/index.ts:132`; architect-project review report.
+
+---
+
+### TD-096 — Drift-bar caption trigger uses fragile substring match
+
+**Added:** 2026-04-29 (FIX-1 a11y blockers).
+**Priority:** P3.
+**Source:** `packages/ui/src/charts/BarChart.tsx:isDriftBar` detects drift bars via `payload.meta.subtitle?.toLowerCase().includes('drift')`. Two failure modes: (a) locale-fragile — a Russian payload subtitle like «Дрифт по портфелю» bypasses the trigger and the mandatory FINRA caption is silently omitted; (b) false-positive prone — a non-drift subtitle that happens to contain «drift» (e.g. «Drift in valuation method» as a chart title flavour) renders the regulatory caption spuriously. The kickoff §7 acceptance phrasing was `payload.subtype === 'drift'` but `BarChartPayload` schema (`packages/shared-types/src/charts.ts`) is `.strict()` and has no `subtype` field; adding one is a backend schema bump beyond FIX-1 scope.
+**Recommendation:** add `subtype: z.enum(['standard', 'drift']).default('standard')` (or similar) to `BarChartPayload`; coordinate with backend (FIX-2 or follow-on slice). Once landed, switch `isDriftBar` to a pure `payload.subtype === 'drift'` discriminator. Until then, the substring sniff is acceptable since the AI agent is English-only at MVP and emits drift bars via a fixed prompt template.
+**Owner:** Backend (Zod schemas) + FE.
+**Trigger to revisit:** when AI agent emits drift bars in production from non-English locales OR when the next schema-bump of `BarChartPayload` is on the table — whichever comes first.
+**Links:** `packages/ui/src/charts/BarChart.tsx` (`isDriftBar` helper); `packages/shared-types/src/charts.ts` (`BarChartPayload` schema); `docs/reviews/2026-04-29-charts-pre-qa-fe-self-review.md` §M1.
+
+### TD-095 — lift chart-series CSS vars from globals.css into design-tokens DTCG
+
+**Added:** 2026-04-29 (SLICE-CHARTS-FE-V1).
+**Priority:** P3.
+**Source:** Per architect ADR §«Theme + locale + units», charts consume colors strictly via `var(--chart-series-N)` strings — theme-agnostic, no JS-resolved hex. CHARTS_SPEC §2.5 declares the 7-hue palette to land in `packages/design-tokens/tokens/semantic/{light,dark}.json`. SLICE-CHARTS-FE-V1 declared the vars inline in `apps/web/src/app/globals.css` (`:root` light defaults + `.dark, [data-theme="dark"]` overrides) so charts could ship without blocking on the design-tokens migration. Charts will pick up the DTCG-emitted vars unchanged once SLICE-DSM-V1 (parent migration) lands; this debt removes the duplication.
+**Recommendation:** add `chart.series.{1..7}` + `chart.{grid,grid-strong,axis-label,tooltip-bg,tooltip-border,tooltip-shadow,cursor}` tokens to the DTCG light/dark JSONs; rerun `packages/design-tokens` build; delete the inline declarations from `apps/web/src/app/globals.css`. Chart code needs no changes — `var(--chart-series-N)` references stay identical.
+**Owner:** Design-tokens (Style Dictionary build) + FE.
+**Trigger to revisit:** SLICE-DSM-V1 (parent design-system migration) palette pass — already in flight per `docs/engineering/kickoffs/2026-04-27-design-system-migration.md`.
+**Links:** `apps/web/src/app/globals.css` (current declarations); `docs/design/CHARTS_SPEC.md` §2.5; `packages/design-tokens/tokens/semantic/`.
+
+### TD-094 — `MultiSeriesPoint` literal-typed cast escape hatch in chart consumers
+
+**Added:** 2026-04-29 (SLICE-CHARTS-FE-V1).
+**Priority:** P3.
+**Source:** `MultiSeriesPoint` schema uses `.catchall(z.number())` to permit dynamic series keys (`{ x: 'Apr', ibkr: 1200, binance: 800 }`). `z.infer` widens this to `{ x: string|number; [k: string]: number }` which TypeScript treats as incompatible with literal-typed object shapes that mix string `x` with number-typed series — the index signature rejects `x: string`. Consequence: every consumer authoring fixtures or transforms has to cast through `unknown as MultiSeriesPoint[]`. SLICE-CHARTS-FE-V1 introduced one such helper (`asMultiSeries` in `packages/ui/src/charts/_shared/fixtures.ts`) and one inline cast (`apps/web/src/components/positions/position-price-chart.tsx`) for the migrated `AreaChart` consumer.
+**Recommendation:** export `asMultiSeries<T>` (or a `MultiSeriesRow` template type) from `@investment-tracker/shared-types/charts` so consumers don't reinvent the cast. Alternative: revisit Zod schema shape to use a typed `series` map rather than `.catchall`.
+**Owner:** Backend (shared-types) + FE.
+**Trigger to revisit:** next chart consumer migration outside the showcase / position-price-chart pair (e.g. dashboard chart wiring or chat surface integration in SLICE-CHAT-CHARTS-V1).
+**Links:** `packages/shared-types/src/charts.ts:90-95` (`MultiSeriesPoint`); `packages/ui/src/charts/_shared/fixtures.ts` (`asMultiSeries` helper); `apps/web/src/components/positions/position-price-chart.tsx`.
+
+### TD-093 — pin AI-agent SSE chart-emission streaming protocol
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P2.
+**Source:** Code-architect blueprint open-question 1 («does AI agent SSE stream emit `ChartEnvelope` as a single JSON atom after its tool-call completes, or stream JSON incrementally?»). Backend chart slice deferred this; current `parseChartEnvelope` assumes a complete payload at the trust boundary, so single-atom emission is implicitly required. Once `apps/ai/` starts emitting charts on the SSE bridge, the FE renderer (and `parseChartEnvelope`) needs a confirmed contract — partial payloads would force either re-validation per chunk (breaks the single-parser invariant) or buffering until `done` (fine but undocumented).
+**Recommendation:** single-atom after tool-call completes (matches blueprint AI-agent integration boundary §). Document in `tools/openapi/openapi.yaml` SSE event schema and in the AI service `stream_chat` handler.
+**Owner:** Backend (Python AI) + Tech-lead.
+**Trigger to revisit:** start of `SLICE-AI-CHARTS-V1` — the slice that wires the AI service to emit `ChartEnvelope` over SSE.
+**Links:** `docs/reviews/2026-04-27-chart-implementation-blueprint.md` §AI-agent integration; `apps/ai/src/ai/api/chat.py`.
+
+### TD-092 — re-activate scatter `referenceLines.label` vocabulary regex on V2 re-introduction
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P3.
+**Source:** Finance audit §2.9 finding S-2 (HIGH → V2-deferred-gate per audit §9 Δa). Scatter is excluded from the MVP `ChartPayload` discriminated union per architect Δ3, so any scatter payload fails parse before the `referenceLines.label` content is inspected. When V2 re-introduces scatter (PO greenlight + legal-advisor sign-off), the schema must add a `.refine()` rejecting prescriptive vocabulary in `referenceLines.label` per `AI_CONTENT_VALIDATION_TEMPLATES.md` §3 verb blacklist (e.g. «aggressive», «conservative», «efficient», «optimal», «target», «aspirational»).
+**Owner:** Backend (Zod schemas) + finance-advisor (vocabulary list owner).
+**Trigger to revisit:** V2 PO greenlight to re-add scatter to the union (schema bump ≥1.1) AND legal-advisor sign-off.
+**Links:** `docs/reviews/2026-04-29-finance-charts-lane-a-audit.md` §2.9 + §9 Δa; `packages/shared-types/src/charts.ts` `ScatterChartPayload` (defined but not unioned).
+
+### TD-091 — Pydantic mirror generation for `apps/ai/` chart payload validation
+
+**Added:** 2026-04-29 (SLICE-CHARTS-BACKEND-V1).
+**Priority:** P3.
+**Source:** Architect ADR §«Δ4 dual-side validation». Canonical chart-payload schemas live in `packages/shared-types/src/charts.ts` (Zod). For dual-side defense-in-depth, `apps/ai/` must mirror the structural exclusions (Risk Flags 1/2/3) in Pydantic v2 so the AI agent fails fast on malformed emissions BEFORE the network roundtrip to FE. Cross-field math invariants (waterfall conservation Δ2, sum-to-total Δ1) live ONLY in Zod and are NOT duplicated in Pydantic per Δ4. The Pydantic models must be GENERATED from the OpenAPI schema (which is itself derived from Zod via `zod-to-openapi`), not hand-authored.
+**Recommendation:** dispatch as `SLICE-AI-CHARTS-V1`. Add `zod-to-openapi` to the `packages/shared-types` build pipeline; emit `tools/openapi/charts.openapi.yaml` (or extend the main spec); regenerate Pydantic models in `apps/ai/src/ai/schemas/charts.py` via `datamodel-code-generator` or equivalent. Mirror structural exclusion tests in `apps/ai/tests/test_charts_schema.py` (identical fixtures, two language runtimes).
+**Owner:** Backend (Python AI).
+**Trigger to revisit:** start of `SLICE-AI-CHARTS-V1` — the slice that wires the AI service to emit `ChartEnvelope` payloads.
+**Links:** `docs/reviews/2026-04-29-architect-chart-data-shape-adr.md` §«Brainstorm-pass addendum / Δ4»; `packages/shared-types/src/charts.ts`.
+
 ### TD-090 — typed action_url for insights (oneOf discriminated union)
 
 **Added:** 2026-04-22 (Slice 6a post-merge, PR #64).
@@ -491,6 +864,15 @@ Inventory (9 ignores, each with reason):
 ---
 
 ## Resolved
+
+### TD-R117 — `ACTIVE_CHART_BACKEND` resolver for non-`apps/web` consumers
+
+**Resolved:** 2026-04-29 by `<commit-pending>` (Phase β.1.5 — TD-117 closure on `chore/plugin-architecture-2026-04-29`).
+**Was:** `apps/web/next.config.ts` `env:` block made `NEXT_PUBLIC_PROVEDO_CHART_BACKEND` build-time-constant only for `apps/web`. Other consumers (Storybook setup, Vitest, future mobile) re-read `process.env` at module-eval and risked SSR/CSR asymmetry. Dispatcher saved them at runtime, but architectural footgun remained.
+**Fix:** added `getActiveBackend(): ChartBackend` resolver in `packages/ui/src/charts/_shared/chart-backend-dispatch.tsx` — reads env once at module-eval, caches as a module-level constant. Barrel `index.ts` exports `ACTIVE_CHART_BACKEND` as the resolver result and re-exports `getActiveBackend` + `ChartBackend` type. Dispatcher's post-mount swap delegates to the same resolver. Per-consumer cache (workspace-package boundary) keeps each consumer isolated; the canonical setup matrix lives in `docs/design/CHARTS_SPEC.md` §3.13 (apps/web `next.config.ts` already wired; Vitest `setup.ts`, Storybook `preview.tsx`, future mobile bundle config documented).
+**Why approach (A) module-level singleton over (B) lazy memoise:** value never changes at runtime, eager read surfaces config drift at module-eval (not at first chart render), zero measurable benefit to deferring. Belt-and-braces `next.config.ts` env block kept — single source of truth + bundle pin together cover all four mitigation layers.
+**Verification:** `pnpm tsc --noEmit` clean across `packages/ui`; `pnpm test backend-flag` 7/7 green; visual smoke at `/design-system` zero hydration errors.
+**Links:** session 2026-04-29 phase β.1.5 commit; review aggregate `2026-04-29-design-system-fixes-aggregate.md` H7.
 
 ### TD-R086 — CI gate for AI Service Docker build
 

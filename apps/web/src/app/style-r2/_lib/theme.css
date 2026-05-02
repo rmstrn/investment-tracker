@@ -1,0 +1,342 @@
+/*
+ * R2 — «Long Room» theme.
+ *
+ * Calm / restrained / spa. Aesop × Stripe Press × Cereal magazine.
+ * Confident-because-quiet — generous left-aligned type, warm cream paper,
+ * editorial serif for display + AI, sans for UI + body, mono for money only.
+ *
+ * The right third of the hero is DELIBERATELY EMPTY. The hairline rule
+ * below the hero anchors that emptiness as intentional — composition,
+ * not asset failure.
+ *
+ * Palette (per R2-calm-restrained.md §3 — AAA on every numeral path):
+ *   --r2-paper          #F5F1EA  default surface (warm cream)
+ *   --r2-paper-deep     #EDE7DB  card / quote-block surface
+ *   --r2-ink            #1B1A17  primary text + headlines  (15.4:1 AAA)
+ *   --r2-ink-soft       #3F3D38  body running text         (9.1:1  AAA)
+ *   --r2-ink-quiet      #6E6A60  captions / metadata       (4.6:1  AA)
+ *   --r2-figure         #0E0D0B  money numerals ONLY       (17.8:1 AAA)
+ *   --r2-accent-sage    #5C6B52  single chromatic accent   (6.8:1  AA+)
+ *   --r2-signal-coral   #A14A38  negative deltas only      (6.1:1  AA+)
+ *
+ * Scope: every selector lives under `[data-style="r2"]`. NO bare :root,
+ * NO bare body, NO bare element selectors. Tokens prefixed `--r2-*` so
+ * they cannot collide with style-r1 or any other comparison route.
+ *
+ * Wired by `./layout.tsx` via the route-local `<div data-style="r2">`.
+ */
+
+[data-style="r2"] {
+  /* ── Palette ───────────────────────────────────────────────────────── */
+  --r2-paper: #f5f1ea;
+  --r2-paper-deep: #ede7db;
+  --r2-ink: #1b1a17;
+  --r2-ink-soft: #3f3d38;
+  --r2-ink-quiet: #6e6a60;
+  --r2-figure: #0e0d0b;
+  --r2-accent-sage: #5c6b52;
+  --r2-signal-coral: #a14a38;
+
+  /* Hairline opacity baked into a usable color (rgba on ink at 24%). */
+  --r2-rule: rgba(27, 26, 23, 0.24);
+
+  /* ── Type stacks (variables → fallback chain) ──────────────────────── */
+  --r2-font-display: var(--font-r2-display), "Iowan Old Style", "Palatino Linotype", Georgia,
+    "Times New Roman", serif;
+  --r2-font-body: var(--font-r2-body), -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif;
+  --r2-font-mono: var(--font-r2-mono), ui-monospace, SFMono-Regular, "Menlo", "Consolas", monospace;
+
+  /* ── Page surface ──────────────────────────────────────────────────── */
+  background-color: var(--r2-paper);
+  color: var(--r2-ink-soft);
+  font-family: var(--r2-font-body);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Top wordmark strip ────────────────────────────────────────────────── */
+[data-style="r2"] .r2-mast {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding: clamp(24px, 3vw, 40px) clamp(24px, 6vw, 96px) 0;
+}
+
+[data-style="r2"] .r2-mast__brand {
+  font-family: var(--r2-font-display);
+  font-variation-settings: "opsz" 18, "wght" 300;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  color: var(--r2-ink);
+  line-height: 1;
+}
+
+[data-style="r2"] .r2-mast__nav {
+  display: flex;
+  gap: clamp(20px, 3vw, 36px);
+  align-items: baseline;
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--r2-ink-quiet);
+}
+
+[data-style="r2"] .r2-mast__nav a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+[data-style="r2"] .r2-mast__nav a:hover,
+[data-style="r2"] .r2-mast__nav a:focus-visible {
+  color: var(--r2-ink);
+  outline: 0;
+}
+
+/* ── Section eyebrow — «──  TITLE ──» (recurring brand tic) ──────────── */
+[data-style="r2"] .r2-eyebrow {
+  font-family: var(--r2-font-display);
+  font-variation-settings: "opsz" 14, "wght" 500;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--r2-accent-sage);
+  margin: 0;
+}
+
+/* ── Display headline (Fraunces 92px / wght 300, 8 words max) ────────── */
+[data-style="r2"] .r2-display {
+  font-family: var(--r2-font-display);
+  font-variation-settings: "opsz" 144, "wght" 300;
+  font-weight: 300;
+  font-size: clamp(3.25rem, 2.4rem + 4vw, 5.75rem);
+  line-height: 1.04;
+  letter-spacing: -0.022em;
+  color: var(--r2-ink);
+  margin: 0;
+  text-wrap: balance;
+  max-width: 14ch;
+}
+
+/* ── Section heading (smaller display, e.g. band titles) ─────────────── */
+[data-style="r2"] .r2-section-head {
+  font-family: var(--r2-font-display);
+  font-variation-settings: "opsz" 36, "wght" 300;
+  font-weight: 300;
+  font-size: clamp(1.875rem, 1.6rem + 1.2vw, 2.5rem);
+  line-height: 1.18;
+  letter-spacing: -0.012em;
+  color: var(--r2-ink);
+  margin: 0;
+  max-width: 24ch;
+}
+
+/* ── Sub / lead (Inter 19px, ink-soft, max 56ch) ─────────────────────── */
+[data-style="r2"] .r2-sub {
+  font-family: var(--r2-font-body);
+  font-size: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
+  line-height: 1.55;
+  color: var(--r2-ink-soft);
+  margin: 0;
+  max-width: 56ch;
+  font-weight: 400;
+}
+
+/* ── Body running text ───────────────────────────────────────────────── */
+[data-style="r2"] .r2-body {
+  font-family: var(--r2-font-body);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--r2-ink-soft);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* ── Meta (small caps, ink-quiet, used for captions + datelines) ─────── */
+[data-style="r2"] .r2-meta {
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--r2-ink-quiet);
+  margin: 0;
+}
+
+/* ── Hairline rule — 1px ink @ 24%, the only structural divider ──────── */
+[data-style="r2"] .r2-rule {
+  height: 1px;
+  border: 0;
+  background: var(--r2-rule);
+  margin: 0;
+}
+
+/* ── Money figure — AAA contrast, JetBrains Mono tabular ─────────────── */
+[data-style="r2"] .r2-figure {
+  font-family: var(--r2-font-mono);
+  color: var(--r2-figure);
+  font-variant-numeric: tabular-nums lining-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "lnum" 1, "zero" 1;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+[data-style="r2"] .r2-figure--display {
+  font-size: clamp(2rem, 1.7rem + 1.5vw, 3rem);
+  line-height: 1.05;
+}
+
+[data-style="r2"] .r2-figure--inline {
+  /* Used inside Fraunces AI prose so figures stay tabular mid-sentence. */
+  font-style: normal;
+  font-weight: 500;
+  font-size: inherit;
+}
+
+[data-style="r2"] .r2-figure--small {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* ── Delta glyphs (▲ / ▼) — never colour-only ────────────────────────── */
+[data-style="r2"] .r2-delta {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--r2-font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--r2-ink-soft);
+}
+
+[data-style="r2"] .r2-delta__glyph {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* ── CTA — single, ink fill, sage on hover (180ms, no scale, no shadow) */
+[data-style="r2"] .r2-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--r2-font-body);
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--r2-paper);
+  background: var(--r2-ink);
+  border: 0;
+  padding: 14px 22px;
+  border-radius: 2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 180ms cubic-bezier(0.2, 0.7, 0.2, 1), color 180ms
+    cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+[data-style="r2"] .r2-cta:hover,
+[data-style="r2"] .r2-cta:focus-visible {
+  background: var(--r2-accent-sage);
+  color: var(--r2-paper);
+  outline: 0;
+}
+
+[data-style="r2"] .r2-cta:focus-visible {
+  outline: 2px solid var(--r2-accent-sage);
+  outline-offset: 4px;
+}
+
+/* ── Quote-block / paper-deep surface (holds the BarVisx) ────────────── */
+[data-style="r2"] .r2-quote-block {
+  background: var(--r2-paper-deep);
+  padding: clamp(28px, 4vw, 48px);
+  border: 0;
+  border-radius: 0;
+}
+
+[data-style="r2"] .r2-quote-block__chart {
+  /* No card chrome on the chart — the paper-deep surface IS the frame. */
+  margin: 0 -8px;
+}
+
+[data-style="r2"] .r2-quote-block__caption {
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--r2-ink-quiet);
+  margin: 16px 0 0;
+}
+
+/* ── AI surface — bylined column, NOT a chat bubble ──────────────────── */
+[data-style="r2"] .r2-insight {
+  font-family: var(--r2-font-display);
+  font-variation-settings: "opsz" 24, "wght" 300;
+  font-weight: 300;
+  font-size: 19px;
+  line-height: 1.5;
+  color: var(--r2-ink);
+  margin: 0;
+  max-width: 60ch;
+}
+
+[data-style="r2"] .r2-insight__byline {
+  display: block;
+  margin-top: 14px;
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--r2-ink-quiet);
+}
+
+[data-style="r2"] .r2-insight__disclaimer {
+  display: block;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--r2-rule);
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  color: var(--r2-ink-quiet);
+}
+
+/* ── Sub-link (text-only, sage underline) ────────────────────────────── */
+[data-style="r2"] .r2-sublink {
+  font-family: var(--r2-font-body);
+  font-size: 14px;
+  color: var(--r2-accent-sage);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: color 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+[data-style="r2"] .r2-sublink:hover,
+[data-style="r2"] .r2-sublink:focus-visible {
+  color: var(--r2-ink);
+  outline: 0;
+}
+
+/* ── Footer disclosure ───────────────────────────────────────────────── */
+[data-style="r2"] .r2-disclosure {
+  font-family: var(--r2-font-body);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--r2-ink-quiet);
+  max-width: 78ch;
+  margin: 0;
+}
+
+/* ── Reduced motion ──────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  [data-style="r2"] .r2-cta,
+  [data-style="r2"] .r2-sublink,
+  [data-style="r2"] .r2-mast__nav a {
+    transition: none;
+  }
+}

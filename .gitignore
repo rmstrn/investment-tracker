@@ -63,7 +63,13 @@ secrets.local.*
 .idea/
 .cursor/
 # Claude Code local settings — per-developer permissions/MCPs. Don't ship.
-.claude/
+# Use `.claude/*` (not `.claude/`) so explicit !-overrides below can re-include children.
+.claude/*
+# ...except agent definitions and project skills which are SHARED canonical sources.
+!.claude/agents/
+!.claude/agents/**
+!.claude/skills/
+!.claude/skills/**
 
 # Ephemeral session-resume notes — regenerated per session, not shared.
 SESSION_RESUME_*.md
@@ -103,3 +109,10 @@ tools/openapi/generated/*
 
 .vercel
 .env*.local
+
+# Playwright MCP screenshots / page snapshots / console logs (per-developer)
+.playwright-mcp/
+# Dev server stderr capture (per-developer)
+.dev-server.err
+# Stray screenshots dropped to repo root (move under .playwright-mcp/ or delete)
+design-system-*.png

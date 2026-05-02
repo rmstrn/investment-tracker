@@ -1,122 +1,509 @@
 {
   "semantic": {
+    "bg": {
+      "$value": "{color.cream.bg}",
+      "$type": "color",
+      "$description": "App page background — cream paper, deepened. Showcase --bg."
+    },
+    "card": {
+      "$value": "{color.cream.card}",
+      "$type": "color",
+      "$description": "Card / elevated surface. Showcase --card."
+    },
+    "inset": {
+      "$value": "{color.cream.inset}",
+      "$type": "color",
+      "$description": "Depressed surface (inputs, search wells, chips). Showcase --inset."
+    },
+    "ink": {
+      "$value": "{color.ink}",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill. Showcase --ink."
+    },
+    "text-2": {
+      "$value": "{color.neutral.text-secondary-light}",
+      "$type": "color",
+      "$description": "Secondary text. Showcase --text-2."
+    },
+    "text-3": {
+      "$value": "{color.neutral.text-tertiary-light}",
+      "$type": "color",
+      "$description": "Tertiary text — metadata, mono labels. Showcase --text-3 (lifted for AA body 4.84:1)."
+    },
+    "accent": {
+      "$value": "{color.signal.orange}",
+      "$type": "color",
+      "$description": "v2 — Signal-orange accent. Re-pointed from forest-jade in DS v2 Phase 3b. Drives CTAs, focus glow, citation, verified accent. Showcase --accent."
+    },
+    "accent-shadow": {
+      "$value": "rgba(240, 138, 60, 0.32)",
+      "$type": "color",
+      "$description": "v2 — Drop-shadow tint for filled-accent surfaces (signal-orange @ 32%). Showcase --accent-shadow."
+    },
+    "accent-glow": {
+      "$value": "rgba(240, 138, 60, 0.22)",
+      "$type": "color",
+      "$description": "v2 — Pulse halo + focus glow on inputs (signal-orange @ 22%). Showcase --accent-glow."
+    },
+    "terra": {
+      "$value": "{color.signal.orange-deep}",
+      "$type": "color",
+      "$description": "v2 — Signal-orange-deep. Re-pointed from terra-bronze in DS v2 Phase 3b. Drift / negative delta / danger / warning. Showcase --terra."
+    },
+    "terra-shadow": {
+      "$value": "rgba(199, 106, 34, 0.30)",
+      "$type": "color",
+      "$description": "v2 — Drop-shadow tint for filled-terra/danger surfaces (signal-orange-deep @ 30%)."
+    },
+    "modal-overlay": {
+      "$value": "rgba(50, 40, 30, 0.45)",
+      "$type": "color",
+      "$description": "Modal backdrop — warm-tinted overlay. Showcase --modal-overlay."
+    },
+
     "background": {
       "primary": {
-        "$value": "{color.static.white}",
+        "$value": "{color.cream.bg}",
         "$type": "color",
-        "$description": "App background"
+        "$description": "Legacy alias for app background → showcase --bg."
       },
       "secondary": {
-        "$value": "{color.neutral.50}",
+        "$value": "{color.cream.inset}",
         "$type": "color",
-        "$description": "Subtle sections, striped rows"
+        "$description": "Legacy alias — striped rows / subtle sections."
       },
       "tertiary": {
-        "$value": "{color.neutral.100}",
+        "$value": "{color.cream.inset}",
         "$type": "color",
-        "$description": "Muted blocks"
+        "$description": "Legacy alias — muted blocks."
       },
       "elevated": {
-        "$value": "{color.static.white}",
+        "$value": "{color.cream.card}",
         "$type": "color",
-        "$description": "Cards, popovers — pair with shadow"
+        "$description": "Legacy alias — cards / popovers (pair with shadow)."
       },
       "inverse": {
-        "$value": "{color.neutral.900}",
+        "$value": "{color.ink}",
         "$type": "color",
-        "$description": "Reversed surfaces (tooltips, toasts)"
+        "$description": "Reversed surfaces (toasts, tooltips, footer band)."
       },
       "overlay": {
-        "$value": "rgba(9, 9, 11, 0.55)",
+        "$value": "rgba(50, 40, 30, 0.45)",
         "$type": "color",
-        "$description": "Modal backdrop"
+        "$description": "Modal backdrop — warm-tinted overlay (matches --modal-overlay)."
       }
     },
 
     "text": {
-      "primary": { "$value": "{color.neutral.900}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.600}", "$type": "color" },
-      "tertiary": { "$value": "{color.neutral.500}", "$type": "color" },
+      "primary": { "$value": "{color.ink}", "$type": "color" },
+      "secondary": { "$value": "{color.neutral.text-secondary-light}", "$type": "color" },
+      "tertiary": { "$value": "{color.neutral.text-tertiary-light}", "$type": "color" },
       "muted": {
-        "$value": "{color.neutral.500}",
+        "$value": "{color.neutral.text-tertiary-light}",
         "$type": "color",
-        "$description": "#64748B — WCAG AA (4.76:1 vs white); raised from neutral-400 (2.56:1 failed)"
+        "$description": "Muted UI text. AA-compliant (4.84:1 on bg)."
       },
       "brand": {
-        "$value": "{color.brand.700}",
+        "$value": "{color.ink}",
         "$type": "color",
-        "$description": "#6D28D9 — primary brand on light mode"
+        "$description": "Brand-text now equals ink — primary signal in v1.1 is ink-CTA, not jade."
       },
-      "inverse": { "$value": "{color.static.white}", "$type": "color" },
+      "inverse": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Text on inverse surfaces (toast, on-ink CTA)."
+      },
       "onBrand": {
+        "$value": "{color.parchment}",
+        "$type": "color",
+        "$description": "Text placed on ink-filled surface (CTAs)."
+      },
+      "onAccent": {
         "$value": "{color.static.white}",
         "$type": "color",
-        "$description": "Text placed on brand-filled surface"
+        "$description": "Text on filled jade/forest-accent surfaces — 7.50:1 AAA."
       }
     },
 
     "border": {
-      "subtle": { "$value": "{color.neutral.200}", "$type": "color" },
-      "default": { "$value": "{color.neutral.300}", "$type": "color" },
-      "strong": { "$value": "{color.neutral.400}", "$type": "color" },
-      "focus": { "$value": "{color.brand.500}", "$type": "color" }
+      "subtle": {
+        "$value": "rgba(20, 20, 20, 0.16)",
+        "$type": "color",
+        "$description": "Card edges, input borders, toggle borders. Showcase --border."
+      },
+      "default": { "$value": "rgba(20, 20, 20, 0.16)", "$type": "color" },
+      "strong": { "$value": "rgba(20, 20, 20, 0.26)", "$type": "color" },
+      "divider": {
+        "$value": "rgba(20, 20, 20, 0.26)",
+        "$type": "color",
+        "$description": "v1.1 dedicated divider token — column separators."
+      },
+      "focus": { "$value": "{color.signal.orange}", "$type": "color" }
     },
 
     "state": {
       "positive": {
-        "default": { "$value": "{color.green.600}", "$type": "color" },
-        "subtle": { "$value": "{color.green.50}", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from jade in DS v2 Phase 3b. Per spec §11.1."
+        },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       },
       "negative": {
-        "default": { "$value": "{color.red.600}", "$type": "color" },
-        "subtle": { "$value": "{color.red.50}", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra in DS v2 Phase 3b. Per spec §11.1."
+        },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       },
       "warning": {
-        "default": { "$value": "{color.amber.600}", "$type": "color" },
-        "subtle": { "$value": "{color.amber.50}", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — warning collapsed to signal-orange-deep (was terra)."
+        },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       },
       "info": {
-        "default": { "$value": "{color.cyan.600}", "$type": "color" },
-        "subtle": { "$value": "{color.cyan.50}", "$type": "color" }
+        "default": {
+          "$value": "{color.neutral.text-secondary-light}",
+          "$type": "color",
+          "$description": "v1.1 info = text-2 (no extra hue)."
+        },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       }
     },
 
     "portfolio": {
       "gain": {
         "default": {
-          "$value": "{color.green.700}",
+          "$value": "{color.signal.orange}",
           "$type": "color",
-          "$description": "Portfolio gains — deeper and more muted than state.positive"
+          "$description": "v2 — re-pointed from jade in DS v2 Phase 3b. Gain — always paired with leading + and iconography (icon carries the polarity, color is brand-accent only)."
         },
-        "subtle": { "$value": "{color.green.50}", "$type": "color" }
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       },
       "loss": {
-        "default": { "$value": "{color.red.700}", "$type": "color" },
-        "subtle": { "$value": "{color.red.50}", "$type": "color" }
+        "default": {
+          "$value": "{color.signal.orange-deep}",
+          "$type": "color",
+          "$description": "v2 — re-pointed from terra in DS v2 Phase 3b. Loss — always paired with leading − (U+2212) and iconography."
+        },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       },
       "neutral": {
-        "default": {
-          "$value": "{color.neutral.500}",
-          "$type": "color",
-          "$description": "Flat / no change"
-        },
-        "subtle": { "$value": "{color.neutral.100}", "$type": "color" }
+        "default": { "$value": "{color.neutral.text-tertiary-light}", "$type": "color" },
+        "subtle": { "$value": "{color.cream.inset}", "$type": "color" }
       }
     },
 
     "interactive": {
       "primary": {
-        "$value": "{color.brand.700}",
+        "$value": "{color.ink}",
         "$type": "color",
-        "$description": "#6D28D9 — primary action on light"
+        "$description": "Primary CTA fill — ink-extruded."
       },
-      "primaryHover": { "$value": "{color.brand.800}", "$type": "color" },
-      "primaryActive": { "$value": "{color.brand.900}", "$type": "color" },
-      "secondary": { "$value": "{color.neutral.100}", "$type": "color" },
-      "secondaryHover": { "$value": "{color.neutral.200}", "$type": "color" },
-      "secondaryActive": { "$value": "{color.neutral.300}", "$type": "color" },
-      "ghostHover": { "$value": "{color.neutral.100}", "$type": "color" },
-      "ghostActive": { "$value": "{color.neutral.200}", "$type": "color" }
+      "primaryHover": {
+        "$value": "{color.ink}",
+        "$type": "color",
+        "$description": "Hover handled via translateY + shadow lift, not color shift."
+      },
+      "primaryActive": { "$value": "{color.ink}", "$type": "color" },
+      "secondary": { "$value": "{color.cream.card}", "$type": "color" },
+      "secondaryHover": { "$value": "rgba(20, 20, 20, 0.03)", "$type": "color" },
+      "secondaryActive": { "$value": "rgba(20, 20, 20, 0.06)", "$type": "color" },
+      "ghostHover": { "$value": "rgba(20, 20, 20, 0.04)", "$type": "color" },
+      "ghostActive": { "$value": "rgba(20, 20, 20, 0.06)", "$type": "color" }
+    },
+
+    "shadow": {
+      "soft": {
+        "$value": "0 1px 3px rgba(20, 20, 20, 0.08), 0 6px 18px rgba(20, 20, 20, 0.06)",
+        "$type": "shadow",
+        "$description": "Soft lift — swatches, type-rows, dropdown trigger states."
+      },
+      "card": {
+        "$value": "5px 5px 14px rgba(140, 100, 55, 0.14), -3px -3px 10px rgba(255, 250, 240, 0.55), inset 1px 1px 0 rgba(255, 255, 255, 0.5)",
+        "$type": "shadow",
+        "$description": "Card lift — multi-axis cream-tinted. Default card surface."
+      },
+      "lift": {
+        "$value": "8px 8px 24px rgba(140, 100, 55, 0.18), -3px -3px 12px rgba(255, 250, 240, 0.60), inset 1px 1px 0 rgba(255, 255, 255, 0.6)",
+        "$type": "shadow",
+        "$description": "Stronger card lift — signature card / topbar / hero ledger."
+      },
+      "toast": {
+        "$value": "0 6px 18px rgba(120, 80, 40, 0.18), 0 12px 28px rgba(120, 80, 40, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.45)",
+        "$type": "shadow",
+        "$description": "Toast / floating surfaces sitting on bg (no card scaffold). Round-7 audit 2026-04-29 — removed -3px -3px cream highlight that read as upper-left «glow». Now pure top-down drop with subtle top-edge inset rim."
+      },
+      "modal": {
+        "$value": "0 12px 32px rgba(20, 20, 20, 0.22), 0 4px 12px rgba(20, 20, 20, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.35)",
+        "$type": "shadow",
+        "$description": "Modal panel above backdrop. Round-7 audit 2026-04-29 — removed -2px -2px cream highlight that read as upper-left «glow». Now top-down drop sits on paper instead of floating with side-lit halo."
+      },
+      "input-inset": {
+        "$value": "inset 3px 3px 6px rgba(140, 100, 55, 0.14), inset -2px -2px 4px rgba(255, 250, 240, 0.9)",
+        "$type": "shadow",
+        "$description": "Input depressed slot — text inputs / search ONLY. v1.1 toggles do NOT use this."
+      },
+      "inset-light": {
+        "$value": "inset 1.5px 1.5px 3px rgba(140, 100, 55, 0.10), inset -1px -1px 2px rgba(255, 250, 240, 0.8)",
+        "$type": "shadow",
+        "$description": "Light inset — chips, citations, tabs-track, btn-icon, info-toast, empty-icon."
+      },
+      "primary-extrude": {
+        "$value": "4px 4px 12px rgba(20, 20, 20, 0.18), -1px -1px 4px rgba(255, 250, 240, 0.6), inset 1px 1px 0 rgba(255, 255, 255, 0.06)",
+        "$type": "shadow",
+        "$description": "Primary CTA — ink button extruded. v1.1 ink-CTA depth."
+      },
+      "terra-extrude": {
+        "$value": "3px 3px 10px rgba(155, 92, 62, 0.28), -1px -1px 4px rgba(255, 250, 240, 0.5), inset 1px 1px 0 rgba(255, 255, 255, 0.12)",
+        "$type": "shadow",
+        "$description": "Danger CTA — bronze button extruded."
+      },
+      "chart-card": {
+        "$value": "5px 5px 14px rgba(140, 100, 55, 0.16), -3px -3px 10px rgba(255, 250, 240, 0.62), inset 1px 1px 0 rgba(255, 255, 255, 0.55), inset 0 -1px 0 rgba(20, 20, 20, 0.04)",
+        "$type": "shadow",
+        "$description": "ChartCard — paper-pressed neumorphism. Outer warm cream-shadow + cream rim highlight + subtle bottom inset so the card reads as «paper sitting on the table», not floating."
+      },
+      "chart-bar-emboss": {
+        "$value": "drop-shadow(0 1px 1.5px rgba(20, 20, 20, 0.10)) drop-shadow(0 0.5px 0 rgba(255, 250, 240, 0.55))",
+        "$type": "shadow",
+        "$description": "SVG drop-shadow filter for chart bars — single-axis emboss + cream-edge highlight, applied as `filter` on the Recharts <Bar> wrapper."
+      },
+      "chart-line-emboss": {
+        "$value": "drop-shadow(0 1px 1px rgba(20, 20, 20, 0.10))",
+        "$type": "shadow",
+        "$description": "SVG drop-shadow filter for chart line strokes — subtle ink-on-paper feel."
+      },
+      "chart-slice-hover": {
+        "$value": "drop-shadow(0 1.5px 2px rgba(20, 20, 20, 0.12)) drop-shadow(0 0 4px rgba(45, 95, 78, 0.22))",
+        "$type": "shadow",
+        "$description": "DonutChart V2 hover slice shadow — paper-press neumorphism (layer 1) + accent glow (layer 2 = --accent-glow). Source: DECISIONS.md «DonutChart anatomy + interaction» call 4. Reused across BarChart hover, treemap tile hover, scatter point hover."
+      }
+    },
+
+    "chart-series": {
+      "1": {
+        "$value": "{color.museum.slate.light}",
+        "$type": "color",
+        "$description": "Chart series 1 — museum-slate. Re-pointed 2026-04-29 from forest-jade to museum-categorical for V1 palette swap. Source: DECISIONS.md «Charts palette: museum-vitrine extension»."
+      },
+      "2": {
+        "$value": "{color.museum.ochre.light}",
+        "$type": "color",
+        "$description": "Chart series 2 — museum-ochre. Re-pointed 2026-04-29 (was bronze). Maximum hue separation from slate (Δ=185°)."
+      },
+      "3": {
+        "$value": "{color.museum.fog-blue.light}",
+        "$type": "color",
+        "$description": "Chart series 3 — museum-fog-blue. Re-pointed 2026-04-29 (was ink). Sole blue-direction; honours no-blue rule via 0.04 chroma cap."
+      },
+      "4": {
+        "$value": "{color.museum.plum.light}",
+        "$type": "color",
+        "$description": "Chart series 4 — museum-plum. Re-pointed 2026-04-29 (was jade-lifted). Magenta quadrant filler."
+      },
+      "5": {
+        "$value": "{color.museum.stone.light}",
+        "$type": "color",
+        "$description": "Chart series 5 — museum-stone. Re-pointed 2026-04-29 (was graphite). Neutral fallback; lowest chroma in family."
+      },
+      "6": {
+        "$value": "{color.chart.light-6}",
+        "$type": "color",
+        "$description": "Chart series 6 — soft bronze lifted."
+      },
+      "7": {
+        "$value": "{color.chart.light-7}",
+        "$type": "color",
+        "$description": "Chart series 7 — deepest jade."
+      },
+      "8": {
+        "$value": "{color.chart.light-8}",
+        "$type": "color",
+        "$description": "Chart series 8 — ochre. CHART-ONLY editorial extension."
+      },
+      "9": {
+        "$value": "{color.chart.light-9}",
+        "$type": "color",
+        "$description": "Chart series 9 — aubergine. CHART-ONLY editorial extension."
+      },
+      "10": {
+        "$value": "{color.chart.light-10}",
+        "$type": "color",
+        "$description": "Chart series 10 — cobalt-ink. CHART-ONLY editorial extension."
+      },
+      "11": {
+        "$value": "{color.chart.light-11}",
+        "$type": "color",
+        "$description": "Chart series 11 — dusty mauve. CHART-ONLY editorial extension."
+      },
+      "12": {
+        "$value": "{color.chart.light-12}",
+        "$type": "color",
+        "$description": "Chart series 12 — clay tan. CHART-ONLY editorial extension."
+      }
+    },
+
+    "chart-categorical": {
+      "1": {
+        "base": {
+          "$value": "#5E3A2A",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa base. WCAG 5.8:1 vs cream. Inlined from former editorial-mh3 primitive (deleted in DS v2 Phase 3b)."
+        },
+        "top": {
+          "$value": "#7A5440",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa top stop for H3 linear-gradient (ΔL +0.10 vs base)."
+        },
+        "bottom": {
+          "$value": "#452517",
+          "$type": "color",
+          "$description": "Categorical series 1 — roasted-cocoa bottom stop for H3 linear-gradient (ΔL −0.10 vs base)."
+        }
+      },
+      "2": {
+        "base": {
+          "$value": "#A87C24",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold base. WCAG 3.6:1 vs cream."
+        },
+        "top": {
+          "$value": "#C49640",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold top stop."
+        },
+        "bottom": {
+          "$value": "#8C620D",
+          "$type": "color",
+          "$description": "Categorical series 2 — burnished-gold bottom stop."
+        }
+      },
+      "3": {
+        "base": {
+          "$value": "#5C3F5E",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine base. WCAG 5.4:1 vs cream."
+        },
+        "top": {
+          "$value": "#785878",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine top stop."
+        },
+        "bottom": {
+          "$value": "#412944",
+          "$type": "color",
+          "$description": "Categorical series 3 — aubergine bottom stop."
+        }
+      },
+      "4": {
+        "base": {
+          "$value": "#7A2E48",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine base. WCAG 5.7:1 vs cream."
+        },
+        "top": {
+          "$value": "#974663",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine top stop."
+        },
+        "bottom": {
+          "$value": "#5E1830",
+          "$type": "color",
+          "$description": "Categorical series 4 — wine bottom stop."
+        }
+      },
+      "5": {
+        "base": {
+          "$value": "#3F546E",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue base. WCAG 4.9:1 vs cream."
+        },
+        "top": {
+          "$value": "#576E89",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue top stop."
+        },
+        "bottom": {
+          "$value": "#2A3C53",
+          "$type": "color",
+          "$description": "Categorical series 5 — slate-blue bottom stop."
+        }
+      }
+    },
+
+    "chart-sequential": {
+      "1": {
+        "$value": "{color.ink-ramp.light.1}",
+        "$type": "color",
+        "$description": "Sequential ramp 1/7 — top magnitude (light)."
+      },
+      "2": {
+        "$value": "{color.ink-ramp.light.2}",
+        "$type": "color",
+        "$description": "Sequential ramp 2/7 (light)."
+      },
+      "3": {
+        "$value": "{color.ink-ramp.light.3}",
+        "$type": "color",
+        "$description": "Sequential ramp 3/7 (light)."
+      },
+      "4": {
+        "$value": "{color.ink-ramp.light.4}",
+        "$type": "color",
+        "$description": "Sequential ramp 4/7 — median (light)."
+      },
+      "5": {
+        "$value": "{color.ink-ramp.light.5}",
+        "$type": "color",
+        "$description": "Sequential ramp 5/7 (light)."
+      },
+      "6": {
+        "$value": "{color.ink-ramp.light.6}",
+        "$type": "color",
+        "$description": "Sequential ramp 6/7 (light)."
+      },
+      "7": {
+        "$value": "{color.ink-ramp.light.7}",
+        "$type": "color",
+        "$description": "Sequential ramp 7/7 — bottom magnitude (light); near visibility floor — pair with hairline outline."
+      }
+    },
+
+    "chart-grid": {
+      "$value": "rgba(20, 20, 20, 0.10)",
+      "$type": "color",
+      "$description": "Chart gridline color — light theme."
+    },
+    "chart-grid-strong": {
+      "$value": "rgba(20, 20, 20, 0.16)",
+      "$type": "color",
+      "$description": "Chart strong gridline (reference lines, axis emphasis) — light theme."
+    },
+    "chart-axis-label": {
+      "$value": "{color.neutral.text-tertiary-light}",
+      "$type": "color",
+      "$description": "Chart axis label fill — equals text-3."
+    },
+    "chart-tooltip-bg": {
+      "$value": "{color.cream.card}",
+      "$type": "color",
+      "$description": "Chart tooltip background — light theme."
+    },
+    "chart-tooltip-border": {
+      "$value": "rgba(20, 20, 20, 0.16)",
+      "$type": "color",
+      "$description": "Chart tooltip 1px outline — light theme."
+    },
+    "chart-cursor": {
+      "$value": "rgba(20, 20, 20, 0.20)",
+      "$type": "color",
+      "$description": "Chart cursor / hover crosshair — light theme."
     }
   }
 }

@@ -1,115 +1,431 @@
 {
   "color": {
-    "brand": {
-      "50": {
-        "$value": "#f5f3ff",
+    "ink": {
+      "$value": "#1A1A1A",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on light theme. The ink-CTA semantic of v1.1."
+    },
+    "parchment": {
+      "$value": "#F4F1EA",
+      "$type": "color",
+      "$description": "Primary text + primary CTA fill on dark theme. Cream that reads as text on cocoa."
+    },
+
+    "cream": {
+      "bg": {
+        "$value": "#E8E0D0",
         "$type": "color",
-        "$description": "Lightest tint — backgrounds, hover surfaces on light mode"
+        "$description": "Light theme app background. Round-6 deepened from #F1EDE3 for visible card lift."
       },
-      "100": { "$value": "#ece9fe", "$type": "color" },
-      "200": { "$value": "#dcd5fd", "$type": "color" },
-      "300": { "$value": "#c3b4fb", "$type": "color" },
-      "400": { "$value": "#a78bfa", "$type": "color" },
-      "500": {
-        "$value": "#8b5cf6",
+      "card": {
+        "$value": "#FAF7F0",
         "$type": "color",
-        "$description": "Primary brand violet — accent, focus rings"
+        "$description": "Light theme card surface. Warm off-white (was #FFFFFF) — pure white was «бьёт по глазам» on cream bg #E8E0D0. New value preserves visible luma delta without optical glare. PO directive 2026-04-29."
       },
-      "600": {
-        "$value": "#7c3aed",
+      "inset": {
+        "$value": "#D6CCB8",
         "$type": "color",
-        "$description": "Default interactive (buttons, links) on light mode"
+        "$description": "Light theme depressed surface (text inputs, search wells, chips, citations, tabs-track)."
+      }
+    },
+
+    "cocoa": {
+      "bg": {
+        "$value": "#0E0E12",
+        "$type": "color",
+        "$description": "Dark theme app background. Neutral cool dark, NOT warm cocoa (v1.1 pivot)."
       },
-      "700": {
-        "$value": "#6d28d9",
+      "card": {
+        "$value": "#26262E",
         "$type": "color",
-        "$description": "Pressed / active state on light mode"
+        "$description": "Dark theme card surface. Round-6 luma bump from #1D1D22 for clearer card lift."
       },
-      "800": { "$value": "#5b21b6", "$type": "color" },
-      "900": { "$value": "#4c1d95", "$type": "color" },
-      "950": {
-        "$value": "#2e1065",
+      "inset": {
+        "$value": "#070709",
         "$type": "color",
-        "$description": "Deepest — rarely used except for heavy contrast on tints"
+        "$description": "Dark theme depressed surface — darker than card so depressed reads as recessed."
+      },
+      "user-bubble": {
+        "$value": "#1A2520",
+        "$type": "color",
+        "$description": "Dark theme user chat bubble — subtle teal-tinted dark, distinct from inset."
       }
     },
 
     "neutral": {
-      "50": { "$value": "#f8fafc", "$type": "color", "$description": "slate-50 — app bg (light)" },
-      "100": {
-        "$value": "#f1f5f9",
+      "text-secondary-light": {
+        "$value": "#4D4D4D",
         "$type": "color",
-        "$description": "slate-100 — card bg (light)"
+        "$description": "Secondary text — light theme. 7.91:1 on bg (AAA)."
       },
-      "200": {
-        "$value": "#e2e8f0",
+      "text-tertiary-light": {
+        "$value": "#5A5A5A",
         "$type": "color",
-        "$description": "slate-200 — borders (light)"
+        "$description": "Tertiary text — light theme. Lifted from #6E6E6E (3.82:1 sub-AA) to #5A5A5A (≈4.97:1 AA pass) per 2026-04-29 a11y audit. Drives every eyebrow / meta / mono label."
       },
-      "300": { "$value": "#cbd5e1", "$type": "color" },
-      "400": { "$value": "#94a3b8", "$type": "color", "$description": "slate-400 — muted text" },
-      "500": { "$value": "#64748b", "$type": "color" },
-      "600": {
-        "$value": "#475569",
+      "text-secondary-dark": {
+        "$value": "#B5B5B5",
         "$type": "color",
-        "$description": "slate-600 — secondary text"
+        "$description": "Secondary text — dark theme. 9.49:1 on bg (AAA)."
       },
-      "700": { "$value": "#334155", "$type": "color" },
-      "800": {
-        "$value": "#1e293b",
+      "text-tertiary-dark": {
+        "$value": "#9A9A9A",
         "$type": "color",
-        "$description": "slate-800 — elevated bg (dark modals) / dark borders"
-      },
-      "900": {
-        "$value": "#0f172a",
-        "$type": "color",
-        "$description": "slate-900 — primary text (light) / card bg (dark)"
-      },
-      "950": {
-        "$value": "#020617",
-        "$type": "color",
-        "$description": "slate-950 — app bg (dark deepest)"
+        "$description": "Tertiary text — dark theme. 5.20:1 on bg (AAA body)."
       }
-    },
-
-    "green": {
-      "50": { "$value": "#ecfdf5", "$type": "color" },
-      "100": { "$value": "#d1fae5", "$type": "color" },
-      "400": { "$value": "#34d399", "$type": "color" },
-      "500": { "$value": "#10b981", "$type": "color" },
-      "600": { "$value": "#059669", "$type": "color" },
-      "700": { "$value": "#047857", "$type": "color" }
-    },
-
-    "red": {
-      "50": { "$value": "#fef2f2", "$type": "color" },
-      "100": { "$value": "#fee2e2", "$type": "color" },
-      "400": { "$value": "#f87171", "$type": "color" },
-      "500": { "$value": "#ef4444", "$type": "color" },
-      "600": { "$value": "#dc2626", "$type": "color" },
-      "700": { "$value": "#b91c1c", "$type": "color" }
-    },
-
-    "amber": {
-      "50": { "$value": "#fffbeb", "$type": "color" },
-      "100": { "$value": "#fef3c7", "$type": "color" },
-      "400": { "$value": "#fbbf24", "$type": "color" },
-      "500": { "$value": "#f59e0b", "$type": "color" },
-      "600": { "$value": "#d97706", "$type": "color" }
-    },
-
-    "cyan": {
-      "50": { "$value": "#ecfeff", "$type": "color" },
-      "100": { "$value": "#cffafe", "$type": "color" },
-      "400": { "$value": "#22d3ee", "$type": "color" },
-      "500": { "$value": "#06b6d4", "$type": "color" },
-      "600": { "$value": "#0891b2", "$type": "color" }
     },
 
     "static": {
       "white": { "$value": "#ffffff", "$type": "color" },
       "black": { "$value": "#000000", "$type": "color" },
-      "transparent": { "$value": "transparent", "$type": "color" }
+      "transparent": { "$value": "transparent", "$type": "color" },
+      "ink-on-cta": {
+        "$value": "#1C1B26",
+        "$type": "color",
+        "$description": "v2 — text on signal-orange CTA. Uses ink-deep (5.42:1 AA pass on signal-orange)."
+      }
+    },
+
+    "candy": {
+      "pink": {
+        "$value": "#F7A1C9",
+        "$type": "color",
+        "$description": "v2 — Marketing primary surface. oklch(78% 0.18 350). Candy register (light-only)."
+      },
+      "mustard": {
+        "$value": "#F4CC4A",
+        "$type": "color",
+        "$description": "v2 — Marketing secondary surface. oklch(85% 0.16 95). Candy register (light-only)."
+      },
+      "pink-deep": {
+        "$value": "#D96EA0",
+        "$type": "color",
+        "$description": "v2 — Drip silhouette + 2px ink-stroke fallback. oklch(64% 0.17 350)."
+      },
+      "mustard-deep": {
+        "$value": "#C99A1F",
+        "$type": "color",
+        "$description": "v2 — Drip silhouette. oklch(67% 0.15 90)."
+      }
+    },
+
+    "signal": {
+      "orange": {
+        "$value": "#F08A3C",
+        "$type": "color",
+        "$description": "v2 — Primary CTA fill, accent role across both registers. oklch(72% 0.16 50)."
+      },
+      "orange-deep": {
+        "$value": "#C76A22",
+        "$type": "color",
+        "$description": "v2 — CTA active depress + danger-CTA bg. oklch(58% 0.15 48)."
+      }
+    },
+
+    "ink-v2": {
+      "deep": {
+        "$value": "#1C1B26",
+        "$type": "color",
+        "$description": "v2 — Header bar, hard CTA shadow, primary text on candy + paper. oklch(20% 0.015 280). Replaces v1 ink (#1A1A1A) once Phase 3 lands."
+      },
+      "ink-2": {
+        "$value": "#3A3947",
+        "$type": "color",
+        "$description": "v2 — Secondary text on paper. oklch(33% 0.015 280)."
+      },
+      "ink-3": {
+        "$value": "#5A5867",
+        "$type": "color",
+        "$description": "v2 — Tertiary / metadata. oklch(48% 0.015 280). AA pass on paper."
+      }
+    },
+
+    "paper": {
+      "cream": {
+        "$value": "#F6F1E8",
+        "$type": "color",
+        "$description": "v2 — App bg (paper register). oklch(96.5% 0.012 85). Slightly lighter / warmer than v1 cream.bg."
+      },
+      "card": {
+        "$value": "#FFFCF4",
+        "$type": "color",
+        "$description": "v2 — Card surface (paper register). oklch(99% 0.010 85)."
+      },
+      "inset": {
+        "$value": "#E9E2D2",
+        "$type": "color",
+        "$description": "v2 — Input wells, chips, depressed surfaces (paper register). oklch(91% 0.014 85)."
+      },
+      "grain": {
+        "$value": "rgba(28,27,38,0.020)",
+        "$type": "color",
+        "$description": "v2 — Optional ink-tinted noise/grain overlay alpha for paper substrate. Apply via SVG noise filter or CSS texture."
+      }
+    },
+
+    "chart": {
+      "light-1": {
+        "$value": "#2D5F4E",
+        "$type": "color",
+        "$description": "Chart series 1 (jade) — light theme."
+      },
+      "light-2": {
+        "$value": "#A04A3D",
+        "$type": "color",
+        "$description": "Chart series 2 (bronze) — light theme."
+      },
+      "light-3": {
+        "$value": "#1A1A1A",
+        "$type": "color",
+        "$description": "Chart series 3 (ink) — light theme."
+      },
+      "light-4": {
+        "$value": "#5C8A77",
+        "$type": "color",
+        "$description": "Chart series 4 (jade lifted) — light theme."
+      },
+      "light-5": {
+        "$value": "#7A7A7A",
+        "$type": "color",
+        "$description": "Chart series 5 (graphite) — light theme."
+      },
+      "light-6": {
+        "$value": "#C77A6A",
+        "$type": "color",
+        "$description": "Chart series 6 (bronze lifted) — light theme."
+      },
+      "light-7": {
+        "$value": "#1F4135",
+        "$type": "color",
+        "$description": "Chart series 7 (jade deepest) — light theme."
+      },
+      "dark-1": {
+        "$value": "#5C9A85",
+        "$type": "color",
+        "$description": "Chart series 1 — dark theme. Forest-jade-derived literal hex, lifted for a11y on cocoa bg (2026-04-29). Independent of v2 jade-deletion since this is a literal-hex chart token."
+      },
+      "dark-2": {
+        "$value": "#BD6A55",
+        "$type": "color",
+        "$description": "Chart series 2 (bronze bright) — dark theme."
+      },
+      "dark-3": {
+        "$value": "#F4F1EA",
+        "$type": "color",
+        "$description": "Chart series 3 (parchment) — dark theme."
+      },
+      "dark-4": {
+        "$value": "#7DAA9A",
+        "$type": "color",
+        "$description": "Chart series 4 (jade lifted) — dark theme."
+      },
+      "dark-5": {
+        "$value": "#B5B5B5",
+        "$type": "color",
+        "$description": "Chart series 5 (graphite) — dark theme."
+      },
+      "dark-6": {
+        "$value": "#D89C8C",
+        "$type": "color",
+        "$description": "Chart series 6 (bronze lifted) — dark theme."
+      },
+      "dark-7": {
+        "$value": "#2E5B4D",
+        "$type": "color",
+        "$description": "Chart series 7 (jade deep) — dark theme."
+      },
+
+      "light-8": {
+        "$value": "#8C6B2C",
+        "$type": "color",
+        "$description": "Chart series 8 (ochre / deep gold) — light theme. Editorial extension scoped to charts ONLY; do not surface on UI buttons / text / borders. Reads as «aged paper highlight», sits cleanly on cream bg. CB-verified by L-step ≥8 vs adjacent series."
+      },
+      "light-9": {
+        "$value": "#5A2E3F",
+        "$type": "color",
+        "$description": "Chart series 9 (aubergine / deep wine) — light theme. CHART-ONLY. Replaces the «blue» categorical without breaking the no-blue rule — reads as ink with deep wine hue. CB-verified."
+      },
+      "light-10": {
+        "$value": "#1F2A44",
+        "$type": "color",
+        "$description": "Chart series 10 (cobalt-ink / deep blueish-black) — light theme. CHART-ONLY. Reads ~80% as ink with subtle blue temperature; gives a 4th high-emphasis luminance pole alongside ink, jade-deepest, and terra. CB-verified."
+      },
+      "light-11": {
+        "$value": "#A87C8A",
+        "$type": "color",
+        "$description": "Chart series 11 (dusty mauve) — light theme. CHART-ONLY. Warm grey-pink; mid-luminance pairing for stacked bars without leaving the warm register."
+      },
+      "light-12": {
+        "$value": "#B8956A",
+        "$type": "color",
+        "$description": "Chart series 12 (clay tan / honey) — light theme. CHART-ONLY. Bronze-tan bridge between bronze (series-2) and ochre (series-8)."
+      },
+
+      "dark-8": {
+        "$value": "#C9A35A",
+        "$type": "color",
+        "$description": "Chart series 8 (ochre / deep gold) — dark theme. Lifted L for cocoa bg; reads as warm-paper highlight."
+      },
+      "dark-9": {
+        "$value": "#A85C7A",
+        "$type": "color",
+        "$description": "Chart series 9 (aubergine / deep wine) — dark theme. Lifted from light-9; preserves wine character without alarm-red collision with terra."
+      },
+      "dark-10": {
+        "$value": "#5C7AA8",
+        "$type": "color",
+        "$description": "Chart series 10 (cobalt-ink) — dark theme. Lifted significantly so it survives on cocoa bg — reads as cool-slate, not navy. Still lower saturation than tableau-blue."
+      },
+      "dark-11": {
+        "$value": "#D0A8B5",
+        "$type": "color",
+        "$description": "Chart series 11 (dusty mauve) — dark theme."
+      },
+      "dark-12": {
+        "$value": "#D9B58A",
+        "$type": "color",
+        "$description": "Chart series 12 (clay tan / honey) — dark theme."
+      }
+    },
+
+    "museum": {
+      "slate": {
+        "light": {
+          "$value": "#6B7280",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — cool anchor (light theme). oklch(0.45 0.025 250). ≥40% chroma reduction vs tableau saturated reference. Source: CHART_PALETTE_v2_draft.md §1."
+        },
+        "dark": {
+          "$value": "#A8AFBC",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — cool anchor (dark theme). oklch(0.72 0.028 250)."
+        }
+      },
+      "stone": {
+        "light": {
+          "$value": "#867A66",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — warm neutral mineral (light). oklch(0.52 0.020 60). Lowest chroma in family — anchors the palette."
+        },
+        "dark": {
+          "$value": "#C5BBA8",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — warm neutral mineral (dark). oklch(0.78 0.022 60)."
+        }
+      },
+      "fog-blue": {
+        "light": {
+          "$value": "#5F8794",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — dusty teal-blue (light). oklch(0.50 0.040 215). Sole blue-direction pick; chroma kept at 0.04 to honour calm-analytical register."
+        },
+        "dark": {
+          "$value": "#A8C6D0",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — dusty teal-blue (dark). oklch(0.78 0.045 215)."
+        }
+      },
+      "plum": {
+        "light": {
+          "$value": "#7E5C6E",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — aubergine plum (light). oklch(0.48 0.045 340). Fills magenta quadrant; 308° from bronze."
+        },
+        "dark": {
+          "$value": "#B79CA8",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — aubergine plum (dark). oklch(0.72 0.048 340)."
+        }
+      },
+      "ochre": {
+        "light": {
+          "$value": "#8C7448",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — muted gold (light). oklch(0.52 0.060 75). Highest chroma of the 5 — still 40%+ below tableau-yellow. Tritanopia note: collapses with stone (L=0.52); 1px hairline outline mandatory in V2 charts."
+        },
+        "dark": {
+          "$value": "#CAB07E",
+          "$type": "color",
+          "$description": "museum-vitrine categorical — muted gold (dark). oklch(0.78 0.060 75)."
+        }
+      }
+    },
+
+    "ink-ramp": {
+      "light": {
+        "1": {
+          "$value": "#1A1A1A",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 1 (light) — top magnitude. oklch(0.18 0 0). Equals --ink."
+        },
+        "2": {
+          "$value": "#404040",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 2 (light). oklch(0.30 0 0)."
+        },
+        "3": {
+          "$value": "#5E5E5E",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 3 (light). oklch(0.42 0 0). Coincides with --text-3 register."
+        },
+        "4": {
+          "$value": "#828282",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 4 (light) — median anchor. oklch(0.55 0 0)."
+        },
+        "5": {
+          "$value": "#A8A8A8",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 5 (light). oklch(0.68 0 0)."
+        },
+        "6": {
+          "$value": "#C3C3C3",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 6 (light). oklch(0.78 0 0)."
+        },
+        "7": {
+          "$value": "#D6D6D6",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 7 (light) — bottom magnitude. oklch(0.85 0 0). Visibility floor on cream bg — hairline outline recommended."
+        }
+      },
+      "dark": {
+        "1": {
+          "$value": "#F1F1F1",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 1 (dark) — top magnitude. oklch(0.95 0 0). Near-parchment."
+        },
+        "2": {
+          "$value": "#D6D6D6",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 2 (dark). oklch(0.85 0 0)."
+        },
+        "3": {
+          "$value": "#BDBDBD",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 3 (dark). oklch(0.75 0 0)."
+        },
+        "4": {
+          "$value": "#969696",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 4 (dark) — median anchor. oklch(0.62 0 0)."
+        },
+        "5": {
+          "$value": "#737373",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 5 (dark). oklch(0.50 0 0)."
+        },
+        "6": {
+          "$value": "#525252",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 6 (dark). oklch(0.38 0 0)."
+        },
+        "7": {
+          "$value": "#404040",
+          "$type": "color",
+          "$description": "Sequential ink ramp step 7 (dark) — bottom magnitude. oklch(0.30 0 0). Visibility floor on cocoa bg — hairline outline recommended."
+        }
+      }
     }
   }
 }

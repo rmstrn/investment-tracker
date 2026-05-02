@@ -2,11 +2,18 @@
   "$schema": "https://biomejs.dev/schemas/1.9.4/schema.json",
   "extends": ["../../biome.json"],
   "files": {
-    "ignore": [".next", "node_modules", "dist", "build"]
+    "ignore": [
+      ".next",
+      "node_modules",
+      "dist",
+      "build",
+      "src/components/ui/**",
+      "src/components/retroui/**"
+    ]
   },
   "overrides": [
     {
-      "include": ["src/app/design/**", "src/components/chat/**"],
+      "include": ["src/app/design-system/**", "src/components/chat/**"],
       "linter": {
         "rules": {
           "a11y": {

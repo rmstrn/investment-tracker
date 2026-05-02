@@ -1,0 +1,82 @@
+/*
+ * Style A — Slow Ledger.
+ *
+ * Hardback / Stripe Press / Cereal mag direction. Cream paper, slate-plum
+ * ink, hairline borders, no shadows. Source Serif 4 (display) + Geist Sans
+ * (body) + IBM Plex Mono (rubrics).
+ *
+ * Scope: route-local under `[data-style="a"]`. Wired by `layout.tsx`.
+ */
+
+[data-style="a"] {
+  /* ── Palette · light only for the comparison route ─────────────────── */
+  --paper-cream: #f4efe6;
+  --paper-deep: #ebe3d5;
+  --paper-edge: #ddd2bf;
+  --ink-plum: #2b232a;
+  --ink-soft: #5c5159;
+  --clay-rose: #b86a5e;
+  --moss-green: #6f7a56;
+  --brass-oxide: #a88a4a;
+  --slate-fog: #7b7e80;
+  --umber-deep: #5a4434;
+
+  /* ── Typography ────────────────────────────────────────────────────── */
+  --font-display: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  --font-body: var(--font-geist-sans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-rubric: var(--font-plex-mono), ui-monospace, "SF Mono", monospace;
+
+  /* ── Chart override surface (consumed by BarVisx via inline vars) ──── */
+  --cta-fill: var(--clay-rose);
+  --cta-shadow: var(--umber-deep);
+  --accent-deep: var(--umber-deep);
+  --text-on-candy: var(--ink-plum);
+  --bg-cream: var(--paper-deep);
+  --card-highlight: rgba(255, 252, 245, 0.6);
+
+  background-color: var(--paper-cream);
+  color: var(--ink-plum);
+  font-family: var(--font-body);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+[data-style="a"] .a-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  color: var(--ink-plum);
+}
+
+[data-style="a"] .a-rubric {
+  font-family: var(--font-rubric);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+[data-style="a"] .a-italic-link {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--clay-rose);
+  text-decoration: none;
+  border-bottom: 1px solid currentColor;
+  padding-bottom: 1px;
+  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-style="a"] .a-italic-link:hover {
+  opacity: 0.7;
+}
+
+[data-style="a"] .a-hairline {
+  border: 0;
+  border-top: 1px solid var(--paper-edge);
+  margin: 0;
+}
+
+[data-style="a"] .a-card {
+  background: var(--paper-deep);
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+}

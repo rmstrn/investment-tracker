@@ -134,7 +134,7 @@ function camel(parts, numericPrefix = '') {
 // Outputs
 // ----------------------------------------------------------
 
-function buildCss(primitives, light, dark) {
+function buildCss(primitives, light, dark, components = [], candy = []) {
   const lines = [];
   lines.push('/**');
   lines.push(' * Design tokens for Portfolio');
@@ -157,6 +157,17 @@ function buildCss(primitives, light, dark) {
   for (const t of light) {
     lines.push(`  ${cssVarName(t.path)}: ${t.resolved};`);
   }
+
+  // Tier 3 component tokens — emit as --<group>-<sub>-<prop>.
+  // Path shape: ['showcase', 'eyebrow', 'tracking'] → --showcase-eyebrow-tracking.
+  if (components.length > 0) {
+    lines.push('');
+    lines.push('  /* Tier 3 — component tokens (showcase emphasis, etc) */');
+    for (const t of components) {
+      lines.push(`  --${t.path.join('-')}: ${t.resolved};`);
+    }
+  }
+
   lines.push('}');
   lines.push('');
   lines.push('.dark, [data-theme="dark"] {');
@@ -165,6 +176,26 @@ function buildCss(primitives, light, dark) {
     lines.push(`  ${cssVarName(t.path)}: ${t.resolved};`);
   }
   lines.push('}');
+
+  // Marketing-candy register — route-scoped via [data-surface="candy"].
+  // The candy file uses root key `semantic-candy` so cssVarName strips that
+  // root and emits `--bg-pink`, `--cta-fill`, etc. Per spec §10.2 these are
+  // additive on top of the paper-default semantic layer; nothing in `light`
+  // is overridden — candy tokens are net-new vars consumed by marketing
+  // surfaces. Keep the cascade trivial: no color-bg-primary swap, since v2
+  // explicitly says the marketing register reaches for distinct vars
+  // (bg-pink / bg-mustard) rather than re-pointing the app semantic.
+  if (candy.length > 0) {
+    lines.push('');
+    lines.push('[data-surface="candy"] {');
+    lines.push('  /* Marketing-candy register — additive route-scoped tokens */');
+    for (const t of candy) {
+      // Path shape: ['semantic-candy', 'bg-pink'] → --bg-pink.
+      const stripped = t.path.filter((p) => p !== 'semantic-candy');
+      lines.push(`  --${stripped.join('-')}: ${t.resolved};`);
+    }
+    lines.push('}');
+  }
   writeFile('css/tokens.css', lines.join('\n') + '\n');
 }
 
@@ -679,22 +710,46 @@ function main() {
     .filter((f) => f.endsWith('.json'))
     .map((f) => `tokens/primitives/${f}`);
 
+  // Tier 3 component tokens — surface-specific emphasis (showcase, etc).
+  const componentDir = path.join(ROOT, 'tokens/components');
+  const componentFiles = fs.existsSync(componentDir)
+    ? fs
+        .readdirSync(componentDir)
+        .filter((f) => f.endsWith('.json'))
+        .map((f) => `tokens/components/${f}`)
+    : [];
+
   const primitiveTree = loadTree(primitiveFiles);
   const lightTree = loadTree([...primitiveFiles, 'tokens/semantic/light.json']);
   const darkTree = loadTree([...primitiveFiles, 'tokens/semantic/dark.json']);
+  const componentTree = componentFiles.length ? loadTree(componentFiles) : {};
+
+  // Marketing-candy semantic file — route-scoped via [data-surface="candy"].
+  // Optional: present from Phase 1 onwards. Resolved against primitives so
+  // `{color.candy.pink}` etc. flatten to concrete hex.
+  const candyPath = path.join(ROOT, 'tokens/semantic/marketing-candy.json');
+  const candyExists = fs.existsSync(candyPath);
+  const candyTree = candyExists
+    ? loadTree([...primitiveFiles, 'tokens/semantic/marketing-candy.json'])
+    : null;
 
   const primitives = resolveRefs(flatten(primitiveTree));
   const lightAll = resolveRefs(flatten(lightTree));
   const darkAll = resolveRefs(flatten(darkTree));
+  const components = componentFiles.length ? resolveRefs(flatten(componentTree)) : [];
+  const candyAll = candyTree ? resolveRefs(flatten(candyTree)) : [];
 
   const light = lightAll.filter((t) => t.path[0] === 'semantic');
   const dark = darkAll.filter((t) => t.path[0] === 'semantic');
+  const candy = candyAll.filter((t) => t.path[0] === 'semantic-candy');
 
-  console.log(`  Loaded ${primitives.length} primitives, ${light.length} light semantic, ${dark.length} dark semantic`);
+  console.log(
+    `  Loaded ${primitives.length} primitives, ${light.length} light semantic, ${dark.length} dark semantic, ${candy.length} candy semantic, ${components.length} component tokens`,
+  );
   console.log('');
 
   console.log('CSS:');
-  buildCss(primitives, light, dark);
+  buildCss(primitives, light, dark, components, candy);
   console.log('');
 
   console.log('Tailwind (JS object):');

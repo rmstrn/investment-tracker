@@ -1,2 +1,11 @@
 .vercel
 .env*.local
+
+# Playwright artefacts (snapshots are committed under __screenshots__)
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Visual-regression isolated Next build output (avoids .next lock collision
+# with a parallel `pnpm dev`)
+.next-vr/

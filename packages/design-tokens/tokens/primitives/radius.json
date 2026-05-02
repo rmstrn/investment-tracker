@@ -1,19 +1,45 @@
 {
   "radius": {
     "none": { "$value": "0px", "$type": "dimension" },
-    "sm": {
+    "xs": {
       "$value": "6px",
       "$type": "dimension",
-      "$description": "Inputs, small buttons, badges"
+      "$description": "Smallest pill — chip-tier-badge, very small inputs."
     },
-    "md": { "$value": "8px", "$type": "dimension", "$description": "Buttons, chips" },
-    "lg": { "$value": "12px", "$type": "dimension", "$description": "Cards, list rows" },
-    "xl": { "$value": "16px", "$type": "dimension", "$description": "Large panels, modals" },
-    "2xl": { "$value": "24px", "$type": "dimension", "$description": "Hero blocks" },
+    "sm": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "ds-nav links, chevron containers."
+    },
+    "md": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "Tabs, nav-item active, btn-icon micro, swatch chip."
+    },
+    "lg": {
+      "$value": "12px",
+      "$type": "dimension",
+      "$description": "Toast, topbar, table, ds-nav root."
+    },
+    "xl": {
+      "$value": "14px",
+      "$type": "dimension",
+      "$description": "Buttons (md size), input fields, search, segmented track."
+    },
+    "2xl": {
+      "$value": "18px",
+      "$type": "dimension",
+      "$description": "Cards (portfolio, insight, empty-state), AI bubbles, stage."
+    },
+    "3xl": {
+      "$value": "22px",
+      "$type": "dimension",
+      "$description": "Signature surfaces, modal, paywall hero."
+    },
     "full": {
       "$value": "9999px",
       "$type": "dimension",
-      "$description": "Pills, avatars, chat input"
+      "$description": "Pills, avatars, chat input, status-dot, switch knob."
     }
   }
 }
