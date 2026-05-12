@@ -13,7 +13,7 @@
     "bundle": "pnpm exec redocly bundle openapi.yaml -o generated/openapi.bundled.json"
   },
   "devDependencies": {
-    "@redocly/cli": "^2.30.1",
-    "@scalar/cli": "^1.8.8"
+    "@redocly/cli": "^2.30.4",
+    "@scalar/cli": "^1.9.2"
   }
 }
